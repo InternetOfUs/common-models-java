@@ -9,6 +9,6 @@ for src in "${SrcArray[@]}"; do
     for component in "${ComponentArray[@]}"; do
         echo "* $component"
         mkdir -p $DIR/../$component/$src/
-        rsync -r --delete --ignore-existing -avzp $src/ $DIR/../$component/$src/
+        rsync -r --delete -avzp $src/ $DIR/../$component/$src/
     done
 done
