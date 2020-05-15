@@ -24,10 +24,8 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common;
+package eu.internetofus.common.components.service;
 
-import eu.internetofus.common.components.service.ServiceApiSimulatorService;
-import eu.internetofus.common.components.service.ServiceApiSimulatorServiceOnMemory;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;

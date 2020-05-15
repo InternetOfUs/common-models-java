@@ -5,8 +5,10 @@ pushd $DIR
 declare -a SrcArray=("src/main/java/eu/internetofus/common" "src/main/resources/eu/internetofus/common" "src/test/java/eu/internetofus/common" "src/test/resources/eu/internetofus/common")
 declare -a ComponentArray=("wenet-interaction-protocol-engine" "wenet-profile-manager" "wenet-task-manager")
 for src in "${SrcArray[@]}"; do
+    echo "--- $src  ---"
     for component in "${ComponentArray[@]}"; do
-	mkdir -p $DIR/../$component/$src/
+        echo "* $component"
+        mkdir -p $DIR/../$component/$src/
         rsync -r --delete --ignore-existing -avzp $src/ $DIR/../$component/$src/
     done
 done

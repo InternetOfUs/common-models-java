@@ -28,7 +28,6 @@ package eu.internetofus.common.components.service;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.ServiceApiSimulator;
 import eu.internetofus.common.vertx.Service;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;

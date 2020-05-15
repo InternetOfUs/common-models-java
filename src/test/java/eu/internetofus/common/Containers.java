@@ -38,6 +38,7 @@ import org.testcontainers.utility.MountableFile;
 import org.tinylog.Level;
 import org.tinylog.provider.InternalLogger;
 
+import eu.internetofus.common.components.service.ServiceApiSimulator;
 import eu.internetofus.common.vertx.AbstractMain;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
