@@ -33,7 +33,7 @@ import java.util.UUID;
 import javax.validation.constraints.NotNull;
 
 import eu.internetofus.common.components.Model;
-import eu.internetofus.common.vertx.Service;
+import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -97,7 +97,7 @@ public class ServiceApiSimulatorServiceOnMemory implements ServiceApiSimulatorSe
 	@Override
 	public void retrieveApp(@NotNull String id, @NotNull Handler<AsyncResult<App>> retrieveHandler) {
 
-		this.retrieveJsonApp(id, Service.handlerForModel(App.class, retrieveHandler));
+		this.retrieveJsonApp(id, ComponentClient.handlerForModel(App.class, retrieveHandler));
 
 	}
 
@@ -163,7 +163,7 @@ public class ServiceApiSimulatorServiceOnMemory implements ServiceApiSimulatorSe
 	 * {@inheritDoc}
 	 */
 	@Override
-	public synchronized void deleteApp(String id, Handler<AsyncResult<JsonObject>> deleteHandler) {
+	public synchronized void deleteApp(String id, Handler<AsyncResult<Void>> deleteHandler) {
 
 		final JsonObject app = this.apps.remove(id);
 		if (app == null) {
@@ -224,7 +224,7 @@ public class ServiceApiSimulatorServiceOnMemory implements ServiceApiSimulatorSe
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void deleteCallbacks(String appId, Handler<AsyncResult<JsonObject>> handler) {
+	public void deleteCallbacks(String appId, Handler<AsyncResult<Void>> handler) {
 
 		final JsonArray messages = this.callbacks.remove(appId);
 		if (messages == null) {
@@ -233,7 +233,7 @@ public class ServiceApiSimulatorServiceOnMemory implements ServiceApiSimulatorSe
 
 		} else {
 
-			handler.handle(Future.succeededFuture(new JsonObject().put("messages", messages)));
+			handler.handle(Future.succeededFuture());
 		}
 
 	}
@@ -284,7 +284,7 @@ public class ServiceApiSimulatorServiceOnMemory implements ServiceApiSimulatorSe
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void deleteUsers(String appId, Handler<AsyncResult<JsonArray>> handler) {
+	public void deleteUsers(String appId, Handler<AsyncResult<Void>> handler) {
 
 		final JsonArray users = this.users.remove(appId);
 		if (users == null) {
@@ -293,7 +293,7 @@ public class ServiceApiSimulatorServiceOnMemory implements ServiceApiSimulatorSe
 
 		} else {
 
-			handler.handle(Future.succeededFuture(users));
+			handler.handle(Future.succeededFuture());
 		}
 
 	}

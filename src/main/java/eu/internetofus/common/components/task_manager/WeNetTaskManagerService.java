@@ -28,7 +28,7 @@ package eu.internetofus.common.components.task_manager;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.vertx.Service;
+import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
@@ -94,7 +94,7 @@ public interface WeNetTaskManagerService {
 	@GenIgnore
 	default void retrieveTask(@NotNull String id, @NotNull Handler<AsyncResult<Task>> retrieveHandler) {
 
-		this.retrieveJsonTask(id, Service.handlerForModel(Task.class, retrieveHandler));
+		this.retrieveJsonTask(id, ComponentClient.handlerForModel(Task.class, retrieveHandler));
 
 	}
 
@@ -115,7 +115,7 @@ public interface WeNetTaskManagerService {
 	@GenIgnore
 	default void createTask(@NotNull Task task, @NotNull Handler<AsyncResult<Task>> createHandler) {
 
-		this.createTask(task.toJsonObject(), Service.handlerForModel(Task.class, createHandler));
+		this.createTask(task.toJsonObject(), ComponentClient.handlerForModel(Task.class, createHandler));
 	}
 
 	/**
@@ -124,7 +124,7 @@ public interface WeNetTaskManagerService {
 	 * @param id            identifier of the task to get.
 	 * @param deleteHandler handler to manage the delete process.
 	 */
-	void deleteTask(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> deleteHandler);
+	void deleteTask(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
 
 	/**
 	 * Return a {@link TaskType} in Json format.
@@ -143,7 +143,7 @@ public interface WeNetTaskManagerService {
 	@GenIgnore
 	default void retrieveTaskType(@NotNull String id, @NotNull Handler<AsyncResult<TaskType>> retrieveHandler) {
 
-		this.retrieveJsonTaskType(id, Service.handlerForModel(TaskType.class, retrieveHandler));
+		this.retrieveJsonTaskType(id, ComponentClient.handlerForModel(TaskType.class, retrieveHandler));
 
 	}
 
@@ -164,7 +164,7 @@ public interface WeNetTaskManagerService {
 	@GenIgnore
 	default void createTaskType(@NotNull TaskType taskType, @NotNull Handler<AsyncResult<TaskType>> createHandler) {
 
-		this.createTaskType(taskType.toJsonObject(), Service.handlerForModel(TaskType.class, createHandler));
+		this.createTaskType(taskType.toJsonObject(), ComponentClient.handlerForModel(TaskType.class, createHandler));
 
 	}
 
@@ -174,6 +174,6 @@ public interface WeNetTaskManagerService {
 	 * @param id            identifier of the task to get.
 	 * @param deleteHandler handler to manage the delete process.
 	 */
-	void deleteTaskType(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> deleteHandler);
+	void deleteTaskType(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
 
 }

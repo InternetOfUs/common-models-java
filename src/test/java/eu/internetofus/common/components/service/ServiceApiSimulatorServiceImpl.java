@@ -28,7 +28,7 @@ package eu.internetofus.common.components.service;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.vertx.Service;
+import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -40,7 +40,7 @@ import io.vertx.ext.web.client.WebClient;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class ServiceApiSimulatorServiceImpl extends Service
+public class ServiceApiSimulatorServiceImpl extends ComponentClient
 		implements ServiceApiSimulatorService, WeNetServiceApiService {
 
 	/**
@@ -51,7 +51,7 @@ public class ServiceApiSimulatorServiceImpl extends Service
 	 */
 	public ServiceApiSimulatorServiceImpl(WebClient client, JsonObject conf) {
 
-		super(client, conf);
+		super(client, conf.getString("service", "https://wenet.u-hopper.com/service"));
 
 	}
 
@@ -61,7 +61,7 @@ public class ServiceApiSimulatorServiceImpl extends Service
 	@Override
 	public void retrieveApp(@NotNull String id, @NotNull Handler<AsyncResult<App>> retrieveHandler) {
 
-		this.retrieveJsonApp(id, Service.handlerForModel(App.class, retrieveHandler));
+		this.retrieveJsonApp(id, ComponentClient.handlerForModel(App.class, retrieveHandler));
 
 	}
 
@@ -73,7 +73,7 @@ public class ServiceApiSimulatorServiceImpl extends Service
 	@Override
 	public void createApp(JsonObject app, Handler<AsyncResult<JsonObject>> createHandler) {
 
-		this.post("/app", app, createHandler);
+		this.post(app, createHandler, "/app");
 
 	}
 
@@ -83,9 +83,9 @@ public class ServiceApiSimulatorServiceImpl extends Service
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void deleteApp(String id, Handler<AsyncResult<JsonObject>> deleteHandler) {
+	public void deleteApp(String id, Handler<AsyncResult<Void>> deleteHandler) {
 
-		this.delete("/app/" + id, deleteHandler);
+		this.delete(deleteHandler, "/app", id);
 
 	}
 
@@ -95,7 +95,7 @@ public class ServiceApiSimulatorServiceImpl extends Service
 	@Override
 	public void retrieveJsonApp(String id, Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-		this.get("/app/" + id, retrieveHandler);
+		this.getJsonObject(retrieveHandler, "/app", id);
 
 	}
 
@@ -105,7 +105,7 @@ public class ServiceApiSimulatorServiceImpl extends Service
 	@Override
 	public void retrieveJsonCallbacks(String id, Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-		this.get("/callback/" + id, retrieveHandler);
+		this.getJsonObject(retrieveHandler, "/callback", id);
 
 	}
 
@@ -115,7 +115,7 @@ public class ServiceApiSimulatorServiceImpl extends Service
 	@Override
 	public void addJsonCallBack(String appId, JsonObject message, Handler<AsyncResult<JsonObject>> handler) {
 
-		this.post("/callback/" + appId, message, handler);
+		this.post(message, handler, "/callback", appId);
 
 	}
 
@@ -123,9 +123,9 @@ public class ServiceApiSimulatorServiceImpl extends Service
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void deleteCallbacks(String appId, Handler<AsyncResult<JsonObject>> handler) {
+	public void deleteCallbacks(String appId, Handler<AsyncResult<Void>> handler) {
 
-		this.delete("/callback/" + appId, handler);
+		this.delete(handler, "/callback", appId);
 
 	}
 
@@ -135,7 +135,7 @@ public class ServiceApiSimulatorServiceImpl extends Service
 	@Override
 	public void retrieveJsonArrayAppUserIds(String id, Handler<AsyncResult<JsonArray>> retrieveHandler) {
 
-		this.getArray("/app/" + id + "/users", retrieveHandler);
+		this.getJsonArray(retrieveHandler, "/app/" + id + "/users");
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class ServiceApiSimulatorServiceImpl extends Service
 	@Override
 	public void addUsers(String appId, JsonArray users, Handler<AsyncResult<JsonArray>> handler) {
 
-		this.postArray("/app/" + appId + "/users", users, handler);
+		this.post(users, handler, "/app/" + appId + "/users");
 
 	}
 
@@ -152,9 +152,9 @@ public class ServiceApiSimulatorServiceImpl extends Service
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void deleteUsers(String appId, Handler<AsyncResult<JsonArray>> handler) {
+	public void deleteUsers(String appId, Handler<AsyncResult<Void>> handler) {
 
-		this.deleteArray("/app/" + appId + "/users", handler);
+		this.delete(handler, "/app/" + appId + "/users");
 
 	}
 

@@ -26,7 +26,7 @@
 
 package eu.internetofus.common.components.task_manager;
 
-import eu.internetofus.common.vertx.Service;
+import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
@@ -40,7 +40,7 @@ import io.vertx.ext.web.client.WebClient;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetTaskManagerServiceImpl extends Service implements WeNetTaskManagerService {
+public class WeNetTaskManagerServiceImpl extends ComponentClient implements WeNetTaskManagerService {
 
 	/**
 	 * Create a new service to interact with the WeNet task manager.
@@ -50,7 +50,7 @@ public class WeNetTaskManagerServiceImpl extends Service implements WeNetTaskMan
 	 */
 	public WeNetTaskManagerServiceImpl(WebClient client, JsonObject conf) {
 
-		super(client, conf);
+		super(client, conf.getString("taskManager", "https://wenet.u-hopper.com/task_manager"));
 
 	}
 
@@ -60,7 +60,7 @@ public class WeNetTaskManagerServiceImpl extends Service implements WeNetTaskMan
 	@Override
 	public void createTask(JsonObject task, Handler<AsyncResult<JsonObject>> createHandler) {
 
-		this.post("/tasks", task, createHandler);
+		this.post(task, createHandler, "/tasks");
 
 	}
 
@@ -70,7 +70,7 @@ public class WeNetTaskManagerServiceImpl extends Service implements WeNetTaskMan
 	@Override
 	public void retrieveJsonTask(String id, Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-		this.get("/tasks/" + id, retrieveHandler);
+		this.getJsonObject(retrieveHandler, "/tasks", id);
 
 	}
 
@@ -78,9 +78,9 @@ public class WeNetTaskManagerServiceImpl extends Service implements WeNetTaskMan
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void deleteTask(String id, Handler<AsyncResult<JsonObject>> deleteHandler) {
+	public void deleteTask(String id, Handler<AsyncResult<Void>> deleteHandler) {
 
-		this.delete("/tasks/" + id, deleteHandler);
+		this.delete(deleteHandler, "/tasks", id);
 
 	}
 
@@ -90,7 +90,7 @@ public class WeNetTaskManagerServiceImpl extends Service implements WeNetTaskMan
 	@Override
 	public void createTaskType(JsonObject taskType, Handler<AsyncResult<JsonObject>> createHandler) {
 
-		this.post("/tasks/types", taskType, createHandler);
+		this.post(taskType, createHandler, "/tasks/types");
 
 	}
 
@@ -100,7 +100,7 @@ public class WeNetTaskManagerServiceImpl extends Service implements WeNetTaskMan
 	@Override
 	public void retrieveJsonTaskType(String id, Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-		this.get("/tasks/types/" + id, retrieveHandler);
+		this.getJsonObject(retrieveHandler, "/tasks/types", id);
 
 	}
 
@@ -108,9 +108,9 @@ public class WeNetTaskManagerServiceImpl extends Service implements WeNetTaskMan
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void deleteTaskType(String id, Handler<AsyncResult<JsonObject>> deleteHandler) {
+	public void deleteTaskType(String id, Handler<AsyncResult<Void>> deleteHandler) {
 
-		this.delete("/tasks/types/" + id, deleteHandler);
+		this.delete(deleteHandler, "/tasks/types", id);
 
 	}
 

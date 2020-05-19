@@ -40,6 +40,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
 
 /**
  * Define a data model.
@@ -233,6 +234,28 @@ public class Model {
 			return null;
 		}
 
+	}
+
+	/**
+	 * Obtain the model associated to a {@link HttpResponse}.
+	 *
+	 * @param response to obtain the model.
+	 * @param type     of model to obtain
+	 * @param <T>      to obtain
+	 *
+	 * @return the model defined on the response or {@code null} if can not obtain
+	 *         it.
+	 */
+	public static <T extends Model> T fromResponse(HttpResponse<Buffer> response, Class<T> type) {
+
+		try {
+
+			return fromBuffer(response.bodyAsBuffer(), type);
+
+		} catch (final Throwable throwable) {
+
+			return null;
+		}
 	}
 
 }

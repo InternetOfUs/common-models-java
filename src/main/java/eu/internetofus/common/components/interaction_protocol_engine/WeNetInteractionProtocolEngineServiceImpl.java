@@ -26,7 +26,7 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
-import eu.internetofus.common.vertx.Service;
+import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
@@ -39,7 +39,7 @@ import io.vertx.ext.web.client.WebClient;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetInteractionProtocolEngineServiceImpl extends Service
+public class WeNetInteractionProtocolEngineServiceImpl extends ComponentClient
 		implements WeNetInteractionProtocolEngineService {
 
 	/**
@@ -50,7 +50,8 @@ public class WeNetInteractionProtocolEngineServiceImpl extends Service
 	 */
 	public WeNetInteractionProtocolEngineServiceImpl(WebClient client, JsonObject conf) {
 
-		super(client, conf);
+		super(client,
+				conf.getString("interactionProtocolEngine", "https://wenet.u-hopper.com/interaction_protocol_engine"));
 
 	}
 
@@ -60,7 +61,7 @@ public class WeNetInteractionProtocolEngineServiceImpl extends Service
 	@Override
 	public void sendMessage(JsonObject message, Handler<AsyncResult<JsonObject>> sendHandler) {
 
-		this.post("/messages", message, sendHandler);
+		this.post(message, sendHandler, "/messages");
 
 	}
 

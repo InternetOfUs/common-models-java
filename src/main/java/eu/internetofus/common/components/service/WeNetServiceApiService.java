@@ -28,7 +28,7 @@ package eu.internetofus.common.components.service;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.vertx.Service;
+import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
@@ -95,7 +95,7 @@ public interface WeNetServiceApiService {
 	@GenIgnore
 	default void retrieveApp(@NotNull String id, @NotNull Handler<AsyncResult<App>> retrieveHandler) {
 
-		this.retrieveJsonApp(id, Service.handlerForModel(App.class, retrieveHandler));
+		this.retrieveJsonApp(id, ComponentClient.handlerForModel(App.class, retrieveHandler));
 
 	}
 

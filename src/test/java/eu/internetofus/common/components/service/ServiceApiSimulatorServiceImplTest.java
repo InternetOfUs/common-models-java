@@ -55,8 +55,8 @@ public class ServiceApiSimulatorServiceImplTest extends ServiceApiSimulatorServi
 
 		final int serviceApiPort = Containers.nextFreePort();
 		Containers.createAndStartServiceApiSimulator(serviceApiPort);
-		final JsonObject configuration = new JsonObject().put("wenetComponents", new JsonObject().put("service",
-				new JsonObject().put("host", "localhost").put("port", serviceApiPort).put("apiPath", "")));
+		final JsonObject configuration = new JsonObject().put("wenetComponents",
+				new JsonObject().put("service", "http://localhost:" + serviceApiPort));
 		final WeNetModuleContext context = new WeNetModuleContext(vertx, configuration);
 		ServiceApiSimulatorService.register(context);
 	}

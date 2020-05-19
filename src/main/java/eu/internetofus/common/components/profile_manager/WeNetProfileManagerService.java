@@ -28,7 +28,7 @@ package eu.internetofus.common.components.profile_manager;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.vertx.Service;
+import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
@@ -95,7 +95,7 @@ public interface WeNetProfileManagerService {
 	default void createProfile(@NotNull WeNetUserProfile profile,
 			@NotNull Handler<AsyncResult<WeNetUserProfile>> createHandler) {
 
-		this.createProfile(profile.toJsonObject(), Service.handlerForModel(WeNetUserProfile.class, createHandler));
+		this.createProfile(profile.toJsonObject(), ComponentClient.handlerForModel(WeNetUserProfile.class, createHandler));
 
 	}
 
@@ -116,7 +116,7 @@ public interface WeNetProfileManagerService {
 	@GenIgnore
 	default void retrieveProfile(@NotNull String id, @NotNull Handler<AsyncResult<WeNetUserProfile>> retrieveHandler) {
 
-		this.retrieveJsonProfile(id, Service.handlerForModel(WeNetUserProfile.class, retrieveHandler));
+		this.retrieveJsonProfile(id, ComponentClient.handlerForModel(WeNetUserProfile.class, retrieveHandler));
 
 	}
 
@@ -126,6 +126,6 @@ public interface WeNetProfileManagerService {
 	 * @param id            identifier of the profile to get.
 	 * @param deleteHandler handler to manage the delete process.
 	 */
-	void deleteProfile(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> deleteHandler);
+	void deleteProfile(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
 
 }

@@ -28,7 +28,7 @@ package eu.internetofus.common.components.interaction_protocol_engine;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.vertx.Service;
+import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
@@ -95,7 +95,8 @@ public interface WeNetInteractionProtocolEngineService {
 	default void sendMessage(@NotNull InteractionProtocolMessage message,
 			@NotNull Handler<AsyncResult<InteractionProtocolMessage>> sendHandler) {
 
-		this.sendMessage(message.toJsonObject(), Service.handlerForModel(InteractionProtocolMessage.class, sendHandler));
+		this.sendMessage(message.toJsonObject(),
+				ComponentClient.handlerForModel(InteractionProtocolMessage.class, sendHandler));
 	}
 
 }

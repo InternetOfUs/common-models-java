@@ -26,7 +26,7 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import eu.internetofus.common.vertx.Service;
+import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
@@ -40,7 +40,7 @@ import io.vertx.ext.web.client.WebClient;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetProfileManagerServiceImpl extends Service implements WeNetProfileManagerService {
+public class WeNetProfileManagerServiceImpl extends ComponentClient implements WeNetProfileManagerService {
 
 	/**
 	 * Create a new service to interact with the WeNet profile manager.
@@ -50,7 +50,7 @@ public class WeNetProfileManagerServiceImpl extends Service implements WeNetProf
 	 */
 	public WeNetProfileManagerServiceImpl(WebClient client, JsonObject conf) {
 
-		super(client, conf);
+		super(client, conf.getString("profileManager", "https://wenet.u-hopper.com/profile_manager"));
 
 	}
 
@@ -60,7 +60,7 @@ public class WeNetProfileManagerServiceImpl extends Service implements WeNetProf
 	@Override
 	public void createProfile(JsonObject profile, Handler<AsyncResult<JsonObject>> createHandler) {
 
-		this.post("/profiles", profile, createHandler);
+		this.post(profile, createHandler, "/profiles");
 
 	}
 
@@ -70,7 +70,7 @@ public class WeNetProfileManagerServiceImpl extends Service implements WeNetProf
 	@Override
 	public void retrieveJsonProfile(String id, Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-		this.get("/profiles/" + id, retrieveHandler);
+		this.getJsonObject(retrieveHandler, "/profiles/", id);
 
 	}
 
@@ -78,9 +78,9 @@ public class WeNetProfileManagerServiceImpl extends Service implements WeNetProf
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void deleteProfile(String id, Handler<AsyncResult<JsonObject>> deleteHandler) {
+	public void deleteProfile(String id, Handler<AsyncResult<Void>> deleteHandler) {
 
-		this.delete("/profiles/" + id, deleteHandler);
+		this.delete(deleteHandler, "/profiles/", id);
 
 	}
 

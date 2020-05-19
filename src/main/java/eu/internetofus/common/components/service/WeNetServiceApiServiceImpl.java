@@ -26,7 +26,7 @@
 
 package eu.internetofus.common.components.service;
 
-import eu.internetofus.common.vertx.Service;
+import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -40,7 +40,7 @@ import io.vertx.ext.web.client.WebClient;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetServiceApiServiceImpl extends Service implements WeNetServiceApiService {
+public class WeNetServiceApiServiceImpl extends ComponentClient implements WeNetServiceApiService {
 
 	/**
 	 * Create a new service to interact with the WeNet interaction protocol engine.
@@ -50,7 +50,7 @@ public class WeNetServiceApiServiceImpl extends Service implements WeNetServiceA
 	 */
 	public WeNetServiceApiServiceImpl(WebClient client, JsonObject conf) {
 
-		super(client, conf);
+		super(client, conf.getString("service", "https://wenet.u-hopper.com/service"));
 
 	}
 
@@ -60,7 +60,7 @@ public class WeNetServiceApiServiceImpl extends Service implements WeNetServiceA
 	@Override
 	public void retrieveJsonApp(String id, Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-		this.get("/app/" + id, retrieveHandler);
+		this.getJsonObject(retrieveHandler, "/app", id);
 
 	}
 
@@ -70,7 +70,7 @@ public class WeNetServiceApiServiceImpl extends Service implements WeNetServiceA
 	@Override
 	public void retrieveJsonArrayAppUserIds(String id, Handler<AsyncResult<JsonArray>> retrieveHandler) {
 
-		this.getArray("/app/" + id + "/users", retrieveHandler);
+		this.getJsonArray(retrieveHandler, "/app", id, "/users");
 
 	}
 

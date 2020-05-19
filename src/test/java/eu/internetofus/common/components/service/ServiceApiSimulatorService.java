@@ -28,7 +28,7 @@ package eu.internetofus.common.components.service;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.vertx.Service;
+import eu.internetofus.common.vertx.ComponentClient;
 import eu.internetofus.common.vertx.WeNetModuleContext;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -73,8 +73,7 @@ public interface ServiceApiSimulatorService {
 	static void register(WeNetModuleContext context) {
 
 		final WebClient client = WebClient.create(context.vertx);
-		final JsonObject conf = context.configuration.getJsonObject("wenetComponents", new JsonObject())
-				.getJsonObject("service", new JsonObject());
+		final JsonObject conf = context.configuration.getJsonObject("wenetComponents", new JsonObject());
 		new ServiceBinder(context.vertx).setAddress(ServiceApiSimulatorService.ADDRESS)
 				.register(ServiceApiSimulatorService.class, new ServiceApiSimulatorServiceImpl(client, conf));
 
@@ -97,7 +96,7 @@ public interface ServiceApiSimulatorService {
 	@GenIgnore
 	default void retrieveApp(@NotNull String id, @NotNull Handler<AsyncResult<App>> retrieveHandler) {
 
-		this.retrieveJsonApp(id, Service.handlerForModel(App.class, retrieveHandler));
+		this.retrieveJsonApp(id, ComponentClient.handlerForModel(App.class, retrieveHandler));
 
 	}
 
@@ -118,7 +117,7 @@ public interface ServiceApiSimulatorService {
 	@GenIgnore
 	default void createApp(@NotNull App app, @NotNull Handler<AsyncResult<App>> createHandler) {
 
-		this.createApp(app.toJsonObject(), Service.handlerForModel(App.class, createHandler));
+		this.createApp(app.toJsonObject(), ComponentClient.handlerForModel(App.class, createHandler));
 
 	}
 
@@ -128,7 +127,7 @@ public interface ServiceApiSimulatorService {
 	 * @param id            identifier of the application to remove.
 	 * @param deleteHandler handler to manage the delete process.
 	 */
-	void deleteApp(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> deleteHandler);
+	void deleteApp(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
 
 	/**
 	 * Return all the callbacks messages received by an {@link App}.
@@ -153,7 +152,7 @@ public interface ServiceApiSimulatorService {
 	 * @param appId   identifier of the application to delete all the callbacks.
 	 * @param handler to manage the delete.
 	 */
-	void deleteCallbacks(String appId, Handler<AsyncResult<JsonObject>> handler);
+	void deleteCallbacks(String appId, Handler<AsyncResult<Void>> handler);
 
 	/**
 	 * Return all the users users received by an {@link App}.
@@ -178,6 +177,6 @@ public interface ServiceApiSimulatorService {
 	 * @param appId   identifier of the application to delete all the users.
 	 * @param handler to manage the delete.
 	 */
-	void deleteUsers(String appId, Handler<AsyncResult<JsonArray>> handler);
+	void deleteUsers(String appId, Handler<AsyncResult<Void>> handler);
 
 }
