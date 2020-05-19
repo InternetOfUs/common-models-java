@@ -417,24 +417,17 @@ public interface Validations {
 	/**
 	 * Validate that the value is a valid time stamp.
 	 *
-	 * @param codePrefix    the prefix of the code to use for the error message.
-	 * @param fieldName     name of the checking field.
-	 * @param value         to verify.
-	 * @param from          the minimum value that the time stamp can have. If it is
-	 *                      {@code null}, it uses {@code 0}.
-	 * @param fromInclusive this is{@code true} if the time stamp can be equals to
-	 *                      the from value.
-	 * @param to            the maximum value that the time stamp can have. If it is
-	 *                      {@code null}, it uses {@link Long#MAX_VALUE}.
-	 * @param toInclusive   this is{@code true} if the time stamp can be equals to
-	 *                      the to value.
+	 * @param codePrefix the prefix of the code to use for the error message.
+	 * @param fieldName  name of the checking field.
+	 * @param value      to verify.
+	 * @param nullable   is{@code true} if the value can be {@code null}.
 	 *
 	 * @return the valid time stamp value.
 	 *
 	 * @throws ValidationErrorException If the value is not a valid time stamp.
 	 */
-	static Long validateNullableTimeStamp(String codePrefix, String fieldName, Long value, Long from,
-			boolean fromInclusive, Long to, boolean toInclusive) throws ValidationErrorException {
+	static Long validateTimeStamp(String codePrefix, String fieldName, Long value, boolean nullable)
+			throws ValidationErrorException {
 
 		if (value != null) {
 
@@ -444,37 +437,11 @@ public interface Validations {
 						"The '" + value + "' is not valid time stamp because is less than '0'.");
 
 			}
-			long minValue = 0;
-			if (from != null) {
 
-				minValue = from;
-			}
-			if (fromInclusive) {
+		} else if (!nullable) {
 
-				minValue--;
-			}
-			long maxValue = Long.MAX_VALUE;
-			if (to != null) {
+			throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + value + "' has to be defined.");
 
-				maxValue = to;
-			}
-			if (!toInclusive) {
-
-				maxValue--;
-			}
-			maxValue = Math.max(minValue + 1, maxValue);
-
-			if (value <= minValue) {
-
-				throw new ValidationErrorException(codePrefix + "." + fieldName,
-						"The time stamp '" + value + "' has to be greater than '" + minValue + "'.");
-
-			} else if (value > maxValue) {
-
-				throw new ValidationErrorException(codePrefix + "." + fieldName,
-						"The '" + fieldName + "' time stamp '" + value + "' has to be less than or equal to '" + maxValue + "'.");
-
-			}
 		}
 		return value;
 	}

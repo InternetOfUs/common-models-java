@@ -216,17 +216,40 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
 				return verifyNotRepeatedIdPromise.future();
 			});
 
-			this.startTs = Validations.validateNullableTimeStamp(codePrefix, "startTs", this.startTs, TimeManager.now() + 1,
-					false, Long.MAX_VALUE, true);
-			this.endTs = Validations.validateNullableTimeStamp(codePrefix, "endTs", this.endTs, this.startTs, false,
-					Long.MAX_VALUE, true);
-			this.deadlineTs = Validations.validateNullableTimeStamp(codePrefix, "deadlineTs", this.deadlineTs, this.startTs,
-					false, this.endTs, false);
-			future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+			this.deadlineTs = Validations.validateTimeStamp(codePrefix, "deadlineTs", this.deadlineTs, false);
+			if (this.deadlineTs < TimeManager.now()) {
 
-			// TODO check the attributes fetch the attributes on the type
+				promise.fail(
+						new ValidationErrorException(codePrefix + ".deadlineTs", "The 'deadlineTs' has to be greater than Now."));
 
-			promise.complete();
+			} else {
+
+				this.startTs = Validations.validateTimeStamp(codePrefix, "startTs", this.startTs, false);
+				if (this.startTs < this.deadlineTs) {
+
+					promise.fail(
+							new ValidationErrorException(codePrefix + ".startTs", "The 'startTs' has to be after the 'deadlineTs'."));
+
+				} else {
+
+					this.endTs = Validations.validateTimeStamp(codePrefix, "endTs", this.endTs, false);
+					if (this.endTs < this.startTs) {
+
+						promise.fail(
+								new ValidationErrorException(codePrefix + ".endTs", "The 'endTs' has to be after the 'startTs'."));
+
+					} else {
+
+						future = future
+								.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+
+						// TODO check the attributes fetch the attributes on the type
+
+						promise.complete();
+
+					}
+				}
+			}
 
 		} catch (final ValidationErrorException validationError) {
 

@@ -38,7 +38,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import eu.internetofus.common.TimeManager;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -626,155 +625,41 @@ public class ValidationsTest {
 	/**
 	 * Check that a {@code null} time stamp is valid.
 	 *
-	 * @see Validations#validateNullableTimeStamp(String, String, Long, Long,
-	 *      boolean, Long, boolean)
+	 * @see Validations#validateTimeStamp(String, String, Long, boolean)
 	 */
 	@Test
 	public void shouldNullTimeStampBeValid() {
 
-		assertThatCode(() -> assertThat(
-				Validations.validateNullableTimeStamp("codePrefix", "fieldName", null, TimeManager.now(), true, null, false))
-						.isNull()).doesNotThrowAnyException();
+		assertThatCode(() -> assertThat(Validations.validateTimeStamp("codePrefix", "fieldName", null, true)).isNull())
+				.doesNotThrowAnyException();
 	}
 
 	/**
-	 * Check that a value that is valid it it is equals to the inferior limit.
+	 * Check that a {@code null} time stamp is not valid.
 	 *
-	 * @see Validations#validateNullableTimeStamp(String, String, Long, Long,
-	 *      boolean, Long, boolean)
+	 * @see Validations#validateTimeStamp(String, String, Long, boolean)
 	 */
 	@Test
-	public void shouldTimeStampBeValidEqualsToInferiorLimit() {
-
-		assertThatCode(
-				() -> assertThat(Validations.validateNullableTimeStamp("codePrefix", "fieldName", 0l, 0l, true, 10l, false))
-						.isEqualTo(0l)).doesNotThrowAnyException();
-	}
-
-	/**
-	 * Check that a value that is not valid it it is equals to the inferior limit.
-	 *
-	 * @see Validations#validateNullableTimeStamp(String, String, Long, Long,
-	 *      boolean, Long, boolean)
-	 */
-	@Test
-	public void shouldTimeStampNotBeValidEqualsToInferiorLimit() {
+	public void shouldNullTimeStampNotBeValid() {
 
 		assertThat(assertThrows(ValidationErrorException.class,
-				() -> Validations.validateNullableTimeStamp("codePrefix", "fieldName", 5l, 5l, false, 10l, true)).getCode())
-						.isEqualTo("codePrefix.fieldName");
-	}
-
-	/**
-	 * Check that a value that is not valid it it is equals to the inferior limit.
-	 *
-	 * @see Validations#validateNullableTimeStamp(String, String, Long, Long,
-	 *      boolean, Long, boolean)
-	 */
-	@Test
-	public void shouldTimeStampNotBeValidEqualsToDefaultInferiorLimit() {
-
-		assertThat(assertThrows(ValidationErrorException.class,
-				() -> Validations.validateNullableTimeStamp("codePrefix", "fieldName", 0l, null, false, 10l, true)).getCode())
-						.isEqualTo("codePrefix.fieldName");
-	}
-
-	/**
-	 * Check that a value that is valid it it is equals to the superior limit.
-	 *
-	 * @see Validations#validateNullableTimeStamp(String, String, Long, Long,
-	 *      boolean, Long, boolean)
-	 */
-	@Test
-	public void shouldTimeStampBeValidEqualsToSuperiorLimit() {
-
-		assertThatCode(
-				() -> assertThat(Validations.validateNullableTimeStamp("codePrefix", "fieldName", 10l, 0l, true, 10l, true))
-						.isEqualTo(10l)).doesNotThrowAnyException();
-	}
-
-	/**
-	 * Check that a value that is not valid it it is equals to the superior limit.
-	 *
-	 * @see Validations#validateNullableTimeStamp(String, String, Long, Long,
-	 *      boolean, Long, boolean)
-	 */
-	@Test
-	public void shouldTimeStampNotBeValidEqualsToSuperiorLimit() {
-
-		assertThat(assertThrows(ValidationErrorException.class,
-				() -> Validations.validateNullableTimeStamp("codePrefix", "fieldName", 10l, 0l, false, 10l, false)).getCode())
-						.isEqualTo("codePrefix.fieldName");
-	}
-
-	/**
-	 * Check that a value that is less than 0 is not a valid time stamp.
-	 *
-	 * @see Validations#validateNullableTimeStamp(String, String, Long, Long,
-	 *      boolean, Long, boolean)
-	 */
-	@Test
-	public void shouldTimeStampNotBeValidBecauseIsLessThanZero() {
-
-		assertThat(assertThrows(ValidationErrorException.class,
-				() -> Validations.validateNullableTimeStamp("codePrefix", "fieldName", -1l, -100l, false, null, false))
-						.getCode()).isEqualTo("codePrefix.fieldName");
-	}
-
-	/**
-	 * Check that a value that is the default limits is valid.
-	 *
-	 * @see Validations#validateNullableTimeStamp(String, String, Long, Long,
-	 *      boolean, Long, boolean)
-	 */
-	@Test
-	public void shouldTimeStampBeValidEqualsInDefaultLimits() {
-
-		assertThatCode(
-				() -> assertThat(Validations.validateNullableTimeStamp("codePrefix", "fieldName", 10l, null, true, null, true))
-						.isEqualTo(10l)).doesNotThrowAnyException();
-	}
-
-	/**
-	 * Check that a value that is the default limits is valid.
-	 *
-	 * @see Validations#validateNullableTimeStamp(String, String, Long, Long,
-	 *      boolean, Long, boolean)
-	 */
-	@Test
-	public void shouldTimeStampNotBeValidEqualsInDefaultInferiorLimit() {
-
-		assertThat(assertThrows(ValidationErrorException.class,
-				() -> Validations.validateNullableTimeStamp("codePrefix", "fieldName", 0l, null, false, null, false)).getCode())
+				() -> Validations.validateTimeStamp("codePrefix", "fieldName", null, false)).getCode())
 						.isEqualTo("codePrefix.fieldName");
 
 	}
 
 	/**
-	 * Check that a value that is the default limits is valid.
+	 * Check that a negative time stamp is not valid.
 	 *
-	 * @see Validations#validateNullableTimeStamp(String, String, Long, Long,
-	 *      boolean, Long, boolean)
+	 * @see Validations#validateTimeStamp(String, String, Long, boolean)
 	 */
 	@Test
-	public void shouldTimeStampBeValidEqualsInDefaultSuperiorLimit() {
+	public void shouldNegativeTimeStampNotBeValid() {
 
-		assertThatCode(() -> assertThat(
-				Validations.validateNullableTimeStamp("codePrefix", "fieldName", Long.MAX_VALUE, null, false, null, true))
-						.isEqualTo(Long.MAX_VALUE)).doesNotThrowAnyException();
-	}
+		assertThat(assertThrows(ValidationErrorException.class,
+				() -> Validations.validateTimeStamp("codePrefix", "fieldName", -1l, false)).getCode())
+						.isEqualTo("codePrefix.fieldName");
 
-	/**
-	 * Check that a value that is the default limits is valid.
-	 *
-	 * @see Validations#validateNullableTimeStamp(String, String, Long, Long,
-	 *      boolean, Long, boolean)
-	 */
-	@Test
-	public void shouldTimeStampNotBeValidEqualsInDefaultSuperiorLimit() {
-
-		assertThat(assertThrows(ValidationErrorException.class, () -> Validations.validateNullableTimeStamp("codePrefix",
-				"fieldName", Long.MAX_VALUE, null, false, null, false)).getCode()).isEqualTo("codePrefix.fieldName");
 	}
 
 	/**

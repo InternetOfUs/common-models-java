@@ -95,9 +95,9 @@ public class TaskTest extends ModelTestCase<Task> {
 		model.requesterId = "requesterId" + index;
 		model.appId = "appId" + index;
 		model.goal = new TaskGoalTest().createModelExample(index);
-		model.startTs = TimeManager.now() + 10000 + 10000 * index;
+		model.deadlineTs = TimeManager.now() + 10000 + 10000 * index;
+		model.startTs = model.deadlineTs + 200000l + index;
 		model.endTs = model.startTs + 300000l + index;
-		model.deadlineTs = model.startTs + 200000l + index;
 		model.norms = new ArrayList<>();
 		model.norms.add(new NormTest().createModelExample(index));
 		model.attributes = new JsonObject().put("index", index);
@@ -423,7 +423,28 @@ public class TaskTest extends ModelTestCase<Task> {
 
 		this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
 
-			model.startTs = TimeManager.now();
+			model.startTs = model.deadlineTs - 1;
+			assertIsNotValid(model, "startTs", vertx, testContext);
+			testContext.completeNow();
+
+		}));
+
+	}
+
+	/**
+	 * Check that can not be valid without start time stamp.
+	 *
+	 * @param vertx       event bus to use.
+	 * @param testContext test context to use.
+	 *
+	 * @see Task#validate(String, Vertx)
+	 */
+	@Test
+	public void shouldNotBeValidWithoutStartTimeStampn(Vertx vertx, VertxTestContext testContext) {
+
+		this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+			model.startTs = null;
 			assertIsNotValid(model, "startTs", vertx, testContext);
 			testContext.completeNow();
 
@@ -444,9 +465,29 @@ public class TaskTest extends ModelTestCase<Task> {
 
 		this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
 
-			model.startTs = TimeManager.now() + 10000;
-			model.endTs = TimeManager.now();
+			model.endTs = model.startTs - 1;
 			assertIsNotValid(model, "endTs", vertx, testContext);
+
+		}));
+
+	}
+
+	/**
+	 * Check that can not be valid without end time stamp.
+	 *
+	 * @param vertx       event bus to use.
+	 * @param testContext test context to use.
+	 *
+	 * @see Task#validate(String, Vertx)
+	 */
+	@Test
+	public void shouldNotBeValidWithoutEndTimeStampn(Vertx vertx, VertxTestContext testContext) {
+
+		this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+			model.endTs = null;
+			assertIsNotValid(model, "endTs", vertx, testContext);
+			testContext.completeNow();
 
 		}));
 
@@ -465,9 +506,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
 		this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
 
-			model.startTs = TimeManager.now() + 10000;
-			model.endTs = model.startTs + 20000;
-			model.deadlineTs = model.startTs;
+			model.deadlineTs = TimeManager.now() - 1;
 			assertIsNotValid(model, "deadlineTs", vertx, testContext);
 
 		}));
@@ -475,7 +514,7 @@ public class TaskTest extends ModelTestCase<Task> {
 	}
 
 	/**
-	 * Check that can not be valid with a too late deadline time stamp.
+	 * Check that can not be valid without deadline time stamp.
 	 *
 	 * @param vertx       event bus to use.
 	 * @param testContext test context to use.
@@ -483,14 +522,13 @@ public class TaskTest extends ModelTestCase<Task> {
 	 * @see Task#validate(String, Vertx)
 	 */
 	@Test
-	public void shouldNotBeValidWithATooLateDeadlineTimeStampn(Vertx vertx, VertxTestContext testContext) {
+	public void shouldNotBeValidWithoutDeadlineTimeStampn(Vertx vertx, VertxTestContext testContext) {
 
 		this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
 
-			model.startTs = TimeManager.now() + 10000;
-			model.endTs = model.startTs + 20000;
-			model.deadlineTs = model.endTs;
+			model.deadlineTs = null;
 			assertIsNotValid(model, "deadlineTs", vertx, testContext);
+			testContext.completeNow();
 
 		}));
 
