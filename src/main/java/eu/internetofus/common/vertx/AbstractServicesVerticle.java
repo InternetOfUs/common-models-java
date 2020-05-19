@@ -53,13 +53,12 @@ public abstract class AbstractServicesVerticle extends AbstractVerticle {
 
 		try {
 
-			final JsonObject serviceConf = this.config().getJsonObject("wenetComponents", new JsonObject());
-
 			// configure the web client
-			final JsonObject webClientConf = serviceConf.getJsonObject("webClient", new JsonObject());
+			final JsonObject webClientConf = this.config().getJsonObject("webClient", new JsonObject());
 			final WebClientOptions options = new WebClientOptions(webClientConf);
 			this.client = WebClient.create(this.vertx, options);
 
+			final JsonObject serviceConf = this.config().getJsonObject("wenetComponents", new JsonObject());
 			this.registerServices(serviceConf);
 
 			startPromise.complete();
