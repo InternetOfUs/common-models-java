@@ -33,6 +33,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.tinylog.Logger;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -110,6 +111,7 @@ public class Model {
 
 		} catch (final Throwable throwable) {
 
+			Logger.trace(throwable);
 			return null;
 		}
 	}
@@ -131,6 +133,7 @@ public class Model {
 
 		} catch (final Throwable throwable) {
 
+			Logger.trace(throwable);
 			return null;
 		}
 	}
@@ -149,6 +152,7 @@ public class Model {
 
 		} catch (final Throwable throwable) {
 
+			Logger.trace(throwable);
 			return null;
 		}
 
@@ -167,6 +171,7 @@ public class Model {
 
 		} catch (final Throwable throwable) {
 
+			Logger.trace(throwable);
 			return null;
 		}
 
@@ -186,6 +191,7 @@ public class Model {
 
 		} catch (final Throwable throwable) {
 
+			Logger.trace(throwable);
 			return null;
 		}
 	}
@@ -207,6 +213,7 @@ public class Model {
 
 		} catch (final Throwable throwable) {
 
+			Logger.trace(throwable);
 			return null;
 		}
 	}
@@ -231,6 +238,7 @@ public class Model {
 
 		} catch (final Throwable throwable) {
 
+			Logger.trace(throwable);
 			return null;
 		}
 
@@ -254,6 +262,7 @@ public class Model {
 
 		} catch (final Throwable throwable) {
 
+			Logger.trace(throwable);
 			return null;
 		}
 	}
