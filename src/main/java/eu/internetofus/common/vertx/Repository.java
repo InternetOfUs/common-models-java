@@ -26,6 +26,8 @@
 
 package eu.internetofus.common.vertx;
 
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import io.vertx.core.AsyncResult;
@@ -66,10 +68,12 @@ public class Repository {
 	 * @param query          to obtain the components of the page.
 	 * @param options        to apply to the search.
 	 * @param resultKey      to store the found models.
+	 * @param map            function to apply to each found object or {@code null}
+	 *                       to not modify the components.
 	 * @param searchHandler  handler to manage the result action.
 	 */
 	protected void searchPageObject(String collectionName, JsonObject query, FindOptions options, String resultKey,
-			Handler<AsyncResult<JsonObject>> searchHandler) {
+			Consumer<JsonObject> map, Handler<AsyncResult<JsonObject>> searchHandler) {
 
 		this.pool.count(collectionName, query, count -> {
 
@@ -96,7 +100,12 @@ public class Repository {
 
 						} else {
 
-							page.put(resultKey, find.result());
+							final List<JsonObject> objects = find.result();
+							if (map != null) {
+
+								objects.stream().forEach(map);
+							}
+							page.put(resultKey, objects);
 							searchHandler.handle(Future.succeededFuture(page));
 						}
 

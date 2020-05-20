@@ -40,7 +40,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import eu.internetofus.common.vertx.Repository;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -84,7 +83,7 @@ public abstract class RepositoryTestCase<T extends Repository> {
 	public void shouldSearchPageObjectFailedByMongoClientCount(@Mock MongoClient pool, VertxTestContext testContext) {
 
 		final T repository = this.createRepository(pool);
-		repository.searchPageObject(null, null, new FindOptions(), null, testContext.failing(search -> {
+		repository.searchPageObject(null, null, new FindOptions(), null, null, testContext.failing(search -> {
 			testContext.completeNow();
 		}));
 		@SuppressWarnings("unchecked")
@@ -104,7 +103,7 @@ public abstract class RepositoryTestCase<T extends Repository> {
 	public void shouldSearchPageObjectFailedByMongoClientFind(@Mock MongoClient pool, VertxTestContext testContext) {
 
 		final T repository = this.createRepository(pool);
-		repository.searchPageObject(null, null, new FindOptions(), null, testContext.failing(search -> {
+		repository.searchPageObject(null, null, new FindOptions(), null, null, testContext.failing(search -> {
 			testContext.completeNow();
 		}));
 		@SuppressWarnings("unchecked")
@@ -119,19 +118,19 @@ public abstract class RepositoryTestCase<T extends Repository> {
 	}
 
 	/**
-	 * Check search page return empty pagge because the model and map it.
+	 * Check search page return empty page because the model and map it.
 	 *
 	 * @param pool        mocked MongoDB client.
 	 * @param testContext test context.
 	 */
 	@Test
-	public void shouldSearchPageReturnEmptyWehnTotalIsZero(@Mock MongoClient pool, VertxTestContext testContext) {
+	public void shouldSearchPageReturnEmptyWhenTotalIsZero(@Mock MongoClient pool, VertxTestContext testContext) {
 
 		final T repository = this.createRepository(pool);
 		final FindOptions options = new FindOptions();
 		final int offset = 23;
 		options.setSkip(offset);
-		repository.searchPageObject(null, null, options, "resultKey",
+		repository.searchPageObject(null, null, options, "resultKey", null,
 				testContext.succeeding(page -> testContext.verify(() -> {
 
 					assertThat(page.getInteger("offset")).isEqualTo(offset);
@@ -163,7 +162,7 @@ public abstract class RepositoryTestCase<T extends Repository> {
 		final List<JsonObject> models = new ArrayList<>();
 		models.add(new JsonObject().put("id", "1"));
 		models.add(new JsonObject().put("id", "2"));
-		repository.searchPageObject(null, null, options, "resultKey",
+		repository.searchPageObject(null, null, options, "resultKey", null,
 				testContext.succeeding(page -> testContext.verify(() -> {
 
 					assertThat(page.getInteger("offset")).isEqualTo(offset);
