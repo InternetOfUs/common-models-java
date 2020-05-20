@@ -91,11 +91,19 @@ public class ComponentClient {
 		builder.append(this.componentURL);
 		for (final Object path : paths) {
 
+			final String element = String.valueOf(path);
 			if (builder.charAt(builder.length() - 1) != '/') {
 
-				builder.append('/');
+				if (element.charAt(0) != '/') {
+
+					builder.append('/');
+				}
+
+			} else if (element.charAt(0) != '/') {
+
+				element.substring(1);
 			}
-			builder.append(path);
+			builder.append(element);
 
 		}
 
