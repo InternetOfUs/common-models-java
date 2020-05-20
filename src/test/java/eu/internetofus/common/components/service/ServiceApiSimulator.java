@@ -26,6 +26,8 @@
 
 package eu.internetofus.common.components.service;
 
+import org.tinylog.Logger;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -161,15 +163,18 @@ public class ServiceApiSimulator extends AbstractVerticle {
 				final HttpServerResponse response = routingContext.response();
 				if (retrieve.failed()) {
 
+					Logger.trace("GET /app/{} => Error 400", appId);
 					response.putHeader("content-type", "text/plain");
 					response.setStatusCode(400);
 					response.end(retrieve.cause().getMessage());
 
 				} else {
 
+					final JsonObject app = retrieve.result();
+					Logger.trace("GET /app/{} => {}", appId, app);
 					response.putHeader("content-type", "application/json");
 					response.setStatusCode(200);
-					response.end(retrieve.result().encode());
+					response.end(app.encode());
 				}
 
 			});
@@ -197,15 +202,18 @@ public class ServiceApiSimulator extends AbstractVerticle {
 					final HttpServerResponse response = routingContext.response();
 					if (create.failed()) {
 
+						Logger.trace("POST /app  {} => Error 400", app);
 						response.putHeader("content-type", "text/plain");
 						response.setStatusCode(400);
 						response.end(create.cause().getMessage());
 
 					} else {
 
+						final JsonObject stored = create.result();
+						Logger.trace("POST /app  {} => {}", app, stored);
 						response.putHeader("content-type", "application/json");
 						response.setStatusCode(200);
-						response.end(create.result().encode());
+						response.end(stored.encode());
 					}
 
 				});
@@ -230,12 +238,14 @@ public class ServiceApiSimulator extends AbstractVerticle {
 				final HttpServerResponse response = routingContext.response();
 				if (delete.failed()) {
 
+					Logger.trace("DELETE /app/{} => Error 400", appId);
 					response.putHeader("content-type", "text/plain");
 					response.setStatusCode(400);
 					response.end(delete.cause().getMessage());
 
 				} else {
 
+					Logger.trace("DELETE /app/{} => Ok 204", appId);
 					response.putHeader("content-type", "application/json");
 					response.setStatusCode(204);
 					response.end();
@@ -264,15 +274,18 @@ public class ServiceApiSimulator extends AbstractVerticle {
 					final HttpServerResponse response = routingContext.response();
 					if (create.failed()) {
 
+						Logger.trace("POST /callback/{}  {} => Error 400", appId, message);
 						response.putHeader("content-type", "text/plain");
 						response.setStatusCode(400);
 						response.end(create.cause().getMessage());
 
 					} else {
 
+						final JsonObject stored = create.result();
+						Logger.trace("POST /callback/{}  {} => {}", appId, message, stored);
 						response.putHeader("content-type", "application/json");
 						response.setStatusCode(200);
-						response.end(create.result().encode());
+						response.end(stored.encode());
 					}
 
 				});
@@ -297,15 +310,18 @@ public class ServiceApiSimulator extends AbstractVerticle {
 				final HttpServerResponse response = routingContext.response();
 				if (create.failed()) {
 
+					Logger.trace("GET /callback/{} => Error 400", appId);
 					response.putHeader("content-type", "text/plain");
 					response.setStatusCode(400);
 					response.end(create.cause().getMessage());
 
 				} else {
 
+					final JsonObject callback = create.result();
+					Logger.trace("GET /callback/{} => {}", appId, callback);
 					response.putHeader("content-type", "application/json");
 					response.setStatusCode(200);
-					response.end(create.result().encode());
+					response.end(callback.encode());
 				}
 
 			});
@@ -329,12 +345,14 @@ public class ServiceApiSimulator extends AbstractVerticle {
 				final HttpServerResponse response = routingContext.response();
 				if (delete.failed()) {
 
+					Logger.trace("DELETE /callback/{} => Error 400", appId);
 					response.putHeader("content-type", "text/plain");
 					response.setStatusCode(400);
 					response.end(delete.cause().getMessage());
 
 				} else {
 
+					Logger.trace("DELETE /callback/{} => Ok 204", appId);
 					response.putHeader("content-type", "application/json");
 					response.setStatusCode(204);
 					response.end();
@@ -363,15 +381,18 @@ public class ServiceApiSimulator extends AbstractVerticle {
 					final HttpServerResponse response = routingContext.response();
 					if (create.failed()) {
 
+						Logger.trace("POST /user/{}/users {} => Error 400", appId, users);
 						response.putHeader("content-type", "text/plain");
 						response.setStatusCode(400);
 						response.end(create.cause().getMessage());
 
 					} else {
 
+						final JsonArray stored = create.result();
+						Logger.trace("POST /user/{}/users => {}", appId, users, stored);
 						response.putHeader("content-type", "application/json");
 						response.setStatusCode(200);
-						response.end(create.result().encode());
+						response.end(stored.encode());
 					}
 
 				});
@@ -396,15 +417,18 @@ public class ServiceApiSimulator extends AbstractVerticle {
 				final HttpServerResponse response = routingContext.response();
 				if (create.failed()) {
 
+					Logger.trace("GET /user/{}/users => Error 400", appId);
 					response.putHeader("content-type", "text/plain");
 					response.setStatusCode(400);
 					response.end(create.cause().getMessage());
 
 				} else {
 
+					final JsonArray users = create.result();
+					Logger.trace("GET /user/{}/users => {}", appId, users);
 					response.putHeader("content-type", "application/json");
 					response.setStatusCode(200);
-					response.end(create.result().encode());
+					response.end(users.encode());
 				}
 
 			});
@@ -428,12 +452,14 @@ public class ServiceApiSimulator extends AbstractVerticle {
 				final HttpServerResponse response = routingContext.response();
 				if (delete.failed()) {
 
+					Logger.trace("DELETE /user/{}/users => Error 400", appId);
 					response.putHeader("content-type", "text/plain");
 					response.setStatusCode(400);
 					response.end(delete.cause().getMessage());
 
 				} else {
 
+					Logger.trace("DELETE /user/{}/users => Ok 204", appId);
 					response.putHeader("content-type", "application/json");
 					response.setStatusCode(204);
 					response.end();
