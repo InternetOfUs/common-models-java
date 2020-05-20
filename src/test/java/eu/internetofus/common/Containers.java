@@ -266,12 +266,14 @@ public interface Containers {
 	 *                                         bind on the localhost.
 	 * @param interactionProtocolEngineApiPort port where the interaction protocol
 	 *                                         engine will be bind on the localhost.
+	 * @param serviceApiPort                   port where the service component will
+	 *                                         be bind on the localhost.
 	 * @param network                          that shared between containers.
 	 *
 	 * @return the arguments necessaries to start the profile manager.
 	 */
 	static String[] createProfileManagerContainersToStartWith(int port, int taskManagerApiPort,
-			int interactionProtocolEngineApiPort, Network network) {
+			int interactionProtocolEngineApiPort, int serviceApiPort, Network network) {
 
 		final GenericContainer<?> persistenceContainer = Containers.createMongoContainerFor(WENET_PROFILE_MANAGER_DB_NAME,
 				network);
@@ -280,9 +282,8 @@ public interface Containers {
 		return new String[] { "-papi.port=" + port, "-ppersistence.host=localhost",
 				"-ppersistence.port=" + persistenceContainer.getMappedPort(EXPORT_MONGODB_PORT),
 				"-pwenetComponents.interactionProtocolEngine=\"http://localhost:" + interactionProtocolEngineApiPort + "\"",
-				"-pwenetComponents.taskManager=\"http://localhost:" + taskManagerApiPort + "\""
-
-		};
+				"-pwenetComponents.taskManager=\"http://localhost:" + taskManagerApiPort + "\"",
+				"-pwenetComponents.service=\"http://localhost:" + serviceApiPort + "\"" };
 	}
 
 	/**
