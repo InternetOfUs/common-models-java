@@ -42,7 +42,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.tinylog.Level;
 import org.tinylog.Logger;
-import org.tinylog.Supplier;
 import org.tinylog.jul.JulTinylogBridge;
 import org.tinylog.provider.InternalLogger;
 
@@ -288,7 +287,7 @@ public abstract class AbstractMain {
 		this.startLoggingSystems();
 		try {
 
-			Logger.debug("Start Main with: {}", (Supplier<String>) () -> Arrays.toString(args));
+			Logger.debug("Start Main with: {}", () -> Arrays.toString(args));
 			final CommandLineParser parser = new DefaultParser();
 			final Options options = this.createOptions();
 			final CommandLine cmd = parser.parse(options, args);

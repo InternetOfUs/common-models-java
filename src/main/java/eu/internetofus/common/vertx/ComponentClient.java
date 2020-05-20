@@ -28,7 +28,6 @@ package eu.internetofus.common.vertx;
 
 import java.util.UUID;
 import java.util.function.BiConsumer;
-import java.util.function.Supplier;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Response.Status;
@@ -154,7 +153,7 @@ public class ComponentClient {
 			if (send.failed()) {
 
 				final Throwable cause = send.cause();
-				Logger.debug(cause, "FAILED {} {} to {}", action, content, url);
+				Logger.trace(cause, "FAILED {} {} to {}", action, content, url);
 				resultHandler.handle(Future.failedFuture(cause));
 
 			} else {
@@ -168,15 +167,15 @@ public class ComponentClient {
 					final T result = Model.fromResponse(response, type);
 					if (result == null) {
 
-						Logger.debug("FAILED {} {} to {}, because the body {} is not of the type {}.", action, url, result,
-								(Supplier<String>) () -> response.bodyAsString(), type);
+						Logger.trace("FAILED {} {} to {}, because the body {} is not of the type {}.", () -> action, () -> url,
+								() -> result, () -> response.bodyAsString(), () -> type);
 						resultHandler.handle(Future.failedFuture(
 								new ErrorException("decode_content_error", "The response content is not of the expected type.")));
 
 					} else {
 
-						Logger.debug("FAILED {} {} to {}, because {} ({}).", action, content, url,
-								(Supplier<String>) () -> response.bodyAsString(), code);
+						Logger.trace("FAILED {} {} to {}, because {} ({}).", () -> action, () -> content, () -> url,
+								() -> response.bodyAsString(), () -> code);
 						this.notifyErrorTo(resultHandler, response);
 
 					}
@@ -208,7 +207,7 @@ public class ComponentClient {
 		if (action.failed()) {
 
 			final Throwable cause = action.cause();
-			Logger.debug(cause, "[{}] FAILED", actionId);
+			Logger.trace(cause, "[{}] FAILED", actionId);
 			resultHandler.handle(Future.failedFuture(cause));
 
 		} else {
@@ -221,7 +220,7 @@ public class ComponentClient {
 
 			} else {
 
-				Logger.debug("[{}] FAILED ({}) {}", actionId, code, (Supplier<String>) () -> response.bodyAsString());
+				Logger.trace("[{}] FAILED ({}) {}", () -> actionId, () -> code, () -> response.bodyAsString());
 				this.notifyErrorTo(resultHandler, response);
 
 			}
@@ -246,20 +245,19 @@ public class ComponentClient {
 				final JsonArray array = response.bodyAsJsonArray();
 				if (array == null) {
 
-					Logger.debug("[{}] FAILED {} is not a JSON array", actionId,
-							(Supplier<String>) () -> response.bodyAsString());
+					Logger.trace("[{}] FAILED {} is not a JSON array", () -> actionId, () -> response.bodyAsString());
 					handler.handle(Future.failedFuture("The response is not a JsonArray"));
 
 				} else {
 
-					Logger.debug("[{}] SUCCESS with {}", actionId, array);
+					Logger.trace("[{}] SUCCESS with {}", actionId, array);
 					handler.handle(Future.succeededFuture(array));
 
 				}
 
 			} catch (final Throwable cause) {
 
-				Logger.debug("[{}] FAILED {} is not a JSON array", actionId, (Supplier<String>) () -> response.bodyAsString());
+				Logger.trace("[{}] FAILED {} is not a JSON array", () -> actionId, () -> response.bodyAsString());
 				handler.handle(Future.failedFuture(cause));
 
 			}
@@ -284,20 +282,19 @@ public class ComponentClient {
 				final JsonObject object = response.bodyAsJsonObject();
 				if (object == null) {
 
-					Logger.debug("[{}] FAILED {} is not a JSON object", actionId,
-							(Supplier<String>) () -> response.bodyAsString());
+					Logger.trace("[{}] FAILED {} is not a JSON object", () -> actionId, () -> response.bodyAsString());
 					handler.handle(Future.failedFuture("The response is not a JsonObject"));
 
 				} else {
 
-					Logger.debug("[{}] SUCCESS with {}", actionId, object);
+					Logger.trace("[{}] SUCCESS with {}", actionId, object);
 					handler.handle(Future.succeededFuture(object));
 
 				}
 
 			} catch (final Throwable cause) {
 
-				Logger.debug("[{}] FAILED {} is not a JSON object", actionId, (Supplier<String>) () -> response.bodyAsString());
+				Logger.trace("[{}] FAILED {} is not a JSON object", () -> actionId, () -> response.bodyAsString());
 				handler.handle(Future.failedFuture(cause));
 
 			}
@@ -324,12 +321,12 @@ public class ComponentClient {
 			final T model = Model.fromResponse(response, type);
 			if (model == null) {
 
-				Logger.debug("[{}] FAILED {} is not a {}", actionId, (Supplier<String>) () -> response.bodyAsString(), type);
+				Logger.trace("[{}] FAILED {} is not a {}", () -> actionId, () -> response.bodyAsString(), () -> type);
 				handler.handle(Future.failedFuture("The response is not a " + type));
 
 			} else {
 
-				Logger.debug("[{}] SUCCESS with {}", actionId, model);
+				Logger.trace("[{}] SUCCESS with {}", actionId, model);
 				handler.handle(Future.succeededFuture(model));
 
 			}
@@ -351,12 +348,12 @@ public class ComponentClient {
 
 			if (response.statusCode() != Status.NO_CONTENT.getStatusCode()) {
 
-				Logger.debug("[{}] FAILED response contains {}", actionId, (Supplier<String>) () -> response.bodyAsString());
+				Logger.trace("[{}] FAILED response contains {}", () -> actionId, () -> response.bodyAsString());
 				handler.handle(Future.failedFuture("The response has content"));
 
 			} else {
 
-				Logger.debug("[{}] SUCCESS without content", actionId);
+				Logger.trace("[{}] SUCCESS without content", actionId);
 				handler.handle(Future.succeededFuture());
 			}
 
@@ -378,7 +375,7 @@ public class ComponentClient {
 
 		final String url = this.createAbsoluteUrlWith(paths);
 		final String actionId = UUID.randomUUID().toString();
-		Logger.debug("[{}] POST {} to {}", actionId, content, url);
+		Logger.trace("[{}] POST {} to {}", actionId, content, url);
 		final JsonObject body = content.toJsonObject();
 		@SuppressWarnings("unchecked")
 		final Class<T> type = (Class<T>) content.getClass();
@@ -398,7 +395,7 @@ public class ComponentClient {
 
 		final String url = this.createAbsoluteUrlWith(paths);
 		final String actionId = UUID.randomUUID().toString();
-		Logger.debug("[{}] POST {} to {}", actionId, content, url);
+		Logger.trace("[{}] POST {} to {}", actionId, content, url);
 		this.client.postAbs(url).sendJson(content,
 				response -> this.successing(response, actionId, postHandler, this.jsonArrayConsumer(actionId)));
 
@@ -415,7 +412,7 @@ public class ComponentClient {
 
 		final String url = this.createAbsoluteUrlWith(paths);
 		final String actionId = UUID.randomUUID().toString();
-		Logger.debug("[{}] POST {} to {}", actionId, content, url);
+		Logger.trace("[{}] POST {} to {}", actionId, content, url);
 		this.client.postAbs(url).sendJson(content,
 				response -> this.successing(response, actionId, postHandler, this.jsonObjectConsumer(actionId)));
 
@@ -435,7 +432,7 @@ public class ComponentClient {
 
 		final String url = this.createAbsoluteUrlWith(paths);
 		final String actionId = UUID.randomUUID().toString();
-		Logger.debug("[{}] PUT {} to {}", actionId, content, url);
+		Logger.trace("[{}] PUT {} to {}", actionId, content, url);
 		final JsonObject body = content.toJsonObject();
 		@SuppressWarnings("unchecked")
 		final Class<T> type = (Class<T>) content.getClass();
@@ -454,7 +451,7 @@ public class ComponentClient {
 
 		final String url = this.createAbsoluteUrlWith(paths);
 		final String actionId = UUID.randomUUID().toString();
-		Logger.debug("[{}] PUT {} to {}", actionId, content, url);
+		Logger.trace("[{}] PUT {} to {}", actionId, content, url);
 		this.client.putAbs(url).sendJson(content,
 				response -> this.successing(response, actionId, putHandler, this.jsonArrayConsumer(actionId)));
 
@@ -471,7 +468,7 @@ public class ComponentClient {
 
 		final String url = this.createAbsoluteUrlWith(paths);
 		final String actionId = UUID.randomUUID().toString();
-		Logger.debug("[{}] PUT {} to {}", actionId, content, url);
+		Logger.trace("[{}] PUT {} to {}", actionId, content, url);
 		this.client.putAbs(url).sendJson(content,
 				response -> this.successing(response, actionId, putHandler, this.jsonObjectConsumer(actionId)));
 
@@ -491,7 +488,7 @@ public class ComponentClient {
 
 		final String url = this.createAbsoluteUrlWith(paths);
 		final String actionId = UUID.randomUUID().toString();
-		Logger.debug("[{}] GET {}", actionId, url);
+		Logger.trace("[{}] GET {}", actionId, url);
 		this.client.getAbs(url)
 				.send(response -> this.successing(response, actionId, getHandler, this.modelConsumer(type, actionId)));
 
@@ -507,7 +504,7 @@ public class ComponentClient {
 
 		final String url = this.createAbsoluteUrlWith(paths);
 		final String actionId = UUID.randomUUID().toString();
-		Logger.debug("[{}] GET {}", actionId, url);
+		Logger.trace("[{}] GET {}", actionId, url);
 		this.client.getAbs(url)
 				.send(response -> this.successing(response, actionId, getHandler, this.jsonArrayConsumer(actionId)));
 
@@ -523,7 +520,7 @@ public class ComponentClient {
 
 		final String url = this.createAbsoluteUrlWith(paths);
 		final String actionId = UUID.randomUUID().toString();
-		Logger.debug("[{}] GET {}", actionId, url);
+		Logger.trace("[{}] GET {}", actionId, url);
 		this.client.getAbs(url)
 				.send(response -> this.successing(response, actionId, getHandler, this.jsonObjectConsumer(actionId)));
 
@@ -539,7 +536,7 @@ public class ComponentClient {
 
 		final String url = this.createAbsoluteUrlWith(paths);
 		final String actionId = UUID.randomUUID().toString();
-		Logger.debug("[{}] DELETE {}", actionId, url);
+		Logger.trace("[{}] DELETE {}", actionId, url);
 		this.client.deleteAbs(url)
 				.send(response -> this.successing(response, actionId, deleteHandler, this.noContentConsumer(actionId)));
 
@@ -577,7 +574,7 @@ public class ComponentClient {
 					final T model = Model.fromJsonObject(result, type);
 					if (model == null) {
 
-						Logger.debug(handler.cause(), "Unexpected content {} is not of the type {}", result, type);
+						Logger.trace(handler.cause(), "Unexpected content {} is not of the type {}", result, type);
 						retrieveHandler.handle(Future.failedFuture(result + " is not of the type '" + type + "'."));
 
 					} else {
