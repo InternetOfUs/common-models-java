@@ -59,7 +59,7 @@ public interface OperationRequests {
 	 *
 	 * @see HttpHeaders#ACCEPT_LANGUAGE
 	 */
-	static String acceptedLanguageIn(OperationRequest request, String defaultLanguage, String... poosibleLanguages) {
+	static String acceptedLanguageIn(final OperationRequest request, final String defaultLanguage, final String... poosibleLanguages) {
 
 		try {
 
@@ -89,7 +89,7 @@ public interface OperationRequests {
 	 *
 	 * @return the query parameters of the context.
 	 */
-	static JsonObject getQueryParamters(OperationRequest context) {
+	static JsonObject getQueryParamters(final OperationRequest context) {
 
 		return context.getParams().getJsonObject("query", new JsonObject());
 
@@ -104,7 +104,7 @@ public interface OperationRequests {
 	 * @return the string list defined on the array. If the array is {@code null} or
 	 *         empty it return a{@code null} value.
 	 */
-	static List<String> toListString(JsonArray array) {
+	static List<String> toListString(final JsonArray array) {
 
 		if (array == null) {
 

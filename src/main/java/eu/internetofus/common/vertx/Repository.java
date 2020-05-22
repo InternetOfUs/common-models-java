@@ -26,10 +26,12 @@
 
 package eu.internetofus.common.vertx;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import eu.internetofus.common.components.ValidationErrorException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -55,7 +57,7 @@ public class Repository {
 	 *
 	 * @param pool to create the connections.
 	 */
-	public Repository(MongoClient pool) {
+	public Repository(final MongoClient pool) {
 
 		this.pool = pool;
 
@@ -72,8 +74,9 @@ public class Repository {
 	 *                       to not modify the components.
 	 * @param searchHandler  handler to manage the result action.
 	 */
-	protected void searchPageObject(String collectionName, JsonObject query, FindOptions options, String resultKey,
-			Consumer<JsonObject> map, Handler<AsyncResult<JsonObject>> searchHandler) {
+	protected void searchPageObject(final String collectionName, final JsonObject query, final FindOptions options,
+			final String resultKey, final Consumer<JsonObject> map,
+			final Handler<AsyncResult<JsonObject>> searchHandler) {
 
 		this.pool.count(collectionName, query, count -> {
 
@@ -124,7 +127,8 @@ public class Repository {
 	 * @param query          to to match the document to delete.
 	 * @param deleteHandler  handler to manage the delete action.
 	 */
-	protected void deleteOneDocument(String collectionName, JsonObject query, Handler<AsyncResult<Void>> deleteHandler) {
+	protected void deleteOneDocument(final String collectionName, final JsonObject query,
+			final Handler<AsyncResult<Void>> deleteHandler) {
 
 		this.pool.removeDocument(collectionName, query, remove -> {
 
@@ -152,8 +156,8 @@ public class Repository {
 	 * @param updateModel    the new values of the model.
 	 * @param updateHandler  handler to manage the update action.
 	 */
-	protected void updateOneDocument(String collectionName, JsonObject query, JsonObject updateModel,
-			Handler<AsyncResult<Void>> updateHandler) {
+	protected void updateOneDocument(final String collectionName, final JsonObject query, final JsonObject updateModel,
+			final Handler<AsyncResult<Void>> updateHandler) {
 
 		final JsonObject updateQuery = new JsonObject().put("$set", updateModel);
 		final UpdateOptions options = new UpdateOptions().setMulti(false);
@@ -185,8 +189,8 @@ public class Repository {
 	 *
 	 * @param storeHandler   handler to manage the store action.
 	 */
-	protected void storeOneDocument(String collectionName, JsonObject model, Function<JsonObject, JsonObject> map,
-			Handler<AsyncResult<JsonObject>> storeHandler) {
+	protected void storeOneDocument(final String collectionName, final JsonObject model,
+			final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> storeHandler) {
 
 		this.pool.insert(collectionName, model, store -> {
 
@@ -228,8 +232,8 @@ public class Repository {
 	 *                       {@code null} no modification is applied.
 	 * @param searchHandler  handler to manage the find action.
 	 */
-	protected void findOneDocument(String collectionName, JsonObject query, JsonObject fields,
-			Function<JsonObject, JsonObject> map, Handler<AsyncResult<JsonObject>> searchHandler) {
+	protected void findOneDocument(final String collectionName, final JsonObject query, final JsonObject fields,
+			final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
 
 		this.pool.findOne(collectionName, query, fields, search -> {
 
@@ -257,4 +261,91 @@ public class Repository {
 
 	}
 
+	/**
+	 * Convert a set of values to an object that represents the order to the models
+	 * to return.
+	 *
+	 * @param values     to extract how the query has to be sorted.
+	 * @param codePrefix prefix to append to the error code.
+	 *
+	 * @return the object that can be used to sort a query.
+	 *
+	 * @throws ValidationErrorException If the values are not right.
+	 */
+	public static JsonObject toSort(final Iterable<String> values, final String codePrefix)
+			throws ValidationErrorException {
+
+		if (values == null) {
+
+			return null;
+
+		} else {
+
+			final Iterator<String> iter = values.iterator();
+			if (!iter.hasNext()) {
+
+				return null;
+
+			} else {
+
+				JsonObject sort = new JsonObject();
+				for (int i = 0; iter.hasNext(); i++) {
+
+					String value = iter.next();
+					if (value == null) {
+
+						throw new ValidationErrorException(codePrefix + "[" + i + "]",
+								"An order item can not be 'null'.");
+
+					} else {
+
+						value = value.trim();
+						final int index = value.indexOf(':');
+						if (index < 0) {
+
+							throw new ValidationErrorException(codePrefix + "[" + i + "]",
+									"Can not found the field separator in '" + value + "'.");
+
+						} else {
+
+							final String key = value.substring(0, index).trim();
+							if (key.isEmpty()) {
+
+								throw new ValidationErrorException(codePrefix + "[" + i + "]",
+										"You must to define a field in '" + value + "'.");
+
+							} else if (sort.containsKey(key)) {
+
+								throw new ValidationErrorException(codePrefix + "[" + i + "]",
+										"The field '" + key + "' is already defined.");
+
+							} else {
+
+								try {
+
+									final int type = Integer.parseInt(value.substring(index + 1).trim());
+									if (type != -1 && type != 1) {
+
+										throw new ValidationErrorException(codePrefix + "[" + i + "]",
+												"The '" + type + "' has to be 1 or -1.");
+
+									} else {
+
+										sort = sort.put(key, type);
+									}
+
+								} catch (final NumberFormatException error) {
+
+									throw new ValidationErrorException(codePrefix + "[" + i + "]", error);
+
+								}
+							}
+						}
+					}
+				}
+
+				return sort;
+			}
+		}
+	}
 }

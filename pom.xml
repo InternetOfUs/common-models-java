@@ -45,11 +45,9 @@
 		<maven-surefire-report-plugin-version>3.0.0-M3</maven-surefire-report-plugin-version>
 		<org.jacoco-version>0.8.5</org.jacoco-version>
 		<maven-site-plugin-version>3.8.2</maven-site-plugin-version>
-		<exec-maven-plugin-version>1.6.0</exec-maven-plugin-version>
 		<build-helper-maven-plugin-version>3.0.0</build-helper-maven-plugin-version>
 		<!-- Library versions -->
-		<io.vertx-version>3.9.0</io.vertx-version>
-		<main.verticle>eu.internetofus.wenet_profile_manager.MainVerticle</main.verticle>
+		<io.vertx-version>3.9.1</io.vertx-version>
 		<io.swagger-version>2.1.1</io.swagger-version>
 		<commons-validator-version>1.6</commons-validator-version>
 		<com.googlecode.libphonenumber-version>8.11.3</com.googlecode.libphonenumber-version>
@@ -354,18 +352,6 @@
 						<include>**/*Test.java</include>
 						<include>**/*IT.java</include>
 					</includes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>${exec-maven-plugin-version}</version>
-				<configuration>
-					<mainClass>io.vertx.core.Launcher</mainClass>
-					<arguments>
-						<argument>run</argument>
-						<argument>${main.verticle}</argument>
-					</arguments>
 				</configuration>
 			</plugin>
 			<plugin>
