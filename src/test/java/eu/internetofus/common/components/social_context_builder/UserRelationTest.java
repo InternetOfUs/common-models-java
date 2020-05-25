@@ -24,40 +24,31 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
+package eu.internetofus.common.components.social_context_builder;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import eu.internetofus.common.Containers;
-import eu.internetofus.common.vertx.WeNetModuleContext;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
+import eu.internetofus.common.components.ModelTestCase;
 
 /**
- * Test the {@link ServiceApiSimulatorServiceImpl}
- *
- * @see ServiceApiSimulatorServiceImpl
+ * Test the {@link UserRelation}.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
-public class ServiceApiSimulatorServiceImplTest extends ServiceApiSimulatorServiceTestCase {
+public class UserRelationTest extends ModelTestCase<UserRelation> {
 
   /**
-   * Create the context to use.
-   *
-   * @param vertx that contains the event bus to use.
+   * {@inheridDoc}
    */
-  @BeforeEach
-  public void startServiceApiSimulator(final Vertx vertx) {
+  @Override
+  public UserRelation createModelExample(int index) {
 
-    final int serviceApiPort = Containers.nextFreePort();
-    Containers.createAndStartServiceApiSimulator(serviceApiPort);
-    final JsonObject configuration = new JsonObject().put("wenetComponents", new JsonObject().put("service", "http://localhost:" + serviceApiPort));
-    final WeNetModuleContext context = new WeNetModuleContext(vertx, configuration);
-    ServiceApiSimulatorService.register(context);
+    UserRelation model = new UserRelation();
+    model.UserID1 = "userId2_" + index;
+    model.UserID2 = "userId1_" + index;
+    model.RelationType = index;
+    model.Weight = 1.0 / Math.max(0.0, index);
+    model.SourceID = "SourceId_" + index;
+    return model;
+
   }
 
 }

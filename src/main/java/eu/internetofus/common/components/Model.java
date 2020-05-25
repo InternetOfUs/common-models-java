@@ -27,6 +27,8 @@
 package eu.internetofus.common.components;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -40,6 +42,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 
@@ -51,220 +54,287 @@ import io.vertx.ext.web.client.HttpResponse;
 @JsonInclude(Include.NON_EMPTY)
 public class Model {
 
-	/**
-	 * Reflections equals.
-	 *
-	 * {@inheritDoc}
-	 *
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 * @see EqualsBuilder#reflectionEquals(Object, Object,String...)
-	 */
-	@Override
-	public boolean equals(Object obj) {
+  /**
+   * Reflections equals.
+   *
+   * {@inheritDoc}
+   *
+   * @see java.lang.Object#equals(java.lang.Object)
+   * @see EqualsBuilder#reflectionEquals(Object, Object,String...)
+   */
+  @Override
+  public boolean equals(final Object obj) {
 
-		return EqualsBuilder.reflectionEquals(this, obj);
+    return EqualsBuilder.reflectionEquals(this, obj);
 
-	}
+  }
 
-	/**
-	 * Reflection hash code.
-	 *
-	 * {@inheritDoc}
-	 *
-	 * @see java.lang.Object#hashCode()
-	 * @see HashCodeBuilder#reflectionHashCode(Object, String...)
-	 */
-	@Override
-	public int hashCode() {
+  /**
+   * Reflection hash code.
+   *
+   * {@inheritDoc}
+   *
+   * @see java.lang.Object#hashCode()
+   * @see HashCodeBuilder#reflectionHashCode(Object, String...)
+   */
+  @Override
+  public int hashCode() {
 
-		return HashCodeBuilder.reflectionHashCode(this);
+    return HashCodeBuilder.reflectionHashCode(this);
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see java.lang.Object#toString()
-	 * @see ToStringBuilder#reflectionToString(Object)
-	 */
-	@Override
-	public String toString() {
+  /**
+   * {@inheritDoc}
+   *
+   * @see java.lang.Object#toString()
+   * @see ToStringBuilder#reflectionToString(Object)
+   */
+  @Override
+  public String toString() {
 
-		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
 
-	}
+  }
 
-	/**
-	 * Obtain the model form the string representation.
-	 *
-	 * @param value to obtain the model.
-	 * @param type  of model to obtain
-	 * @param <T>   to obtain
-	 *
-	 * @return the model coded on JSON or {@code null} if can not obtain it.
-	 */
-	public static <T extends Model> T fromString(String value, Class<T> type) {
+  /**
+   * Obtain the model form the string representation.
+   *
+   * @param value to obtain the model.
+   * @param type  of model to obtain
+   * @param <T>   to obtain
+   *
+   * @return the model coded on JSON or {@code null} if can not obtain it.
+   */
+  public static <T extends Model> T fromString(final String value, final Class<T> type) {
 
-		try {
+    try {
 
-			return Json.decodeValue(value, type);
+      return Json.decodeValue(value, type);
 
-		} catch (final Throwable throwable) {
+    } catch (final Throwable throwable) {
 
-			Logger.trace(throwable);
-			return null;
-		}
-	}
+      Logger.trace(throwable);
+      return null;
+    }
+  }
 
-	/**
-	 * Obtain the model associated to a {@link JsonObject}.
-	 *
-	 * @param value object to obtain the model.
-	 * @param type  of model to obtain
-	 * @param <T>   to obtain
-	 *
-	 * @return the model defined on the object or {@code null} if can not obtain it.
-	 */
-	public static <T extends Model> T fromJsonObject(JsonObject value, Class<T> type) {
+  /**
+   * Obtain the model associated to a {@link JsonObject}.
+   *
+   * @param value object to obtain the model.
+   * @param type  of model to obtain
+   * @param <T>   to obtain
+   *
+   * @return the model defined on the object or {@code null} if can not obtain it.
+   */
+  public static <T extends Model> T fromJsonObject(final JsonObject value, final Class<T> type) {
 
-		try {
+    try {
 
-			return Json.decodeValue(value.toBuffer(), type);
+      return Json.decodeValue(value.toBuffer(), type);
 
-		} catch (final Throwable throwable) {
+    } catch (final Throwable throwable) {
 
-			Logger.trace(throwable);
-			return null;
-		}
-	}
+      Logger.trace(throwable);
+      return null;
+    }
+  }
 
-	/**
-	 * Convert a model to JSON string.
-	 *
-	 * @return the string representation of this model in JSON or {@code null} if it
-	 *         can not convert it.
-	 */
-	public String toJsonString() {
+  /**
+   * Convert a model to JSON string.
+   *
+   * @return the string representation of this model in JSON or {@code null} if it can not convert it.
+   */
+  public String toJsonString() {
 
-		try {
+    try {
 
-			return Json.encode(this);
+      return Json.encode(this);
 
-		} catch (final Throwable throwable) {
+    } catch (final Throwable throwable) {
 
-			Logger.trace(throwable);
-			return null;
-		}
+      Logger.trace(throwable);
+      return null;
+    }
 
-	}
+  }
 
-	/**
-	 * Convert a model to a {@link JsonObject}.
-	 *
-	 * @return the object of the model or {@code null} if can not convert it.
-	 */
-	public JsonObject toJsonObject() {
+  /**
+   * Convert a model to a {@link JsonObject}.
+   *
+   * @return the object of the model or {@code null} if can not convert it.
+   */
+  public JsonObject toJsonObject() {
 
-		try {
+    try {
 
-			return new JsonObject(this.toBuffer());
+      return new JsonObject(this.toBuffer());
 
-		} catch (final Throwable throwable) {
+    } catch (final Throwable throwable) {
 
-			Logger.trace(throwable);
-			return null;
-		}
+      Logger.trace(throwable);
+      return null;
+    }
 
-	}
+  }
 
-	/**
-	 * Convert this model to a buffer.
-	 *
-	 * @return the buffer that contains the JSON encoding of this model or
-	 *         {@code null} if can not convert it.
-	 */
-	public Buffer toBuffer() {
+  /**
+   * Convert this model to a buffer.
+   *
+   * @return the buffer that contains the JSON encoding of this model or {@code null} if can not convert it.
+   */
+  public Buffer toBuffer() {
 
-		try {
+    try {
 
-			return Json.encodeToBuffer(this);
+      return Json.encodeToBuffer(this);
 
-		} catch (final Throwable throwable) {
+    } catch (final Throwable throwable) {
 
-			Logger.trace(throwable);
-			return null;
-		}
-	}
+      Logger.trace(throwable);
+      return null;
+    }
+  }
 
-	/**
-	 * Obtain the model associated to a {@link Buffer}.
-	 *
-	 * @param buffer to obtain the model.
-	 * @param type   of model to obtain
-	 * @param <T>    to obtain
-	 *
-	 * @return the model defined on the buffer or {@code null} if can not obtain it.
-	 */
-	public static <T extends Model> T fromBuffer(Buffer buffer, Class<T> type) {
+  /**
+   * Obtain the model associated to a {@link Buffer}.
+   *
+   * @param buffer to obtain the model.
+   * @param type   of model to obtain
+   * @param <T>    to obtain
+   *
+   * @return the model defined on the buffer or {@code null} if can not obtain it.
+   */
+  public static <T extends Model> T fromBuffer(final Buffer buffer, final Class<T> type) {
 
-		try {
+    try {
 
-			return Json.decodeValue(buffer, type);
+      return Json.decodeValue(buffer, type);
 
-		} catch (final Throwable throwable) {
+    } catch (final Throwable throwable) {
 
-			Logger.trace(throwable);
-			return null;
-		}
-	}
+      Logger.trace(throwable);
+      return null;
+    }
+  }
 
-	/**
-	 * Obtain the model associated to a resource.
-	 *
-	 * @param resourceName where the model to obtain is defined In JSON.
-	 * @param type         of model to obtain
-	 * @param <T>          model to obtain
-	 *
-	 * @return the model defined on the resource or {@code null} if can not obtain
-	 *         it.
-	 */
-	public static <T extends Model> T loadFromResource(String resourceName, Class<T> type) {
+  /**
+   * Obtain the model associated to a resource.
+   *
+   * @param resourceName where the model to obtain is defined In JSON.
+   * @param type         of model to obtain
+   * @param <T>          model to obtain
+   *
+   * @return the model defined on the resource or {@code null} if can not obtain it.
+   */
+  public static <T extends Model> T loadFromResource(final String resourceName, final Class<T> type) {
 
-		try {
+    try {
 
-			final InputStream stream = type.getClassLoader().getResourceAsStream(resourceName);
-			final String encoded = IOUtils.toString(stream);
-			return fromString(encoded, type);
+      final InputStream stream = type.getClassLoader().getResourceAsStream(resourceName);
+      final String encoded = IOUtils.toString(stream);
+      return fromString(encoded, type);
 
-		} catch (final Throwable throwable) {
+    } catch (final Throwable throwable) {
 
-			Logger.trace(throwable);
-			return null;
-		}
+      Logger.trace(throwable);
+      return null;
+    }
 
-	}
+  }
 
-	/**
-	 * Obtain the model associated to a {@link HttpResponse}.
-	 *
-	 * @param response to obtain the model.
-	 * @param type     of model to obtain
-	 * @param <T>      to obtain
-	 *
-	 * @return the model defined on the response or {@code null} if can not obtain
-	 *         it.
-	 */
-	public static <T extends Model> T fromResponse(HttpResponse<Buffer> response, Class<T> type) {
+  /**
+   * Obtain the model associated to a {@link HttpResponse}.
+   *
+   * @param response to obtain the model.
+   * @param type     of model to obtain
+   * @param <T>      to obtain
+   *
+   * @return the model defined on the response or {@code null} if can not obtain it.
+   */
+  public static <T extends Model> T fromResponse(final HttpResponse<Buffer> response, final Class<T> type) {
 
-		try {
+    try {
 
-			return fromBuffer(response.bodyAsBuffer(), type);
+      return fromBuffer(response.bodyAsBuffer(), type);
 
-		} catch (final Throwable throwable) {
+    } catch (final Throwable throwable) {
 
-			Logger.trace(throwable);
-			return null;
-		}
-	}
+      Logger.trace(throwable);
+      return null;
+    }
+  }
+
+  /**
+   * Return the array represented by a list of models.
+   *
+   * @param models to encode to an array.
+   *
+   * @param <T>    to obtain
+   *
+   * @param the    array that represents the models.
+   */
+  public static <T extends Model> JsonArray toJsonArray(final Iterable<T> models) {
+
+    if (models == null) {
+
+      return null;
+
+    } else {
+
+      final JsonArray array = new JsonArray();
+      for (final T model : models) {
+
+        final JsonObject object = model.toJsonObject();
+        array.add(object);
+
+      }
+      return array;
+    }
+
+  }
+
+  /**
+   * Return the model defined on the array.
+   *
+   * @param array to get the models.
+   * @param type  of model to obtain
+   * @param <T>   to obtain
+   *
+   * @return the models of the array, or {@code null} if it can not obtain all the models.
+   */
+  public static <T extends Model> List<T> fromJsonArray(final JsonArray array, final Class<T> type) {
+
+    if (array == null) {
+
+      return null;
+
+    } else {
+
+      final List<T> models = new ArrayList<>();
+      for (int i = 0; i < array.size(); i++) {
+
+        try {
+
+          final JsonObject value = array.getJsonObject(i);
+          final T model = fromJsonObject(value, type);
+          if (model == null) {
+
+            return null;
+          }
+          models.add(model);
+
+        } catch (final Throwable throwable) {
+
+          Logger.trace(throwable);
+          return null;
+        }
+
+      }
+      return models;
+    }
+
+  }
 
 }

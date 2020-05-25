@@ -24,40 +24,9 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import eu.internetofus.common.Containers;
-import eu.internetofus.common.vertx.WeNetModuleContext;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
-
 /**
- * Test the {@link ServiceApiSimulatorServiceImpl}
- *
- * @see ServiceApiSimulatorServiceImpl
+ * The commons elements to interact with the social context builder component.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
-public class ServiceApiSimulatorServiceImplTest extends ServiceApiSimulatorServiceTestCase {
-
-  /**
-   * Create the context to use.
-   *
-   * @param vertx that contains the event bus to use.
-   */
-  @BeforeEach
-  public void startServiceApiSimulator(final Vertx vertx) {
-
-    final int serviceApiPort = Containers.nextFreePort();
-    Containers.createAndStartServiceApiSimulator(serviceApiPort);
-    final JsonObject configuration = new JsonObject().put("wenetComponents", new JsonObject().put("service", "http://localhost:" + serviceApiPort));
-    final WeNetModuleContext context = new WeNetModuleContext(vertx, configuration);
-    ServiceApiSimulatorService.register(context);
-  }
-
-}
+package eu.internetofus.common.components.social_context_builder;

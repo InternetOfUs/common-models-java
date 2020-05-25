@@ -28,8 +28,12 @@ package eu.internetofus.common.components;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -41,74 +45,154 @@ import io.vertx.core.json.JsonObject;
  */
 public class ModelTest {
 
-	/**
-	 * Check not obtain a model form a {@code null} string.
-	 */
-	@Test
-	public void shouldNotObtainModelFromNullString() {
+  /**
+   * Check not obtain a model form a {@code null} string.
+   */
+  @Test
+  public void shouldNotObtainModelFromNullString() {
 
-		assertThat(Model.fromString(null, Model.class)).isNull();
+    assertThat(Model.fromString(null, Model.class)).isNull();
 
-	}
+  }
 
-	/**
-	 * Check not convert to JSON the {@link UnconvertedToJsonModel}.
-	 */
-	@Test
-	public void shouldNotConvertToJsonString() {
+  /**
+   * Check not convert to JSON the {@link UnconvertedToJsonModel}.
+   */
+  @Test
+  public void shouldNotConvertToJsonString() {
 
-		assertThat(new UnconvertedToJsonModel().toJsonString()).isNull();
+    assertThat(new UnconvertedToJsonModel().toJsonString()).isNull();
 
-	}
+  }
 
-	/**
-	 * Check not convert to JSON object the {@link UnconvertedToJsonModel}.
-	 */
-	@Test
-	public void shouldNotConvertToJsonObject() {
+  /**
+   * Check not convert to JSON object the {@link UnconvertedToJsonModel}.
+   */
+  @Test
+  public void shouldNotConvertToJsonObject() {
 
-		assertThat(new UnconvertedToJsonModel().toJsonObject()).isNull();
+    assertThat(new UnconvertedToJsonModel().toJsonObject()).isNull();
 
-	}
+  }
 
-	/**
-	 * Check not obtain a model form a {@code null} {@link JsonObject}.
-	 */
-	@Test
-	public void shouldNotObtainModelFromNullJsonObject() {
+  /**
+   * Check not obtain a model form a {@code null} {@link JsonObject}.
+   */
+  @Test
+  public void shouldNotObtainModelFromNullJsonObject() {
 
-		assertThat(Model.fromJsonObject(null, Model.class)).isNull();
+    assertThat(Model.fromJsonObject(null, Model.class)).isNull();
 
-	}
+  }
 
-	/**
-	 * Check not convert to buffer the {@link UnconvertedToJsonModel}.
-	 */
-	@Test
-	public void shouldNotConvertToBuffer() {
+  /**
+   * Check not convert to buffer the {@link UnconvertedToJsonModel}.
+   */
+  @Test
+  public void shouldNotConvertToBuffer() {
 
-		assertThat(new UnconvertedToJsonModel().toBuffer()).isNull();
+    assertThat(new UnconvertedToJsonModel().toBuffer()).isNull();
 
-	}
+  }
 
-	/**
-	 * Check not obtain a model form a {@code null} string.
-	 */
-	@Test
-	public void shouldNotObtainModelFromNullBuffer() {
+  /**
+   * Check not obtain a model form a {@code null} string.
+   */
+  @Test
+  public void shouldNotObtainModelFromNullBuffer() {
 
-		assertThat(Model.fromBuffer(null, Model.class)).isNull();
+    assertThat(Model.fromBuffer(null, Model.class)).isNull();
 
-	}
+  }
 
-	/**
-	 * Check not obtain a model form a {@code null} resource.
-	 */
-	@Test
-	public void shouldNotLoadModelFromNullResource() {
+  /**
+   * Check not obtain a model form a {@code null} resource.
+   */
+  @Test
+  public void shouldNotLoadModelFromNullResource() {
 
-		assertThat(Model.loadFromResource(null, Model.class)).isNull();
+    assertThat(Model.loadFromResource(null, Model.class)).isNull();
 
-	}
+  }
+
+  /**
+   * Check that a {@code null} list can not be converted to an array.
+   */
+  @Test
+  public void shouldNullListNotConvertToArray() {
+
+    assertThat(Model.toJsonArray(null)).isNull();
+
+  }
+
+  /**
+   * Check that convert an empty list to an empty array.
+   */
+  @Test
+  public void shoulEmptyListConvertToEmptyArray() {
+
+    assertThat(Model.toJsonArray(new ArrayList<DummyModel>())).isEqualTo(new JsonArray());
+
+  }
+
+  /**
+   * Check that a {@code null} array return a null list.
+   */
+  @Test
+  public void shouldNullArrayNotConvertToList() {
+
+    assertThat(Model.fromJsonArray(null, DummyModel.class)).isNull();
+
+  }
+
+  /**
+   * Check that convert an empty list to an empty array.
+   */
+  @Test
+  public void shoulBadValueOnArrayNotConvertedToList() {
+
+    assertThat(Model.fromJsonArray(new JsonArray().add(1), DummyModel.class)).isNull();
+
+  }
+
+  /**
+   * Check that convert an empty list to an empty array.
+   */
+  @Test
+  public void shoulBadModelOnArrayNotConvertedToList() {
+
+    assertThat(Model.fromJsonArray(new JsonArray().add(new JsonObject().put("undefined", "value")), DummyModel.class)).isNull();
+
+  }
+
+  /**
+   * Check that convert an empty list to an empty array.
+   */
+  @Test
+  public void shoulEmptyArrayConvertedToEmptyList() {
+
+    assertThat(Model.fromJsonArray(new JsonArray(), DummyModel.class)).isEmpty();
+
+  }
+
+  /**
+   * Check that convert a list to models to array and vice verse.
+   */
+  @Test
+  public void shoulConvertFromToArrayBeEquals() {
+
+    final List<DummyModel> models = new ArrayList<>();
+    for (int i = 0; i < 10; i++) {
+
+      final DummyModel model = new DummyModelTest().createModelExample(i);
+      models.add(model);
+
+    }
+    final JsonArray array = Model.toJsonArray(models);
+    assertThat(array).isNotNull();
+    final List<DummyModel> result = Model.fromJsonArray(array, DummyModel.class);
+    assertThat(result).isNotNull().isEqualTo(models);
+
+  }
 
 }

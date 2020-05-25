@@ -24,40 +24,42 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
+package eu.internetofus.common.components.social_context_builder;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import eu.internetofus.common.Containers;
-import eu.internetofus.common.vertx.WeNetModuleContext;
-import io.vertx.core.Vertx;
+import eu.internetofus.common.vertx.ComponentClient;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
+import io.vertx.ext.web.client.WebClient;
 
 /**
- * Test the {@link ServiceApiSimulatorServiceImpl}
- *
- * @see ServiceApiSimulatorServiceImpl
+ * Implementation of the {@link WeNetSocialContextBuilderService}.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
-public class ServiceApiSimulatorServiceImplTest extends ServiceApiSimulatorServiceTestCase {
+public class WeNetSocialContextBuilderServiceImpl extends ComponentClient implements WeNetSocialContextBuilderService {
 
   /**
-   * Create the context to use.
+   * Create a new service to interact with the WeNet interaction protocol engine.
    *
-   * @param vertx that contains the event bus to use.
+   * @param client to interact with the other modules.
+   * @param conf   configuration.
    */
-  @BeforeEach
-  public void startServiceApiSimulator(final Vertx vertx) {
+  public WeNetSocialContextBuilderServiceImpl(WebClient client, JsonObject conf) {
 
-    final int serviceApiPort = Containers.nextFreePort();
-    Containers.createAndStartServiceApiSimulator(serviceApiPort);
-    final JsonObject configuration = new JsonObject().put("wenetComponents", new JsonObject().put("service", "http://localhost:" + serviceApiPort));
-    final WeNetModuleContext context = new WeNetModuleContext(vertx, configuration);
-    ServiceApiSimulatorService.register(context);
+    super(client, conf.getString("socialContextBuilder", "https://wenet.u-hopper.com/social_context_builder"));
+
+  }
+
+  /**
+   * {@inheridDoc}
+   */
+  @Override
+  public void retrieveJsonArraySocialRelations(String userId, Handler<AsyncResult<JsonArray>> retrieveHandler) {
+
+    this.getJsonArray(retrieveHandler, "/social/relations", userId);
+
   }
 
 }

@@ -24,40 +24,50 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
+package eu.internetofus.common.vertx;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockserver.integration.ClientAndServer;
+import org.mockserver.junit.jupiter.MockServerExtension;
 
-import eu.internetofus.common.Containers;
-import eu.internetofus.common.vertx.WeNetModuleContext;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.web.VertxWebClientExtension;
 
 /**
- * Test the {@link ServiceApiSimulatorServiceImpl}
+ * Generic test over the classes the {@link ComponentClient}.
  *
- * @see ServiceApiSimulatorServiceImpl
+ * @see ComponentClient
+ *
+ * @param <T> type of client to test.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
-public class ServiceApiSimulatorServiceImplTest extends ServiceApiSimulatorServiceTestCase {
+@ExtendWith({ VertxExtension.class, VertxWebClientExtension.class, MockServerExtension.class })
+public abstract class ComponentClientTestCase<T extends ComponentClient> {
 
   /**
-   * Create the context to use.
-   *
-   * @param vertx that contains the event bus to use.
+   * The mocked server.
    */
-  @BeforeEach
-  public void startServiceApiSimulator(final Vertx vertx) {
+  protected ClientAndServer mockedServer;
 
-    final int serviceApiPort = Containers.nextFreePort();
-    Containers.createAndStartServiceApiSimulator(serviceApiPort);
-    final JsonObject configuration = new JsonObject().put("wenetComponents", new JsonObject().put("service", "http://localhost:" + serviceApiPort));
-    final WeNetModuleContext context = new WeNetModuleContext(vertx, configuration);
-    ServiceApiSimulatorService.register(context);
+  /**
+   * Create a new test case.
+   *
+   * @param client to use.
+   */
+  public ComponentClientTestCase(final ClientAndServer client) {
+
+    this.mockedServer = client;
+
   }
+
+
+  /**
+   * Create client to test.
+   *
+   * @param client web client to use.
+   */
+  protected abstract T createClient(WebClient client);
 
 }

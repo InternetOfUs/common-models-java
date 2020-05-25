@@ -24,40 +24,47 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
+package eu.internetofus.common.components.social_context_builder;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import eu.internetofus.common.Containers;
-import eu.internetofus.common.vertx.WeNetModuleContext;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
+import eu.internetofus.common.components.Model;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Test the {@link ServiceApiSimulatorServiceImpl}
- *
- * @see ServiceApiSimulatorServiceImpl
+ * The calculated user relation by the social context builder.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
-public class ServiceApiSimulatorServiceImplTest extends ServiceApiSimulatorServiceTestCase {
+@Schema(hidden = true, name = "user_relation", description = " \n" + "A User to User relation.")
+public class UserRelation extends Model {
 
   /**
-   * Create the context to use.
-   *
-   * @param vertx that contains the event bus to use.
+   * The first user identifier.
    */
-  @BeforeEach
-  public void startServiceApiSimulator(final Vertx vertx) {
+  @Schema(description = "User ID 1 a unique identifier.", example = "bf274393-1e7b-4d40-a897-88cb96277edd")
+  public String UserID1;
 
-    final int serviceApiPort = Containers.nextFreePort();
-    Containers.createAndStartServiceApiSimulator(serviceApiPort);
-    final JsonObject configuration = new JsonObject().put("wenetComponents", new JsonObject().put("service", "http://localhost:" + serviceApiPort));
-    final WeNetModuleContext context = new WeNetModuleContext(vertx, configuration);
-    ServiceApiSimulatorService.register(context);
-  }
+  /**
+   * The second user identifier.
+   */
+  @Schema(description = "User ID 2 a unique identifier.", example = "bf274393-1e7b-4d40-a897-88cb96277edd")
+  public String UserID2;
+
+  /**
+   * The type of relation.
+   */
+  @Schema(description = "The relation type among the two users.", example = "contact")
+  public int RelationType;
+
+  /**
+   * The weight of the relation.
+   */
+  @Schema(description = "A number from 0 to 1 that indicates the strength of the relation. 0 indicates a deleted/non-exisiting relation.", example = "0.6")
+  public double Weight;
+
+  /**
+   * The application where the relation is obtained.
+   */
+  @Schema(description = "An AppID that indicates where the relation originated from.", example = "Facebook")
+  public String SourceID;
 
 }
