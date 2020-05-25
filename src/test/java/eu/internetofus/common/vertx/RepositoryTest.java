@@ -51,82 +51,82 @@ import io.vertx.ext.mongo.MongoClient;
  */
 public class RepositoryTest extends RepositoryTestCase<Repository> {
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see Repository#Repository(MongoClient)
-	 */
-	@Override
-	protected Repository createRepository(final MongoClient pool) {
+  /**
+   * {@inheritDoc}
+   *
+   * @see Repository#Repository(MongoClient)
+   */
+  @Override
+  protected Repository createRepository(final MongoClient pool) {
 
-		return new Repository(pool);
-	}
+    return new Repository(pool);
+  }
 
-	/**
-	 * Verify that the sort object is null when an empty or {@code null} value is
-	 * converted.
-	 *
-	 * @param value to convert.
-	 *
-	 * @see Repository#toSort(Iterable, String)
-	 */
-	@ParameterizedTest(name = "Should {0} be return null")
-	@NullAndEmptySource
-	public void shouldSortReturnNull(final List<String> values) {
+  /**
+   * Verify that the sort object is null when an empty or {@code null} value is
+   * converted.
+   *
+   * @param values to convert.
+   *
+   * @see Repository#toSort(Iterable, String)
+   */
+  @ParameterizedTest(name = "Should {0} be return null")
+  @NullAndEmptySource
+  public void shouldSortReturnNull(final List<String> values) {
 
-		assertThatCode(() -> {
+    assertThatCode(() -> {
 
-			assertThat(Repository.toSort(values, "codePrefix")).isNull();
+      assertThat(Repository.toSort(values, "codePrefix")).isNull();
 
-		}).doesNotThrowAnyException();
-	}
+    }).doesNotThrowAnyException();
+  }
 
-	/**
-	 * Verify that the sort object is null when an empty or {@code null} value is
-	 * converted.
-	 *
-	 * @param param with the values to convert.
-	 *
-	 * @see Repository#toSort(Iterable, String)
-	 */
-	@ParameterizedTest(name = "Should sort {0}")
-	@ValueSource(strings = { "value:1;{\"value\":1}", "  value :  -1 ,;{\"value\":-1}",
-	"key1:1,key2:-1 , key3:-1;{\"key1\":1,\"key2\":-1,\"key3\":-1}" })
-	public void shouldSort(final String param) {
+  /**
+   * Verify that the sort object is null when an empty or {@code null} value is
+   * converted.
+   *
+   * @param param with the values to convert.
+   *
+   * @see Repository#toSort(Iterable, String)
+   */
+  @ParameterizedTest(name = "Should sort {0}")
+  @ValueSource(strings = { "value:1;{\"value\":1}", "  value :  -1 ,;{\"value\":-1}",
+  "key1:1,key2:-1 , key3:-1;{\"key1\":1,\"key2\":-1,\"key3\":-1}" })
+  public void shouldSort(final String param) {
 
-		assertThatCode(() -> {
+    assertThatCode(() -> {
 
-			final int endIndex = param.indexOf(';');
-			final String[] values = param.substring(0, endIndex).split(",");
-			final String expected = param.substring(endIndex + 1).trim();
-			final JsonObject sortExpected = (JsonObject) Json.decodeValue(expected);
-			assertThat(Repository.toSort(Arrays.nonNullElementsIn(values), "codePrefix")).isEqualTo(sortExpected);
+      final int endIndex = param.indexOf(';');
+      final String[] values = param.substring(0, endIndex).split(",");
+      final String expected = param.substring(endIndex + 1).trim();
+      final JsonObject sortExpected = (JsonObject) Json.decodeValue(expected);
+      assertThat(Repository.toSort(Arrays.nonNullElementsIn(values), "codePrefix")).isEqualTo(sortExpected);
 
-		}).doesNotThrowAnyException();
-	}
+    }).doesNotThrowAnyException();
+  }
 
-	/**
-	 * Verify that the sort object is null when an empty or {@code null} value is
-	 * converted.
-	 *
-	 * @param param with the values to convert.
-	 *
-	 * @see Repository#toSort(Iterable, String)
-	 */
-	@ParameterizedTest(name = "Should {0} can not converted to sort")
-	@ValueSource(strings = { ";[0]", "    :   ;[0]", "   :    1;[0]", "value:;[0]", "  value :  -1,value2:-2 ;[1]",
-			"key1,key1:-1 , key3:-1;[0]", "key:1,key1:-1 , key3:\"-1\";[2]" })
-	public void shouldSortThrowException(final String param) {
+  /**
+   * Verify that the sort object is null when an empty or {@code null} value is
+   * converted.
+   *
+   * @param param with the values to convert.
+   *
+   * @see Repository#toSort(Iterable, String)
+   */
+  @ParameterizedTest(name = "Should {0} can not converted to sort")
+  @ValueSource(strings = { ";[0]", "    :   ;[0]", "   :    1;[0]", "value:;[0]", "  value :  -1,value2:-2 ;[1]",
+      "key1,key1:-1 , key3:-1;[0]", "key:1,key1:-1 , key3:\"-1\";[2]" })
+  public void shouldSortThrowException(final String param) {
 
-		final int endIndex = param.indexOf(';');
-		final String[] values = param.substring(0, endIndex).split(",");
-		final String expected = param.substring(endIndex + 1).trim();
+    final int endIndex = param.indexOf(';');
+    final String[] values = param.substring(0, endIndex).split(",");
+    final String expected = param.substring(endIndex + 1).trim();
 
-		final ValidationErrorException error = catchThrowableOfType(
-				() -> Repository.toSort(Arrays.nonNullElementsIn(values), "codePrefix"),
-				ValidationErrorException.class);
-		assertThat(error.getCode()).isEqualTo("codePrefix" + expected);
+    final ValidationErrorException error = catchThrowableOfType(
+        () -> Repository.toSort(Arrays.nonNullElementsIn(values), "codePrefix"),
+        ValidationErrorException.class);
+    assertThat(error.getCode()).isEqualTo("codePrefix" + expected);
 
-	}
+  }
 
 }

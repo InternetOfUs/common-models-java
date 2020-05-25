@@ -273,7 +273,7 @@ public class Model {
    *
    * @param <T>    to obtain
    *
-   * @param the    array that represents the models.
+   * @return the array that represents the models.
    */
   public static <T extends Model> JsonArray toJsonArray(final Iterable<T> models) {
 

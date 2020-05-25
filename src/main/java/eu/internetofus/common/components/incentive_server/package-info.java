@@ -24,51 +24,8 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.vertx;
-
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.junit.jupiter.MockServerExtension;
-
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.web.VertxWebClientExtension;
-
 /**
- * Generic test over the classes the {@link ComponentClient}.
- *
- * @see ComponentClient
- *
- * @param <T> type of client to test.
- *
  * @author UDT-IA, IIIA-CSIC
+ *
  */
-@ExtendWith({ VertxExtension.class, VertxWebClientExtension.class, MockServerExtension.class })
-public abstract class ComponentClientTestCase<T extends ComponentClient> {
-
-  /**
-   * The mocked server.
-   */
-  protected ClientAndServer mockedServer;
-
-  /**
-   * Create a new test case.
-   *
-   * @param client to use.
-   */
-  public ComponentClientTestCase(final ClientAndServer client) {
-
-    this.mockedServer = client;
-
-  }
-
-  /**
-   * Create client to test.
-   *
-   * @param client web client to use.
-   *
-   * @return a new instance of the client to test.
-   */
-  protected abstract T createClient(WebClient client);
-
-}
+package eu.internetofus.common.components.incentive_server;

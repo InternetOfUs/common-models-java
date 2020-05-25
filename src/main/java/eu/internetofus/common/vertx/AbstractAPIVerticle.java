@@ -45,103 +45,103 @@ import io.vertx.ext.web.api.contract.openapi3.OpenAPI3RouterFactory;
  */
 public abstract class AbstractAPIVerticle extends AbstractVerticle {
 
-	/**
-	 * The server that manage the HTTP requests.
-	 */
-	protected HttpServer server;
+  /**
+   * The server that manage the HTTP requests.
+   */
+  protected HttpServer server;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void start(Promise<Void> startPromise) throws Exception {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void start(final Promise<Void> startPromise) throws Exception {
 
-		OpenAPI3RouterFactory.create(this.vertx, this.getOpenAPIResourcePath(), createRouterFactory -> {
-			if (createRouterFactory.succeeded()) {
+    OpenAPI3RouterFactory.create(this.vertx, this.getOpenAPIResourcePath(), createRouterFactory -> {
+      if (createRouterFactory.succeeded()) {
 
-				try {
+        try {
 
-					final OpenAPI3RouterFactory routerFactory = createRouterFactory.result();
+          final OpenAPI3RouterFactory routerFactory = createRouterFactory.result();
 
-					this.mountServiceInterfaces(routerFactory);
+          this.mountServiceInterfaces(routerFactory);
 
-					// bind the ERROR handlers
-					final Router router = routerFactory.getRouter();
-					router.errorHandler(Status.NOT_FOUND.getStatusCode(), NotFoundHandler.build());
-					router.errorHandler(Status.BAD_REQUEST.getStatusCode(), BadRequestHandler.build());
+          // bind the ERROR handlers
+          final Router router = routerFactory.getRouter();
+          router.errorHandler(Status.NOT_FOUND.getStatusCode(), NotFoundHandler.build());
+          router.errorHandler(Status.BAD_REQUEST.getStatusCode(), BadRequestHandler.build());
 
-					final JsonObject apiConf = this.config().getJsonObject("api", new JsonObject());
-					final HttpServerOptions httpServerOptions = new HttpServerOptions(apiConf);
-					this.server = this.vertx.createHttpServer(httpServerOptions);
-					this.server.requestHandler(router).listen(startServer -> {
-						if (startServer.failed()) {
+          final JsonObject apiConf = this.config().getJsonObject("api", new JsonObject());
+          final HttpServerOptions httpServerOptions = new HttpServerOptions(apiConf);
+          this.server = this.vertx.createHttpServer(httpServerOptions);
+          this.server.requestHandler(router).listen(startServer -> {
+            if (startServer.failed()) {
 
-							startPromise.fail(startServer.cause());
+              startPromise.fail(startServer.cause());
 
-						} else {
+            } else {
 
-							final HttpServer httpServer = startServer.result();
-							final String host = httpServerOptions.getHost();
-							final int actualPort = httpServer.actualPort();
-							apiConf.put("port", actualPort);
-							Logger.info("The server is ready at http://{}:{}", host, actualPort);
-							this.startedServerAt(host, actualPort);
-							startPromise.complete();
-						}
-					});
+              final HttpServer httpServer = startServer.result();
+              final String host = httpServerOptions.getHost();
+              final int actualPort = httpServer.actualPort();
+              apiConf.put("port", actualPort);
+              Logger.info("The server is ready at http://{}:{}", host, actualPort);
+              this.startedServerAt(host, actualPort);
+              startPromise.complete();
+            }
+          });
 
-				} catch (final Throwable throwable) {
-					// Can not start the server , may be the configuration is wrong
-					startPromise.fail(throwable);
-				}
+        } catch (final Throwable throwable) {
+          // Can not start the server , may be the configuration is wrong
+          startPromise.fail(throwable);
+        }
 
-			} else {
-				// In theory never happens, Only can happens if specification is not right or
-				// not present on the path
-				startPromise.fail(createRouterFactory.cause());
-			}
-		});
+      } else {
+        // In theory never happens, Only can happens if specification is not right or
+        // not present on the path
+        startPromise.fail(createRouterFactory.cause());
+      }
+    });
 
-	}
+  }
 
-	/**
-	 * Called when the server has been started.
-	 *
-	 * @param host address that the HTTP server is bind.
-	 * @param port that the HTTP server is bind.
-	 */
-	protected abstract void startedServerAt(String host, int port);
+  /**
+   * Called when the server has been started.
+   *
+   * @param host address that the HTTP server is bind.
+   * @param port that the HTTP server is bind.
+   */
+  protected abstract void startedServerAt(String host, int port);
 
-	/**
-	 * Mount the resources that will manage the API requests.
-	 *
-	 * @param routerFactory to register the service interfaces.
-	 */
-	protected abstract void mountServiceInterfaces(OpenAPI3RouterFactory routerFactory);
+  /**
+   * Mount the resources that will manage the API requests.
+   *
+   * @param routerFactory to register the service interfaces.
+   */
+  protected abstract void mountServiceInterfaces(OpenAPI3RouterFactory routerFactory);
 
-	/**
-	 * Get the resource path to the file that contains the OpenAPI specification to
-	 * load.
-	 *
-	 * @return the resource path to the OpenAPI specification.
-	 */
-	protected abstract String getOpenAPIResourcePath();
+  /**
+   * Get the resource path to the file that contains the OpenAPI specification to
+   * load.
+   *
+   * @return the resource path to the OpenAPI specification.
+   */
+  protected abstract String getOpenAPIResourcePath();
 
-	/**
-	 * Stop the HTTP server.
-	 *
-	 * {@inheritDoc}
-	 *
-	 * @see #server
-	 */
-	@Override
-	public void stop() {
+  /**
+   * Stop the HTTP server.
+   *
+   * {@inheritDoc}
+   *
+   * @see #server
+   */
+  @Override
+  public void stop() {
 
-		if (this.server != null) {
+    if (this.server != null) {
 
-			this.server.close();
-			this.server = null;
-		}
-	}
+      this.server.close();
+      this.server = null;
+    }
+  }
 
 }

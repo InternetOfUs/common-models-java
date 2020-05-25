@@ -127,7 +127,7 @@ public interface Containers {
    ** @return the mongo container to the specified database.
    */
   @SuppressWarnings("resource")
-  static GenericContainer<?> createMongoContainerFor(String dbName, Network network) {
+  static GenericContainer<?> createMongoContainerFor(final String dbName, final Network network) {
 
     return new GenericContainer<>(MONGO_DOCKER_NAME).withStartupAttempts(1).withEnv("MONGO_INITDB_ROOT_USERNAME", "root").withEnv("MONGO_INITDB_ROOT_PASSWORD", "password").withEnv("MONGO_INITDB_DATABASE", dbName)
         .withCopyFileToContainer(MountableFile.forClasspathResource(Containers.class.getPackageName().replaceAll("\\.", "/") + "/initialize-" + dbName + ".js"), "/docker-entrypoint-initdb.d/init-mongo.js")
@@ -145,7 +145,7 @@ public interface Containers {
    * @param network                          that shared between containers.
    */
   @SuppressWarnings("resource")
-  static void createAndStartContainersForTaskManager(int port, int profileManagerApiPort, int interactionProtocolEngineApiPort, int serviceApiPort, Network network) {
+  static void createAndStartContainersForTaskManager(final int port, final int profileManagerApiPort, final int interactionProtocolEngineApiPort, final int serviceApiPort, final Network network) {
 
     final GenericContainer<?> taskPersistenceContainer = createMongoContainerFor(WENET_TASK_MANAGER_DB_NAME, network);
     taskPersistenceContainer.start();
@@ -166,7 +166,7 @@ public interface Containers {
    * @param network               that shared between containers.
    */
   @SuppressWarnings("resource")
-  static void createAndStartContainersForInteractionProtocolEngine(int port, int profileManagerApiPort, int taskManagerApiPort, int serviceApiPort, Network network) {
+  static void createAndStartContainersForInteractionProtocolEngine(final int port, final int profileManagerApiPort, final int taskManagerApiPort, final int serviceApiPort, final Network network) {
 
     final GenericContainer<?> interactionProtocolEnginePersistenceContainer = createMongoContainerFor(WENET_INTERACTION_PROTOCOL_ENGINE_DB_NAME, network);
     interactionProtocolEnginePersistenceContainer.start();
@@ -187,7 +187,7 @@ public interface Containers {
    * @param network                          that shared between containers.
    */
   @SuppressWarnings("resource")
-  static void createAndStartContainersForProfileManager(int port, int taskManagerApiPort, int interactionProtocolEngineApiPort, Network network) {
+  static void createAndStartContainersForProfileManager(final int port, final int taskManagerApiPort, final int interactionProtocolEngineApiPort, final Network network) {
 
     final GenericContainer<?> profilePersistenceContainer = createMongoContainerFor(WENET_PROFILE_MANAGER_DB_NAME, network);
     profilePersistenceContainer.start();
@@ -203,7 +203,7 @@ public interface Containers {
    *
    * @param port to link the simulator.
    */
-  static void createAndStartServiceApiSimulator(int port) {
+  static void createAndStartServiceApiSimulator(final int port) {
 
     try {
 
@@ -225,27 +225,6 @@ public interface Containers {
   }
 
   /**
-   * Create the container necessaries to start the profile manager with some arguments.
-   *
-   * @param port                             to bind the profile manager API on the localhost.
-   * @param taskManagerApiPort               port where the task manager will be bind on the localhost.
-   * @param interactionProtocolEngineApiPort port where the interaction protocol engine will be bind on the localhost.
-   * @param serviceApiPort                   port where the service component will be bind on the localhost.
-   * @param network                          that shared between containers.
-   *
-   * @return the arguments necessaries to start the profile manager.
-   */
-  static String[] createProfileManagerContainersToStartWith(int port, int taskManagerApiPort, int interactionProtocolEngineApiPort, int serviceApiPort, Network network) {
-
-    final GenericContainer<?> persistenceContainer = Containers.createMongoContainerFor(WENET_PROFILE_MANAGER_DB_NAME, network);
-    persistenceContainer.start();
-
-    return new String[] { "-papi.port=" + port, "-ppersistence.host=localhost", "-ppersistence.port=" + persistenceContainer.getMappedPort(EXPORT_MONGODB_PORT),
-        "-pwenetComponents.interactionProtocolEngine=\"http://localhost:" + interactionProtocolEngineApiPort + "\"", "-pwenetComponents.taskManager=\"http://localhost:" + taskManagerApiPort + "\"",
-        "-pwenetComponents.service=\"http://localhost:" + serviceApiPort + "\"" };
-  }
-
-  /**
    * Create the container necessaries to start the task manager with some arguments.
    *
    * @param port                             to bind the task manager API on the localhost.
@@ -256,7 +235,7 @@ public interface Containers {
    *
    * @return the arguments necessaries to start the task manager.
    */
-  static String[] createTaskManagerContainersToStartWith(int port, int profileManagerApiPort, int interactionProtocolEngineApiPort, int serviceApiPort, Network network) {
+  static String[] createTaskManagerContainersToStartWith(final int port, final int profileManagerApiPort, final int interactionProtocolEngineApiPort, final int serviceApiPort, final Network network) {
 
     final GenericContainer<?> persistenceContainer = Containers.createMongoContainerFor(WENET_TASK_MANAGER_DB_NAME, network);
     persistenceContainer.start();
@@ -277,7 +256,7 @@ public interface Containers {
    *
    * @return the arguments necessaries to start the profile manager.
    */
-  static String[] createInteractionProtocolEngineContainersToStartWith(int port, int profileManagerApiPort, int taskManagerApiPort, int serviceApiPort, Network network) {
+  static String[] createInteractionProtocolEngineContainersToStartWith(final int port, final int profileManagerApiPort, final int taskManagerApiPort, final int serviceApiPort, final Network network) {
 
     final GenericContainer<?> persistenceContainer = Containers.createMongoContainerFor(WENET_INTERACTION_PROTOCOL_ENGINE_DB_NAME, network);
     persistenceContainer.start();
@@ -293,7 +272,7 @@ public interface Containers {
    * @param vertx                event bus to use to load the configurations.
    * @param configurationHandler the handler of the effective configuration
    */
-  static void defaultEffectiveConfiguration(Vertx vertx, Handler<AsyncResult<JsonObject>> configurationHandler) {
+  static void defaultEffectiveConfiguration(final Vertx vertx, final Handler<AsyncResult<JsonObject>> configurationHandler) {
 
     final ConfigStoreOptions effectiveConfigurationFile = new ConfigStoreOptions().setType("file").setFormat("json")
         .setConfig(new JsonObject().put("path", FileSystems.getDefault().getPath(AbstractMain.DEFAULT_EFFECTIVE_CONFIGURATION_PATH).toFile().getAbsolutePath()));

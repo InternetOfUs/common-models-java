@@ -24,41 +24,49 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.social_context_builder;
+package eu.internetofus.common.components.incentive_server;
 
-import eu.internetofus.common.vertx.ComponentClient;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
+import io.vertx.codegen.annotations.ProxyGen;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.serviceproxy.ServiceBinder;
 
 /**
- * Implementation of the {@link WeNetSocialContextBuilderService}.
+ * The methods necessaries to interact with the interaction server.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetSocialContextBuilderServiceImpl extends ComponentClient implements WeNetSocialContextBuilderService {
+@ProxyGen
+public interface WeNetIncentiveServer {
 
   /**
-   * Create a new service to interact with the WeNet interaction protocol engine.
-   *
-   * @param client to interact with the other modules.
-   * @param conf   configuration.
+   * The address of this service.
    */
-  public WeNetSocialContextBuilderServiceImpl(WebClient client, JsonObject conf) {
+  String ADDRESS = "wenet_common.service.IncentiveServer";
 
-    super(client, conf.getString("socialContextBuilder", "https://wenet.u-hopper.com/social_context_builder"));
+  /**
+   * Create a proxy of the {@link WeNetIncentiveServer}.
+   *
+   * @param vertx where the service has to be used.
+   *
+   * @return the task.
+   */
+  static WeNetIncentiveServer createProxy(final Vertx vertx) {
 
+    return new WeNetIncentiveServerVertxEBProxy(vertx, WeNetIncentiveServer.ADDRESS);
   }
 
   /**
-   * {@inheridDoc}
+   * Register this service.
+   *
+   * @param vertx  that contains the event bus to use.
+   * @param client to do HTTP requests to other services.
+   * @param conf   configuration to use.
    */
-  @Override
-  public void retrieveJsonArraySocialRelations(String userId, Handler<AsyncResult<JsonArray>> retrieveHandler) {
+  static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-    this.getJsonArray(retrieveHandler, "/social/relations", userId);
+    new ServiceBinder(vertx).setAddress(WeNetIncentiveServer.ADDRESS).register(WeNetIncentiveServer.class, new WeNetIncentiveServerClient(client, conf));
 
   }
 

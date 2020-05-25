@@ -44,20 +44,20 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxTestContext;
 
 /**
- * Test the {@link WeNetSocialContextBuilderServiceImpl}
+ * Test the {@link WeNetSocialContextBuilderImpl}
  *
- * @see WeNetSocialContextBuilderServiceImpl
+ * @see WeNetSocialContextBuilderImpl
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetSocialContextBuilderServiceImplTest extends ComponentClientTestCase<WeNetSocialContextBuilderServiceImpl> {
+public class WeNetSocialContextBuilderImplTest extends ComponentClientTestCase<WeNetSocialContextBuilderImpl> {
 
   /**
    * Create a new test.
    *
    * @param client for the mocker server.
    */
-  public WeNetSocialContextBuilderServiceImplTest(final ClientAndServer client) {
+  public WeNetSocialContextBuilderImplTest(final ClientAndServer client) {
     super(client);
   }
 
@@ -65,10 +65,10 @@ public class WeNetSocialContextBuilderServiceImplTest extends ComponentClientTes
    * {@inheridDoc}
    */
   @Override
-  protected WeNetSocialContextBuilderServiceImpl createClient(final WebClient client) {
+  protected WeNetSocialContextBuilderImpl createClient(final WebClient client) {
 
     final JsonObject conf = new JsonObject().put("socialContextBuilder", "http://localhost:" + this.mockedServer.getLocalPort() + "/social_context_builder");
-    return new WeNetSocialContextBuilderServiceImpl(client, conf);
+    return new WeNetSocialContextBuilderImpl(client, conf);
 
   }
 
@@ -81,7 +81,7 @@ public class WeNetSocialContextBuilderServiceImplTest extends ComponentClientTes
   @Test
   public void shouldReturnRelations(final WebClient client, final VertxTestContext testContext) {
 
-    final WeNetSocialContextBuilderServiceImpl socialContextBuilder = this.createClient(client);
+    final WeNetSocialContextBuilderImpl socialContextBuilder = this.createClient(client);
     final String userId = "1234";
     final List<UserRelation> expected = new ArrayList<>();
     expected.add(new UserRelationTest().createModelExample(1));

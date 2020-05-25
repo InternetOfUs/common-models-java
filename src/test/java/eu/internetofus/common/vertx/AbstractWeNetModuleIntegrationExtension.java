@@ -98,6 +98,16 @@ public abstract class AbstractWeNetModuleIntegrationExtension implements Paramet
   }
 
   /**
+   * Return the instance of the mocked server.
+   *
+   * @return the instance of the mocked server.
+   */
+  protected ClientAndServer getMoclkedServer() {
+
+    return mockServer;
+  }
+
+  /**
    * Empty method called after the containers has been started.
    *
    * @param context that has been started.
