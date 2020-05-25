@@ -27,6 +27,8 @@
 package eu.internetofus.common.components.social_context_builder;
 
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.profile_manager.SocialNetworkRelationship;
+import eu.internetofus.common.components.profile_manager.SocialNetworkRelationshipType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -66,5 +68,18 @@ public class UserRelation extends Model {
    */
   @Schema(description = "An AppID that indicates where the relation originated from.", example = "Facebook")
   public String SourceID;
+
+  /**
+   * Convert to a {@link SocialNetworkRelationship}.
+   *
+   * @return the relationship that can be inferred of the relation.
+   */
+  public SocialNetworkRelationship toSocialNetworkRelationship() {
+
+    final SocialNetworkRelationship relationship = new SocialNetworkRelationship();
+    relationship.userId = this.UserID2;
+    relationship.type = SocialNetworkRelationshipType.acquaintance;
+    return relationship;
+  }
 
 }
