@@ -26,9 +26,14 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
@@ -39,142 +44,209 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * An activity that an user do regularly.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(
-		ref = "https://bitbucket.org/wenet/wenet-components-documentation/raw/master/sources/wenet-models-openapi.yaml#/components/schemas/Routine",
-		description = "An activity that an user do regularly.")
+@Schema(hidden = true, name = "Routine", description = "Labels distribution for a given user, time and weekday.")
 public class Routine extends Model implements Validable, Mergeable<Routine> {
 
-	/**
-	 * The identifier of the activity.
-	 */
-	@Schema(description = "The identifier of the routine", example = "oishd0godlkgj")
-	public String id;
+  /**
+   * The identifier of the user.
+   */
+  @Schema(description = "id of the user")
+  public String user_id;
 
-	/**
-	 * The identifier of the activity.
-	 */
-	@Schema(description = "The label of the routine", example = "work")
-	public String label;
+  /**
+   * The day of the week.
+   */
+  @Schema(description = "day of the week")
+  public String weekday;
 
-	/**
-	 * The identifier of the routine.
-	 */
-	@Schema(description = "The identifier of the routine", example = "oishd0godlkgj")
-	public String proximity;
+  /**
+   * The time slots.
+   */
+  @Schema(type = "object", description = "Time slots.")
+  @JsonDeserialize(using = JsonObjectDeserializer.class)
+  public JsonObject label_distribution;
 
-	/**
-	 * The time when the routine starts.
-	 */
-	@Schema(description = "The time when the routine starts", example = "18:00")
-	public String from_time;
+  /**
+   * The confidence of the result.
+   */
+  @Schema(description = "confidence of the result")
+  public Double confidence;
 
-	/**
-	 * The time when the routine ends.
-	 */
-	@Schema(description = "The time when the routine ends", example = "22:00")
-	public String to_time;
+  /**
+   * Create an empty routine.
+   */
+  public Routine() {
 
-	/**
-	 * Create an empty routine.
-	 */
-	public Routine() {
+  }
 
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+    final Promise<Void> promise = Promise.promise();
+    Future<Void> future = promise.future();
+    try {
 
-		final Promise<Void> promise = Promise.promise();
-		try {
+      this.user_id = Validations.validateStringField(codePrefix, "user_id", 255, this.user_id);
+      future = future.compose(mapper -> {
 
-			this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
-			if (this.id != null) {
+        final Promise<Void> verifyUserIdExistPromise = Promise.promise();
+        WeNetProfileManagerService.createProxy(vertx).retrieveProfile(this.user_id, search -> {
 
-				promise.fail(new ValidationErrorException(codePrefix + ".id",
-						"You can not specify the identifier of the norm to create"));
+          if (!search.failed()) {
 
-			} else {
+            verifyUserIdExistPromise.complete();
 
-				this.label = Validations.validateNullableStringField(codePrefix, "label", 255, this.label);
-				this.proximity = Validations.validateNullableStringField(codePrefix, "proximity", 255, this.proximity);
-				this.from_time = Validations.validateNullableStringDateField(codePrefix, "from_time", DateTimeFormatter.ISO_TIME,
-						this.from_time);
-				this.to_time = Validations.validateNullableStringDateField(codePrefix, "to_time", DateTimeFormatter.ISO_TIME,
-						this.to_time);
+          } else {
 
-				this.id = UUID.randomUUID().toString();
-				promise.complete();
-			}
+            verifyUserIdExistPromise.fail(new ValidationErrorException(codePrefix + ".user_id", "The '" + this.user_id + "' is not defined.", search.cause()));
+          }
+        });
+        return verifyUserIdExistPromise.future();
+      });
 
-		} catch (final ValidationErrorException validationError) {
+      this.weekday = Validations.validateStringField(codePrefix, "weekday", 255, this.weekday);
+      if (this.label_distribution != null) {
 
-			promise.fail(validationError);
-		}
+        for (final String fieldName : this.label_distribution.fieldNames()) {
 
-		return promise.future();
+          try {
 
-	}
+            final JsonArray array = this.label_distribution.getJsonArray(fieldName);
+            final List<ScoredLabel> labels = Model.fromJsonArray(array, ScoredLabel.class);
+            final String scorePrefix = codePrefix + ".label_distribution." + fieldName;
+            if (labels == null) {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Routine> merge(Routine source, String codePrefix, Vertx vertx) {
+              promise.fail(new ValidationErrorException(scorePrefix, "The '" + array + "' is not a valid array of ScoredLabel."));
+              return future;
 
-		final Promise<Routine> promise = Promise.promise();
-		Future<Routine> future = promise.future();
-		if (source != null) {
+            } else {
 
-			final Routine merged = new Routine();
-			merged.label = source.label;
-			if (merged.label == null) {
+              future = future.compose(Validations.validate(labels, (l1, l2) -> {
 
-				merged.label = this.label;
-			}
+                if (l1.label != null && l1.label.name != null && l2.label != null) {
 
-			merged.proximity = source.proximity;
-			if (merged.proximity == null) {
+                  return l1.label.name.equals(l2.label.name);
 
-				merged.proximity = this.proximity;
-			}
+                } else {
 
-			merged.from_time = source.from_time;
-			if (merged.from_time == null) {
+                  return false;
+                }
 
-				merged.from_time = this.from_time;
-			}
+              }, scorePrefix, vertx));
+            }
 
-			merged.to_time = source.to_time;
-			if (merged.to_time == null) {
+          } catch (final ClassCastException cause) {
 
-				merged.to_time = this.to_time;
-			}
+            throw new ValidationErrorException(codePrefix + ".label_distribution." + fieldName, "Does not contains an array of scored labels.", cause);
+          }
 
-			promise.complete(merged);
+        }
 
-			// validate the merged value and set the id
-			future = future.compose(Merges.validateMerged(codePrefix, vertx)).map(mergedValidatedModel -> {
+      }
+      promise.complete();
 
-				mergedValidatedModel.id = this.id;
-				return mergedValidatedModel;
-			});
+    } catch (final ValidationErrorException validationError) {
 
-		} else {
+      promise.fail(validationError);
+    }
 
-			promise.complete(this);
+    return future;
 
-		}
-		return future;
+  }
 
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Routine> merge(final Routine source, final String codePrefix, final Vertx vertx) {
+
+    final Promise<Routine> promise = Promise.promise();
+    Future<Routine> future = promise.future();
+    if (source != null) {
+
+      final Routine merged = new Routine();
+      merged.user_id = source.user_id;
+      if (merged.user_id == null) {
+
+        merged.user_id = this.user_id;
+      }
+
+      merged.weekday = source.weekday;
+      if (merged.weekday == null) {
+
+        merged.weekday = this.weekday;
+      }
+
+      merged.confidence = source.confidence;
+      if (merged.confidence == null) {
+
+        merged.confidence = this.confidence;
+      }
+
+      merged.label_distribution = source.label_distribution;
+      if (merged.label_distribution == null) {
+
+        merged.label_distribution = this.label_distribution;
+
+      } else if (this.label_distribution != null) {
+
+        for (final String fieldName : merged.label_distribution.fieldNames()) {
+
+          try {
+
+            final JsonArray sourceLabelDistributionArray = merged.label_distribution.getJsonArray(fieldName);
+            final List<ScoredLabel> sourceLabelDistribution = Model.fromJsonArray(sourceLabelDistributionArray, ScoredLabel.class);
+            final String scorePrefix = codePrefix + ".label_distribution." + fieldName;
+            if (sourceLabelDistribution == null) {
+
+              promise.fail(new ValidationErrorException(scorePrefix, "The '" + sourceLabelDistributionArray + "' is not a valid array of ScoredLabel."));
+              return future;
+
+            }
+            final JsonArray targetLabelDistributionArray = this.label_distribution.getJsonArray(fieldName);
+            final List<ScoredLabel> targetLabelDistribution = Model.fromJsonArray(targetLabelDistributionArray, ScoredLabel.class);
+            future = future.compose(Merges.mergeFieldList(targetLabelDistribution, sourceLabelDistribution, scorePrefix, vertx, (Predicate<ScoredLabel>) scoredLabel -> scoredLabel.label != null && scoredLabel.label.name != null,
+                (BiPredicate<ScoredLabel, ScoredLabel>) (l1, l2) -> l1.label.name.equals(l2.label.name), (BiConsumer<Routine, List<ScoredLabel>>) (mergedRoutine, mergedScoredLabel) -> {
+
+                  final JsonArray value = Model.toJsonArray(mergedScoredLabel);
+                  mergedRoutine.label_distribution.put(fieldName, value);
+                }));
+
+          } catch (final ClassCastException cause) {
+
+            promise.fail(new ValidationErrorException(codePrefix + ".label_distribution." + fieldName, "Does not contains an array of scored labels.", cause));
+            return future;
+          }
+
+        }
+
+      }
+
+      promise.complete(merged);
+
+      // validate the merged value and set the id
+      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+
+    } else
+
+    {
+
+      promise.complete(this);
+
+    }
+    return future;
+
+  }
 
 }

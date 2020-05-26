@@ -47,120 +47,115 @@ import io.vertx.core.Vertx;
 @Schema(description = "A norm that has to be satisfied.")
 public class Norm extends Model implements Validable, Mergeable<Norm> {
 
-	/**
-	 * The identifier of the norm.
-	 */
-	@Schema(description = "The identifier of the norm.", example = "ceb84643-645a-4a55-9aaf-158370289eba")
-	public String id;
+  /**
+   * The identifier of the norm.
+   */
+  @Schema(description = "The identifier of the norm.", example = "ceb84643-645a-4a55-9aaf-158370289eba")
+  public String id;
 
-	/**
-	 * The name of the attribute whose value the norm should be compared to.
-	 */
-	@Schema(description = "The name of the attribute whose value the norm should	 be compared to.", example = "has_car")
-	public String attribute;
+  /**
+   * The name of the attribute whose value the norm should be compared to.
+   */
+  @Schema(description = "The name of the attribute whose value the norm should	 be compared to.", example = "has_car")
+  public String attribute;
 
-	/**
-	 * The operator of the norm.
-	 */
-	@Schema(description = "The operator of the norm.", example = "EQUALS")
-	public NormOperator operator;
+  /**
+   * The operator of the norm.
+   */
+  @Schema(description = "The operator of the norm.", example = "EQUALS")
+  public NormOperator operator;
 
-	/**
-	 * The norm value for the comparison.
-	 */
-	@Schema(description = "The norm value for the comparison.", example = "true")
-	public String comparison;
+  /**
+   * The norm value for the comparison.
+   */
+  @Schema(description = "The norm value for the comparison.", example = "true")
+  public String comparison;
 
-	/**
-	 * Specified if a negation operator should be applied.
-	 */
-	@Schema(description = "The operator of the norm.", example = "true", defaultValue = "true")
-	public boolean negation;
+  /**
+   * Specified if a negation operator should be applied.
+   */
+  @Schema(description = "The operator of the norm.", example = "true", defaultValue = "true")
+  public boolean negation;
 
-	/**
-	 * Create a new norm.
-	 */
-	public Norm() {
+  /**
+   * Create a new norm.
+   */
+  public Norm() {
 
-		this.negation = true;
-	}
+    this.negation = true;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-		final Promise<Void> promise = Promise.promise();
-		try {
+    final Promise<Void> promise = Promise.promise();
+    try {
 
-			this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
-			if (this.id != null) {
+      this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
+      if (this.id == null) {
 
-				throw new ValidationErrorException(codePrefix + ".id",
-						"You can not specify the identifier of the norm to create");
+        this.id = UUID.randomUUID().toString();
+      }
+      this.attribute = Validations.validateNullableStringField(codePrefix, "attribute", 255, this.attribute);
+      this.comparison = Validations.validateNullableStringField(codePrefix, "comparison", 255, this.comparison);
+      promise.complete();
 
-			} else {
+    } catch (final ValidationErrorException validationError) {
 
-				this.id = UUID.randomUUID().toString();
-			}
-			this.attribute = Validations.validateNullableStringField(codePrefix, "attribute", 255, this.attribute);
-			this.comparison = Validations.validateNullableStringField(codePrefix, "comparison", 255, this.comparison);
-			promise.complete();
+      promise.fail(validationError);
+    }
 
-		} catch (final ValidationErrorException validationError) {
+    return promise.future();
 
-			promise.fail(validationError);
-		}
+  }
 
-		return promise.future();
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Norm> merge(final Norm source, final String codePrefix, final Vertx vertx) {
 
-	}
+    final Promise<Norm> promise = Promise.promise();
+    Future<Norm> future = promise.future();
+    if (source != null) {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Norm> merge(Norm source, String codePrefix, Vertx vertx) {
+      final Norm merged = new Norm();
+      merged.attribute = source.attribute;
+      if (merged.attribute == null) {
 
-		final Promise<Norm> promise = Promise.promise();
-		Future<Norm> future = promise.future();
-		if (source != null) {
+        merged.attribute = this.attribute;
+      }
 
-			final Norm merged = new Norm();
-			merged.attribute = source.attribute;
-			if (merged.attribute == null) {
+      merged.operator = source.operator;
+      if (merged.operator == null) {
 
-				merged.attribute = this.attribute;
-			}
+        merged.operator = this.operator;
+      }
 
-			merged.operator = source.operator;
-			if (merged.operator == null) {
+      merged.comparison = source.comparison;
+      if (merged.comparison == null) {
 
-				merged.operator = this.operator;
-			}
+        merged.comparison = this.comparison;
+      }
 
-			merged.comparison = source.comparison;
-			if (merged.comparison == null) {
+      merged.negation = source.negation;
 
-				merged.comparison = this.comparison;
-			}
+      promise.complete(merged);
 
-			merged.negation = source.negation;
+      // validate the merged value and set the id
+      future = future.compose(Merges.validateMerged(codePrefix, vertx)).map(mergedValidatedModel -> {
 
-			promise.complete(merged);
+        mergedValidatedModel.id = this.id;
+        return mergedValidatedModel;
+      });
 
-			// validate the merged value and set the id
-			future = future.compose(Merges.validateMerged(codePrefix, vertx)).map(mergedValidatedModel -> {
+    } else {
 
-				mergedValidatedModel.id = this.id;
-				return mergedValidatedModel;
-			});
-
-		} else {
-
-			promise.complete(this);
-		}
-		return future;
-	}
+      promise.complete(this);
+    }
+    return future;
+  }
 }
