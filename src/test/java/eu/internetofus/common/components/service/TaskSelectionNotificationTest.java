@@ -57,7 +57,7 @@ public class TaskSelectionNotificationTest extends TaskNotificationTestCase<Task
 	public void shouldNotificationTypeByTaskVolunteer() {
 
 		final TaskSelectionNotification model = this.createEmptyMessage();
-		assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.selecitonVolunteer);
+		assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.selectionVolunteer);
 	}
 
 	/**

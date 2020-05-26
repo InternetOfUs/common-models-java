@@ -37,52 +37,52 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(hidden = true, name = "taskNotification", description = "A notification to inform about the task status.")
 public class TaskNotification extends Message {
 
-	/**
-	 * The identifier of the task notification.
-	 */
-	@Schema(description = "The identifier of the target task.", example = "28961582-84d2-41d1-b555-c09dce046831")
-	public String taskId;
+  /**
+   * The identifier of the task notification.
+   */
+  @Schema(description = "The identifier of the target task.", example = "28961582-84d2-41d1-b555-c09dce046831")
+  public String taskId;
 
-	/**
-	 * The possible notification types.
-	 */
-	public enum NotificationType {
-		/**
-		 * The notification that exist a new task that you can help to do.
-		 */
-		taskProposal,
-		/**
-		 * The notification to inform of a volunteer.
-		 */
-		taskVolunteer,
-		/**
-		 * The notification to inform that exist a message form an user.
-		 */
-		messageFromUser,
-		/**
-		 * The notification to inform that the task has concluded.
-		 */
-		taskConcluded,
-		/**
-		 * This notification is used in order to notify the user who volunteered about
-		 * the decision of the task creator.
-		 */
-		selecitonVolunteer;
+  /**
+   * The possible notification types.
+   */
+  public enum NotificationType {
+    /**
+     * The notification that exist a new task that you can help to do.
+     */
+    taskProposal,
+    /**
+     * The notification to inform of a volunteer.
+     */
+    taskVolunteer,
+    /**
+     * The notification to inform that exist a message form an user.
+     */
+    messageFromUser,
+    /**
+     * The notification to inform that the task has concluded.
+     */
+    taskConcluded,
+    /**
+     * This notification is used in order to notify the user who volunteered about
+     * the decision of the task creator.
+     */
+    selectionVolunteer;
 
-	}
+  }
 
-	/**
-	 * The identifier of the task notification.
-	 */
-	@Schema(description = "The type of the notification.", example = "taskProposal")
-	public NotificationType notificationType;
+  /**
+   * The identifier of the task notification.
+   */
+  @Schema(description = "The type of the notification.", example = "taskProposal")
+  public NotificationType notificationType;
 
-	/**
-	 * Create a new textual message.
-	 */
-	protected TaskNotification() {
+  /**
+   * Create a new textual message.
+   */
+  protected TaskNotification() {
 
-		this.type = Type.taskNotification;
-	}
+    this.type = Type.taskNotification;
+  }
 
 }

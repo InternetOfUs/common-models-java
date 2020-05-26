@@ -65,6 +65,6 @@ public class TaskSelectionNotification extends TaskNotification {
 	 */
 	public TaskSelectionNotification() {
 
-		this.notificationType = NotificationType.selecitonVolunteer;
+		this.notificationType = NotificationType.selectionVolunteer;
 	}
 }
