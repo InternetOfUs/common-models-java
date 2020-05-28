@@ -137,17 +137,17 @@ public class QueryBuilder {
    */
   public QueryBuilder withExist(final String fieldName, final Boolean hasToExist) {
 
-    if (hasToExist != null ) {
+    if (hasToExist != null) {
 
       final JsonObject restriction = new JsonObject();
-      if (hasToExist ) {
+      if (hasToExist) {
 
-        restriction.put("$exists",true);
+        restriction.put("$exists", true);
         restriction.putNull("$ne");
 
-      }else {
+      } else {
 
-        restriction.put("$or",new JsonObject().put("$exists",false).putNull("$eq"));
+        restriction.put("$or", new JsonArray().add(new JsonObject().put("$exists", false)).add(new JsonObject().putNull("$eq")));
 
       }
 
