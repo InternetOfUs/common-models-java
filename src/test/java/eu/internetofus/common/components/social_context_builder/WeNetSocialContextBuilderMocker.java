@@ -26,12 +26,30 @@
 
 package eu.internetofus.common.components.social_context_builder;
 
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+
+import org.mockserver.integration.ClientAndServer;
+import org.mockserver.model.HttpStatusCode;
+
+import io.vertx.core.json.JsonArray;
+
 /**
  * The mocked server for the WeNet social context builder.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetSocialContextBuilderMockServer {
-  
+public interface WeNetSocialContextBuilderMocker {
+
+  /**
+   * mock the general answers to the queries to the social context builder.
+   *
+   * @param mockedServer server to mock.
+   */
+  static void mockDefaultFor(final ClientAndServer mockedServer) {
+
+    mockedServer.when(request().withMethod("GET").withPath("/social_context_builder/social/relations/.+")).respond(response().withStatusCode(HttpStatusCode.OK_200.code()).withBody(new JsonArray().encode()));
+
+  }
 
 }

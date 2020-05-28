@@ -83,10 +83,6 @@ public class Label extends Model implements Validable, Mergeable<Label> {
 
         promise.fail(new ValidationErrorException(codePrefix + ".semantic_class", "You must to define a semantic_class."));
 
-      } else if (this.semantic_class == null) {
-
-        promise.fail(new ValidationErrorException(codePrefix + ".semantic_class", "You must to define a semantic_class."));
-
       } else if (this.latitude == null) {
 
         promise.fail(new ValidationErrorException(codePrefix + ".latitude", "You must to define a latitude."));
@@ -128,7 +124,11 @@ public class Label extends Model implements Validable, Mergeable<Label> {
     if (source != null) {
 
       final Label merged = new Label();
-      merged.name= this.name;
+      merged.name = source.name;
+      if (merged.name == null) {
+
+        merged.name = this.name;
+      }
       merged.semantic_class = source.semantic_class;
       if (merged.semantic_class == null) {
 

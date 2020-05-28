@@ -116,7 +116,11 @@ public class Routine extends Model implements Validable, Mergeable<Routine> {
       });
 
       this.weekday = Validations.validateStringField(codePrefix, "weekday", 255, this.weekday);
-      if (this.label_distribution != null) {
+      if (this.label_distribution == null) {
+
+        promise.fail(new ValidationErrorException(codePrefix + ".label_distribution", "The 'label_distribution' can not be null."));
+
+      } else {
 
         for (final String fieldName : this.label_distribution.fieldNames()) {
 
@@ -132,18 +136,7 @@ public class Routine extends Model implements Validable, Mergeable<Routine> {
 
             } else {
 
-              future = future.compose(Validations.validate(labels, (l1, l2) -> {
-
-                if (l1.label != null && l1.label.name != null && l2.label != null) {
-
-                  return l1.label.name.equals(l2.label.name);
-
-                } else {
-
-                  return false;
-                }
-
-              }, scorePrefix, vertx));
+              future = future.compose(Validations.validate(labels, (l1, l2) -> l1.label.name.equals(l2.label.name), scorePrefix, vertx));
             }
 
           } catch (final ClassCastException cause) {
@@ -153,8 +146,15 @@ public class Routine extends Model implements Validable, Mergeable<Routine> {
 
         }
 
+        if (this.confidence == null) {
+
+          promise.fail(new ValidationErrorException(codePrefix + ".confidence", "The 'confidence' can not be null."));
+
+        } else {
+
+          promise.complete();
+        }
       }
-      promise.complete();
 
     } catch (final ValidationErrorException validationError) {
 
@@ -221,6 +221,7 @@ public class Routine extends Model implements Validable, Mergeable<Routine> {
 
                   final JsonArray value = Model.toJsonArray(mergedScoredLabel);
                   mergedRoutine.label_distribution.put(fieldName, value);
+
                 }));
 
           } catch (final ClassCastException cause) {

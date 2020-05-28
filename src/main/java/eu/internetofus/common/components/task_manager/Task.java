@@ -108,6 +108,13 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
   public Long deadlineTs;
 
   /**
+   * The difference, measured in seconds, between the time when the task is closed by and midnight, January 1,
+   * 1970 UTC.
+   */
+  @Schema(description = "The UTC epoch timestamp representing the time the task is closed. It its not defined the task still open.", example = "1563930000",nullable = true)
+  public Long closeTs;
+
+  /**
    * The set of norms that define the interaction of the user when do the task.
    */
   @ArraySchema(schema = @Schema(implementation = Norm.class), arraySchema = @Schema(description = "The set of norms that define the interaction of the user when do the task."))
@@ -230,12 +237,20 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
 
             } else {
 
-              future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+              this.closeTs = Validations.validateTimeStamp(codePrefix, "closeTs", this.closeTs, true);
+              if (this.closeTs != null && this.closeTs < this._creationTs) {
 
-              // TODO check the attributes fetch the attributes on the type
+                promise.fail(new ValidationErrorException(codePrefix + ".closeTs", "The 'closeTs' has to be after the '_creationTs'."));
 
-              promise.complete();
+              } else {
 
+                future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+
+                // TODO check the attributes fetch the attributes on the type
+
+                promise.complete();
+
+              }
             }
           }
         }
@@ -293,6 +308,12 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
     if (merged.deadlineTs == null) {
 
       merged.deadlineTs = this.deadlineTs;
+    }
+
+    merged.closeTs = source.closeTs;
+    if (merged.closeTs == null) {
+
+      merged.closeTs = this.closeTs;
     }
 
     merged.attributes = source.attributes;

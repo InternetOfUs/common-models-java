@@ -36,106 +36,136 @@ import io.vertx.core.json.JsonObject;
  */
 public class QueryBuilder {
 
-	/**
-	 * The query that is creating.
-	 */
-	private final JsonObject query;
+  /**
+   * The query that is creating.
+   */
+  private final JsonObject query;
 
-	/**
-	 * Create a query builder.
-	 */
-	public QueryBuilder() {
+  /**
+   * Create a query builder.
+   */
+  public QueryBuilder() {
 
-		this.query = new JsonObject();
+    this.query = new JsonObject();
 
-	}
+  }
 
-	/**
-	 * Add a regular expression for a field.
-	 *
-	 * @param fieldName name of the field.
-	 * @param pattern   pattern that the field has to match.
-	 *
-	 * @return the factory that is using.
-	 */
-	public QueryBuilder withRegex(String fieldName, String pattern) {
+  /**
+   * Add a regular expression for a field.
+   *
+   * @param fieldName name of the field.
+   * @param pattern   pattern that the field has to match.
+   *
+   * @return the factory that is using.
+   */
+  public QueryBuilder withRegex(final String fieldName, final String pattern) {
 
-		if (pattern != null) {
+    if (pattern != null) {
 
-			this.query.put(fieldName, new JsonObject().put("$regex", pattern));
-		}
+      this.query.put(fieldName, new JsonObject().put("$regex", pattern));
+    }
 
-		return this;
-	}
+    return this;
+  }
 
-	/**
-	 * Add a regular expression for a field that has an array of strings.
-	 *
-	 * @param fieldName name of the field.
-	 * @param patterns  patterns that the field has to match.
-	 *
-	 * @return the factory that is using.
-	 */
-	public QueryBuilder withRegex(String fieldName, Iterable<String> patterns) {
+  /**
+   * Add a regular expression for a field that has an array of strings.
+   *
+   * @param fieldName name of the field.
+   * @param patterns  patterns that the field has to match.
+   *
+   * @return the factory that is using.
+   */
+  public QueryBuilder withRegex(final String fieldName, final Iterable<String> patterns) {
 
-		if (patterns != null) {
+    if (patterns != null) {
 
-			final JsonArray patternsMatch = new JsonArray();
-			for (final String pattern : patterns) {
+      final JsonArray patternsMatch = new JsonArray();
+      for (final String pattern : patterns) {
 
-				patternsMatch.add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", pattern)));
-			}
-			if (patternsMatch.size() != 0) {
+        patternsMatch.add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", pattern)));
+      }
+      if (patternsMatch.size() != 0) {
 
-				this.query.put(fieldName, new JsonObject().put("$all", patternsMatch));
-			}
-		}
+        this.query.put(fieldName, new JsonObject().put("$all", patternsMatch));
+      }
+    }
 
-		return this;
-	}
+    return this;
+  }
 
-	/**
-	 * Add a the restrictions to mark the filed to be in the specified range.
-	 *
-	 * @param fieldName name of the field.
-	 * @param from      the value, inclusive, that mark the lowest value of the
-	 *                  range.
-	 * @param to        the value, inclusive, that mark the highest value of the
-	 *                  range.
-	 *
-	 * @return the factory that is using.
-	 */
-	public QueryBuilder withRange(String fieldName, Number from, Number to) {
+  /**
+   * Add a the restrictions to mark the filed to be in the specified range.
+   *
+   * @param fieldName name of the field.
+   * @param from      the value, inclusive, that mark the lowest value of the range.
+   * @param to        the value, inclusive, that mark the highest value of the range.
+   *
+   * @return the factory that is using.
+   */
+  public QueryBuilder withRange(final String fieldName, final Number from, final Number to) {
 
-		if (from != null || to != null) {
+    if (from != null || to != null) {
 
-			final JsonObject restriction = new JsonObject();
-			if (from != null) {
+      final JsonObject restriction = new JsonObject();
+      if (from != null) {
 
-				restriction.put("$gte", from);
+        restriction.put("$gte", from);
 
-			}
-			if (to != null) {
+      }
+      if (to != null) {
 
-				restriction.put("$lte", to);
+        restriction.put("$lte", to);
 
-			}
+      }
 
-			this.query.put(fieldName, restriction);
+      this.query.put(fieldName, restriction);
 
-		}
+    }
 
-		return this;
-	}
+    return this;
+  }
 
-	/**
-	 * Return the created query.
-	 *
-	 * @return the created query.
-	 */
-	public JsonObject build() {
+  /**
+   * Add a the restrictions to mark the filed exist, thus that it is defined and not {@code null}.
+   *
+   * @param fieldName  name of the field.
+   * @param hasToExist is {@code true} is the field has to exist, {@ode false} if has to no exist, or {@code null} to
+   *                   ignore this restriction.
+   *
+   * @return the factory that is using.
+   */
+  public QueryBuilder withExist(final String fieldName, final Boolean hasToExist) {
 
-		return this.query;
-	}
+    if (hasToExist != null ) {
+
+      final JsonObject restriction = new JsonObject();
+      if (hasToExist ) {
+
+        restriction.put("$exists",true);
+        restriction.putNull("$ne");
+
+      }else {
+
+        restriction.put("$or",new JsonObject().put("$exists",false).putNull("$eq"));
+
+      }
+
+      this.query.put(fieldName, restriction);
+
+    }
+
+    return this;
+  }
+
+  /**
+   * Return the created query.
+   *
+   * @return the created query.
+   */
+  public JsonObject build() {
+
+    return this.query;
+  }
 
 }

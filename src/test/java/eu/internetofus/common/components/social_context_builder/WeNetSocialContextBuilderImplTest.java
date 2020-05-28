@@ -33,7 +33,7 @@ import static org.mockserver.model.HttpResponse.response;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpStatusCode;
 
@@ -73,7 +73,7 @@ public class WeNetSocialContextBuilderImplTest extends ComponentClientTestCase<W
   }
 
   /**
-   * Should the relations from the social context builder.
+   * Should return relations from the social context builder.
    *
    * @param client      to connect with the service.
    * @param testContext to use.
@@ -88,13 +88,29 @@ public class WeNetSocialContextBuilderImplTest extends ComponentClientTestCase<W
     expected.add(new UserRelationTest().createModelExample(2));
     expected.add(new UserRelationTest().createModelExample(3));
     expected.add(new UserRelationTest().createModelExample(4));
-    this.mockedServer.when(request().withMethod("GET").withPath("/social_context_builder/social/relations/" + userId)).respond(response().withStatusCode(HttpStatusCode.ACCEPTED_202.code()).withBody(Model.toJsonArray(expected).encode()));
+    this.mockedServer.when(request().withMethod("GET").withPath("/social_context_builder/social/relations/" + userId)).respond(response().withStatusCode(HttpStatusCode.OK_200.code()).withBody(Model.toJsonArray(expected).encode()));
     socialContextBuilder.retrieveSocialRelations(userId, testContext.succeeding(relations -> testContext.verify(() -> {
 
       assertThat(relations).isEqualTo(expected);
       testContext.completeNow();
 
     })));
+
+  }
+
+  /**
+   * Should not return relations because the returned content is not a social relation.
+   *
+   * @param client      to connect with the service.
+   * @param testContext to use.
+   */
+  @Test
+  public void shouldNotReturnRelations(final WebClient client, final VertxTestContext testContext) {
+
+    final WeNetSocialContextBuilderImpl socialContextBuilder = this.createClient(client);
+    final String userId = "12345";
+    this.mockedServer.when(request().withMethod("GET").withPath("/social_context_builder/social/relations/" + userId)).respond(response().withStatusCode(HttpStatusCode.OK_200.code()).withBody(new JsonObject().encode()));
+    socialContextBuilder.retrieveSocialRelations(userId, testContext.failing(error -> testContext.completeNow()));
 
   }
 
