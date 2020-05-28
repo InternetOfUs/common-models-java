@@ -139,19 +139,18 @@ public class QueryBuilder {
 
     if (hasToExist != null) {
 
-      final JsonObject restriction = new JsonObject();
       if (hasToExist) {
 
+        final JsonObject restriction = new JsonObject();
         restriction.put("$exists", true);
         restriction.putNull("$ne");
+        this.query.put(fieldName, restriction);
 
       } else {
 
-        restriction.put("$or", new JsonArray().add(new JsonObject().put("$exists", false)).add(new JsonObject().putNull("$eq")));
+        this.query.putNull(fieldName);
 
       }
-
-      this.query.put(fieldName, restriction);
 
     }
 
