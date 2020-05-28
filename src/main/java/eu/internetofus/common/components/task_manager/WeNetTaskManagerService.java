@@ -46,134 +46,156 @@ import io.vertx.serviceproxy.ServiceBinder;
 @ProxyGen
 public interface WeNetTaskManagerService {
 
-	/**
-	 * The address of this service.
-	 */
-	String ADDRESS = "wenet_common.service.taskManager";
+  /**
+   * The address of this service.
+   */
+  String ADDRESS = "wenet_common.service.taskManager";
 
-	/**
-	 * Create a proxy of the {@link WeNetTaskManagerService}.
-	 *
-	 * @param vertx where the service has to be used.
-	 *
-	 * @return the task.
-	 */
-	static WeNetTaskManagerService createProxy(Vertx vertx) {
+  /**
+   * Create a proxy of the {@link WeNetTaskManagerService}.
+   *
+   * @param vertx where the service has to be used.
+   *
+   * @return the task.
+   */
+  static WeNetTaskManagerService createProxy(final Vertx vertx) {
 
-		return new WeNetTaskManagerServiceVertxEBProxy(vertx, WeNetTaskManagerService.ADDRESS);
-	}
+    return new WeNetTaskManagerServiceVertxEBProxy(vertx, WeNetTaskManagerService.ADDRESS);
+  }
 
-	/**
-	 * Register this service.
-	 *
-	 * @param vertx  that contains the event bus to use.
-	 * @param client to do HTTP requests to other services.
-	 * @param conf   configuration to use.
-	 */
-	static void register(Vertx vertx, WebClient client, JsonObject conf) {
+  /**
+   * Register this service.
+   *
+   * @param vertx  that contains the event bus to use.
+   * @param client to do HTTP requests to other services.
+   * @param conf   configuration to use.
+   */
+  static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-		new ServiceBinder(vertx).setAddress(WeNetTaskManagerService.ADDRESS).register(WeNetTaskManagerService.class,
-				new WeNetTaskManagerServiceImpl(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetTaskManagerService.ADDRESS).register(WeNetTaskManagerService.class, new WeNetTaskManagerServiceImpl(client, conf));
 
-	}
+  }
 
-	/**
-	 * Search for a {@link Task} in Json format.
-	 *
-	 * @param id              identifier of the task to get.
-	 * @param retrieveHandler handler to manage the retrieve process.
-	 */
-	void retrieveJsonTask(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+  /**
+   * Search for a {@link Task} in Json format.
+   *
+   * @param id              identifier of the task to get.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  void retrieveJsonTask(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
 
-	/**
-	 * Return a task.
-	 *
-	 * @param id              identifier of the task to get.
-	 * @param retrieveHandler handler to manage the retrieve process.
-	 */
-	@GenIgnore
-	default void retrieveTask(@NotNull String id, @NotNull Handler<AsyncResult<Task>> retrieveHandler) {
+  /**
+   * Return a task.
+   *
+   * @param id              identifier of the task to get.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  @GenIgnore
+  default void retrieveTask(@NotNull final String id, @NotNull final Handler<AsyncResult<Task>> retrieveHandler) {
 
-		this.retrieveJsonTask(id, ComponentClient.handlerForModel(Task.class, retrieveHandler));
+    this.retrieveJsonTask(id, ComponentClient.handlerForModel(Task.class, retrieveHandler));
 
-	}
+  }
 
-	/**
-	 * Create a {@link Task} in Json format.
-	 *
-	 * @param task          to create.
-	 * @param createHandler handler to manage the creation process.
-	 */
-	void createTask(@NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> createHandler);
+  /**
+   * Create a {@link Task} in Json format.
+   *
+   * @param task          to create.
+   * @param createHandler handler to manage the creation process.
+   */
+  void createTask(@NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> createHandler);
 
-	/**
-	 * Create a task.
-	 *
-	 * @param task          to create.
-	 * @param createHandler handler to manage the creation process.
-	 */
-	@GenIgnore
-	default void createTask(@NotNull Task task, @NotNull Handler<AsyncResult<Task>> createHandler) {
+  /**
+   * Create a task.
+   *
+   * @param task          to create.
+   * @param createHandler handler to manage the creation process.
+   */
+  @GenIgnore
+  default void createTask(@NotNull final Task task, @NotNull final Handler<AsyncResult<Task>> createHandler) {
 
-		this.createTask(task.toJsonObject(), ComponentClient.handlerForModel(Task.class, createHandler));
-	}
+    this.createTask(task.toJsonObject(), ComponentClient.handlerForModel(Task.class, createHandler));
+  }
 
-	/**
-	 * Delete a task.
-	 *
-	 * @param id            identifier of the task to get.
-	 * @param deleteHandler handler to manage the delete process.
-	 */
-	void deleteTask(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
+  /**
+   * Update a task.
+   *
+   * @param id            identifier of the task to get.
+   * @param task          the new values for the task.
+   * @param updateHandler handler to manage the update process.
+   */
+  @GenIgnore
+  default void updateTask(@NotNull final String id, @NotNull final Task task, @NotNull final Handler<AsyncResult<Task>> updateHandler) {
 
-	/**
-	 * Return a {@link TaskType} in Json format.
-	 *
-	 * @param id              identifier of the task to get.
-	 * @param retrieveHandler handler to manage the retrieve process.
-	 */
-	void retrieveJsonTaskType(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+    this.updateJsonTask(id, task.toJsonObject(), ComponentClient.handlerForModel(Task.class, updateHandler));
 
-	/**
-	 * Return a task type.
-	 *
-	 * @param id              identifier of the task to get.
-	 * @param retrieveHandler handler to manage the retrieve process.
-	 */
-	@GenIgnore
-	default void retrieveTaskType(@NotNull String id, @NotNull Handler<AsyncResult<TaskType>> retrieveHandler) {
+  }
 
-		this.retrieveJsonTaskType(id, ComponentClient.handlerForModel(TaskType.class, retrieveHandler));
+  /**
+   * Update a {@link Task} in Json format.
+   *
+   * @param id            identifier of the task to get.
+   * @param task          the new values for the task.
+   * @param updateHandler handler to manage the update process.
+   */
+  void updateJsonTask(@NotNull String id, @NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> updateHandler);
 
-	}
+  /**
+   * Delete a task.
+   *
+   * @param id            identifier of the task to get.
+   * @param deleteHandler handler to manage the delete process.
+   */
+  void deleteTask(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
 
-	/**
-	 * Create a {@link TaskType} in Json format.
-	 *
-	 * @param task          to create.
-	 * @param createHandler handler to manage the creation process.
-	 */
-	void createTaskType(@NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> createHandler);
+  /**
+   * Return a {@link TaskType} in Json format.
+   *
+   * @param id              identifier of the task to get.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  void retrieveJsonTaskType(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
 
-	/**
-	 * Create a task type.
-	 *
-	 * @param taskType      to create.
-	 * @param createHandler handler to manage the creation process.
-	 */
-	@GenIgnore
-	default void createTaskType(@NotNull TaskType taskType, @NotNull Handler<AsyncResult<TaskType>> createHandler) {
+  /**
+   * Return a task type.
+   *
+   * @param id              identifier of the task to get.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  @GenIgnore
+  default void retrieveTaskType(@NotNull final String id, @NotNull final Handler<AsyncResult<TaskType>> retrieveHandler) {
 
-		this.createTaskType(taskType.toJsonObject(), ComponentClient.handlerForModel(TaskType.class, createHandler));
+    this.retrieveJsonTaskType(id, ComponentClient.handlerForModel(TaskType.class, retrieveHandler));
 
-	}
+  }
 
-	/**
-	 * Delete a task type.
-	 *
-	 * @param id            identifier of the task to get.
-	 * @param deleteHandler handler to manage the delete process.
-	 */
-	void deleteTaskType(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
+  /**
+   * Create a {@link TaskType} in Json format.
+   *
+   * @param task          to create.
+   * @param createHandler handler to manage the creation process.
+   */
+  void createTaskType(@NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> createHandler);
+
+  /**
+   * Create a task type.
+   *
+   * @param taskType      to create.
+   * @param createHandler handler to manage the creation process.
+   */
+  @GenIgnore
+  default void createTaskType(@NotNull final TaskType taskType, @NotNull final Handler<AsyncResult<TaskType>> createHandler) {
+
+    this.createTaskType(taskType.toJsonObject(), ComponentClient.handlerForModel(TaskType.class, createHandler));
+
+  }
+
+  /**
+   * Delete a task type.
+   *
+   * @param id            identifier of the task to get.
+   * @param deleteHandler handler to manage the delete process.
+   */
+  void deleteTaskType(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
 
 }

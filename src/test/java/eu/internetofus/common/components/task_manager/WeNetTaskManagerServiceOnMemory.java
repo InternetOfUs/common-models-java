@@ -46,178 +46,198 @@ import io.vertx.serviceproxy.ServiceBinder;
  */
 public class WeNetTaskManagerServiceOnMemory implements WeNetTaskManagerService {
 
-	/**
-	 * Register this service.
-	 *
-	 * @param vertx that contains the event bus to use.
-	 */
-	public static void register(Vertx vertx) {
+  /**
+   * Register this service.
+   *
+   * @param vertx that contains the event bus to use.
+   */
+  public static void register(final Vertx vertx) {
 
-		new ServiceBinder(vertx).setAddress(WeNetTaskManagerService.ADDRESS).register(WeNetTaskManagerService.class,
-				new WeNetTaskManagerServiceOnMemory());
+    new ServiceBinder(vertx).setAddress(WeNetTaskManagerService.ADDRESS).register(WeNetTaskManagerService.class,
+        new WeNetTaskManagerServiceOnMemory());
 
-	}
+  }
 
-	/**
-	 * The tasks that has been stored on the service.
-	 */
-	private final Map<String, JsonObject> tasks;
+  /**
+   * The tasks that has been stored on the service.
+   */
+  private final Map<String, JsonObject> tasks;
 
-	/**
-	 * The task types that has been stored on the service.
-	 */
-	private final Map<String, JsonObject> taskTypes;
+  /**
+   * The task types that has been stored on the service.
+   */
+  private final Map<String, JsonObject> taskTypes;
 
-	/**
-	 * Create the service.
-	 */
-	public WeNetTaskManagerServiceOnMemory() {
+  /**
+   * Create the service.
+   */
+  public WeNetTaskManagerServiceOnMemory() {
 
-		this.tasks = new HashMap<>();
-		this.taskTypes = new HashMap<>();
+    this.tasks = new HashMap<>();
+    this.taskTypes = new HashMap<>();
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public synchronized void createTask(JsonObject task, Handler<AsyncResult<JsonObject>> createHandler) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public synchronized void createTask(final JsonObject task, final Handler<AsyncResult<JsonObject>> createHandler) {
 
-		final Task model = Model.fromJsonObject(task, Task.class);
-		if (model == null) {
-			// bad task
-			createHandler.handle(Future.failedFuture("Bad task to store"));
+    final Task model = Model.fromJsonObject(task, Task.class);
+    if (model == null) {
+      // bad task
+      createHandler.handle(Future.failedFuture("Bad task to store"));
 
-		} else {
+    } else {
 
-			String id = task.getString("id");
-			if (id == null) {
+      String id = task.getString("id");
+      if (id == null) {
 
-				id = UUID.randomUUID().toString();
-				task.put("id", id);
-			}
+        id = UUID.randomUUID().toString();
+        task.put("id", id);
+      }
 
-			if (this.tasks.containsKey(id)) {
+      if (this.tasks.containsKey(id)) {
 
-				createHandler.handle(Future.failedFuture("Task already registered"));
+        createHandler.handle(Future.failedFuture("Task already registered"));
 
-			} else {
+      } else {
 
-				this.tasks.put(id, task);
-				createHandler.handle(Future.succeededFuture(task));
-			}
-		}
+        this.tasks.put(id, task);
+        createHandler.handle(Future.succeededFuture(task));
+      }
+    }
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public synchronized void retrieveJsonTask(String id, Handler<AsyncResult<JsonObject>> retrieveHandler) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public synchronized void retrieveJsonTask(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-		final JsonObject task = this.tasks.get(id);
-		if (task == null) {
+    final JsonObject task = this.tasks.get(id);
+    if (task == null) {
 
-			retrieveHandler.handle(Future.failedFuture("No Task associated to the ID"));
+      retrieveHandler.handle(Future.failedFuture("No Task associated to the ID"));
 
-		} else {
+    } else {
 
-			retrieveHandler.handle(Future.succeededFuture(task));
+      retrieveHandler.handle(Future.succeededFuture(task));
 
-		}
+    }
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public synchronized void deleteTask(String id, Handler<AsyncResult<Void>> deleteHandler) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public synchronized void deleteTask(final String id, final Handler<AsyncResult<Void>> deleteHandler) {
 
-		final JsonObject task = this.tasks.remove(id);
-		if (task == null) {
+    final JsonObject task = this.tasks.remove(id);
+    if (task == null) {
 
-			deleteHandler.handle(Future.failedFuture("No Task associated to the ID"));
+      deleteHandler.handle(Future.failedFuture("No Task associated to the ID"));
 
-		} else {
+    } else {
 
-			deleteHandler.handle(Future.succeededFuture());
+      deleteHandler.handle(Future.succeededFuture());
 
-		}
+    }
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public synchronized void createTaskType(JsonObject taskType, Handler<AsyncResult<JsonObject>> createHandler) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public synchronized void createTaskType(final JsonObject taskType, final Handler<AsyncResult<JsonObject>> createHandler) {
 
-		final TaskType model = Model.fromJsonObject(taskType, TaskType.class);
-		if (model == null) {
-			// bad taskType
-			createHandler.handle(Future.failedFuture("Bad taskType to store"));
+    final TaskType model = Model.fromJsonObject(taskType, TaskType.class);
+    if (model == null) {
+      // bad taskType
+      createHandler.handle(Future.failedFuture("Bad taskType to store"));
 
-		} else {
+    } else {
 
-			String id = taskType.getString("id");
-			if (id == null) {
+      String id = taskType.getString("id");
+      if (id == null) {
 
-				id = UUID.randomUUID().toString();
-				taskType.put("id", id);
-			}
+        id = UUID.randomUUID().toString();
+        taskType.put("id", id);
+      }
 
-			if (this.taskTypes.containsKey(id)) {
+      if (this.taskTypes.containsKey(id)) {
 
-				createHandler.handle(Future.failedFuture("TaskType already registered"));
+        createHandler.handle(Future.failedFuture("TaskType already registered"));
 
-			} else {
+      } else {
 
-				this.taskTypes.put(id, taskType);
-				createHandler.handle(Future.succeededFuture(taskType));
-			}
-		}
+        this.taskTypes.put(id, taskType);
+        createHandler.handle(Future.succeededFuture(taskType));
+      }
+    }
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public synchronized void retrieveJsonTaskType(String id, Handler<AsyncResult<JsonObject>> retrieveHandler) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public synchronized void retrieveJsonTaskType(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-		final JsonObject taskType = this.taskTypes.get(id);
-		if (taskType == null) {
+    final JsonObject taskType = this.taskTypes.get(id);
+    if (taskType == null) {
 
-			retrieveHandler.handle(Future.failedFuture("No TaskType associated to the ID"));
+      retrieveHandler.handle(Future.failedFuture("No TaskType associated to the ID"));
 
-		} else {
+    } else {
 
-			retrieveHandler.handle(Future.succeededFuture(taskType));
+      retrieveHandler.handle(Future.succeededFuture(taskType));
 
-		}
+    }
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public synchronized void deleteTaskType(String id, Handler<AsyncResult<Void>> deleteHandler) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public synchronized void deleteTaskType(final String id, final Handler<AsyncResult<Void>> deleteHandler) {
 
-		final JsonObject taskType = this.taskTypes.remove(id);
-		if (taskType == null) {
+    final JsonObject taskType = this.taskTypes.remove(id);
+    if (taskType == null) {
 
-			deleteHandler.handle(Future.failedFuture("No TaskType associated to the ID"));
+      deleteHandler.handle(Future.failedFuture("No TaskType associated to the ID"));
 
-		} else {
+    } else {
 
-			deleteHandler.handle(Future.succeededFuture());
+      deleteHandler.handle(Future.succeededFuture());
 
-		}
+    }
 
-	}
+  }
+
+  /**
+   * {@inheridDoc}
+   */
+  @Override
+  public void updateJsonTask(final String id, final JsonObject task, final Handler<AsyncResult<JsonObject>> updateHandler) {
+
+    final JsonObject currentTask = this.tasks.get(id);
+    if (currentTask == null) {
+
+      updateHandler.handle(Future.failedFuture("No Task associated to the ID"));
+
+    } else {
+
+      this.tasks.put(id,task);
+      updateHandler.handle(Future.succeededFuture(task));
+
+    }
+
+  }
 
 }

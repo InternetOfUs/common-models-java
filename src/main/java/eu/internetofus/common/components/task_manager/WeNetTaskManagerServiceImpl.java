@@ -42,76 +42,86 @@ import io.vertx.ext.web.client.WebClient;
  */
 public class WeNetTaskManagerServiceImpl extends ComponentClient implements WeNetTaskManagerService {
 
-	/**
-	 * Create a new service to interact with the WeNet task manager.
-	 *
-	 * @param client to interact with the other modules.
-	 * @param conf   configuration.
-	 */
-	public WeNetTaskManagerServiceImpl(WebClient client, JsonObject conf) {
+  /**
+   * Create a new service to interact with the WeNet task manager.
+   *
+   * @param client to interact with the other modules.
+   * @param conf   configuration.
+   */
+  public WeNetTaskManagerServiceImpl(final WebClient client, final JsonObject conf) {
 
-		super(client, conf.getString("taskManager", "https://wenet.u-hopper.com/task_manager"));
+    super(client, conf.getString("taskManager", "https://wenet.u-hopper.com/task_manager"));
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void createTask(JsonObject task, Handler<AsyncResult<JsonObject>> createHandler) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void createTask(final JsonObject task, final Handler<AsyncResult<JsonObject>> createHandler) {
 
-		this.post(task, createHandler, "/tasks");
+    this.post(task, createHandler, "/tasks");
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void retrieveJsonTask(String id, Handler<AsyncResult<JsonObject>> retrieveHandler) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveJsonTask(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-		this.getJsonObject(retrieveHandler, "/tasks", id);
+    this.getJsonObject(retrieveHandler, "/tasks", id);
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void deleteTask(String id, Handler<AsyncResult<Void>> deleteHandler) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteTask(final String id, final Handler<AsyncResult<Void>> deleteHandler) {
 
-		this.delete(deleteHandler, "/tasks", id);
+    this.delete(deleteHandler, "/tasks", id);
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void createTaskType(JsonObject taskType, Handler<AsyncResult<JsonObject>> createHandler) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void createTaskType(final JsonObject taskType, final Handler<AsyncResult<JsonObject>> createHandler) {
 
-		this.post(taskType, createHandler, "/tasks/types");
+    this.post(taskType, createHandler, "/tasks/types");
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void retrieveJsonTaskType(String id, Handler<AsyncResult<JsonObject>> retrieveHandler) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveJsonTaskType(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-		this.getJsonObject(retrieveHandler, "/tasks/types", id);
+    this.getJsonObject(retrieveHandler, "/tasks/types", id);
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void deleteTaskType(String id, Handler<AsyncResult<Void>> deleteHandler) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteTaskType(final String id, final Handler<AsyncResult<Void>> deleteHandler) {
 
-		this.delete(deleteHandler, "/tasks/types", id);
+    this.delete(deleteHandler, "/tasks/types", id);
 
-	}
+  }
+
+  /**
+   * {@inheridDoc}
+   */
+  @Override
+  public void updateJsonTask(final String id, final JsonObject task, final Handler<AsyncResult<JsonObject>> updateHandler) {
+
+    this.put(task, updateHandler, "/tasks", id);
+
+  }
 
 }
