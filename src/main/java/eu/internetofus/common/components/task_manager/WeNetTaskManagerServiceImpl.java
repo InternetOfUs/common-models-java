@@ -50,7 +50,7 @@ public class WeNetTaskManagerServiceImpl extends ComponentClient implements WeNe
    */
   public WeNetTaskManagerServiceImpl(final WebClient client, final JsonObject conf) {
 
-    super(client, conf.getString("taskManager", "https://wenet.u-hopper.com/task_manager"));
+    super(client, conf.getString("taskManager", "https://wenet.u-hopper.com/prod/task_manager"));
 
   }
 

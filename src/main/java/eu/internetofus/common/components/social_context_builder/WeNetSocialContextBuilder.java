@@ -75,7 +75,7 @@ public interface WeNetSocialContextBuilder {
    */
   static void register(Vertx vertx, WebClient client, JsonObject conf) {
 
-    new ServiceBinder(vertx).setAddress(WeNetSocialContextBuilder.ADDRESS).register(WeNetSocialContextBuilder.class, new WeNetSocialContextBuilderImpl(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetSocialContextBuilder.ADDRESS).register(WeNetSocialContextBuilder.class, new WeNetSocialContextBuilderClient(client, conf));
 
   }
 

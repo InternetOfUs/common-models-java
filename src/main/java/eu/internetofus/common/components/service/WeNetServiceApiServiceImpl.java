@@ -50,7 +50,7 @@ public class WeNetServiceApiServiceImpl extends ComponentClient implements WeNet
 	 */
 	public WeNetServiceApiServiceImpl(WebClient client, JsonObject conf) {
 
-		super(client, conf.getString("service", "https://wenet.u-hopper.com/service"));
+		super(client, conf.getString("service", "https://wenet.u-hopper.com/prod/service"));
 
 	}
 

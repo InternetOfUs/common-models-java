@@ -68,7 +68,7 @@ public class WeNetSocialContextBuilderMocker extends AbstractComponentMocker {
   @Override
   protected String getComponentConfigurationName() {
 
-    return "socialContextBuilder";
+    return WeNetSocialContextBuilderClient.SOCIAL_CONTEXT_BUILDER_CONF_KEY;
   }
 
 }

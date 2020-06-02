@@ -47,7 +47,7 @@ public class WeNetIncentiveServerClient extends ComponentClient implements WeNet
    */
   public WeNetIncentiveServerClient(final WebClient client, final JsonObject conf) {
 
-    super(client, conf.getString("incentiveServerr", "https://wenet.u-hopper.com/incentive_server"));
+    super(client, conf.getString("incentiveServerr", "https://wenet.u-hopper.com/prod/incentive_server"));
 
   }
 

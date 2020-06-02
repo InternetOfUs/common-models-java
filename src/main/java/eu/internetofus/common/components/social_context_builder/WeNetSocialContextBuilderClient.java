@@ -40,12 +40,18 @@ import io.vertx.serviceproxy.ServiceBinder;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetSocialContextBuilderImpl extends ComponentClient implements WeNetSocialContextBuilder {
+public class WeNetSocialContextBuilderClient extends ComponentClient implements WeNetSocialContextBuilder {
+
 
   /**
-   * The address of this service.
+   * The default URL to bind the client.
    */
-  String ADDRESS = "wenet_common.service.SocialContextBuilder";
+  public static final String DEFAULT_SOCIAL_CONTEXT_BUILDER_API_URL = "https://wenet.u-hopper.com/prod/social_context_builder";
+
+  /**
+   * The name of the configuration property that contains the URL to the social context builder API.
+   */
+  public static final String SOCIAL_CONTEXT_BUILDER_CONF_KEY = "socialContextBuilder";
 
   /**
    * Create a proxy of the {@link WeNetSocialContextBuilder}.
@@ -68,7 +74,7 @@ public class WeNetSocialContextBuilderImpl extends ComponentClient implements We
    */
   static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-    new ServiceBinder(vertx).setAddress(WeNetSocialContextBuilder.ADDRESS).register(WeNetSocialContextBuilder.class, new WeNetSocialContextBuilderImpl(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetSocialContextBuilder.ADDRESS).register(WeNetSocialContextBuilder.class, new WeNetSocialContextBuilderClient(client, conf));
 
   }
 
@@ -79,9 +85,9 @@ public class WeNetSocialContextBuilderImpl extends ComponentClient implements We
    * @param client to interact with the other modules.
    * @param conf   configuration of the component.
    */
-  public WeNetSocialContextBuilderImpl(final WebClient client, final JsonObject conf) {
+  public WeNetSocialContextBuilderClient(final WebClient client, final JsonObject conf) {
 
-    super(client, conf.getString("socialContextBuilder", "https://wenet.u-hopper.com/social_context_builder"));
+    super(client, conf.getString(SOCIAL_CONTEXT_BUILDER_CONF_KEY, DEFAULT_SOCIAL_CONTEXT_BUILDER_API_URL));
 
   }
 

@@ -44,7 +44,7 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
   /**
    * The default URL to bind the client.
    */
-  public static final String DEFAULT_PROFILE_MANAGER_API_URL = "https://wenet.u-hopper.com/profile_manager";
+  public static final String DEFAULT_PROFILE_MANAGER_API_URL = "https://wenet.u-hopper.com/prod/profile_manager";
 
   /**
    * The name of the configuration property that contains the URL to the profile manager API.

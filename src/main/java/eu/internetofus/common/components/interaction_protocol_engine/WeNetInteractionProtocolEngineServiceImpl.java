@@ -51,7 +51,7 @@ public class WeNetInteractionProtocolEngineServiceImpl extends ComponentClient
 	public WeNetInteractionProtocolEngineServiceImpl(WebClient client, JsonObject conf) {
 
 		super(client,
-				conf.getString("interactionProtocolEngine", "https://wenet.u-hopper.com/interaction_protocol_engine"));
+				conf.getString("interactionProtocolEngine", "https://wenet.u-hopper.com/prod/interaction_protocol_engine"));
 
 	}
 

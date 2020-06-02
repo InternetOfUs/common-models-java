@@ -42,7 +42,7 @@ import io.vertx.junit5.VertxTestContext;
  * Test the {@link WeNetSocialContextBuilder}.
  *
  * @see WeNetSocialContextBuilder
- * @see WeNetSocialContextBuilderImpl
+ * @see WeNetSocialContextBuilderClient
  * @see WeNetSocialContextBuilderMocker
  *
  * @author UDT-IA, IIIA-CSIC
