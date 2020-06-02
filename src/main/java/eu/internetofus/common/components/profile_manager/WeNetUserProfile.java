@@ -183,7 +183,7 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
 				future = future.compose(mapper -> {
 
 					final Promise<Void> verifyNotRepeatedIdPromise = Promise.promise();
-					WeNetProfileManagerService.createProxy(vertx).retrieveProfile(this.id, profile -> {
+					WeNetProfileManager.createProxy(vertx).retrieveProfile(this.id, profile -> {
 
 						if (profile.failed()) {
 

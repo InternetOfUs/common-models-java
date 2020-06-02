@@ -29,6 +29,7 @@ package eu.internetofus.common.components.task_manager;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,10 +37,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import eu.internetofus.common.components.ModelTestCase;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManagerServiceOnMemory;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
 import eu.internetofus.common.components.service.ServiceApiSimulatorServiceOnMemory;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
@@ -53,97 +56,114 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(VertxExtension.class)
 public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
 
-	/**
-	 * Register the necessary services before to test.
-	 *
-	 * @param vertx event bus to register the necessary services.
-	 */
-	@BeforeEach
-	public void registerServices(Vertx vertx) {
+  /**
+   * The profile manager mocked server.
+   */
+  protected static WeNetProfileManagerMocker profileManagerMocker;
 
-		WeNetProfileManagerServiceOnMemory.register(vertx);
-		WeNetTaskManagerServiceOnMemory.register(vertx);
-		ServiceApiSimulatorServiceOnMemory.register(vertx);
+  /**
+   * Start the mocker server.
+   */
+  @BeforeAll
+  public static void startMockers() {
 
-	}
+    profileManagerMocker = WeNetProfileManagerMocker.start();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public TaskTransaction createModelExample(int index) {
+  /**
+   * Register the necessary services before to test.
+   *
+   * @param vertx event bus to register the necessary services.
+   */
+  @BeforeEach
+  public void registerServices(final Vertx vertx) {
 
-		assert index >= 0;
-		final TaskTransaction model = new TaskTransaction();
-		model.taskId = "taskId" + index;
-		model.label = "label" + index;
-		model.attributes = new JsonObject().put("index", index);
-		return model;
+    final WebClient client = WebClient.create(vertx);
+    final JsonObject conf = profileManagerMocker.getComponentConfiguration();
+    WeNetProfileManager.register(vertx, client, conf);
 
-	}
+    WeNetTaskManagerServiceOnMemory.register(vertx);
+    ServiceApiSimulatorServiceOnMemory.register(vertx);
 
-	/**
-	 * Check that the {@link #createModelExample(int)} is valid.
-	 *
-	 * @param index       to verify.
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Task#validate(String, Vertx)
-	 */
-	@ParameterizedTest(name = "The model example {0} has to be valid")
-	@ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
-	public void shouldExampleBeValid(int index, Vertx vertx, VertxTestContext testContext) {
+  }
 
-		final TaskTransaction model = this.createModelExample(index);
-		assertIsValid(model, vertx, testContext);
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public TaskTransaction createModelExample(final int index) {
 
-	}
+    assert index >= 0;
+    final TaskTransaction model = new TaskTransaction();
+    model.taskId = "taskId" + index;
+    model.label = "label" + index;
+    model.attributes = new JsonObject().put("index", index);
+    return model;
 
-	/**
-	 * An empty transaction not be valid.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Task#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldEmptyTransactionBeNotValid(Vertx vertx, VertxTestContext testContext) {
+  }
 
-		assertIsNotValid(new TaskTransaction(), "taskId", vertx, testContext);
-	}
+  /**
+   * Check that the {@link #createModelExample(int)} is valid.
+   *
+   * @param index       to verify.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(String, Vertx)
+   */
+  @ParameterizedTest(name = "The model example {0} has to be valid")
+  @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
+  public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-	/**
-	 * A task transaction without task identifier cannot be valid.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Task#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldTaskTransactionBeNotValidWithoutTaskId(Vertx vertx, VertxTestContext testContext) {
+    final TaskTransaction model = this.createModelExample(index);
+    assertIsValid(model, vertx, testContext);
 
-		final TaskTransaction model = this.createModelExample(1);
-		model.taskId = null;
-		assertIsNotValid(model, "taskId", vertx, testContext);
-	}
+  }
 
-	/**
-	 * A task transaction without task type identifier cannot be valid.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Task#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldTaskTransactionBeNotValidWithoutTaskLabel(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * An empty transaction not be valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(String, Vertx)
+   */
+  @Test
+  public void shouldEmptyTransactionBeNotValid(final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskTransaction model = this.createModelExample(1);
-		model.label = null;
-		assertIsNotValid(model, "label", vertx, testContext);
-	}
+    assertIsNotValid(new TaskTransaction(), "taskId", vertx, testContext);
+  }
+
+  /**
+   * A task transaction without task identifier cannot be valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(String, Vertx)
+   */
+  @Test
+  public void shouldTaskTransactionBeNotValidWithoutTaskId(final Vertx vertx, final VertxTestContext testContext) {
+
+    final TaskTransaction model = this.createModelExample(1);
+    model.taskId = null;
+    assertIsNotValid(model, "taskId", vertx, testContext);
+  }
+
+  /**
+   * A task transaction without task type identifier cannot be valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(String, Vertx)
+   */
+  @Test
+  public void shouldTaskTransactionBeNotValidWithoutTaskLabel(final Vertx vertx, final VertxTestContext testContext) {
+
+    final TaskTransaction model = this.createModelExample(1);
+    model.label = null;
+    assertIsNotValid(model, "label", vertx, testContext);
+  }
 
 }

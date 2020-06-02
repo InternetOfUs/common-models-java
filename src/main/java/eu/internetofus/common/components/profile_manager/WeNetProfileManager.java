@@ -44,7 +44,7 @@ import io.vertx.serviceproxy.ServiceBinder;
  * @author UDT-IA, IIIA-CSIC
  */
 @ProxyGen
-public interface WeNetProfileManagerService {
+public interface WeNetProfileManager {
 
 	/**
 	 * The address of this service.
@@ -52,15 +52,15 @@ public interface WeNetProfileManagerService {
 	String ADDRESS = "wenet_common.service.profileManager";
 
 	/**
-	 * Create a proxy of the {@link WeNetProfileManagerService}.
+	 * Create a proxy of the {@link WeNetProfileManager}.
 	 *
 	 * @param vertx where the service has to be used.
 	 *
 	 * @return the task.
 	 */
-	static WeNetProfileManagerService createProxy(Vertx vertx) {
+	static WeNetProfileManager createProxy(Vertx vertx) {
 
-		return new WeNetProfileManagerServiceVertxEBProxy(vertx, WeNetProfileManagerService.ADDRESS);
+		return new WeNetProfileManagerVertxEBProxy(vertx, WeNetProfileManager.ADDRESS);
 	}
 
 	/**
@@ -72,8 +72,8 @@ public interface WeNetProfileManagerService {
 	 */
 	static void register(Vertx vertx, WebClient client, JsonObject conf) {
 
-		new ServiceBinder(vertx).setAddress(WeNetProfileManagerService.ADDRESS).register(WeNetProfileManagerService.class,
-				new WeNetProfileManagerServiceImpl(client, conf));
+		new ServiceBinder(vertx).setAddress(WeNetProfileManager.ADDRESS).register(WeNetProfileManager.class,
+				new WeNetProfileManagerClient(client, conf));
 
 	}
 

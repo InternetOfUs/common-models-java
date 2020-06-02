@@ -36,6 +36,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +51,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
@@ -64,6 +66,20 @@ import io.vertx.junit5.VertxTestContext;
 public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
   /**
+   * The profile manager mocked server.
+   */
+  protected static WeNetProfileManagerMocker mocker;
+
+  /**
+   * Start the mocker server.
+   */
+  @BeforeAll
+  public static void startMocker() {
+
+    mocker = WeNetProfileManagerMocker.start();
+  }
+
+  /**
    * Register the necessary services before to test.
    *
    * @param vertx event bus to register the necessary services.
@@ -71,7 +87,9 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    WeNetProfileManagerServiceOnMemory.register(vertx);
+    final WebClient client = WebClient.create(vertx);
+    final JsonObject conf = mocker.getComponentConfiguration();
+    WeNetProfileManager.register(vertx, client, conf);
 
   }
 
@@ -229,7 +247,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithAnExistingId(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManagerService.createProxy(vertx).createProfile(new JsonObject(), testContext.succeeding(created -> {
+    WeNetProfileManager.createProxy(vertx).createProfile(new JsonObject(), testContext.succeeding(created -> {
 
       final WeNetUserProfile model = new WeNetUserProfile();
       model.id = created.getString("id");

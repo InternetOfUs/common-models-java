@@ -24,51 +24,62 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.vertx;
+package eu.internetofus.common.components.social_context_builder;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.junit.jupiter.MockServerExtension;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.web.VertxWebClientExtension;
+import io.vertx.junit5.VertxTestContext;
 
 /**
- * Generic test over the classes the {@link ComponentClient}.
+ * Test the {@link WeNetSocialContextBuilder}.
  *
- * @see ComponentClient
- *
- * @param <T> type of client to test.
+ * @see WeNetSocialContextBuilder
+ * @see WeNetSocialContextBuilderImpl
+ * @see WeNetSocialContextBuilderMocker
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith({ VertxExtension.class, VertxWebClientExtension.class, MockServerExtension.class })
-public abstract class ComponentClientTestCase<T extends ComponentClient> {
+@ExtendWith(VertxExtension.class)
+public class WeNetSocialContextBuilderTest {
 
   /**
-   * The mocked server.
-   */
-  protected ClientAndServer mockedServer;
-
-  /**
-   * Create a new test case.
+   * Register the service before to test it.
    *
-   * @param client to use.
+   * @param vertx event bus to use.
    */
-  public ComponentClientTestCase(final ClientAndServer client) {
+  @BeforeEach
+  public void registerServiceBeforeStartTest(final Vertx vertx) {
 
-    this.mockedServer = client;
+    final WeNetSocialContextBuilderMocker mocker = WeNetSocialContextBuilderMocker.start();
+    final WebClient client = WebClient.create(vertx);
+    final JsonObject conf = mocker.getComponentConfiguration();
+    WeNetSocialContextBuilder.register(vertx, client, conf);
 
   }
 
   /**
-   * Create client to test.
-   *
-   * @param client web client to use.
-   *
-   * @return a new instance of the client to test.
+   * @param vertx       event bus to use.
+   * @param testContext context of the executing test.
    */
-  protected abstract T createClient(WebClient client);
+  @Test
+  public void shouldReturnEmpty(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetSocialContextBuilder socialContextBuilder = WeNetSocialContextBuilder.createProxy(vertx);
+    socialContextBuilder.retrieveSocialRelations("userId", testContext.succeeding(relations -> testContext.verify(() -> {
+
+      assertThat(relations).isEmpty();
+      testContext.completeNow();
+
+    })));
+
+  }
 
 }

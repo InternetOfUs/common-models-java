@@ -33,55 +33,64 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 
 /**
- * The implementation of the {@link WeNetProfileManagerService}.
+ * The client to interact with the {@link WeNetProfileManager}.
  *
- *
- * @see WeNetProfileManagerService
+ * @see WeNetProfileManager
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetProfileManagerServiceImpl extends ComponentClient implements WeNetProfileManagerService {
+public class WeNetProfileManagerClient extends ComponentClient implements WeNetProfileManager {
 
-	/**
-	 * Create a new service to interact with the WeNet profile manager.
-	 *
-	 * @param client to interact with the other modules.
-	 * @param conf   configuration.
-	 */
-	public WeNetProfileManagerServiceImpl(WebClient client, JsonObject conf) {
+  /**
+   * The default URL to bind the client.
+   */
+  public static final String DEFAULT_PROFILE_MANAGER_API_URL = "https://wenet.u-hopper.com/profile_manager";
 
-		super(client, conf.getString("profileManager", "https://wenet.u-hopper.com/profile_manager"));
+  /**
+   * The name of the configuration property that contains the URL to the profile manager API.
+   */
+  public static final String PROFILE_MANAGER_CONF_KEY = "profileManager";
 
-	}
+  /**
+   * Create a new service to interact with the WeNet profile manager.
+   *
+   * @param client to interact with the other modules.
+   * @param conf   configuration.
+   */
+  public WeNetProfileManagerClient(final WebClient client, final JsonObject conf) {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void createProfile(JsonObject profile, Handler<AsyncResult<JsonObject>> createHandler) {
+    super(client, conf.getString(PROFILE_MANAGER_CONF_KEY, DEFAULT_PROFILE_MANAGER_API_URL));
 
-		this.post(profile, createHandler, "/profiles");
+  }
 
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void createProfile(final JsonObject profile, final Handler<AsyncResult<JsonObject>> createHandler) {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void retrieveJsonProfile(String id, Handler<AsyncResult<JsonObject>> retrieveHandler) {
+    this.post(profile, createHandler, "/profiles");
 
-		this.getJsonObject(retrieveHandler, "/profiles/", id);
+  }
 
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveJsonProfile(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void deleteProfile(String id, Handler<AsyncResult<Void>> deleteHandler) {
+    this.getJsonObject(retrieveHandler, "/profiles/", id);
 
-		this.delete(deleteHandler, "/profiles/", id);
+  }
 
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteProfile(final String id, final Handler<AsyncResult<Void>> deleteHandler) {
+
+    this.delete(deleteHandler, "/profiles/", id);
+
+  }
 
 }

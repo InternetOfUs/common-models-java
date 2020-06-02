@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +48,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
@@ -60,183 +62,196 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(VertxExtension.class)
 public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkRelationship> {
 
-	/**
-	 * Test constructor.
-	 *
-	 * @see SocialNetworkRelationship#SocialNetworkRelationship(SocialNetworkRelationshipType,
-	 *      String)
-	 */
-	@Test
-	public void shouldCreateARelationship() {
+  /**
+   * The profile manager mocked server.
+   */
+  protected static WeNetProfileManagerMocker mocker;
 
-		final SocialNetworkRelationshipType type = SocialNetworkRelationshipType.colleague;
-		final String userId = UUID.randomUUID().toString();
-		final SocialNetworkRelationship model = new SocialNetworkRelationship(type, userId);
-		assertThat(model.type).isEqualTo(type);
-		assertThat(model.userId).isEqualTo(userId);
+  /**
+   * Start the mocker server.
+   */
+  @BeforeAll
+  public static void startMocker() {
 
-	}
+    mocker = WeNetProfileManagerMocker.start();
+  }
 
-	/**
-	 * Register the necessary services before to test.
-	 *
-	 * @param vertx event bus to register the necessary services.
-	 */
-	@BeforeEach
-	public void registerServices(Vertx vertx) {
+  /**
+   * Register the necessary services before to test.
+   *
+   * @param vertx event bus to register the necessary services.
+   */
+  @BeforeEach
+  public void registerServices(final Vertx vertx) {
 
-		WeNetProfileManagerServiceOnMemory.register(vertx);
+    final WebClient client = WebClient.create(vertx);
+    final JsonObject conf = mocker.getComponentConfiguration();
+    WeNetProfileManager.register(vertx, client, conf);
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public SocialNetworkRelationship createModelExample(int index) {
+  /**
+   * Test constructor.
+   *
+   * @see SocialNetworkRelationship#SocialNetworkRelationship(SocialNetworkRelationshipType, String)
+   */
+  @Test
+  public void shouldCreateARelationship() {
 
-		final SocialNetworkRelationship model = new SocialNetworkRelationship();
-		model.userId = String.valueOf(index);
-		model.type = SocialNetworkRelationshipType.values()[index % (SocialNetworkRelationshipType.values().length - 1)];
-		return model;
+    final SocialNetworkRelationshipType type = SocialNetworkRelationshipType.colleague;
+    final String userId = UUID.randomUUID().toString();
+    final SocialNetworkRelationship model = new SocialNetworkRelationship(type, userId);
+    assertThat(model.type).isEqualTo(type);
+    assertThat(model.userId).isEqualTo(userId);
 
-	}
+  }
 
-	/**
-	 * Create a new empty user profile. It has to be stored into the repository.
-	 *
-	 * @param vertx    event bus to use.
-	 * @param creation handler to manage the created user profile.
-	 */
-	protected void createNewEmptyProfile(Vertx vertx, Handler<AsyncResult<WeNetUserProfile>> creation) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public SocialNetworkRelationship createModelExample(final int index) {
 
-		WeNetProfileManagerService.createProxy(vertx).createProfile(new JsonObject(), (creationResult) -> {
+    final SocialNetworkRelationship model = new SocialNetworkRelationship();
+    model.userId = String.valueOf(index);
+    model.type = SocialNetworkRelationshipType.values()[index % (SocialNetworkRelationshipType.values().length - 1)];
+    return model;
 
-			if (creationResult.failed()) {
+  }
 
-				creation.handle(Future.failedFuture(creationResult.cause()));
+  /**
+   * Create a new empty user profile. It has to be stored into the repository.
+   *
+   * @param vertx    event bus to use.
+   * @param creation handler to manage the created user profile.
+   */
+  protected void createNewEmptyProfile(final Vertx vertx, final Handler<AsyncResult<WeNetUserProfile>> creation) {
 
-			} else {
+    WeNetProfileManager.createProxy(vertx).createProfile(new JsonObject(), (creationResult) -> {
 
-				final WeNetUserProfile profile = Model.fromJsonObject(creationResult.result(), WeNetUserProfile.class);
-				if (profile == null) {
+      if (creationResult.failed()) {
 
-					creation.handle(Future.failedFuture("Can not obtain a profile form the JSON result"));
+        creation.handle(Future.failedFuture(creationResult.cause()));
 
-				} else {
+      } else {
 
-					creation.handle(Future.succeededFuture(profile));
-				}
+        final WeNetUserProfile profile = Model.fromJsonObject(creationResult.result(), WeNetUserProfile.class);
+        if (profile == null) {
 
-			}
-		});
-	}
+          creation.handle(Future.failedFuture("Can not obtain a profile form the JSON result"));
 
-	/**
-	 * Create an example model that has the specified index.
-	 *
-	 * @param index       to use in the example.
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 * @param creation    handler to manage the created social network relationship.
-	 */
-	public void createModelExample(int index, Vertx vertx, VertxTestContext testContext,
-			Handler<AsyncResult<SocialNetworkRelationship>> creation) {
+        } else {
 
-		this.createNewEmptyProfile(vertx, testContext.succeeding(profile -> {
+          creation.handle(Future.succeededFuture(profile));
+        }
 
-			final SocialNetworkRelationship relation = this.createModelExample(index);
-			relation.userId = profile.id;
-			creation.handle(Future.succeededFuture(relation));
+      }
+    });
+  }
 
-		}));
+  /**
+   * Create an example model that has the specified index.
+   *
+   * @param index       to use in the example.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   * @param creation    handler to manage the created social network relationship.
+   */
+  public void createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<SocialNetworkRelationship>> creation) {
 
-	}
+    this.createNewEmptyProfile(vertx, testContext.succeeding(profile -> {
 
-	/**
-	 * Check that the
-	 * {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} is valid.
-	 *
-	 * @param index       to verify
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see SocialNetworkRelationship#validate(String, Vertx)
-	 */
-	@ParameterizedTest(name = "The model example {0} has to be valid")
-	@ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
-	public void shouldExampleFromRepositoryBeValid(int index, Vertx vertx, VertxTestContext testContext) {
+      final SocialNetworkRelationship relation = this.createModelExample(index);
+      relation.userId = profile.id;
+      creation.handle(Future.succeededFuture(relation));
 
-		this.createModelExample(index, vertx, testContext, testContext.succeeding(model -> {
+    }));
 
-			final String originalUserId = model.userId;
-			model.userId = "   " + originalUserId + "   ";
-			assertIsValid(model, vertx, testContext, () -> {
+  }
 
-				assertThat(model.userId).isEqualTo(originalUserId);
-			});
-		}));
+  /**
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} is valid.
+   *
+   * @param index       to verify
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialNetworkRelationship#validate(String, Vertx)
+   */
+  @ParameterizedTest(name = "The model example {0} has to be valid")
+  @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
+  public void shouldExampleFromRepositoryBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-	}
+    this.createModelExample(index, vertx, testContext, testContext.succeeding(model -> {
 
-	/**
-	 * Check that a model is not valid with an undefined user id.
-	 *
-	 * @param userId      that is not valid.
-	 * @param vertx       event bus to use.
-	 * @param testContext context to test.
-	 *
-	 * @see SocialNetworkRelationship#validate(String, Vertx)
-	 */
-	@ParameterizedTest(name = "Should not be valid  a SocialNetworkRelationship with an userId = {0}")
-	@NullAndEmptySource
-	@ValueSource(strings = { "undefined value ", "9bec40b8-8209-4e28-b64b-1de52595ca6d", ValidationsTest.STRING_256 })
-	public void shouldNotBeValidWithBadUserIdentifier(String userId, Vertx vertx, VertxTestContext testContext) {
+      final String originalUserId = model.userId;
+      model.userId = "   " + originalUserId + "   ";
+      assertIsValid(model, vertx, testContext, () -> {
 
-		final SocialNetworkRelationship model = new SocialNetworkRelationship();
-		model.userId = userId;
-		model.type = SocialNetworkRelationshipType.colleague;
-		assertIsNotValid(model, "userId", vertx, testContext);
+        assertThat(model.userId).isEqualTo(originalUserId);
+      });
+    }));
 
-	}
+  }
 
-	/**
-	 * Check that a model is not valid without a type.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext context to test.
-	 *
-	 * @see SocialNetworkRelationship#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidAmodelWithoutAType(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that a model is not valid with an undefined user id.
+   *
+   * @param userId      that is not valid.
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see SocialNetworkRelationship#validate(String, Vertx)
+   */
+  @ParameterizedTest(name = "Should not be valid  a SocialNetworkRelationship with an userId = {0}")
+  @NullAndEmptySource
+  @ValueSource(strings = { "undefined value ", "9bec40b8-8209-4e28-b64b-1de52595ca6d", ValidationsTest.STRING_256 })
+  public void shouldNotBeValidWithBadUserIdentifier(final String userId, final Vertx vertx, final VertxTestContext testContext) {
 
-		this.createNewEmptyProfile(vertx, testContext.succeeding(profile -> {
-			final SocialNetworkRelationship model = new SocialNetworkRelationship();
-			model.type = null;
-			model.userId = profile.id;
-			assertIsNotValid(model, "type", vertx, testContext);
+    final SocialNetworkRelationship model = new SocialNetworkRelationship();
+    model.userId = userId;
+    model.type = SocialNetworkRelationshipType.colleague;
+    assertIsNotValid(model, "userId", vertx, testContext);
 
-		}));
+  }
 
-	}
+  /**
+   * Check that a model is not valid without a type.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see SocialNetworkRelationship#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidAmodelWithoutAType(final Vertx vertx, final VertxTestContext testContext) {
 
-	/**
-	 * Check that a model is not valid without an user id.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext context to test.
-	 *
-	 * @see SocialNetworkRelationship#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidAmodelWithoutAUserId(Vertx vertx, VertxTestContext testContext) {
+    this.createNewEmptyProfile(vertx, testContext.succeeding(profile -> {
+      final SocialNetworkRelationship model = new SocialNetworkRelationship();
+      model.type = null;
+      model.userId = profile.id;
+      assertIsNotValid(model, "type", vertx, testContext);
 
-		final SocialNetworkRelationship model = new SocialNetworkRelationship();
-		model.type = SocialNetworkRelationshipType.colleague;
-		model.userId = null;
-		assertIsNotValid(model, "userId", vertx, testContext);
+    }));
 
-	}
+  }
+
+  /**
+   * Check that a model is not valid without an user id.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see SocialNetworkRelationship#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidAmodelWithoutAUserId(final Vertx vertx, final VertxTestContext testContext) {
+
+    final SocialNetworkRelationship model = new SocialNetworkRelationship();
+    model.type = SocialNetworkRelationshipType.colleague;
+    model.userId = null;
+    assertIsNotValid(model, "userId", vertx, testContext);
+
+  }
 
 }

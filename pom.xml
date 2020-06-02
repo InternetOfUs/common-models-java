@@ -61,7 +61,7 @@
 		<org.itsallcode-junit5-system-extensions-version>1.1.0</org.itsallcode-junit5-system-extensions-version>
 		<org.mockito-version>3.2.4</org.mockito-version>
 		<org.testcontainers-version>1.12.5</org.testcontainers-version>
-		<org.mock-server-version>5.10.0</org.mock-server-version>
+		<com.intuit.karate-version>0.9.5</com.intuit.karate-version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -232,16 +232,16 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.mock-server</groupId>
-			<artifactId>mockserver-netty</artifactId>
-			<version>${org.mock-server-version}</version>
+			<groupId>com.intuit.karate</groupId>
+			<artifactId>karate-apache</artifactId>
+			<version>${com.intuit.karate-version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mock-server</groupId>
-			<artifactId>mockserver-junit-jupiter</artifactId>
-			<version>${org.mock-server-version}</version>
-			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 	<build>

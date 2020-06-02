@@ -32,6 +32,7 @@ import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +46,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
@@ -59,6 +61,20 @@ import io.vertx.junit5.VertxTestContext;
 public class RoutineTest extends ModelTestCase<Routine> {
 
   /**
+   * The profile manager mocked server.
+   */
+  protected static WeNetProfileManagerMocker mocker;
+
+  /**
+   * Start the mocker server.
+   */
+  @BeforeAll
+  public static void startMocker() {
+
+    mocker = WeNetProfileManagerMocker.start();
+  }
+
+  /**
    * Register the necessary services before to test.
    *
    * @param vertx event bus to register the necessary services.
@@ -66,7 +82,9 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    WeNetProfileManagerServiceOnMemory.register(vertx);
+    final WebClient client = WebClient.create(vertx);
+    final JsonObject conf = mocker.getComponentConfiguration();
+    WeNetProfileManager.register(vertx, client, conf);
 
   }
 

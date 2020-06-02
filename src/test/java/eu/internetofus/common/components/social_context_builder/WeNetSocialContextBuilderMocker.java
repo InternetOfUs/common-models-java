@@ -26,30 +26,49 @@
 
 package eu.internetofus.common.components.social_context_builder;
 
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
-
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.model.HttpStatusCode;
-
-import io.vertx.core.json.JsonArray;
+import eu.internetofus.common.components.AbstractComponentMocker;
 
 /**
- * The mocked server for the WeNet social context builder.
+ * The mocked server for the {@link WeNetSocialContextBuilder}.
+ *
+ * @see WeNetSocialContextBuilder
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public interface WeNetSocialContextBuilderMocker {
+public class WeNetSocialContextBuilderMocker extends AbstractComponentMocker {
 
   /**
-   * mock the general answers to the queries to the social context builder.
+   * Start a mocker builder into a random port.
    *
-   * @param mockedServer server to mock.
+   * @return the started mocker.
    */
-  static void mockDefaultFor(final ClientAndServer mockedServer) {
+  public static WeNetSocialContextBuilderMocker start() {
 
-    mockedServer.when(request().withMethod("GET").withPath("/social_context_builder/social/relations/.+")).respond(response().withStatusCode(HttpStatusCode.OK_200.code()).withBody(new JsonArray().encode()));
+    return start(0);
 
+  }
+
+  /**
+   * Start a mocker builder into a port.
+   *
+   * @param port to bind the server.
+   *
+   * @return the started mocker.
+   */
+  public static WeNetSocialContextBuilderMocker start(final int port) {
+
+    final WeNetSocialContextBuilderMocker mocker = new WeNetSocialContextBuilderMocker();
+    mocker.start(port, null);
+    return mocker;
+  }
+
+  /**
+   * {@inheridDoc}
+   */
+  @Override
+  protected String getComponentConfigurationName() {
+
+    return "socialContextBuilder";
   }
 
 }

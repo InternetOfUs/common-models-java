@@ -35,13 +35,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 
 /**
- * Test the {@link WeNetProfileManagerService}.
+ * Test the {@link WeNetProfileManager}.
  *
- * @see WeNetProfileManagerService
+ * @see WeNetProfileManager
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class WeNetProfileManagerServiceTestCase {
+public abstract class WeNetProfileManagerTestCase {
 
 	/**
 	 * Should not create a bad profile.
@@ -52,7 +52,7 @@ public abstract class WeNetProfileManagerServiceTestCase {
 	@Test
 	public void shouldNotCreateBadProfile(Vertx vertx, VertxTestContext testContext) {
 
-		WeNetProfileManagerService.createProxy(vertx).createProfile(new JsonObject().put("undefinedField", "value"),
+		WeNetProfileManager.createProxy(vertx).createProfile(new JsonObject().put("undefinedField", "value"),
 				testContext.failing(handler -> {
 					testContext.completeNow();
 
@@ -69,7 +69,7 @@ public abstract class WeNetProfileManagerServiceTestCase {
 	@Test
 	public void shouldNotRretrieveUndefinedProfile(Vertx vertx, VertxTestContext testContext) {
 
-		WeNetProfileManagerService.createProxy(vertx).retrieveProfile("undefined-profile-identifier",
+		WeNetProfileManager.createProxy(vertx).retrieveProfile("undefined-profile-identifier",
 				testContext.failing(handler -> {
 					testContext.completeNow();
 
@@ -86,7 +86,7 @@ public abstract class WeNetProfileManagerServiceTestCase {
 	@Test
 	public void shouldNotDeleteUndefinedProfile(Vertx vertx, VertxTestContext testContext) {
 
-		WeNetProfileManagerService.createProxy(vertx).deleteProfile("undefined-profile-identifier",
+		WeNetProfileManager.createProxy(vertx).deleteProfile("undefined-profile-identifier",
 				testContext.failing(handler -> {
 					testContext.completeNow();
 
@@ -103,7 +103,7 @@ public abstract class WeNetProfileManagerServiceTestCase {
 	@Test
 	public void shouldCreateRetrieveAndDeleteProfile(Vertx vertx, VertxTestContext testContext) {
 
-		final WeNetProfileManagerService service = WeNetProfileManagerService.createProxy(vertx);
+		final WeNetProfileManager service = WeNetProfileManager.createProxy(vertx);
 		service.createProfile(new WeNetUserProfile(), testContext.succeeding(create -> {
 
 			final String id = create.id;

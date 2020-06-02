@@ -26,7 +26,7 @@
 
 package eu.internetofus.common.components;
 
-import eu.internetofus.common.components.profile_manager.WeNetProfileManagerService;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfileTest;
 import eu.internetofus.common.components.service.App;
@@ -61,7 +61,7 @@ public interface StoreServices {
 	static void storeProfile(WeNetUserProfile profile, Vertx vertx, VertxTestContext testContext,
 			Handler<AsyncResult<WeNetUserProfile>> storeHandler) {
 
-		WeNetProfileManagerService.createProxy(vertx).createProfile(profile.toJsonObject(),
+		WeNetProfileManager.createProxy(vertx).createProfile(profile.toJsonObject(),
 				testContext.succeeding(created -> {
 
 					final WeNetUserProfile result = Model.fromJsonObject(created, WeNetUserProfile.class);

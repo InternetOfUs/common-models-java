@@ -26,30 +26,51 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import io.vertx.core.Vertx;
-import io.vertx.junit5.VertxExtension;
+import eu.internetofus.common.components.AbstractComponentMocker;
 
 /**
- * Test the {@link WeNetProfileManagerServiceOnMemory}.
+ * The mocked server for the {@link WeNetProfileManager}.
+ *
+ * @see WeNetProfileManager
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
-public class WeNetProfileManagerServiceOnMemoryTest extends WeNetProfileManagerServiceTestCase {
+public class WeNetProfileManagerMocker extends AbstractComponentMocker {
 
-	/**
-	 * Register the necessary services before to test.
-	 *
-	 * @param vertx event bus to register the necessary services.
-	 */
-	@BeforeEach
-	public void registerServices(Vertx vertx) {
+  /**
+   * Start a mocker builder into a random port.
+   *
+   * @return the started mocker.
+   */
+  public static WeNetProfileManagerMocker start() {
 
-		WeNetProfileManagerServiceOnMemory.register(vertx);
+    return start(0);
 
-	}
+  }
+
+  /**
+   * Start a mocker builder into a port.
+   *
+   * @param port to bind the server.
+   *
+   * @return the started mocker.
+   */
+  public static WeNetProfileManagerMocker start(final int port) {
+
+    final WeNetProfileManagerMocker mocker = new WeNetProfileManagerMocker();
+    mocker.start(port, null);
+    return mocker;
+  }
+
+  /**
+   * {@inheridDoc}
+   *
+   * @see WeNetProfileManagerClient#PROFILE_MANAGER_CONF_KEY
+   */
+  @Override
+  protected String getComponentConfigurationName() {
+
+    return WeNetProfileManagerClient.PROFILE_MANAGER_CONF_KEY;
+  }
 
 }

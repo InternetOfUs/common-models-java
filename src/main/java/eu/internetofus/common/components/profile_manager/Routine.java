@@ -101,7 +101,7 @@ public class Routine extends Model implements Validable, Mergeable<Routine> {
       future = future.compose(mapper -> {
 
         final Promise<Void> verifyUserIdExistPromise = Promise.promise();
-        WeNetProfileManagerService.createProxy(vertx).retrieveProfile(this.user_id, search -> {
+        WeNetProfileManager.createProxy(vertx).retrieveProfile(this.user_id, search -> {
 
           if (!search.failed()) {
 

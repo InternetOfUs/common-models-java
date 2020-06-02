@@ -39,7 +39,7 @@ import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import eu.internetofus.common.components.profile_manager.CreateUpdateTsDetails;
 import eu.internetofus.common.components.profile_manager.Norm;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManagerService;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.service.WeNetServiceApiService;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -178,7 +178,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       future = future.compose(mapper -> {
 
         final Promise<Void> verifyRequesterIdExistPromise = Promise.promise();
-        WeNetProfileManagerService.createProxy(vertx).retrieveProfile(this.requesterId, search -> {
+        WeNetProfileManager.createProxy(vertx).retrieveProfile(this.requesterId, search -> {
 
           if (!search.failed()) {
 

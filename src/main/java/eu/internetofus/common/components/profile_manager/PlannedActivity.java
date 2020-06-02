@@ -149,7 +149,7 @@ public class PlannedActivity extends Model implements Validable, Mergeable<Plann
 						future = future.compose((Function<Void, Future<Void>>) map -> {
 
 							final Promise<Void> searchPromise = Promise.promise();
-							WeNetProfileManagerService.createProxy(vertx).retrieveProfile(id, search -> {
+							WeNetProfileManager.createProxy(vertx).retrieveProfile(id, search -> {
 
 								if (search.result() != null) {
 

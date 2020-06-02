@@ -105,7 +105,7 @@ public class SocialNetworkRelationship extends Model implements Validable {
 					future = future.compose(mapper -> {
 
 						final Promise<Void> searchPromise = Promise.promise();
-						WeNetProfileManagerService.createProxy(vertx).retrieveProfile(this.userId, search -> {
+						WeNetProfileManager.createProxy(vertx).retrieveProfile(this.userId, search -> {
 
 							if (search.result() != null) {
 
