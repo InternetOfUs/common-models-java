@@ -40,14 +40,24 @@ import io.vertx.ext.web.client.WebClient;
 public class WeNetIncentiveServerClient extends ComponentClient implements WeNetIncentiveServer {
 
   /**
-   * Create a new service.
+   * The default URL to bind the client.
+   */
+  public static final String DEFAULT_INCENTIVE_SERVER_API_URL = "https://wenet.u-hopper.com/prod/incentive_server";
+
+  /**
+   * The name of the configuration property that contains the URL to the incentive server API.
+   */
+  public static final String INCENTIVE_SERVER_CONF_KEY = "incentiveSserver";
+
+  /**
+   * Create a new incentive_server.
    *
    * @param client to interact with the other modules.
    * @param conf   configuration of the component.
    */
   public WeNetIncentiveServerClient(final WebClient client, final JsonObject conf) {
 
-    super(client, conf.getString("incentiveServerr", "https://wenet.u-hopper.com/prod/incentive_server"));
+    super(client, conf.getString(INCENTIVE_SERVER_CONF_KEY, DEFAULT_INCENTIVE_SERVER_API_URL));
 
   }
 
