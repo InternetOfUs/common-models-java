@@ -26,34 +26,53 @@
 
 package eu.internetofus.common.components.service;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import io.vertx.core.Vertx;
-import io.vertx.junit5.VertxTestContext;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.junit5.VertxExtension;
 
 /**
- * Test the {@link WeNetServiceApiService}.
+ * Test the {@link WeNetService}.
  *
- * @see WeNetServiceApiService
+ * @see WeNetServiceSimulator
+ * @see WeNetServiceSimulatorClient
+ * @see WeNetServiceMocker
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class WeNetServiceApiServiceTestCase {
+@ExtendWith(VertxExtension.class)
+public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
 
-	/**
-	 * Should not retrieve undefined app.
-	 *
-	 * @param vertx       that contains the event bus to use.
-	 * @param testContext context over the tests.
-	 */
-	@Test
-	public void shouldNotRretrieveUndefinedApp(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * The service mocked server.
+   */
+  protected static WeNetServiceMocker serviceMocker;
 
-		WeNetServiceApiService.createProxy(vertx).retrieveApp("undefined-app-identifier", testContext.failing(handler -> {
-			testContext.completeNow();
+  /**
+   * Start the mocker servers.
+   */
+  @BeforeAll
+  public static void startMockers() {
 
-		}));
+    serviceMocker = WeNetServiceMocker.start();
+  }
 
-	}
+  /**
+   * Register the client.
+   *
+   * @param vertx event bus to use.
+   */
+  @BeforeEach
+  public void registerClient(final Vertx vertx) {
 
+    final WebClient client = WebClient.create(vertx);
+    final JsonObject conf = serviceMocker.getComponentConfiguration();
+    WeNetService.register(vertx, client, conf);
+    WeNetServiceSimulator.register(vertx, client, conf);
+
+  }
 }

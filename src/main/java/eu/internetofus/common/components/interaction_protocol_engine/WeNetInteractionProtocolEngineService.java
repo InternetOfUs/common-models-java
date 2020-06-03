@@ -49,7 +49,7 @@ public interface WeNetInteractionProtocolEngineService {
 	/**
 	 * The address of this service.
 	 */
-	String ADDRESS = "wenet_common.service.InteractionProtocolEngine";
+	String ADDRESS = "wenet_component.InteractionProtocolEngine";
 
 	/**
 	 * Create a proxy of the {@link WeNetInteractionProtocolEngineService}.

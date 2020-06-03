@@ -52,7 +52,7 @@ public interface WeNetSocialContextBuilder {
   /**
    * The address of this service.
    */
-  String ADDRESS = "wenet_common.service.SocialContextBuilder";
+  String ADDRESS = "wenet_component.SocialContextBuilder";
 
   /**
    * Create a proxy of the {@link WeNetSocialContextBuilder}.

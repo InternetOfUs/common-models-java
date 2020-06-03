@@ -26,30 +26,26 @@
 
 package eu.internetofus.common.components.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import io.vertx.core.Vertx;
-import io.vertx.junit5.VertxExtension;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 
 /**
- * Test the {@link ServiceApiSimulatorServiceOnMemory}.
+ * Add extra
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
-public class ServiceApiSimulatorServiceOnMemoryTest extends ServiceApiSimulatorServiceTestCase {
+public class WeNetServiceMockerClient extends WeNetServiceClient {
 
-	/**
-	 * Register the necessary services before to test.
-	 *
-	 * @param vertx event bus to register the necessary services.
-	 */
-	@BeforeEach
-	public void registerServices(Vertx vertx) {
+  /**
+   * Create a new service to interact with the WeNet service mocker.
+   *
+   * @param client to interact with the other modules.
+   * @param conf   configuration.
+   */
+  public WeNetServiceMockerClient(final WebClient client, final JsonObject conf) {
 
-		ServiceApiSimulatorServiceOnMemory.register(vertx);
+    super(client, conf);
 
-	}
+  }
 
 }

@@ -33,14 +33,24 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 
 /**
- * The implementation of the {@link WeNetTaskManagerService}.
+ * The implementation of the {@link WeNetTaskManager}.
  *
  *
- * @see WeNetTaskManagerService
+ * @see WeNetTaskManager
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetTaskManagerServiceImpl extends ComponentClient implements WeNetTaskManagerService {
+public class WeNetTaskManagerClient extends ComponentClient implements WeNetTaskManager {
+
+  /**
+   * The default URL to bind the client.
+   */
+  public static final String DEFAULT_TASK_MANAGER_API_URL = "https://wenet.u-hopper.com/prod/task_manager";
+
+  /**
+   * The name of the configuration property that contains the URL to the task manager API.
+   */
+  public static final String TASK_MANAGER_CONF_KEY = "taskManager";
 
   /**
    * Create a new service to interact with the WeNet task manager.
@@ -48,9 +58,9 @@ public class WeNetTaskManagerServiceImpl extends ComponentClient implements WeNe
    * @param client to interact with the other modules.
    * @param conf   configuration.
    */
-  public WeNetTaskManagerServiceImpl(final WebClient client, final JsonObject conf) {
+  public WeNetTaskManagerClient(final WebClient client, final JsonObject conf) {
 
-    super(client, conf.getString("taskManager", "https://wenet.u-hopper.com/prod/task_manager"));
+    super(client, conf.getString(TASK_MANAGER_CONF_KEY, DEFAULT_TASK_MANAGER_API_URL));
 
   }
 

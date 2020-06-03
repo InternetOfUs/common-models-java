@@ -45,66 +45,65 @@ import io.vertx.serviceproxy.ServiceBinder;
  * @author UDT-IA, IIIA-CSIC
  */
 @ProxyGen
-public interface WeNetServiceApiService {
+public interface WeNetService {
 
-	/**
-	 * The address of this service.
-	 */
-	String ADDRESS = "wenet_common.service.ServiceApi";
+  /**
+   * The address of this service.
+   */
+  String ADDRESS = "wenet_component.Service";
 
-	/**
-	 * Create a proxy of the {@link WeNetServiceApiService}.
-	 *
-	 * @param vertx where the service has to be used.
-	 *
-	 * @return the task.
-	 */
-	static WeNetServiceApiService createProxy(Vertx vertx) {
+  /**
+   * Create a proxy of the {@link WeNetService}.
+   *
+   * @param vertx where the service has to be used.
+   *
+   * @return the task.
+   */
+  static WeNetService createProxy(final Vertx vertx) {
 
-		return new WeNetServiceApiServiceVertxEBProxy(vertx, WeNetServiceApiService.ADDRESS);
-	}
+    return new WeNetServiceVertxEBProxy(vertx, WeNetService.ADDRESS);
+  }
 
-	/**
-	 * Register this service.
-	 *
-	 * @param vertx  that contains the event bus to use.
-	 * @param client to do HTTP requests to other services.
-	 * @param conf   configuration to use.
-	 */
-	static void register(Vertx vertx, WebClient client, JsonObject conf) {
+  /**
+   * Register this service.
+   *
+   * @param vertx  that contains the event bus to use.
+   * @param client to do HTTP requests to other services.
+   * @param conf   configuration to use.
+   */
+  static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-		new ServiceBinder(vertx).setAddress(WeNetServiceApiService.ADDRESS).register(WeNetServiceApiService.class,
-				new WeNetServiceApiServiceImpl(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetService.ADDRESS).register(WeNetService.class, new WeNetServiceClient(client, conf));
 
-	}
+  }
 
-	/**
-	 * Return an {@link App} in JSON format.
-	 *
-	 * @param id              identifier of the app to get.
-	 * @param retrieveHandler handler to manage the retrieve process.
-	 */
-	void retrieveJsonApp(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+  /**
+   * Return an {@link App} in JSON format.
+   *
+   * @param id              identifier of the app to get.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  void retrieveJsonApp(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
 
-	/**
-	 * Return an application.
-	 *
-	 * @param id              identifier of the app to get.
-	 * @param retrieveHandler handler to manage the retrieve process.
-	 */
-	@GenIgnore
-	default void retrieveApp(@NotNull String id, @NotNull Handler<AsyncResult<App>> retrieveHandler) {
+  /**
+   * Return an application.
+   *
+   * @param id              identifier of the app to get.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  @GenIgnore
+  default void retrieveApp(@NotNull final String id, @NotNull final Handler<AsyncResult<App>> retrieveHandler) {
 
-		this.retrieveJsonApp(id, ComponentClient.handlerForModel(App.class, retrieveHandler));
+    this.retrieveJsonApp(id, ComponentClient.handlerForModel(App.class, retrieveHandler));
 
-	}
+  }
 
-	/**
-	 * Return the identifiers of the users that are defined on an application.
-	 *
-	 * @param id              identifier of the app to get the users.
-	 * @param retrieveHandler handler to manage the retrieve process.
-	 */
-	void retrieveJsonArrayAppUserIds(@NotNull String id, @NotNull Handler<AsyncResult<JsonArray>> retrieveHandler);
+  /**
+   * Return the identifiers of the users that are defined on an application.
+   *
+   * @param id              identifier of the app to get the users.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  void retrieveJsonArrayAppUserIds(@NotNull String id, @NotNull Handler<AsyncResult<JsonArray>> retrieveHandler);
 
 }

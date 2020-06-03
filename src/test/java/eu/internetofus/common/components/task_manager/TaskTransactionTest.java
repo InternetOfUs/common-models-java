@@ -39,7 +39,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
-import eu.internetofus.common.components.service.ServiceApiSimulatorServiceOnMemory;
+import eu.internetofus.common.components.service.WeNetServiceSimulator;
+import eu.internetofus.common.components.service.WeNetService;
+import eu.internetofus.common.components.service.WeNetServiceMocker;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -62,12 +64,24 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   protected static WeNetProfileManagerMocker profileManagerMocker;
 
   /**
+   * The task manager mocked server.
+   */
+  protected static WeNetTaskManagerMocker taskManagerMocker;
+
+  /**
+   * The service mocked server.
+   */
+  protected static WeNetServiceMocker serviceMocker;
+
+  /**
    * Start the mocker server.
    */
   @BeforeAll
   public static void startMockers() {
 
     profileManagerMocker = WeNetProfileManagerMocker.start();
+    taskManagerMocker = WeNetTaskManagerMocker.start();
+    serviceMocker = WeNetServiceMocker.start();
   }
 
   /**
@@ -79,11 +93,15 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   public void registerServices(final Vertx vertx) {
 
     final WebClient client = WebClient.create(vertx);
-    final JsonObject conf = profileManagerMocker.getComponentConfiguration();
-    WeNetProfileManager.register(vertx, client, conf);
+    final JsonObject profileConf = profileManagerMocker.getComponentConfiguration();
+    WeNetProfileManager.register(vertx, client, profileConf);
 
-    WeNetTaskManagerServiceOnMemory.register(vertx);
-    ServiceApiSimulatorServiceOnMemory.register(vertx);
+    final JsonObject taskConf = taskManagerMocker.getComponentConfiguration();
+    WeNetTaskManager.register(vertx, client, taskConf);
+
+    final JsonObject conf = serviceMocker.getComponentConfiguration();
+    WeNetService.register(vertx, client, conf);
+    WeNetServiceSimulator.register(vertx, client, conf);
 
   }
 

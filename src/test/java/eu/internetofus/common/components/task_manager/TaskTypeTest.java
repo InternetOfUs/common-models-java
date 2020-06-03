@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.atIndex;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +50,7 @@ import eu.internetofus.common.components.profile_manager.NormTest;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
@@ -63,6 +65,20 @@ import io.vertx.junit5.VertxTestContext;
 public class TaskTypeTest extends ModelTestCase<TaskType> {
 
   /**
+   * The task manager mocked server.
+   */
+  protected static WeNetTaskManagerMocker taskManagerMocker;
+
+  /**
+   * Start the mocker server.
+   */
+  @BeforeAll
+  public static void startMockers() {
+
+    taskManagerMocker = WeNetTaskManagerMocker.start();
+  }
+
+  /**
    * Register the necessary services before to test.
    *
    * @param vertx event bus to register the necessary services.
@@ -70,7 +86,9 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    WeNetTaskManagerServiceOnMemory.register(vertx);
+    final WebClient client = WebClient.create(vertx);
+    final JsonObject taskConf = taskManagerMocker.getComponentConfiguration();
+    WeNetTaskManager.register(vertx, client, taskConf);
 
   }
 
@@ -126,7 +144,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotBeValidWithAnExistingId(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetTaskManagerService.createProxy(vertx).createTaskType(this.createModelExample(1), testContext.succeeding(created -> {
+    WeNetTaskManager.createProxy(vertx).createTaskType(this.createModelExample(1), testContext.succeeding(created -> {
 
       final TaskType model = this.createModelExample(1);
       model.id = created.id;

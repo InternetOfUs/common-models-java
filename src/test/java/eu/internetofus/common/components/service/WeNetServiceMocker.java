@@ -26,39 +26,51 @@
 
 package eu.internetofus.common.components.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.junit5.VertxExtension;
+import eu.internetofus.common.components.AbstractComponentMocker;
 
 /**
- * Test the {@link WeNetServiceApiServiceImpl}.
+ * The mocked server for the {@link WeNetService}.
  *
- * @see WeNetServiceApiServiceImpl
+ * @see WeNetService
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
-public class WeNetServiceApiServiceImplTest extends WeNetServiceApiServiceTestCase {
+public class WeNetServiceMocker extends AbstractComponentMocker {
 
-	/**
-	 * Register the service.
-	 *
-	 * @param vertx event bus to use.
-	 */
-	@BeforeEach
-	public void registerService(Vertx vertx) {
+  /**
+   * Start a mocker builder into a random port.
+   *
+   * @return the started mocker.
+   */
+  public static WeNetServiceMocker start() {
 
-		final JsonObject conf = new JsonObject();
-		conf.put("port", 443);
-		conf.put("host", "wenet.u-hopper.com");
-		conf.put("apiPath", "/service");
-		final WebClient client = WebClient.create(vertx);
-		WeNetServiceApiService.register(vertx, client, conf);
+    return start(0);
 
-	}
+  }
+
+  /**
+   * Start a mocker builder into a port.
+   *
+   * @param port to bind the server.
+   *
+   * @return the started mocker.
+   */
+  public static WeNetServiceMocker start(final int port) {
+
+    final WeNetServiceMocker mocker = new WeNetServiceMocker();
+    mocker.start(port, null);
+    return mocker;
+  }
+
+  /**
+   * {@inheridDoc}
+   *
+   * @see WeNetServiceClient#SERVICE_CONF_KEY
+   */
+  @Override
+  protected String getComponentConfigurationName() {
+
+    return WeNetServiceClient.SERVICE_CONF_KEY;
+  }
 
 }

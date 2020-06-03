@@ -40,7 +40,7 @@ import eu.internetofus.common.components.Validations;
 import eu.internetofus.common.components.profile_manager.CreateUpdateTsDetails;
 import eu.internetofus.common.components.profile_manager.Norm;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.service.WeNetServiceApiService;
+import eu.internetofus.common.components.service.WeNetService;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
@@ -143,7 +143,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
         future = future.compose(mapper -> {
 
           final Promise<Void> verifyNotRepeatedIdPromise = Promise.promise();
-          WeNetTaskManagerService.createProxy(vertx).retrieveTask(this.id, task -> {
+          WeNetTaskManager.createProxy(vertx).retrieveTask(this.id, task -> {
 
             if (task.failed()) {
 
@@ -161,7 +161,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       future = future.compose(mapper -> {
 
         final Promise<Void> verifyNotRepeatedIdPromise = Promise.promise();
-        WeNetTaskManagerService.createProxy(vertx).retrieveTaskType(this.taskTypeId, taskType -> {
+        WeNetTaskManager.createProxy(vertx).retrieveTaskType(this.taskTypeId, taskType -> {
 
           if (!taskType.failed()) {
 
@@ -195,7 +195,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       future = future.compose(mapper -> {
 
         final Promise<Void> verifyNotRepeatedIdPromise = Promise.promise();
-        WeNetServiceApiService.createProxy(vertx).retrieveApp(this.appId, app -> {
+        WeNetService.createProxy(vertx).retrieveApp(this.appId, app -> {
 
           if (!app.failed()) {
 

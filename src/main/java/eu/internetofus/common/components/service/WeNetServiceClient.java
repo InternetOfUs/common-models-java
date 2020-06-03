@@ -26,38 +26,62 @@
 
 package eu.internetofus.common.components.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import eu.internetofus.common.Containers;
-import eu.internetofus.common.vertx.WeNetModuleContext;
-import io.vertx.core.Vertx;
+import eu.internetofus.common.vertx.ComponentClient;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
+import io.vertx.ext.web.client.WebClient;
 
 /**
- * Test the {@link ServiceApiSimulatorServiceImpl}
+ * The implementation of the {@link WeNetService}.
  *
- * @see ServiceApiSimulatorServiceImpl
+ * @see WeNetService
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
-public class ServiceApiSimulatorServiceImplTest extends ServiceApiSimulatorServiceTestCase {
+public class WeNetServiceClient extends ComponentClient implements WeNetService {
 
   /**
-   * Create the context to use.
-   *
-   * @param vertx that contains the event bus to use.
+   * The default URL to bind the client.
    */
-  @BeforeEach
-  public void startServiceApiSimulator(final Vertx vertx) {
+  public static final String DEFAULT_SERVICE_API_URL = "https://wenet.u-hopper.com/prod/service";
 
-    final int serviceApiPort = Containers.nextFreePort();
-    Containers.createAndStartServiceApiSimulator(serviceApiPort);
-    final JsonObject configuration = new JsonObject().put("wenetComponents", new JsonObject().put("service", "http://localhost:" + serviceApiPort));
-    final WeNetModuleContext context = new WeNetModuleContext(vertx, configuration);
-    ServiceApiSimulatorService.register(context);
+  /**
+   * The name of the configuration property that contains the URL to the service API.
+   */
+  public static final String SERVICE_CONF_KEY = "service";
+
+  /**
+   * Create a new service to interact with the WeNet service.
+   *
+   * @param client to interact with the other modules.
+   * @param conf   configuration.
+   */
+  public WeNetServiceClient(final WebClient client, final JsonObject conf) {
+
+    super(client, conf.getString(SERVICE_CONF_KEY, DEFAULT_SERVICE_API_URL));
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveJsonApp(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
+
+    this.getJsonObject(retrieveHandler, "/app", id);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveJsonArrayAppUserIds(final String id, final Handler<AsyncResult<JsonArray>> retrieveHandler) {
+
+    this.getJsonArray(retrieveHandler, "/app", id, "/users");
+
   }
 
 }

@@ -24,50 +24,54 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.incentive_server;
+package eu.internetofus.common.components.service;
 
-import io.vertx.codegen.annotations.ProxyGen;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
-import io.vertx.serviceproxy.ServiceBinder;
+import io.vertx.junit5.VertxExtension;
 
 /**
- * The methods necessaries to interact with the interaction server.
+ * Test the {@link WeNetService}.
+ *
+ * @see WeNetService
+ * @see WeNetServiceClient
+ * @see WeNetServiceMocker
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ProxyGen
-public interface WeNetIncentiveServer {
+@ExtendWith(VertxExtension.class)
+public class WeNetServiceTest extends WeNetServiceTestCase {
 
   /**
-   * The address of this service.
+   * The service mocked server.
    */
-  String ADDRESS = "wenet_component.IncentiveServer";
+  protected static WeNetServiceMocker serviceMocker;
 
   /**
-   * Create a proxy of the {@link WeNetIncentiveServer}.
-   *
-   * @param vertx where the service has to be used.
-   *
-   * @return the task.
+   * Start the mocker servers.
    */
-  static WeNetIncentiveServer createProxy(final Vertx vertx) {
+  @BeforeAll
+  public static void startMockers() {
 
-    return new WeNetIncentiveServerVertxEBProxy(vertx, WeNetIncentiveServer.ADDRESS);
+    serviceMocker = WeNetServiceMocker.start();
   }
 
   /**
-   * Register this service.
+   * Register the client.
    *
-   * @param vertx  that contains the event bus to use.
-   * @param client to do HTTP requests to other services.
-   * @param conf   configuration to use.
+   * @param vertx event bus to use.
    */
-  static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
+  @BeforeEach
+  public void registerClient(final Vertx vertx) {
 
-    new ServiceBinder(vertx).setAddress(WeNetIncentiveServer.ADDRESS).register(WeNetIncentiveServer.class, new WeNetIncentiveServerClient(client, conf));
+    final WebClient client = WebClient.create(vertx);
+    final JsonObject conf = serviceMocker.getComponentConfiguration();
+    WeNetService.register(vertx, client, conf);
 
   }
-
 }

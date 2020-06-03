@@ -44,23 +44,23 @@ import io.vertx.serviceproxy.ServiceBinder;
  * @author UDT-IA, IIIA-CSIC
  */
 @ProxyGen
-public interface WeNetTaskManagerService {
+public interface WeNetTaskManager {
 
   /**
    * The address of this service.
    */
-  String ADDRESS = "wenet_common.service.taskManager";
+  String ADDRESS = "wenet_component.taskManager";
 
   /**
-   * Create a proxy of the {@link WeNetTaskManagerService}.
+   * Create a proxy of the {@link WeNetTaskManager}.
    *
    * @param vertx where the service has to be used.
    *
    * @return the task.
    */
-  static WeNetTaskManagerService createProxy(final Vertx vertx) {
+  static WeNetTaskManager createProxy(final Vertx vertx) {
 
-    return new WeNetTaskManagerServiceVertxEBProxy(vertx, WeNetTaskManagerService.ADDRESS);
+    return new WeNetTaskManagerVertxEBProxy(vertx, WeNetTaskManager.ADDRESS);
   }
 
   /**
@@ -72,7 +72,7 @@ public interface WeNetTaskManagerService {
    */
   static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-    new ServiceBinder(vertx).setAddress(WeNetTaskManagerService.ADDRESS).register(WeNetTaskManagerService.class, new WeNetTaskManagerServiceImpl(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetTaskManager.ADDRESS).register(WeNetTaskManager.class, new WeNetTaskManagerClient(client, conf));
 
   }
 

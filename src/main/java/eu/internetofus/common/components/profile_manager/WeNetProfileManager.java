@@ -49,7 +49,7 @@ public interface WeNetProfileManager {
 	/**
 	 * The address of this service.
 	 */
-	String ADDRESS = "wenet_common.service.profileManager";
+	String ADDRESS = "wenet_component.profileManager";
 
 	/**
 	 * Create a proxy of the {@link WeNetProfileManager}.

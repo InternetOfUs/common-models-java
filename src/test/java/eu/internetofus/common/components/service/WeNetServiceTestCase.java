@@ -24,104 +24,91 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.profile_manager;
+package eu.internetofus.common.components.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 
 /**
- * Test the {@link WeNetProfileManager}.
+ * Test the {@link WeNetService}.
  *
- * @see WeNetProfileManager
+ * @see WeNetService
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class WeNetProfileManagerTestCase {
+public abstract class WeNetServiceTestCase {
 
   /**
-   * Should not create a bad profile.
+   * Should not retrieve undefined app.
    *
    * @param vertx       that contains the event bus to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldNotCreateBadProfile(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotRetrieveUndefinedApp(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManager.createProxy(vertx).createProfile(new JsonObject().put("undefinedField", "value"),
-        testContext.failing(handler -> {
-          testContext.completeNow();
-
-        }));
-
-  }
-
-  /**
-   * Should not retrieve undefined profile.
-   *
-   * @param vertx       that contains the event bus to use.
-   * @param testContext context over the tests.
-   */
-  @Test
-  public void shouldNotRetrieveUndefinedProfile(final Vertx vertx, final VertxTestContext testContext) {
-
-    WeNetProfileManager.createProxy(vertx).retrieveProfile("undefined-profile-identifier",
-        testContext.failing(handler -> {
-          testContext.completeNow();
-
-        }));
-
-  }
-
-  /**
-   * Should not delete undefined profile.
-   *
-   * @param vertx       that contains the event bus to use.
-   * @param testContext context over the tests.
-   */
-  @Test
-  public void shouldNotDeleteUndefinedProfile(final Vertx vertx, final VertxTestContext testContext) {
-
-    WeNetProfileManager.createProxy(vertx).deleteProfile("undefined-profile-identifier",
-        testContext.failing(handler -> {
-          testContext.completeNow();
-
-        }));
-
-  }
-
-  /**
-   * Should create, retrieve and delete a profile.
-   *
-   * @param vertx       that contains the event bus to use.
-   * @param testContext context over the tests.
-   */
-  @Test
-  public void shouldCreateRetrieveAndDeleteProfile(final Vertx vertx, final VertxTestContext testContext) {
-
-    final WeNetProfileManager service = WeNetProfileManager.createProxy(vertx);
-    service.createProfile(new WeNetUserProfile(), testContext.succeeding(create -> {
-
-      final String id = create.id;
-      service.retrieveProfile(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
-
-        assertThat(create).isEqualTo(retrieve);
-        service.deleteProfile(id, testContext.succeeding(empty -> {
-
-          service.retrieveProfile(id, testContext.failing(handler -> {
-            testContext.completeNow();
-
-          }));
-
-        }));
-
-      })));
+    WeNetService.createProxy(vertx).retrieveApp("undefined-app-identifier", testContext.failing(handler -> {
+      testContext.completeNow();
 
     }));
+
+  }
+
+  /**
+   * Should retrieve app 1.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldRetrieveFirstApp(final Vertx vertx, final VertxTestContext testContext) {
+
+    WeNetService.createProxy(vertx).retrieveApp("1", testContext.succeeding(app -> testContext.verify(() -> {
+
+      assertThat(app).isNotNull();
+      assertThat(app.appId).isEqualTo("1");
+      assertThat(app.messageCallbackUrl).isNotNull();
+      testContext.completeNow();
+
+    })));
+
+  }
+
+  /**
+   * Should not retrieve undefined app.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotRetrieveUserFromUndefinedApp(final Vertx vertx, final VertxTestContext testContext) {
+
+    WeNetService.createProxy(vertx).retrieveJsonArrayAppUserIds("undefined-app-identifier", testContext.failing(handler -> {
+      testContext.completeNow();
+
+    }));
+
+  }
+
+  /**
+   * Should retrieve app 1.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldRetrieveUserFromFirstApp(final Vertx vertx, final VertxTestContext testContext) {
+
+    WeNetService.createProxy(vertx).retrieveJsonArrayAppUserIds("1", testContext.succeeding(users -> testContext.verify(() -> {
+
+      assertThat(users).isNotNull();
+      testContext.completeNow();
+
+    })));
 
   }
 

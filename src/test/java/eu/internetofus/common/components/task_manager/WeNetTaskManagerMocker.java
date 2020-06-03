@@ -24,54 +24,53 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
+package eu.internetofus.common.components.task_manager;
 
-import eu.internetofus.common.vertx.ComponentClient;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
+import eu.internetofus.common.components.AbstractComponentMocker;
 
 /**
- * The implementation of the {@link WeNetServiceApiService}.
+ * The mocked server for the {@link WeNetTaskManager}.
  *
- * @see WeNetServiceApiService
+ * @see WeNetTaskManager
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetServiceApiServiceImpl extends ComponentClient implements WeNetServiceApiService {
+public class WeNetTaskManagerMocker extends AbstractComponentMocker {
 
-	/**
-	 * Create a new service to interact with the WeNet interaction protocol engine.
-	 *
-	 * @param client to interact with the other modules.
-	 * @param conf   configuration.
-	 */
-	public WeNetServiceApiServiceImpl(WebClient client, JsonObject conf) {
+  /**
+   * Start a mocker builder into a random port.
+   *
+   * @return the started mocker.
+   */
+  public static WeNetTaskManagerMocker start() {
 
-		super(client, conf.getString("service", "https://wenet.u-hopper.com/prod/service"));
+    return start(0);
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void retrieveJsonApp(String id, Handler<AsyncResult<JsonObject>> retrieveHandler) {
+  /**
+   * Start a mocker builder into a port.
+   *
+   * @param port to bind the server.
+   *
+   * @return the started mocker.
+   */
+  public static WeNetTaskManagerMocker start(final int port) {
 
-		this.getJsonObject(retrieveHandler, "/app", id);
+    final WeNetTaskManagerMocker mocker = new WeNetTaskManagerMocker();
+    mocker.start(port, null);
+    return mocker;
+  }
 
-	}
+  /**
+   * {@inheridDoc}
+   *
+   * @see WeNetTaskManagerClient#TASK_MANAGER_CONF_KEY
+   */
+  @Override
+  protected String getComponentConfigurationName() {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void retrieveJsonArrayAppUserIds(String id, Handler<AsyncResult<JsonArray>> retrieveHandler) {
-
-		this.getJsonArray(retrieveHandler, "/app", id, "/users");
-
-	}
+    return WeNetTaskManagerClient.TASK_MANAGER_CONF_KEY;
+  }
 
 }

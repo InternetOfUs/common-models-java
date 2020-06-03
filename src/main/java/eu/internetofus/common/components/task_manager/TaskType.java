@@ -132,7 +132,7 @@ public class TaskType extends Model implements Validable, Mergeable<TaskType> {
 				future = future.compose(mapper -> {
 
 					final Promise<Void> verifyNotRepeatedIdPromise = Promise.promise();
-					WeNetTaskManagerService.createProxy(vertx).retrieveTaskType(this.id, profile -> {
+					WeNetTaskManager.createProxy(vertx).retrieveTaskType(this.id, profile -> {
 
 						if (profile.failed()) {
 

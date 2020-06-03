@@ -35,13 +35,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 
 /**
- * Test the {@link WeNetTaskManagerService}.
+ * Test the {@link WeNetTaskManager}.
  *
- * @see WeNetTaskManagerService
+ * @see WeNetTaskManager
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class WeNetTaskManagerServiceTestCase {
+public abstract class WeNetTaskManagerTestCase {
 
 	/**
 	 * Should not create a bad task.
@@ -52,7 +52,7 @@ public abstract class WeNetTaskManagerServiceTestCase {
 	@Test
 	public void shouldNotCreateBadTask(Vertx vertx, VertxTestContext testContext) {
 
-		WeNetTaskManagerService.createProxy(vertx).createTask(new JsonObject().put("undefinedField", "value"),
+		WeNetTaskManager.createProxy(vertx).createTask(new JsonObject().put("undefinedField", "value"),
 				testContext.failing(handler -> {
 					testContext.completeNow();
 				}));
@@ -66,9 +66,9 @@ public abstract class WeNetTaskManagerServiceTestCase {
 	 * @param testContext context over the tests.
 	 */
 	@Test
-	public void shouldNotRretrieveUndefinedTask(Vertx vertx, VertxTestContext testContext) {
+	public void shouldNorRetrieveUndefinedTask(Vertx vertx, VertxTestContext testContext) {
 
-		WeNetTaskManagerService.createProxy(vertx).retrieveTask("undefined-task-identifier",
+		WeNetTaskManager.createProxy(vertx).retrieveTask("undefined-task-identifier",
 				testContext.failing(handler -> {
 					testContext.completeNow();
 				}));
@@ -84,7 +84,7 @@ public abstract class WeNetTaskManagerServiceTestCase {
 	@Test
 	public void shouldNotDeleteUndefinedTask(Vertx vertx, VertxTestContext testContext) {
 
-		WeNetTaskManagerService.createProxy(vertx).deleteTask("undefined-task-identifier", testContext.failing(handler -> {
+		WeNetTaskManager.createProxy(vertx).deleteTask("undefined-task-identifier", testContext.failing(handler -> {
 			testContext.completeNow();
 
 		}));
@@ -101,7 +101,7 @@ public abstract class WeNetTaskManagerServiceTestCase {
 	public void shouldCreateRetrieveAndDeleteTask(Vertx vertx, VertxTestContext testContext) {
 
 		new TaskTest().createModelExample(1, vertx, testContext, testContext.succeeding(task -> {
-			final WeNetTaskManagerService service = WeNetTaskManagerService.createProxy(vertx);
+			final WeNetTaskManager service = WeNetTaskManager.createProxy(vertx);
 			service.createTask(task, testContext.succeeding(create -> {
 
 				final String id = create.id;
@@ -132,7 +132,7 @@ public abstract class WeNetTaskManagerServiceTestCase {
 	@Test
 	public void shouldNotCreateBadTaskType(Vertx vertx, VertxTestContext testContext) {
 
-		WeNetTaskManagerService.createProxy(vertx).createTaskType(new JsonObject().put("undefinedField", "value"),
+		WeNetTaskManager.createProxy(vertx).createTaskType(new JsonObject().put("undefinedField", "value"),
 				testContext.failing(handler -> {
 					testContext.completeNow();
 
@@ -147,9 +147,9 @@ public abstract class WeNetTaskManagerServiceTestCase {
 	 * @param testContext context over the tests.
 	 */
 	@Test
-	public void shouldNotRretrieveUndefinedTaskType(Vertx vertx, VertxTestContext testContext) {
+	public void shouldNorRetrieveUndefinedTaskType(Vertx vertx, VertxTestContext testContext) {
 
-		WeNetTaskManagerService.createProxy(vertx).retrieveTaskType("undefined-task-type-identifier",
+		WeNetTaskManager.createProxy(vertx).retrieveTaskType("undefined-task-type-identifier",
 				testContext.failing(handler -> {
 					testContext.completeNow();
 
@@ -166,7 +166,7 @@ public abstract class WeNetTaskManagerServiceTestCase {
 	@Test
 	public void shouldNotDeleteUndefinedTaskType(Vertx vertx, VertxTestContext testContext) {
 
-		WeNetTaskManagerService.createProxy(vertx).deleteTaskType("undefined-task-type-identifier",
+		WeNetTaskManager.createProxy(vertx).deleteTaskType("undefined-task-type-identifier",
 				testContext.failing(handler -> {
 					testContext.completeNow();
 
@@ -184,7 +184,7 @@ public abstract class WeNetTaskManagerServiceTestCase {
 	public void shouldCreateRetrieveAndDeleteTaskType(Vertx vertx, VertxTestContext testContext) {
 
 		final TaskType taskType = new TaskTypeTest().createModelExample(1);
-		final WeNetTaskManagerService service = WeNetTaskManagerService.createProxy(vertx);
+		final WeNetTaskManager service = WeNetTaskManager.createProxy(vertx);
 		service.createTaskType(taskType, testContext.succeeding(create -> {
 
 			final String id = create.id;

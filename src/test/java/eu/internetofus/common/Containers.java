@@ -28,17 +28,13 @@ package eu.internetofus.common;
 
 import java.net.ServerSocket;
 import java.nio.file.FileSystems;
-import java.util.concurrent.Semaphore;
 
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
-import org.tinylog.Level;
-import org.tinylog.provider.InternalLogger;
 
-import eu.internetofus.common.components.service.ServiceApiSimulator;
 import eu.internetofus.common.vertx.AbstractMain;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -195,32 +191,6 @@ public interface Containers {
         .withEnv("WENET_TASK_MANAGER_API", "http://host.testcontainers.internal:" + taskManagerApiPort).withEnv("WENET_INTERACTION_PROTOCOL_ENGINE_API", "http://host.testcontainers.internal" + interactionProtocolEngineApiPort)
         .withNetwork(network).withFixedExposedPort(port, EXPORT_API_PORT).waitingFor(Wait.forListeningPort());
     profileManagerContainer.start();
-
-  }
-
-  /**
-   * Create a {@link ServiceApiSimulator} to simulate the interaction with the service api.
-   *
-   * @param port to link the simulator.
-   */
-  static void createAndStartServiceApiSimulator(final int port) {
-
-    try {
-
-      final Semaphore semaphore = new Semaphore(0);
-      ServiceApiSimulator.start(port).onComplete(start -> {
-        if (start.failed()) {
-
-          InternalLogger.log(Level.ERROR, start.cause(), "Could not start the ServiceApiSimulator.");
-        }
-        semaphore.release();
-      });
-      semaphore.acquire();
-
-    } catch (final Throwable throwable) {
-
-      InternalLogger.log(Level.ERROR, throwable, "Could not start the ServiceApiSimulator.");
-    }
 
   }
 
