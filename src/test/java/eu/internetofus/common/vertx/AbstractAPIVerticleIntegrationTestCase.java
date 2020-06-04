@@ -40,66 +40,66 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxTestContext;
 
 /**
- * GHeneric integration test over a {@link AbstractAPIVerticle}
+ * Generic integration test over a {@link AbstractAPIVerticle}
  *
  * @author UDT-IA, IIIA-CSIC
  */
 public abstract class AbstractAPIVerticleIntegrationTestCase {
 
-	/**
-	 * Check that return a bad api request when try to post a bad context.
-	 *
-	 * @param client      to realize connection over the
-	 * @param testContext context to test the VertX event bus.
-	 *
-	 * @see #getBadRequestPostPath()
-	 * @see #createBadRequestPostBody()
-	 */
-	@Test
-	public void shouldReturnABadRequestError(WebClient client, VertxTestContext testContext) {
+  /**
+   * Check that return a bad api request when try to post a bad context.
+   *
+   * @param client      to realize connection over the
+   * @param testContext context to test the VertX event bus.
+   *
+   * @see #getBadRequestPostPath()
+   * @see #createBadRequestPostBody()
+   */
+  @Test
+  public void shouldReturnABadRequestError(final WebClient client, final VertxTestContext testContext) {
 
-		testRequest(client, HttpMethod.POST, this.getBadRequestPostPath()).expect(res -> {
-			assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-			final ErrorMessage error = HttpResponses.assertThatBodyIs(ErrorMessage.class, res);
-			assertThat(error.code).isEqualTo("bad_api_request");
-			assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
-		}).sendJson(this.createBadRequestPostBody(), testContext);
+    testRequest(client, HttpMethod.POST, this.getBadRequestPostPath()).expect(res -> {
+      assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+      final ErrorMessage error = HttpResponses.assertThatBodyIs(ErrorMessage.class, res);
+      assertThat(error.code).isEqualTo("bad_api_request");
+      assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+    }).sendJson(this.createBadRequestPostBody(), testContext);
 
-	}
+  }
 
-	/**
-	 * Return the path to the API to post and will return a bad request.
-	 *
-	 * @return the path to post.
-	 */
-	protected abstract String getBadRequestPostPath();
+  /**
+   * Return the path to the API to post and will return a bad request.
+   *
+   * @return the path to post.
+   */
+  protected abstract String getBadRequestPostPath();
 
-	/**
-	 * Create a body to post that produces a bad api request.
-	 *
-	 * @return an object that
-	 */
-	protected JsonObject createBadRequestPostBody() {
+  /**
+   * Create a body to post that produces a bad api request.
+   *
+   * @return an object that
+   */
+  protected JsonObject createBadRequestPostBody() {
 
-		return new JsonObject().put("undefinedKey", "undefined value");
-	}
+    return new JsonObject().put("undefinedKey", "undefined value");
+  }
 
-	/**
-	 * Verify that return a not found error.
-	 *
-	 * @param client      to connect to the server.
-	 * @param testContext context to test.
-	 */
-	@Test
-	public void shouldReturnNotFoundErrorMessage(WebClient client, VertxTestContext testContext) {
+  /**
+   * Verify that return a not found error.
+   *
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldReturnNotFoundErrorMessage(final WebClient client, final VertxTestContext testContext) {
 
-		final String undefinedPath = "/undefinedPath";
-		testRequest(client, HttpMethod.GET, undefinedPath).expect(res -> {
-			assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-			final ErrorMessage error = HttpResponses.assertThatBodyIs(ErrorMessage.class, res);
-			assertThat(error.code).isEqualTo("not_found_api_request_path");
-			assertThat(error.message).isNotEmpty().isNotEqualTo(error.code).contains(undefinedPath);
-		}).send(testContext);
-	}
+    final String undefinedPath = "/undefinedPath";
+    testRequest(client, HttpMethod.GET, undefinedPath).expect(res -> {
+      assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+      final ErrorMessage error = HttpResponses.assertThatBodyIs(ErrorMessage.class, res);
+      assertThat(error.code).isEqualTo("not_found_api_request_path");
+      assertThat(error.message).isNotEmpty().isNotEqualTo(error.code).contains(undefinedPath);
+    }).send(testContext);
+  }
 
 }

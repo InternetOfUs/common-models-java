@@ -188,7 +188,7 @@ public class QueryBuilder {
    *
    * @return the factory that is using.
    */
-  public QueryBuilder withEqOrRegexp(final String fieldName, final String value) {
+  public QueryBuilder withEqOrRegex(final String fieldName, final String value) {
 
     if (value != null && value.length() > 1 && value.startsWith("/") && value.endsWith("/")) {
 
