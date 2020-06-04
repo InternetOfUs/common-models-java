@@ -47,87 +47,87 @@ import io.vertx.ext.web.api.OperationRequest;
  */
 public interface OperationRequests {
 
-	/**
-	 * Obtain the accepted language defined on the header.
-	 *
-	 * @param defaultLanguage   the language to return if it can not obtain the
-	 *                          accepted language.
-	 * @param request           to get the information.
-	 * @param poosibleLanguages the possible languages that can be used.
-	 *
-	 * @return the
-	 *
-	 * @see HttpHeaders#ACCEPT_LANGUAGE
-	 */
-	static String acceptedLanguageIn(final OperationRequest request, final String defaultLanguage, final String... poosibleLanguages) {
+  /**
+   * Obtain the accepted language defined on the header.
+   *
+   * @param defaultLanguage   the language to return if it can not obtain the
+   *                          accepted language.
+   * @param request           to get the information.
+   * @param poosibleLanguages the possible languages that can be used.
+   *
+   * @return the
+   *
+   * @see HttpHeaders#ACCEPT_LANGUAGE
+   */
+  static String acceptedLanguageIn(final OperationRequest request, final String defaultLanguage, final String... poosibleLanguages) {
 
-		try {
+    try {
 
-			final String acceptLanguages = request.getHeaders().get(HttpHeaders.ACCEPT_LANGUAGE);
-			final List<LanguageRange> range = Locale.LanguageRange.parse(acceptLanguages);
-			final String lang = Locale.lookupTag(range, Arrays.asList(poosibleLanguages));
-			if (lang == null) {
+      final String acceptLanguages = request.getHeaders().get(HttpHeaders.ACCEPT_LANGUAGE);
+      final List<LanguageRange> range = Locale.LanguageRange.parse(acceptLanguages);
+      final String lang = Locale.lookupTag(range, Arrays.asList(poosibleLanguages));
+      if (lang == null) {
 
-				return defaultLanguage;
+        return defaultLanguage;
 
-			} else {
+      } else {
 
-				return lang;
-			}
+        return lang;
+      }
 
-		} catch (final Throwable badLanguage) {
+    } catch (final Throwable badLanguage) {
 
-			return defaultLanguage;
-		}
+      return defaultLanguage;
+    }
 
-	}
+  }
 
-	/**
-	 * Return the query parameters defined in a context.
-	 *
-	 * @param context to extract the query parameters.
-	 *
-	 * @return the query parameters of the context.
-	 */
-	static JsonObject getQueryParamters(final OperationRequest context) {
+  /**
+   * Return the query parameters defined in a context.
+   *
+   * @param context to extract the query parameters.
+   *
+   * @return the query parameters of the context.
+   */
+  static JsonObject getQueryParamters(final OperationRequest context) {
 
-		return context.getParams().getJsonObject("query", new JsonObject());
+    return context.getParams().getJsonObject("query", new JsonObject());
 
-	}
+  }
 
-	/**
-	 * Convert an array of values to a string list. This is useful to convert a
-	 * array query parameter.
-	 *
-	 * @param array to convert.
-	 *
-	 * @return the string list defined on the array. If the array is {@code null} or
-	 *         empty it return a{@code null} value.
-	 */
-	static List<String> toListString(final JsonArray array) {
+  /**
+   * Convert an array of values to a string list. This is useful to convert a
+   * array query parameter.
+   *
+   * @param array to convert.
+   *
+   * @return the string list defined on the array. If the array is {@code null} or
+   *         empty it return a{@code null} value.
+   */
+  static List<String> toListString(final JsonArray array) {
 
-		if (array == null) {
+    if (array == null) {
 
-			return null;
+      return null;
 
-		} else {
+    } else {
 
-			final int max = array.size();
-			if (max == 0) {
+      final int max = array.size();
+      if (max == 0) {
 
-				return null;
+        return null;
 
-			} else {
+      } else {
 
-				final List<String> values = new ArrayList<>();
-				for (int i = 0; i < max; i++) {
+        final List<String> values = new ArrayList<>();
+        for (int i = 0; i < max; i++) {
 
-					values.add(array.getString(i));
-				}
-				return values;
-			}
-		}
+          values.add(array.getString(i));
+        }
+        return values;
+      }
+    }
 
-	}
+  }
 
 }

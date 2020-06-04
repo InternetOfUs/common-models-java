@@ -26,6 +26,10 @@
 
 package eu.internetofus.common.components;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfileTest;
@@ -40,6 +44,7 @@ import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 
@@ -189,4 +194,45 @@ public interface StoreServices {
 
   }
 
+  /**
+   * Store some tasks.
+   *
+   * @param max         number of tasks to create.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   * @param change      function to modify the pattern before to store it. The first argument is the index and the second
+   *                    the created task.
+   *
+   * @return the future with the created tasks.
+   */
+  static Future<List<Task>> storeSomeTask(final int max, final Vertx vertx, final VertxTestContext testContext, final BiConsumer<Integer, Task> change) {
+
+    final Promise<List<Task>> promise = Promise.promise();
+    Future<List<Task>> future = promise.future();
+    promise.complete(new ArrayList<Task>());
+    for (int i = 0; i < max; i++) {
+
+      final int exampleIndex = i;
+      future = future.compose(tasks -> {
+
+        final Promise<List<Task>> storePromise = Promise.promise();
+        new TaskTest().createModelExample(exampleIndex, vertx, testContext, testContext.succeeding(task -> {
+
+          if (change != null) {
+
+            change.accept(exampleIndex, task);
+          }
+          storeTask(task, vertx, testContext, testContext.succeeding(storedTask -> {
+            tasks.add(storedTask);
+            storePromise.complete(tasks);
+          }));
+
+        }));
+        return storePromise.future();
+      });
+
+    }
+
+    return future;
+  }
 }

@@ -47,305 +47,277 @@ import io.vertx.ext.mongo.UpdateOptions;
  */
 public class Repository {
 
-	/**
-	 * The pool of database connections.
-	 */
-	protected MongoClient pool;
+  /**
+   * The pool of database connections.
+   */
+  protected MongoClient pool;
 
-	/**
-	 * Create a new service.
-	 *
-	 * @param pool to create the connections.
-	 */
-	public Repository(final MongoClient pool) {
+  /**
+   * Create a new service.
+   *
+   * @param pool to create the connections.
+   */
+  public Repository(final MongoClient pool) {
 
-		this.pool = pool;
+    this.pool = pool;
 
-	}
+  }
 
-	/**
-	 * Search for a page.
-	 *
-	 * @param collectionName of the collections that contains the models.
-	 * @param query          to obtain the components of the page.
-	 * @param options        to apply to the search.
-	 * @param resultKey      to store the found models.
-	 * @param map            function to apply to each found object or {@code null}
-	 *                       to not modify the components.
-	 * @param searchHandler  handler to manage the result action.
-	 */
-	protected void searchPageObject(final String collectionName, final JsonObject query, final FindOptions options,
-			final String resultKey, final Consumer<JsonObject> map,
-			final Handler<AsyncResult<JsonObject>> searchHandler) {
+  /**
+   * Search for a page.
+   *
+   * @param collectionName of the collections that contains the models.
+   * @param query          to obtain the components of the page.
+   * @param options        to apply to the search.
+   * @param resultKey      to store the found models.
+   * @param map            function to apply to each found object or {@code null} to not modify the components.
+   * @param searchHandler  handler to manage the result action.
+   */
+  protected void searchPageObject(final String collectionName, final JsonObject query, final FindOptions options, final String resultKey, final Consumer<JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
 
-		this.pool.count(collectionName, query, count -> {
+    this.pool.count(collectionName, query, count -> {
 
-			if (count.failed()) {
+      if (count.failed()) {
 
-				searchHandler.handle(Future.failedFuture(count.cause()));
+        searchHandler.handle(Future.failedFuture(count.cause()));
 
-			} else {
+      } else {
 
-				final long total = count.result().longValue();
-				final int offset = options.getSkip();
-				final JsonObject page = new JsonObject().put("offset", offset).put("total", total);
-				if (total == 0 || offset >= total) {
+        final long total = count.result().longValue();
+        final int offset = options.getSkip();
+        final JsonObject page = new JsonObject().put("offset", offset).put("total", total);
+        if (total == 0 || offset >= total) {
 
-					searchHandler.handle(Future.succeededFuture(page));
+          searchHandler.handle(Future.succeededFuture(page));
 
-				} else {
+        } else {
 
-					this.pool.findWithOptions(collectionName, query, options, find -> {
+          this.pool.findWithOptions(collectionName, query, options, find -> {
 
-						if (find.failed()) {
+            if (find.failed()) {
 
-							searchHandler.handle(Future.failedFuture(find.cause()));
+              searchHandler.handle(Future.failedFuture(find.cause()));
 
-						} else {
+            } else {
 
-							final List<JsonObject> objects = find.result();
-							if (map != null) {
+              final List<JsonObject> objects = find.result();
+              if (map != null) {
 
-								objects.stream().forEach(map);
-							}
-							page.put(resultKey, objects);
-							searchHandler.handle(Future.succeededFuture(page));
-						}
+                objects.stream().forEach(map);
+              }
+              page.put(resultKey, objects);
+              searchHandler.handle(Future.succeededFuture(page));
+            }
 
-					});
+          });
 
-				}
+        }
 
-			}
-		});
-	}
+      }
+    });
+  }
 
-	/**
-	 * Delete one document.
-	 *
-	 * @param collectionName of the collections that contains the model to delete.
-	 * @param query          to to match the document to delete.
-	 * @param deleteHandler  handler to manage the delete action.
-	 */
-	protected void deleteOneDocument(final String collectionName, final JsonObject query,
-			final Handler<AsyncResult<Void>> deleteHandler) {
+  /**
+   * Delete one document.
+   *
+   * @param collectionName of the collections that contains the model to delete.
+   * @param query          to to match the document to delete.
+   * @param deleteHandler  handler to manage the delete action.
+   */
+  protected void deleteOneDocument(final String collectionName, final JsonObject query, final Handler<AsyncResult<Void>> deleteHandler) {
 
-		this.pool.removeDocument(collectionName, query, remove -> {
+    this.pool.removeDocument(collectionName, query, remove -> {
 
-			if (remove.failed()) {
+      if (remove.failed()) {
 
-				deleteHandler.handle(Future.failedFuture(remove.cause()));
+        deleteHandler.handle(Future.failedFuture(remove.cause()));
 
-			} else if (remove.result().getRemovedCount() != 1) {
+      } else if (remove.result().getRemovedCount() != 1) {
 
-				deleteHandler.handle(Future.failedFuture("Not found document to delete"));
+        deleteHandler.handle(Future.failedFuture("Not found document to delete"));
 
-			} else {
+      } else {
 
-				deleteHandler.handle(Future.succeededFuture());
-			}
-		});
+        deleteHandler.handle(Future.succeededFuture());
+      }
+    });
 
-	}
+  }
 
-	/**
-	 * Update one document.
-	 *
-	 * @param collectionName of the collections that contains the model to update.
-	 * @param query          to to match the document to update.
-	 * @param updateModel    the new values of the model.
-	 * @param updateHandler  handler to manage the update action.
-	 */
-	protected void updateOneDocument(final String collectionName, final JsonObject query, final JsonObject updateModel,
-			final Handler<AsyncResult<Void>> updateHandler) {
+  /**
+   * Update one document.
+   *
+   * @param collectionName of the collections that contains the model to update.
+   * @param query          to to match the document to update.
+   * @param updateModel    the new values of the model.
+   * @param updateHandler  handler to manage the update action.
+   */
+  protected void updateOneDocument(final String collectionName, final JsonObject query, final JsonObject updateModel, final Handler<AsyncResult<Void>> updateHandler) {
 
-		final JsonObject updateQuery = new JsonObject().put("$set", updateModel);
-		final UpdateOptions options = new UpdateOptions().setMulti(false);
-		this.pool.updateCollectionWithOptions(collectionName, query, updateQuery, options, update -> {
+    final JsonObject updateQuery = new JsonObject().put("$set", updateModel);
+    final UpdateOptions options = new UpdateOptions().setMulti(false);
+    this.pool.updateCollectionWithOptions(collectionName, query, updateQuery, options, update -> {
 
-			if (update.failed()) {
+      if (update.failed()) {
 
-				updateHandler.handle(Future.failedFuture(update.cause()));
+        updateHandler.handle(Future.failedFuture(update.cause()));
 
-			} else if (update.result().getDocModified() != 1) {
+      } else if (update.result().getDocModified() != 1) {
 
-				updateHandler.handle(Future.failedFuture("Not found document to update"));
+        updateHandler.handle(Future.failedFuture("Not found document to update"));
 
-			} else {
+      } else {
 
-				updateHandler.handle(Future.succeededFuture());
-			}
-		});
+        updateHandler.handle(Future.succeededFuture());
+      }
+    });
 
-	}
+  }
 
-	/**
-	 * Store one document.
-	 *
-	 * @param collectionName of the collections that contains the model to store.
-	 * @param model          to store.
-	 * @param map            function to modify the stored document. If it is
-	 *                       {@code null} no modification is applied.
-	 *
-	 * @param storeHandler   handler to manage the store action.
-	 */
-	protected void storeOneDocument(final String collectionName, final JsonObject model,
-			final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> storeHandler) {
+  /**
+   * Store one document.
+   *
+   * @param collectionName of the collections that contains the model to store.
+   * @param model          to store.
+   * @param map            function to modify the stored document. If it is {@code null} no modification is applied.
+   *
+   * @param storeHandler   handler to manage the store action.
+   */
+  protected void storeOneDocument(final String collectionName, final JsonObject model, final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> storeHandler) {
 
-		this.pool.insert(collectionName, model, store -> {
+    this.pool.insert(collectionName, model, store -> {
 
-			if (store.failed()) {
+      if (store.failed()) {
 
-				storeHandler.handle(Future.failedFuture(store.cause()));
+        storeHandler.handle(Future.failedFuture(store.cause()));
 
-			} else {
+      } else {
 
-				if (map != null) {
+        if (map != null) {
 
-					try {
+          try {
 
-						final JsonObject adaptedModel = map.apply(model);
-						storeHandler.handle(Future.succeededFuture(adaptedModel));
+            final JsonObject adaptedModel = map.apply(model);
+            storeHandler.handle(Future.succeededFuture(adaptedModel));
 
-					} catch (final Throwable throwable) {
+          } catch (final Throwable throwable) {
 
-						storeHandler.handle(Future.failedFuture(throwable));
+            storeHandler.handle(Future.failedFuture(throwable));
 
-					}
+          }
 
-				} else {
+        } else {
 
-					storeHandler.handle(Future.succeededFuture(model));
-				}
-			}
+          storeHandler.handle(Future.succeededFuture(model));
+        }
+      }
 
-		});
-	}
+    });
+  }
 
-	/**
-	 * Find one document.
-	 *
-	 * @param collectionName of the collections that contains the model to find.
-	 * @param query          of the document to find.
-	 * @param fields         to return.
-	 * @param map            function to modify the found document. If it is
-	 *                       {@code null} no modification is applied.
-	 * @param searchHandler  handler to manage the find action.
-	 */
-	protected void findOneDocument(final String collectionName, final JsonObject query, final JsonObject fields,
-			final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
+  /**
+   * Find one document.
+   *
+   * @param collectionName of the collections that contains the model to find.
+   * @param query          of the document to find.
+   * @param fields         to return.
+   * @param map            function to modify the found document. If it is {@code null} no modification is applied.
+   * @param searchHandler  handler to manage the find action.
+   */
+  protected void findOneDocument(final String collectionName, final JsonObject query, final JsonObject fields, final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
 
-		this.pool.findOne(collectionName, query, fields, search -> {
+    this.pool.findOne(collectionName, query, fields, search -> {
 
-			if (search.failed()) {
+      if (search.failed()) {
 
-				searchHandler.handle(Future.failedFuture(search.cause()));
+        searchHandler.handle(Future.failedFuture(search.cause()));
 
-			} else {
+      } else {
 
-				JsonObject value = search.result();
-				if (value == null) {
+        JsonObject value = search.result();
+        if (value == null) {
 
-					searchHandler.handle(Future.failedFuture("Does not exist a document that match '" + query + "'."));
+          searchHandler.handle(Future.failedFuture("Does not exist a document that match '" + query + "'."));
 
-				} else {
+        } else {
 
-					if (map != null) {
+          if (map != null) {
 
-						value = map.apply(value);
-					}
-					searchHandler.handle(Future.succeededFuture(value));
-				}
-			}
-		});
+            value = map.apply(value);
+          }
+          searchHandler.handle(Future.succeededFuture(value));
+        }
+      }
+    });
 
-	}
+  }
 
-	/**
-	 * Convert a set of values to an object that represents the order to the models
-	 * to return.
-	 *
-	 * @param values     to extract how the query has to be sorted.
-	 * @param codePrefix prefix to append to the error code.
-	 *
-	 * @return the object that can be used to sort a query.
-	 *
-	 * @throws ValidationErrorException If the values are not right.
-	 */
-	public static JsonObject toSort(final Iterable<String> values, final String codePrefix)
-			throws ValidationErrorException {
+  /**
+   * Convert a set of values to an object that represents the order to the models to return.
+   *
+   * @param values     to extract how the query has to be sorted. If has to be formed by the name by the key with a prefix
+   *                   than can be {@code +} or {-} to order in ascending or descending. If you set the key without prefix
+   *                   is order in ascending.
+   * @param codePrefix prefix to append to the error code.
+   *
+   * @return the object that can be used to sort a query.
+   *
+   * @throws ValidationErrorException If the values are not right.
+   */
+  public static JsonObject queryParamToSort(final Iterable<String> values, final String codePrefix) throws ValidationErrorException {
 
-		if (values == null) {
+    if (values == null) {
 
-			return null;
+      return null;
 
-		} else {
+    } else {
 
-			final Iterator<String> iter = values.iterator();
-			if (!iter.hasNext()) {
+      final Iterator<String> iter = values.iterator();
+      if (!iter.hasNext()) {
 
-				return null;
+        return null;
 
-			} else {
+      } else {
 
-				JsonObject sort = new JsonObject();
-				for (int i = 0; iter.hasNext(); i++) {
+        JsonObject sort = new JsonObject();
+        for (int i = 0; iter.hasNext(); i++) {
 
-					String value = iter.next();
-					if (value == null) {
+          String value = iter.next();
+          if (value == null) {
 
-						throw new ValidationErrorException(codePrefix + "[" + i + "]",
-								"An order item can not be 'null'.");
+            throw new ValidationErrorException(codePrefix + "[" + i + "]", "An order item can not be 'null'.");
 
-					} else {
+          } else {
 
-						value = value.trim();
-						final int index = value.indexOf(':');
-						if (index < 0) {
+            value = value.trim();
+            int order = 1;
+            if (value.startsWith("+")) {
 
-							throw new ValidationErrorException(codePrefix + "[" + i + "]",
-									"Can not found the field separator in '" + value + "'.");
+              value = value.substring(1);
 
-						} else {
+            } else if (value.startsWith("-")) {
 
-							final String key = value.substring(0, index).trim();
-							if (key.isEmpty()) {
+              order = -1;
+              value = value.substring(1);
+            }
 
-								throw new ValidationErrorException(codePrefix + "[" + i + "]",
-										"You must to define a field in '" + value + "'.");
+            if (value.length() == 0) {
 
-							} else if (sort.containsKey(key)) {
+              throw new ValidationErrorException(codePrefix + "[" + i + "]", "You must to define a field in '" + value + "'.");
 
-								throw new ValidationErrorException(codePrefix + "[" + i + "]",
-										"The field '" + key + "' is already defined.");
+            } else if (sort.containsKey(value)) {
 
-							} else {
+              throw new ValidationErrorException(codePrefix + "[" + i + "]", "The field '" + value + "' is already defined.");
 
-								try {
+            } else {
 
-									final int type = Integer.parseInt(value.substring(index + 1).trim());
-									if (type != -1 && type != 1) {
+              sort = sort.put(value, order);
+            }
+          }
+        }
 
-										throw new ValidationErrorException(codePrefix + "[" + i + "]",
-												"The '" + type + "' has to be 1 or -1.");
-
-									} else {
-
-										sort = sort.put(key, type);
-									}
-
-								} catch (final NumberFormatException error) {
-
-									throw new ValidationErrorException(codePrefix + "[" + i + "]", error);
-
-								}
-							}
-						}
-					}
-				}
-
-				return sort;
-			}
-		}
-	}
+        return sort;
+      }
+    }
+  }
 }
