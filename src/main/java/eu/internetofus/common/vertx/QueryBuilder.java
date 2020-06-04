@@ -184,21 +184,27 @@ public class QueryBuilder {
    * expression it has to be between {@code /}.
    *
    * @param fieldName name of the field.
-   * @param value     for the field.
+   * @param value     or regular expression for the field. If it is {@code null} the field is ignored.
    *
    * @return the factory that is using.
    */
   public QueryBuilder withEqOrRegex(final String fieldName, final String value) {
 
-    if (value != null && value.length() > 1 && value.startsWith("/") && value.endsWith("/")) {
+    if (value != null) {
 
-      final String pattern = value.substring(1, value.length() - 2);
-      return this.withRegex(fieldName, pattern);
+      if (value.length() > 1 && value.startsWith("/") && value.endsWith("/")) {
 
-    } else {
+        final String pattern = value.substring(1, value.length() - 2);
+        return this.withRegex(fieldName, pattern);
 
-      return this.with(fieldName, value);
+      } else {
+
+        this.query.put(fieldName, value);
+      }
+
     }
+
+    return this;
 
   }
 
