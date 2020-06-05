@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -68,7 +69,7 @@ public class RepositoryTest extends RepositoryTestCase<Repository> {
    *
    * @param values to convert.
    *
-   * @see Repository#queryParamToSort(Iterable, String)
+   * @see Repository#queryParamToSort(Iterable, String,Function)
    */
   @ParameterizedTest(name = "Should {0} be return null")
   @NullAndEmptySource
@@ -76,7 +77,7 @@ public class RepositoryTest extends RepositoryTestCase<Repository> {
 
     assertThatCode(() -> {
 
-      assertThat(Repository.queryParamToSort(values, "codePrefix")).isNull();
+      assertThat(Repository.queryParamToSort(values, "codePrefix", null)).isNull();
 
     }).doesNotThrowAnyException();
   }
@@ -86,10 +87,10 @@ public class RepositoryTest extends RepositoryTestCase<Repository> {
    *
    * @param param with the values to convert.
    *
-   * @see Repository#queryParamToSort(Iterable, String)
+   * @see Repository#queryParamToSort(Iterable, String,Function)
    */
   @ParameterizedTest(name = "Should sort {0}")
-  @ValueSource(strings = { "value;{\"value\":1}", "+value;{\"value\":1}", "  -value    ;{\"value\":-1}", "key1  , key2 , key3;{\"key1\":1,\"key2\":1,\"key3\":1}", "  key1  , +key2 , -key3  ;{\"key1\":1,\"key2\":1,\"key3\":-1}" })
+  @ValueSource(strings = { "key;{\"KEY\":1}", "+KeY;{\"KEY\":1}", "  -key    ;{\"KEY\":-1}", "key1  , key2 , key3;{\"KEY1\":1,\"KEY2\":1,\"KEY3\":1}", "  key1  , +key2 , -key3  ;{\"KEY1\":1,\"KEY2\":1,\"KEY3\":-1}" })
   public void shouldSort(final String param) {
 
     assertThatCode(() -> {
@@ -98,7 +99,19 @@ public class RepositoryTest extends RepositoryTestCase<Repository> {
       final String[] values = param.substring(0, endIndex).split(",");
       final String expected = param.substring(endIndex + 1).trim();
       final JsonObject sortExpected = (JsonObject) Json.decodeValue(expected);
-      assertThat(Repository.queryParamToSort(Arrays.asList(values), "codePrefix")).isEqualTo(sortExpected);
+      assertThat(Repository.queryParamToSort(Arrays.asList(values), "codePrefix", (value) -> {
+
+        final String key = value.toUpperCase();
+        if (!key.startsWith("KEY")) {
+
+          return null;
+
+        } else {
+
+          return key;
+        }
+
+      })).isEqualTo(sortExpected);
 
     }).doesNotThrowAnyException();
   }
@@ -108,17 +121,29 @@ public class RepositoryTest extends RepositoryTestCase<Repository> {
    *
    * @param param with the values to convert.
    *
-   * @see Repository#queryParamToSort(Iterable, String)
+   * @see Repository#queryParamToSort(Iterable, String,Function)
    */
   @ParameterizedTest(name = "Should {0} can not converted to sort")
-  @ValueSource(strings = { ",key;[0]", "key,  ;[1]", "key1,-key2,+key3, ;[3]", "+key1,-key1;[1]" })
+  @ValueSource(strings = { ",key;[0]", "key,  ;[1]", "key1,-key2,+key3, ;[3]", "+key1,-key1;[1]", "+key1,-KeY1;[1]", "key1,key2,value3;[2]" })
   public void shouldSortThrowException(final String param) {
 
     final int endIndex = param.indexOf(';');
     final String[] values = param.substring(0, endIndex).split(",");
     final String expected = param.substring(endIndex + 1).trim();
 
-    final ValidationErrorException error = catchThrowableOfType(() -> Repository.queryParamToSort(Arrays.asList(values), "codePrefix"), ValidationErrorException.class);
+    final ValidationErrorException error = catchThrowableOfType(() -> Repository.queryParamToSort(Arrays.asList(values), "codePrefix", (value) -> {
+
+      final String key = value.toLowerCase();
+      if (!key.startsWith("key")) {
+
+        return null;
+
+      } else {
+
+        return key;
+      }
+
+    }), ValidationErrorException.class);
     assertThat(error).isNotNull();
     assertThat(error.getCode()).isEqualTo("codePrefix" + expected);
 
@@ -127,12 +152,12 @@ public class RepositoryTest extends RepositoryTestCase<Repository> {
   /**
    * Verify that the sort object is null when an empty or {@code null} value is converted.
    *
-   * @see Repository#queryParamToSort(Iterable, String)
+   * @see Repository#queryParamToSort(Iterable, String,Function)
    */
   @Test
   public void shouldSortThrowExceptionWhenValueIsNull() {
 
-    final ValidationErrorException error = catchThrowableOfType(() -> Repository.queryParamToSort(Arrays.asList("key1", "-key2", null), "codePrefix"), ValidationErrorException.class);
+    final ValidationErrorException error = catchThrowableOfType(() -> Repository.queryParamToSort(Arrays.asList("key1", "-key2", null), "codePrefix", null), ValidationErrorException.class);
     assertThat(error).isNotNull();
     assertThat(error.getCode()).isEqualTo("codePrefix[2]");
 

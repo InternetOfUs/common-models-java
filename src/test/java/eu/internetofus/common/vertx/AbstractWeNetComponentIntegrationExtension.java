@@ -166,6 +166,15 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
   public void afterEach(final ExtensionContext context) throws Exception {
 
     this.vertxExtension.afterEach(context);
+    this.closeClientsIn(context);
+  }
+
+  /**
+   * Close all the clients that has been created on a context.
+   *
+   * @param context where the clients has stored.
+   */
+  protected void closeClientsIn(final ExtensionContext context) {
 
     // close client and pool after the test context has been completed.
     final WebClient client = context.getStore(ExtensionContext.Namespace.create(this.getClass().getName())).remove(WebClient.class.getName(), WebClient.class);
@@ -199,6 +208,7 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
   public void afterTestExecution(final ExtensionContext context) throws Exception {
 
     this.vertxExtension.afterTestExecution(context);
+    this.closeClientsIn(context);
 
   }
 

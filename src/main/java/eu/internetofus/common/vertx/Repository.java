@@ -259,12 +259,14 @@ public class Repository {
    *                   than can be {@code +} or {-} to order in ascending or descending. If you set the key without prefix
    *                   is order in ascending.
    * @param codePrefix prefix to append to the error code.
+   * @param checkKey   function to validate that the key is possible. It receive the fields and return the key to sort the
+   *                   field or {@code null} if the value is not valid. If it is {@code null} it used the current key.
    *
    * @return the object that can be used to sort a query.
    *
    * @throws ValidationErrorException If the values are not right.
    */
-  public static JsonObject queryParamToSort(final Iterable<String> values, final String codePrefix) throws ValidationErrorException {
+  public static JsonObject queryParamToSort(final Iterable<String> values, final String codePrefix, final Function<String, String> checkKey) throws ValidationErrorException {
 
     if (values == null) {
 
@@ -305,13 +307,28 @@ public class Repository {
 
               throw new ValidationErrorException(codePrefix + "[" + i + "]", "You must to define a field in '" + value + "'.");
 
-            } else if (sort.containsKey(value)) {
-
-              throw new ValidationErrorException(codePrefix + "[" + i + "]", "The field '" + value + "' is already defined.");
-
             } else {
 
-              sort = sort.put(value, order);
+              String key = value;
+              if (checkKey != null) {
+
+                key = checkKey.apply(value);
+                if (key == null) {
+
+                  throw new ValidationErrorException(codePrefix + "[" + i + "]", "The field '" + value + "' is not valid.");
+
+                }
+              }
+
+              if (sort.containsKey(key)) {
+
+                throw new ValidationErrorException(codePrefix + "[" + i + "]", "The '" + value + "' taht represents the fiels '" + key + "' is already defined.");
+
+              } else {
+
+                sort = sort.put(key, order);
+
+              }
             }
           }
         }
@@ -320,4 +337,5 @@ public class Repository {
       }
     }
   }
+
 }
