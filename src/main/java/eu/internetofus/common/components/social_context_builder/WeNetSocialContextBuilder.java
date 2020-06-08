@@ -36,8 +36,8 @@ import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
 
@@ -61,7 +61,7 @@ public interface WeNetSocialContextBuilder {
    *
    * @return the task.
    */
-  static WeNetSocialContextBuilder createProxy(Vertx vertx) {
+  static WeNetSocialContextBuilder createProxy(final Vertx vertx) {
 
     return new WeNetSocialContextBuilderVertxEBProxy(vertx, WeNetSocialContextBuilder.ADDRESS);
   }
@@ -73,7 +73,7 @@ public interface WeNetSocialContextBuilder {
    * @param client to do HTTP requests to other services.
    * @param conf   configuration to use.
    */
-  static void register(Vertx vertx, WebClient client, JsonObject conf) {
+  static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
     new ServiceBinder(vertx).setAddress(WeNetSocialContextBuilder.ADDRESS).register(WeNetSocialContextBuilder.class, new WeNetSocialContextBuilderClient(client, conf));
 
@@ -94,9 +94,19 @@ public interface WeNetSocialContextBuilder {
    * @param retrieveHandler handler to inform of the found relations.
    */
   @GenIgnore
-  default void retrieveSocialRelations(@NotNull String userId, @NotNull Handler<AsyncResult<List<UserRelation>>> retrieveHandler) {
+  default void retrieveSocialRelations(@NotNull final String userId, @NotNull final Handler<AsyncResult<List<UserRelation>>> retrieveHandler) {
 
     this.retrieveJsonArraySocialRelations(userId, ComponentClient.handlerForListModel(UserRelation.class, retrieveHandler));
   }
+
+  /**
+   * Update the preferences of an user.
+   *
+   * @param userId          identifier of the user.
+   * @param taskId          identifier of the task
+   * @param volunteers      the identifier of the volunteers of the task.
+   * @param retrieveHandler handler to inform of the found relations.
+   */
+  void updatePreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId, @NotNull JsonArray volunteers, @NotNull Handler<AsyncResult<JsonArray>> retrieveHandler);
 
 }

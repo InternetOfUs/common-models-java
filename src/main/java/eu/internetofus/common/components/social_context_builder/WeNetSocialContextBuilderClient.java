@@ -42,7 +42,6 @@ import io.vertx.serviceproxy.ServiceBinder;
  */
 public class WeNetSocialContextBuilderClient extends ComponentClient implements WeNetSocialContextBuilder {
 
-
   /**
    * The default URL to bind the client.
    */
@@ -78,7 +77,6 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
 
   }
 
-
   /**
    * Create a new service to interact with the WeNet interaction protocol engine.
    *
@@ -98,6 +96,16 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   public void retrieveJsonArraySocialRelations(final String userId, final Handler<AsyncResult<JsonArray>> retrieveHandler) {
 
     this.getJsonArray(retrieveHandler, "/social/relations", userId);
+
+  }
+
+  /**
+   * {@inheridDoc}
+   */
+  @Override
+  public void updatePreferencesForUserOnTask(final String userId, final String taskId, final JsonArray volunteers, final Handler<AsyncResult<JsonArray>> updateHandler) {
+
+    this.post(volunteers, updateHandler, "/social/preferences", userId, taskId);
 
   }
 
