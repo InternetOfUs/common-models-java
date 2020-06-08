@@ -44,15 +44,15 @@ public class TaskConcludedNotification extends TaskNotification {
    */
   public enum Outcome {
     /**
-     * This happens when the task is cancelled by its creator.
+     * The creator cancelled the task.
      */
     cancelled,
     /**
-     * This happens when the task completes correctly.
+     * If completed correctly.
      */
     completed,
     /**
-     * This happens when the task is not completed, because something went wrong.
+     * If something went wrong
      */
     failed;
   }

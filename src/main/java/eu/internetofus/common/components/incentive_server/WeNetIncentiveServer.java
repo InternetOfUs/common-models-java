@@ -26,7 +26,13 @@
 
 package eu.internetofus.common.components.incentive_server;
 
+import javax.validation.constraints.NotNull;
+
+import eu.internetofus.common.vertx.ComponentClient;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -69,5 +75,25 @@ public interface WeNetIncentiveServer {
     new ServiceBinder(vertx).setAddress(WeNetIncentiveServer.ADDRESS).register(WeNetIncentiveServer.class, new WeNetIncentiveServerClient(client, conf));
 
   }
+
+  /**
+   * Update the status of a task.
+   *
+   * @param status        for the task.
+   * @param updateHandler handler to manage the update process.
+   */
+  @GenIgnore
+  default void updateTaskStatus(final @NotNull TaskStatus status, @NotNull final Handler<AsyncResult<TaskStatus>> updateHandler) {
+
+    this.updateJsonTaskStatus(status.toJsonObject(), ComponentClient.handlerForModel(TaskStatus.class, updateHandler));
+  }
+
+  /**
+   * Update the status of a task.
+   *
+   * @param status        for the task.
+   * @param updateHandler handler to manage the update process.
+   */
+  void updateJsonTaskStatus(@NotNull JsonObject status, @NotNull Handler<AsyncResult<JsonObject>> updateHandler);
 
 }

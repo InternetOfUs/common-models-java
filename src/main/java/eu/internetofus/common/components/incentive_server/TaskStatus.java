@@ -26,49 +26,45 @@
 
 package eu.internetofus.common.components.incentive_server;
 
-import eu.internetofus.common.components.AbstractComponentMocker;
+import eu.internetofus.common.components.Model;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * The mocked server for the {@link WeNetIncentiveServer}.
- *
- * @see WeNetIncentiveServer
+ * Represents the status of a task.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetIncentiveServerMocker extends AbstractComponentMocker {
+@Schema(hidden = true, name = "TaskStatus", description = "The status of a task.")
+public class TaskStatus extends Model {
 
   /**
-   * Start a mocker builder into a random port.
-   *
-   * @return the started mocker.
+   * Identifier of the user.
    */
-  public static WeNetIncentiveServerMocker start() {
-
-    return start(0);
-
-  }
+  @Schema(example = "WeNet_user5")
+  public String user_id = "-1";
 
   /**
-   * Start a mocker builder into a port.
-   *
-   * @param port to bind the server.
-   *
-   * @return the started mocker.
+   * Identifier of the user.
    */
-  public static WeNetIncentiveServerMocker start(final int port) {
-
-    final WeNetIncentiveServerMocker mocker = new WeNetIncentiveServerMocker();
-    mocker.start(port, null);
-    return mocker;
-  }
+  @Schema(example = "WeNet_community_5")
+  public String community_id;
 
   /**
-   * {@inheridDoc}
+   * Identifier of the user.
    */
-  @Override
-  protected String getComponentConfigurationName() {
+  @Schema(example = "WeNet_task")
+  public String task_id;
 
-    return WeNetIncentiveServerClient.INCENTIVE_SERVER_CONF_KEY;
-  }
+  /**
+   * Identifier of the user.
+   */
+  @Schema(example = "Starts")
+  public String Action;
+
+  /**
+   * Identifier of the user.
+   */
+  @Schema(example = "some message")
+  public String Message_content;
 
 }

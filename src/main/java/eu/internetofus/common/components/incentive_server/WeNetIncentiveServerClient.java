@@ -27,6 +27,8 @@
 package eu.internetofus.common.components.incentive_server;
 
 import eu.internetofus.common.vertx.ComponentClient;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 
@@ -58,6 +60,16 @@ public class WeNetIncentiveServerClient extends ComponentClient implements WeNet
   public WeNetIncentiveServerClient(final WebClient client, final JsonObject conf) {
 
     super(client, conf.getString(INCENTIVE_SERVER_CONF_KEY, DEFAULT_INCENTIVE_SERVER_API_URL));
+
+  }
+
+  /**
+   * {@inheridDoc}
+   */
+  @Override
+  public void updateJsonTaskStatus(final JsonObject status, final Handler<AsyncResult<JsonObject>> updateHandler) {
+
+    this.post(status, updateHandler, "/Tasks/TaskStatus/");
 
   }
 

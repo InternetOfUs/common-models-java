@@ -26,49 +26,29 @@
 
 package eu.internetofus.common.components.incentive_server;
 
-import eu.internetofus.common.components.AbstractComponentMocker;
+import eu.internetofus.common.components.ModelTestCase;
 
 /**
- * The mocked server for the {@link WeNetIncentiveServer}.
+ * Test the {@link TaskStatus}
  *
- * @see WeNetIncentiveServer
+ * @see TaskStatus
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetIncentiveServerMocker extends AbstractComponentMocker {
-
-  /**
-   * Start a mocker builder into a random port.
-   *
-   * @return the started mocker.
-   */
-  public static WeNetIncentiveServerMocker start() {
-
-    return start(0);
-
-  }
-
-  /**
-   * Start a mocker builder into a port.
-   *
-   * @param port to bind the server.
-   *
-   * @return the started mocker.
-   */
-  public static WeNetIncentiveServerMocker start(final int port) {
-
-    final WeNetIncentiveServerMocker mocker = new WeNetIncentiveServerMocker();
-    mocker.start(port, null);
-    return mocker;
-  }
+public class TaskStatusTest extends ModelTestCase<TaskStatus> {
 
   /**
    * {@inheridDoc}
    */
   @Override
-  protected String getComponentConfigurationName() {
-
-    return WeNetIncentiveServerClient.INCENTIVE_SERVER_CONF_KEY;
+  public TaskStatus createModelExample(final int index) {
+    final TaskStatus model = new TaskStatus();
+    model.user_id = "WeNet_user" + index;
+    model.community_id = "WeNet_community_" + index;
+    model.task_id = "WeNet_task" + index;
+    model.Action = "Action" + index;
+    model.Message_content = "some message " + index;
+    return model;
   }
 
 }
