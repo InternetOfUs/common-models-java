@@ -34,40 +34,40 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(
-		hidden = true,
-		name = "TaskConcludedNotification",
-		description = "This notification is used in order to notify task participants that a task has been completed.")
+    hidden = true,
+    name = "TaskConcludedNotification",
+    description = "This notification is used in order to notify task participants that a task has been completed.")
 public class TaskConcludedNotification extends TaskNotification {
 
-	/**
-	 * Explains how the task is concluded.
-	 */
-	public enum Outcome {
-		/**
-		 * This happens when the task is cancelled by its creator.
-		 */
-		cancelled,
-		/**
-		 * This happens when the task completes correctly.
-		 */
-		successfull,
-		/**
-		 * This happens when the task is not completed, because something went wrong.
-		 */
-		failed;
-	}
+  /**
+   * Explains how the task is concluded.
+   */
+  public enum Outcome {
+    /**
+     * This happens when the task is cancelled by its creator.
+     */
+    cancelled,
+    /**
+     * This happens when the task completes correctly.
+     */
+    completed,
+    /**
+     * This happens when the task is not completed, because something went wrong.
+     */
+    failed;
+  }
 
-	/**
-	 * The identifier of the concluded.
-	 */
-	@Schema(description = "The outcome of the task (has it been completed with success or not).", example = "successfull")
-	public Outcome outcome;
+  /**
+   * The identifier of the concluded.
+   */
+  @Schema(description = "The outcome of the task (has it been completed with success or not).", example = "successfull")
+  public Outcome outcome;
 
-	/**
-	 * Create a new task concluded notification.
-	 */
-	public TaskConcludedNotification() {
+  /**
+   * Create a new task concluded notification.
+   */
+  public TaskConcludedNotification() {
 
-		this.notificationType = NotificationType.taskConcluded;
-	}
+    this.notificationType = NotificationType.taskConcluded;
+  }
 }
