@@ -159,16 +159,22 @@ public interface Containers {
    * @param profileManagerApiPort port where the profile manager will be bind on the localhost.
    * @param taskManagerApiPort    port where the task manager will be bind on the localhost.
    * @param serviceApiPort        port where the service component will be bind on the localhost.
+   * @param socialContextBuilderPort port where the social context builder component will be bind on the localhost.
+   * @param incentiveServerPort port where the incentive server component will be bind on the localhost.
    * @param network               that shared between containers.
    */
   @SuppressWarnings("resource")
-  static void createAndStartContainersForInteractionProtocolEngine(final int port, final int profileManagerApiPort, final int taskManagerApiPort, final int serviceApiPort, final Network network) {
+  static void createAndStartContainersForInteractionProtocolEngine(final int port, final int profileManagerApiPort, final int taskManagerApiPort, final int serviceApiPort, final int socialContextBuilderPort,final int incentiveServerPort,final Network network) {
 
     final GenericContainer<?> interactionProtocolEnginePersistenceContainer = createMongoContainerFor(WENET_INTERACTION_PROTOCOL_ENGINE_DB_NAME, network);
     interactionProtocolEnginePersistenceContainer.start();
     final FixedHostPortGenericContainer<?> interactionProtocolEngineContainer = new FixedHostPortGenericContainer<>(WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME).withStartupAttempts(1)
         .withEnv("DB_HOST", WENET_INTERACTION_PROTOCOL_ENGINE_DB_NAME).withEnv("WENET_PROFILE_MANAGER_API", "http://host.testcontainers.internal:" + profileManagerApiPort)
-        .withEnv("WENET_TASK_MANAGER_API", "http://host.testcontainers.internal:" + taskManagerApiPort).withEnv("WENET_SERVICE_API", "http://host.testcontainers.internal:" + serviceApiPort).withNetwork(network)
+        .withEnv("WENET_TASK_MANAGER_API", "http://host.testcontainers.internal:" + taskManagerApiPort)
+        .withEnv("WENET_SERVICE_API", "http://host.testcontainers.internal:" + serviceApiPort)
+        .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", "http://host.testcontainers.internal:" + socialContextBuilderPort)
+        .withEnv("WENET_INCENTIVE_SERVER_API", "http://host.testcontainers.internal:" + incentiveServerPort)
+        .withNetwork(network)
         .withFixedExposedPort(port, EXPORT_API_PORT).waitingFor(Wait.forListeningPort());
     interactionProtocolEngineContainer.start();
 
