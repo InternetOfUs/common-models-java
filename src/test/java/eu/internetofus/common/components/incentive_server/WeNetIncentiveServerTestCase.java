@@ -26,29 +26,39 @@
 
 package eu.internetofus.common.components.incentive_server;
 
-import eu.internetofus.common.components.ModelTestCase;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+
+import io.vertx.core.Vertx;
+import io.vertx.junit5.VertxTestContext;
 
 /**
- * Test the {@link TaskStatus}
+ * General test over the classes that implements the {@link WeNetIncentiveServer}.
  *
- * @see TaskStatus
+ * @see WeNetIncentiveServer
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class TaskStatusTest extends ModelTestCase<TaskStatus> {
+public abstract class WeNetIncentiveServerTestCase {
 
   /**
-   * {@inheridDoc}
+   * Should update the task status.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
    */
-  @Override
-  public TaskStatus createModelExample(final int index) {
-    final TaskStatus model = new TaskStatus();
-    model.user_id = "WeNet_user" + index;
-    model.community_id = "WeNet_community_" + index;
-    model.task_id = "WeNet_task" + index;
-    model.Action = "Action" + index;
-    model.Message = "some message " + index;
-    return model;
+  @Test
+  public void shouldUpdateTaskStatus(final Vertx vertx, final VertxTestContext testContext) {
+
+    final TaskStatus status = new TaskStatusTest().createModelExample(1);
+    WeNetIncentiveServer.createProxy(vertx).updateTaskStatus(status, testContext.succeeding(updated -> testContext.verify(() -> {
+
+      assertThat(updated).isEqualTo(status);
+      testContext.completeNow();
+
+    })));
+
   }
 
 }

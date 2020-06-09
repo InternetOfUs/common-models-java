@@ -26,52 +26,63 @@
 
 package eu.internetofus.common.components.social_context_builder;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.junit5.VertxExtension;
+import io.vertx.core.json.JsonArray;
+import io.vertx.junit5.VertxTestContext;
 
 /**
  * Test the {@link WeNetSocialContextBuilder}.
  *
  * @see WeNetSocialContextBuilder
- * @see WeNetSocialContextBuilderClient
- * @see WeNetSocialContextBuilderMocker
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
-public class WeNetSocialContextBuilderTest extends WeNetSocialContextBuilderTestCase {
+public abstract class WeNetSocialContextBuilderTestCase {
 
   /**
-   * The profile manager mocked server.
+   * Should retrieve social relations.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
    */
-  protected static WeNetSocialContextBuilderMocker mocker;
+  @Test
+  public void shouldRetrieveSocialRelations(final Vertx vertx, final VertxTestContext testContext) {
 
-  /**
-   * Start the mocker server.
-   */
-  @BeforeAll
-  public static void startMocker() {
+    final String userId = UUID.randomUUID().toString();
+    WeNetSocialContextBuilder.createProxy(vertx).retrieveSocialRelations(userId, testContext.succeeding(relations -> testContext.verify(() -> {
 
-    mocker = WeNetSocialContextBuilderMocker.start();
+      assertThat(relations).isNotNull();
+      testContext.completeNow();
+
+    })));
+
   }
 
   /**
-   * Register the client.
+   * Should update preferences for user on task.
    *
-   * @param vertx event bus to use.
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
    */
-  @BeforeEach
-  public void registerClient(final Vertx vertx) {
+  @Test
+  public void shouldUpdatePreferencesForUserOnTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject conf = mocker.getComponentConfiguration();
-    WeNetSocialContextBuilder.register(vertx, client, conf);
+    final String userId = UUID.randomUUID().toString();
+    final String taskId = UUID.randomUUID().toString();
+    final JsonArray volunteers = new JsonArray();
+    WeNetSocialContextBuilder.createProxy(vertx).updatePreferencesForUserOnTask(userId, taskId, volunteers, testContext.succeeding(updated -> testContext.verify(() -> {
+
+      assertThat(updated).isNotNull();
+      testContext.completeNow();
+
+    })));
+
   }
 
 }

@@ -26,43 +26,41 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
-import eu.internetofus.common.vertx.ComponentClient;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
+import io.vertx.junit5.VertxTestContext;
 
 /**
- * The implementation of the {@link WeNetInteractionProtocolEngineService}.
+ * General test over the classes that implements the {@link WeNetInteractionProtocolEngine}.
  *
- * @see WeNetInteractionProtocolEngineService
+ * @see WeNetInteractionProtocolEngine
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetInteractionProtocolEngineServiceImpl extends ComponentClient
-		implements WeNetInteractionProtocolEngineService {
+public abstract class WeNetInteractionProtocolEngineTestCase {
 
-	/**
-	 * Create a new service to interact with the WeNet interaction protocol engine.
-	 *
-	 * @param client to interact with the other modules.
-	 * @param conf   configuration.
-	 */
-	public WeNetInteractionProtocolEngineServiceImpl(WebClient client, JsonObject conf) {
+  /**
+   * Should send message.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldSendMessage(final Vertx vertx, final VertxTestContext testContext) {
 
-		super(client,
-				conf.getString("interactionProtocolEngine", "https://wenet.u-hopper.com/prod/interaction_protocol_engine"));
+    final InteractionProtocolMessage message = new InteractionProtocolMessage();
+    message.content = new JsonObject();
+    WeNetInteractionProtocolEngine.createProxy(vertx).sendMessage(message, testContext.succeeding(sent -> testContext.verify(() -> {
 
-	}
+      assertThat(message).isEqualTo(sent);
+      testContext.completeNow();
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void sendMessage(JsonObject message, Handler<AsyncResult<JsonObject>> sendHandler) {
+    })));
 
-		this.post(message, sendHandler, "/messages");
-
-	}
+  }
 
 }

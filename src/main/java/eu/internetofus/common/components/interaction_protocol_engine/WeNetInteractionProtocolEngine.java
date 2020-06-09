@@ -44,59 +44,56 @@ import io.vertx.serviceproxy.ServiceBinder;
  * @author UDT-IA, IIIA-CSIC
  */
 @ProxyGen
-public interface WeNetInteractionProtocolEngineService {
+public interface WeNetInteractionProtocolEngine {
 
-	/**
-	 * The address of this service.
-	 */
-	String ADDRESS = "wenet_component.InteractionProtocolEngine";
+  /**
+   * The address of this service.
+   */
+  String ADDRESS = "wenet_component.InteractionProtocolEngine";
 
-	/**
-	 * Create a proxy of the {@link WeNetInteractionProtocolEngineService}.
-	 *
-	 * @param vertx where the service has to be used.
-	 *
-	 * @return the task.
-	 */
-	static WeNetInteractionProtocolEngineService createProxy(Vertx vertx) {
+  /**
+   * Create a proxy of the {@link WeNetInteractionProtocolEngine}.
+   *
+   * @param vertx where the service has to be used.
+   *
+   * @return the task.
+   */
+  static WeNetInteractionProtocolEngine createProxy(final Vertx vertx) {
 
-		return new WeNetInteractionProtocolEngineServiceVertxEBProxy(vertx, WeNetInteractionProtocolEngineService.ADDRESS);
-	}
+    return new WeNetInteractionProtocolEngineVertxEBProxy(vertx, WeNetInteractionProtocolEngine.ADDRESS);
+  }
 
-	/**
-	 * Register this service.
-	 *
-	 * @param vertx  that contains the event bus to use.
-	 * @param client to do HTTP requests to other services.
-	 * @param conf   configuration to use.
-	 */
-	static void register(Vertx vertx, WebClient client, JsonObject conf) {
+  /**
+   * Register this service.
+   *
+   * @param vertx  that contains the event bus to use.
+   * @param client to do HTTP requests to other services.
+   * @param conf   configuration to use.
+   */
+  static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-		new ServiceBinder(vertx).setAddress(WeNetInteractionProtocolEngineService.ADDRESS).register(
-				WeNetInteractionProtocolEngineService.class, new WeNetInteractionProtocolEngineServiceImpl(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetInteractionProtocolEngine.ADDRESS).register(WeNetInteractionProtocolEngine.class, new WeNetInteractionProtocolEngineClient(client, conf));
 
-	}
+  }
 
-	/**
-	 * Send a message to be processed.
-	 *
-	 * @param message     to be processed.
-	 * @param sendHandler handler to send process.
-	 */
-	void sendMessage(@NotNull JsonObject message, @NotNull Handler<AsyncResult<JsonObject>> sendHandler);
+  /**
+   * Send a message to be processed.
+   *
+   * @param message     to be processed.
+   * @param sendHandler handler to send process.
+   */
+  void sendMessage(@NotNull JsonObject message, @NotNull Handler<AsyncResult<JsonObject>> sendHandler);
 
-	/**
-	 * Send a message to be processed.
-	 *
-	 * @param message     to be processed.
-	 * @param sendHandler handler to send process.
-	 */
-	@GenIgnore
-	default void sendMessage(@NotNull InteractionProtocolMessage message,
-			@NotNull Handler<AsyncResult<InteractionProtocolMessage>> sendHandler) {
+  /**
+   * Send a message to be processed.
+   *
+   * @param message     to be processed.
+   * @param sendHandler handler to send process.
+   */
+  @GenIgnore
+  default void sendMessage(@NotNull final InteractionProtocolMessage message, @NotNull final Handler<AsyncResult<InteractionProtocolMessage>> sendHandler) {
 
-		this.sendMessage(message.toJsonObject(),
-				ComponentClient.handlerForModel(InteractionProtocolMessage.class, sendHandler));
-	}
+    this.sendMessage(message.toJsonObject(), ComponentClient.handlerForModel(InteractionProtocolMessage.class, sendHandler));
+  }
 
 }

@@ -26,29 +26,51 @@
 
 package eu.internetofus.common.components.incentive_server;
 
-import eu.internetofus.common.components.ModelTestCase;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.junit5.VertxExtension;
 
 /**
- * Test the {@link TaskStatus}
+ * Test the {@link WeNetIncentiveServer}.
  *
- * @see TaskStatus
+ * @see WeNetIncentiveServer
+ * @see WeNetIncentiveServerClient
+ * @see WeNetIncentiveServerMocker
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class TaskStatusTest extends ModelTestCase<TaskStatus> {
+@ExtendWith(VertxExtension.class)
+public class WeNetIncentiveServerTest extends WeNetIncentiveServerTestCase {
 
   /**
-   * {@inheridDoc}
+   * The profile manager mocked server.
    */
-  @Override
-  public TaskStatus createModelExample(final int index) {
-    final TaskStatus model = new TaskStatus();
-    model.user_id = "WeNet_user" + index;
-    model.community_id = "WeNet_community_" + index;
-    model.task_id = "WeNet_task" + index;
-    model.Action = "Action" + index;
-    model.Message = "some message " + index;
-    return model;
+  protected static WeNetIncentiveServerMocker mocker;
+
+  /**
+   * Start the mocker server.
+   */
+  @BeforeAll
+  public static void startMocker() {
+
+    mocker = WeNetIncentiveServerMocker.start();
   }
 
+  /**
+   * Register the client.
+   *
+   * @param vertx event bus to use.
+   */
+  @BeforeEach
+  public void registerClient(final Vertx vertx) {
+
+    final WebClient client = WebClient.create(vertx);
+    final JsonObject conf = mocker.getComponentConfiguration();
+    WeNetIncentiveServer.register(vertx, client, conf);
+  }
 }

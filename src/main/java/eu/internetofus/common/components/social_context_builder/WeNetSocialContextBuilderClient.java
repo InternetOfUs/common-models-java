@@ -29,11 +29,9 @@ package eu.internetofus.common.components.social_context_builder;
 import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
-import io.vertx.serviceproxy.ServiceBinder;
 
 /**
  * Implementation of the {@link WeNetSocialContextBuilder}.
@@ -51,31 +49,6 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
    * The name of the configuration property that contains the URL to the social context builder API.
    */
   public static final String SOCIAL_CONTEXT_BUILDER_CONF_KEY = "socialContextBuilder";
-
-  /**
-   * Create a proxy of the {@link WeNetSocialContextBuilder}.
-   *
-   * @param vertx where the service has to be used.
-   *
-   * @return the task.
-   */
-  static WeNetSocialContextBuilder createProxy(final Vertx vertx) {
-
-    return new WeNetSocialContextBuilderVertxEBProxy(vertx, WeNetSocialContextBuilder.ADDRESS);
-  }
-
-  /**
-   * Register this service.
-   *
-   * @param vertx  that contains the event bus to use.
-   * @param client to do HTTP requests to other services.
-   * @param conf   configuration to use.
-   */
-  static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
-
-    new ServiceBinder(vertx).setAddress(WeNetSocialContextBuilder.ADDRESS).register(WeNetSocialContextBuilder.class, new WeNetSocialContextBuilderClient(client, conf));
-
-  }
 
   /**
    * Create a new service to interact with the WeNet interaction protocol engine.

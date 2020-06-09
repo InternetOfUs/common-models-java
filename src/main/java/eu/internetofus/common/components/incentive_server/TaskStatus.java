@@ -44,27 +44,27 @@ public class TaskStatus extends Model {
   public String user_id = "-1";
 
   /**
-   * Identifier of the user.
+   * Identifier of the community.
    */
   @Schema(example = "WeNet_community_5")
   public String community_id;
 
   /**
-   * Identifier of the user.
+   * Identifier of the task.
    */
   @Schema(example = "WeNet_task")
   public String task_id;
 
   /**
-   * Identifier of the user.
+   * The action that update the task.
    */
   @Schema(example = "Starts")
   public String Action;
 
   /**
-   * Identifier of the user.
+   * The message of the status.
    */
   @Schema(example = "some message")
-  public String Message_content;
+  public String Message;
 
 }

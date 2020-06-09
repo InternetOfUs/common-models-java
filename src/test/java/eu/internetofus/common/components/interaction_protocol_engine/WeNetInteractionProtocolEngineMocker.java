@@ -24,31 +24,51 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.incentive_server;
+package eu.internetofus.common.components.interaction_protocol_engine;
 
-import eu.internetofus.common.components.ModelTestCase;
+import eu.internetofus.common.components.AbstractComponentMocker;
 
 /**
- * Test the {@link TaskStatus}
+ * The mocked server for the {@link WeNetInteractionProtocolEngine}.
  *
- * @see TaskStatus
+ * @see WeNetInteractionProtocolEngine
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class TaskStatusTest extends ModelTestCase<TaskStatus> {
+public class WeNetInteractionProtocolEngineMocker extends AbstractComponentMocker {
+
+  /**
+   * Start a mocker builder into a random port.
+   *
+   * @return the started mocker.
+   */
+  public static WeNetInteractionProtocolEngineMocker start() {
+
+    return start(0);
+
+  }
+
+  /**
+   * Start a mocker builder into a port.
+   *
+   * @param port to bind the server.
+   *
+   * @return the started mocker.
+   */
+  public static WeNetInteractionProtocolEngineMocker start(final int port) {
+
+    final WeNetInteractionProtocolEngineMocker mocker = new WeNetInteractionProtocolEngineMocker();
+    mocker.start(port, null);
+    return mocker;
+  }
 
   /**
    * {@inheridDoc}
    */
   @Override
-  public TaskStatus createModelExample(final int index) {
-    final TaskStatus model = new TaskStatus();
-    model.user_id = "WeNet_user" + index;
-    model.community_id = "WeNet_community_" + index;
-    model.task_id = "WeNet_task" + index;
-    model.Action = "Action" + index;
-    model.Message = "some message " + index;
-    return model;
+  protected String getComponentConfigurationName() {
+
+    return WeNetInteractionProtocolEngineClient.INTERACTION_PROTOCOL_ENGINE_CONF_KEY;
   }
 
 }

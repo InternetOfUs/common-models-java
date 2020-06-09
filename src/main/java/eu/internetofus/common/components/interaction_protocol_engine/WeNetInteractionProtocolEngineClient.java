@@ -24,54 +24,53 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.social_context_builder;
+package eu.internetofus.common.components.interaction_protocol_engine;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import io.vertx.core.Vertx;
+import eu.internetofus.common.vertx.ComponentClient;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
-import io.vertx.junit5.VertxExtension;
 
 /**
- * Test the {@link WeNetSocialContextBuilder}.
+ * The implementation of the {@link WeNetInteractionProtocolEngine}.
  *
- * @see WeNetSocialContextBuilder
- * @see WeNetSocialContextBuilderClient
- * @see WeNetSocialContextBuilderMocker
+ * @see WeNetInteractionProtocolEngine
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
-public class WeNetSocialContextBuilderTest extends WeNetSocialContextBuilderTestCase {
+public class WeNetInteractionProtocolEngineClient extends ComponentClient implements WeNetInteractionProtocolEngine {
 
   /**
-   * The profile manager mocked server.
+   * The default URL to bind the client.
    */
-  protected static WeNetSocialContextBuilderMocker mocker;
+  public static final String DEFAULT_INTERACTION_PROTOCOL_ENGINE_API_URL = "https://wenet.u-hopper.com/prod/interaction_protocol_engine";
 
   /**
-   * Start the mocker server.
+   * The name of the configuration property that contains the URL to the incentive server API.
    */
-  @BeforeAll
-  public static void startMocker() {
+  public static final String INTERACTION_PROTOCOL_ENGINE_CONF_KEY = "interactionProtocolEngine";
 
-    mocker = WeNetSocialContextBuilderMocker.start();
+  /**
+   * Create a new service to interact with the WeNet interaction protocol engine.
+   *
+   * @param client to interact with the other modules.
+   * @param conf   configuration.
+   */
+  public WeNetInteractionProtocolEngineClient(final WebClient client, final JsonObject conf) {
+
+    super(client, conf.getString(INTERACTION_PROTOCOL_ENGINE_CONF_KEY, DEFAULT_INTERACTION_PROTOCOL_ENGINE_API_URL));
+
   }
 
   /**
-   * Register the client.
-   *
-   * @param vertx event bus to use.
+   * {@inheritDoc}
    */
-  @BeforeEach
-  public void registerClient(final Vertx vertx) {
+  @Override
+  public void sendMessage(final JsonObject message, final Handler<AsyncResult<JsonObject>> sendHandler) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject conf = mocker.getComponentConfiguration();
-    WeNetSocialContextBuilder.register(vertx, client, conf);
+    this.post(message, sendHandler, "/messages");
+
   }
 
 }

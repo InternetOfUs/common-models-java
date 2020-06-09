@@ -26,7 +26,13 @@
 
 package eu.internetofus.common.components.social_context_builder;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+
 import eu.internetofus.common.components.ModelTestCase;
+import eu.internetofus.common.components.profile_manager.SocialNetworkRelationship;
+import eu.internetofus.common.components.profile_manager.SocialNetworkRelationshipType;
 
 /**
  * Test the {@link UserRelation}.
@@ -39,15 +45,29 @@ public class UserRelationTest extends ModelTestCase<UserRelation> {
    * {@inheridDoc}
    */
   @Override
-  public UserRelation createModelExample(int index) {
+  public UserRelation createModelExample(final int index) {
 
-    UserRelation model = new UserRelation();
+    final UserRelation model = new UserRelation();
     model.UserID1 = "userId2_" + index;
     model.UserID2 = "userId1_" + index;
     model.RelationType = index;
     model.Weight = 1.0 / Math.max(0.0, index);
     model.SourceID = "SourceId_" + index;
     return model;
+
+  }
+
+  /**
+   * Check that can convert
+   */
+  @Test
+  public void shouldConvertToSocialNetworkRelationship() {
+
+    final UserRelation model = this.createModelExample(1);
+    final SocialNetworkRelationship relation = model.toSocialNetworkRelationship();
+    assertThat(relation).isNotNull();
+    assertThat(relation.userId).isEqualTo(model.UserID2);
+    assertThat(relation.type).isEqualTo(SocialNetworkRelationshipType.acquaintance);
 
   }
 
