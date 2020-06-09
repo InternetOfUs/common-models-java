@@ -155,26 +155,24 @@ public interface Containers {
   /**
    * Create and start the engine protocol engine container.
    *
-   * @param port                  to bind the task manager API on the localhost.
-   * @param profileManagerApiPort port where the profile manager will be bind on the localhost.
-   * @param taskManagerApiPort    port where the task manager will be bind on the localhost.
-   * @param serviceApiPort        port where the service component will be bind on the localhost.
+   * @param port                     to bind the task manager API on the localhost.
+   * @param profileManagerApiPort    port where the profile manager will be bind on the localhost.
+   * @param taskManagerApiPort       port where the task manager will be bind on the localhost.
+   * @param serviceApiPort           port where the service component will be bind on the localhost.
    * @param socialContextBuilderPort port where the social context builder component will be bind on the localhost.
-   * @param incentiveServerPort port where the incentive server component will be bind on the localhost.
-   * @param network               that shared between containers.
+   * @param incentiveServerPort      port where the incentive server component will be bind on the localhost.
+   * @param network                  that shared between containers.
    */
   @SuppressWarnings("resource")
-  static void createAndStartContainersForInteractionProtocolEngine(final int port, final int profileManagerApiPort, final int taskManagerApiPort, final int serviceApiPort, final int socialContextBuilderPort,final int incentiveServerPort,final Network network) {
+  static void createAndStartContainersForInteractionProtocolEngine(final int port, final int profileManagerApiPort, final int taskManagerApiPort, final int serviceApiPort, final int socialContextBuilderPort, final int incentiveServerPort,
+      final Network network) {
 
     final GenericContainer<?> interactionProtocolEnginePersistenceContainer = createMongoContainerFor(WENET_INTERACTION_PROTOCOL_ENGINE_DB_NAME, network);
     interactionProtocolEnginePersistenceContainer.start();
     final FixedHostPortGenericContainer<?> interactionProtocolEngineContainer = new FixedHostPortGenericContainer<>(WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME).withStartupAttempts(1)
         .withEnv("DB_HOST", WENET_INTERACTION_PROTOCOL_ENGINE_DB_NAME).withEnv("WENET_PROFILE_MANAGER_API", "http://host.testcontainers.internal:" + profileManagerApiPort)
-        .withEnv("WENET_TASK_MANAGER_API", "http://host.testcontainers.internal:" + taskManagerApiPort)
-        .withEnv("WENET_SERVICE_API", "http://host.testcontainers.internal:" + serviceApiPort)
-        .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", "http://host.testcontainers.internal:" + socialContextBuilderPort)
-        .withEnv("WENET_INCENTIVE_SERVER_API", "http://host.testcontainers.internal:" + incentiveServerPort)
-        .withNetwork(network)
+        .withEnv("WENET_TASK_MANAGER_API", "http://host.testcontainers.internal:" + taskManagerApiPort).withEnv("WENET_SERVICE_API", "http://host.testcontainers.internal:" + serviceApiPort)
+        .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", "http://host.testcontainers.internal:" + socialContextBuilderPort).withEnv("WENET_INCENTIVE_SERVER_API", "http://host.testcontainers.internal:" + incentiveServerPort).withNetwork(network)
         .withFixedExposedPort(port, EXPORT_API_PORT).waitingFor(Wait.forListeningPort());
     interactionProtocolEngineContainer.start();
 
@@ -183,63 +181,22 @@ public interface Containers {
   /**
    * Create and start the profile manager container.
    *
-   * @param port                             to bind the profile manager API on the localhost.
-   * @param taskManagerApiPort               port where the task manager will be bind on the localhost.
-   * @param interactionProtocolEngineApiPort port where the interaction protocol engine will be bind on the localhost.
-   * @param network                          that shared between containers.
+   * @param port                     to bind the profile manager API on the localhost.
+   * @param taskManagerApiPort       port where the task manager will be bind on the localhost.
+   * @param serviceApiPort           port where the service component will be bind on the localhost.
+   * @param socialContextBuilderPort port where the social context builder component will be bind on the localhost.
+   * @param network                  that shared between containers.
    */
   @SuppressWarnings("resource")
-  static void createAndStartContainersForProfileManager(final int port, final int taskManagerApiPort, final int interactionProtocolEngineApiPort, final Network network) {
+  static void createAndStartContainersForProfileManager(final int port, final int taskManagerApiPort, final int serviceApiPort, final int socialContextBuilderPort, final Network network) {
 
     final GenericContainer<?> profilePersistenceContainer = createMongoContainerFor(WENET_PROFILE_MANAGER_DB_NAME, network);
     profilePersistenceContainer.start();
     final FixedHostPortGenericContainer<?> profileManagerContainer = new FixedHostPortGenericContainer<>(WENET_PROFILE_MANAGER_DOCKER_NAME).withStartupAttempts(1).withEnv("DB_HOST", WENET_PROFILE_MANAGER_DB_NAME)
-        .withEnv("WENET_TASK_MANAGER_API", "http://host.testcontainers.internal:" + taskManagerApiPort).withEnv("WENET_INTERACTION_PROTOCOL_ENGINE_API", "http://host.testcontainers.internal" + interactionProtocolEngineApiPort)
-        .withNetwork(network).withFixedExposedPort(port, EXPORT_API_PORT).waitingFor(Wait.forListeningPort());
+        .withEnv("WENET_TASK_MANAGER_API", "http://host.testcontainers.internal:" + taskManagerApiPort).withEnv("WENET_SERVICE_API", "http://host.testcontainers.internal:" + serviceApiPort)
+        .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", "http://host.testcontainers.internal:" + socialContextBuilderPort).withNetwork(network).withFixedExposedPort(port, EXPORT_API_PORT).waitingFor(Wait.forListeningPort());
     profileManagerContainer.start();
 
-  }
-
-  /**
-   * Create the container necessaries to start the task manager with some arguments.
-   *
-   * @param port                             to bind the task manager API on the localhost.
-   * @param profileManagerApiPort            port where the profile manager will be bind on the localhost.
-   * @param interactionProtocolEngineApiPort port where the interaction protocol engine will be bind on the localhost.
-   * @param serviceApiPort                   port where the service component will be bind on the localhost.
-   * @param network                          that shared between containers.
-   *
-   * @return the arguments necessaries to start the task manager.
-   */
-  static String[] createTaskManagerContainersToStartWith(final int port, final int profileManagerApiPort, final int interactionProtocolEngineApiPort, final int serviceApiPort, final Network network) {
-
-    final GenericContainer<?> persistenceContainer = Containers.createMongoContainerFor(WENET_TASK_MANAGER_DB_NAME, network);
-    persistenceContainer.start();
-
-    return new String[] { "-papi.port=" + port, "-ppersistence.host=localhost", "-ppersistence.port=" + persistenceContainer.getMappedPort(EXPORT_MONGODB_PORT),
-        "-pwenetComponents.interactionProtocolEngine=\"http://localhost:" + interactionProtocolEngineApiPort + "\"", "-pwenetComponents.profileManager=\"http://localhost:" + profileManagerApiPort + "\"",
-        "-pwenetComponents.service=\"http://localhost:" + serviceApiPort + "\"" };
-  }
-
-  /**
-   * Create the container necessaries to start the interaction protocol engine with some arguments.
-   *
-   * @param port                  to bind the interaction protocol engine API on the localhost.
-   * @param profileManagerApiPort port where the profile manager will be bind on the localhost.
-   * @param taskManagerApiPort    port where the task manager will be bind on the localhost.
-   * @param serviceApiPort        port where the service component will be bind on the localhost.
-   * @param network               that shared between containers.
-   *
-   * @return the arguments necessaries to start the profile manager.
-   */
-  static String[] createInteractionProtocolEngineContainersToStartWith(final int port, final int profileManagerApiPort, final int taskManagerApiPort, final int serviceApiPort, final Network network) {
-
-    final GenericContainer<?> persistenceContainer = Containers.createMongoContainerFor(WENET_INTERACTION_PROTOCOL_ENGINE_DB_NAME, network);
-    persistenceContainer.start();
-
-    return new String[] { "-papi.port=" + port, "-ppersistence.host=localhost", "-ppersistence.port=" + persistenceContainer.getMappedPort(EXPORT_MONGODB_PORT),
-        "-pwenetComponents.profileManager=\"http://localhost:" + profileManagerApiPort + "\"", "-pwenetComponents.taskManager=\"http://localhost:" + taskManagerApiPort + "\"",
-        "-pwenetComponents.service=\"http://localhost:" + serviceApiPort + "\"" };
   }
 
   /**
@@ -255,28 +212,6 @@ public interface Containers {
 
     final ConfigRetrieverOptions options = new ConfigRetrieverOptions().addStore(effectiveConfigurationFile);
     ConfigRetriever.create(vertx, options).getConfig(configurationHandler);
-
-  }
-
-  /**
-   * Create and start the profile manager container.
-   *
-   * @param port                             to bind the profile manager API on the localhost.
-   * @param taskManagerApiPort               port where the task manager will be bind on the localhost.
-   * @param interactionProtocolEngineApiPort port where the interaction protocol engine will be bind on the localhost.
-   * @param mockedServerPort                 port where the mocked server is deployed on the localhost.
-   * @param network                          that shared between containers.
-   */
-  @SuppressWarnings("resource")
-  static void createAndStartContainersForProfileManager(final int port, final int taskManagerApiPort, final int interactionProtocolEngineApiPort, final int mockedServerPort, final Network network) {
-
-    final GenericContainer<?> profilePersistenceContainer = createMongoContainerFor(WENET_PROFILE_MANAGER_DB_NAME, network);
-    profilePersistenceContainer.start();
-    final FixedHostPortGenericContainer<?> profileManagerContainer = new FixedHostPortGenericContainer<>(WENET_PROFILE_MANAGER_DOCKER_NAME).withStartupAttempts(1).withEnv("DB_HOST", WENET_PROFILE_MANAGER_DB_NAME)
-        .withEnv("WENET_TASK_MANAGER_API", "http://host.testcontainers.internal:" + taskManagerApiPort).withEnv("WENET_INTERACTION_PROTOCOL_ENGINE_API", "http://host.testcontainers.internal:" + interactionProtocolEngineApiPort)
-        .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", "http://host.testcontainers.internal:" + mockedServerPort + "/social_context_builder").withNetwork(network).withFixedExposedPort(port, EXPORT_API_PORT)
-        .waitingFor(Wait.forListeningPort());
-    profileManagerContainer.start();
 
   }
 
