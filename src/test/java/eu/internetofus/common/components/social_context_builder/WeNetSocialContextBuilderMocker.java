@@ -63,7 +63,7 @@ public class WeNetSocialContextBuilderMocker extends AbstractComponentMocker {
   }
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    */
   @Override
   protected String getComponentConfigurationName() {

@@ -63,7 +63,7 @@ public class WeNetServiceMocker extends AbstractComponentMocker {
   }
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    *
    * @see WeNetServiceClient#SERVICE_CONF_KEY
    */

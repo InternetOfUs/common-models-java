@@ -64,7 +64,7 @@ public class WeNetIncentiveServerClient extends ComponentClient implements WeNet
   }
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    */
   @Override
   public void updateJsonTaskStatus(final JsonObject status, final Handler<AsyncResult<JsonObject>> updateHandler) {

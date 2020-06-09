@@ -63,7 +63,7 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   }
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    */
   @Override
   public void retrieveJsonArraySocialRelations(final String userId, final Handler<AsyncResult<JsonArray>> retrieveHandler) {
@@ -73,7 +73,7 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   }
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    */
   @Override
   public void updatePreferencesForUserOnTask(final String userId, final String taskId, final JsonArray volunteers, final Handler<AsyncResult<JsonArray>> updateHandler) {

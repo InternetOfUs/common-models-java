@@ -125,7 +125,7 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
   }
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    */
   @Override
   public void updateJsonTask(final String id, final JsonObject task, final Handler<AsyncResult<JsonObject>> updateHandler) {

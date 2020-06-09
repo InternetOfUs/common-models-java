@@ -130,7 +130,7 @@ public class QueryBuilder {
    * Add a the restrictions to mark the filed exist, thus that it is defined and not {@code null}.
    *
    * @param fieldName  name of the field.
-   * @param hasToExist is {@code true} is the field has to exist, {@ode false} if has to no exist, or {@code null} to
+   * @param hasToExist is {@code true} is the field has to exist, {@code false} if has to no exist, or {@code null} to
    *                   ignore this restriction.
    *
    * @return the factory that is using.

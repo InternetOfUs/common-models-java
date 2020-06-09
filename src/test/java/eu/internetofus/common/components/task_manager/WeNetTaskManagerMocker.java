@@ -63,7 +63,7 @@ public class WeNetTaskManagerMocker extends AbstractComponentMocker {
   }
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    *
    * @see WeNetTaskManagerClient#TASK_MANAGER_CONF_KEY
    */

@@ -54,7 +54,7 @@ import io.vertx.junit5.VertxTestContext;
 public class LabelTest extends ModelTestCase<Label> {
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    */
   @Override
   public Label createModelExample(final int index) {

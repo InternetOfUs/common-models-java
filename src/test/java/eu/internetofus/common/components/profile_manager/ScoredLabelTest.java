@@ -52,7 +52,7 @@ import io.vertx.junit5.VertxTestContext;
 public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    */
   @Override
   public ScoredLabel createModelExample(final int index) {

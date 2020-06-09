@@ -63,7 +63,7 @@ public class WeNetIncentiveServerMocker extends AbstractComponentMocker {
   }
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    */
   @Override
   protected String getComponentConfigurationName() {

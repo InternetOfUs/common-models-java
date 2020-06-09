@@ -42,7 +42,7 @@ import eu.internetofus.common.components.profile_manager.SocialNetworkRelationsh
 public class UserRelationTest extends ModelTestCase<UserRelation> {
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    */
   @Override
   public UserRelation createModelExample(final int index) {

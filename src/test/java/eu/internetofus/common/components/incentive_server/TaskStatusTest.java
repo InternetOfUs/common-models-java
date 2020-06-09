@@ -38,7 +38,7 @@ import eu.internetofus.common.components.ModelTestCase;
 public class TaskStatusTest extends ModelTestCase<TaskStatus> {
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    */
   @Override
   public TaskStatus createModelExample(final int index) {

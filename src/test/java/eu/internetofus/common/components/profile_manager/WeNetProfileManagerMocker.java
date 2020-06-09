@@ -63,7 +63,7 @@ public class WeNetProfileManagerMocker extends AbstractComponentMocker {
   }
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    *
    * @see WeNetProfileManagerClient#PROFILE_MANAGER_CONF_KEY
    */

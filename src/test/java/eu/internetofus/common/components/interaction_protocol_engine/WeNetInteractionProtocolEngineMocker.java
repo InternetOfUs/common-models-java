@@ -63,7 +63,7 @@ public class WeNetInteractionProtocolEngineMocker extends AbstractComponentMocke
   }
 
   /**
-   * {@inheridDoc}
+   * {@inheritDoc}
    */
   @Override
   protected String getComponentConfigurationName() {
