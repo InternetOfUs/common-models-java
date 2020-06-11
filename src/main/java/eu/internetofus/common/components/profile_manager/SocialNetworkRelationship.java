@@ -43,92 +43,95 @@ import io.vertx.core.Vertx;
 @Schema(description = "A social relationship with another WeNet user.")
 public class SocialNetworkRelationship extends Model implements Validable {
 
-	/**
-	 * The identifier of the WeNet user the relationship is related to.
-	 */
-	@Schema(
-			description = "The identifier of the WeNet user the relationship is related to",
-			example = "4c51ee0b-b7ec-4577-9b21-ae6832656e33")
-	public String userId;
+  /**
+   * The identifier of the WeNet user the relationship is related to.
+   */
+  @Schema(description = "The identifier of the WeNet user the relationship is related to", example = "4c51ee0b-b7ec-4577-9b21-ae6832656e33")
+  public String userId;
 
-	/**
-	 * The relationship type.
-	 */
-	@Schema(description = "The relationship type", example = "friend")
-	public SocialNetworkRelationshipType type;
+  /**
+   * The relationship type.
+   */
+  @Schema(description = "The relationship type", example = "friend")
+  public SocialNetworkRelationshipType type;
 
-	/**
-	 * Create a new empty relationship.
-	 */
-	public SocialNetworkRelationship() {
+  /**
+   * The weight of the relation.
+   */
+  @Schema(description = "A number from 0 to 1 that indicates the strength of the relation. 0 indicates a deleted/non-exisiting relation.", example = "0.2")
+  public Double weight;
 
-	}
+  /**
+   * Create a new empty relationship.
+   */
+  public SocialNetworkRelationship() {
 
-	/**
-	 * Create a new relationship.
-	 *
-	 * @param type   of relationship.
-	 * @param userId identifier of the WeNet user the relationship is related to.
-	 */
-	public SocialNetworkRelationship(SocialNetworkRelationshipType type, String userId) {
+  }
 
-		this.type = type;
-		this.userId = userId;
+  /**
+   * Create a new relationship.
+   *
+   * @param type   of relationship.
+   * @param userId identifier of the WeNet user the relationship is related to.
+   */
+  public SocialNetworkRelationship(final SocialNetworkRelationshipType type, final String userId) {
 
-	}
+    this.type = type;
+    this.userId = userId;
+    this.weight = 1.0d;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  }
 
-		final Promise<Void> promise = Promise.promise();
-		Future<Void> future = promise.future();
-		try {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-			if (this.type == null) {
+    final Promise<Void> promise = Promise.promise();
+    Future<Void> future = promise.future();
+    try {
 
-				promise.fail(new ValidationErrorException(codePrefix + ".type",
-						"It is not allowed a social relationship without a type'."));
+      if (this.type == null) {
 
-			} else {
+        promise.fail(new ValidationErrorException(codePrefix + ".type", "It is not allowed a social relationship without a type'."));
 
-				this.userId = Validations.validateNullableStringField(codePrefix, "userId", 255, this.userId);
-				if (this.userId == null) {
+      } else {
 
-					promise.fail(new ValidationErrorException(codePrefix + ".userId",
-							"It is not allowed a social relationship without an user identifier'."));
+        this.userId = Validations.validateNullableStringField(codePrefix, "userId", 255, this.userId);
+        if (this.userId == null) {
 
-				} else {
+          promise.fail(new ValidationErrorException(codePrefix + ".userId", "It is not allowed a social relationship without an user identifier'."));
 
-					future = future.compose(mapper -> {
+        } else {
 
-						final Promise<Void> searchPromise = Promise.promise();
-						WeNetProfileManager.createProxy(vertx).retrieveProfile(this.userId, search -> {
+          this.weight = Validations.validateDoubleOnRange(codePrefix, "weight", this.weight, true, 0d, 1d);
+          future = future.compose(mapper -> {
 
-							if (search.result() != null) {
+            final Promise<Void> searchPromise = Promise.promise();
+            WeNetProfileManager.createProxy(vertx).retrieveProfile(this.userId, search -> {
 
-								searchPromise.complete();
+              if (search.result() != null) {
 
-							} else {
+                searchPromise.complete();
 
-								searchPromise.fail(new ValidationErrorException(codePrefix + ".userId",
-										"Does not exist any user identifier by '" + this.userId + "'."));
-							}
+              } else {
 
-						});
-						return searchPromise.future();
-					});
-					promise.complete();
-				}
-			}
-		} catch (final ValidationErrorException validationError) {
+                searchPromise.fail(new ValidationErrorException(codePrefix + ".userId", "Does not exist any user identifier by '" + this.userId + "'."));
+              }
 
-			promise.fail(validationError);
-		}
+            });
+            return searchPromise.future();
+          });
+          promise.complete();
+        }
+      }
+    } catch (final ValidationErrorException validationError) {
 
-		return future;
+      promise.fail(validationError);
+    }
 
-	}
+    return future;
+
+  }
 }

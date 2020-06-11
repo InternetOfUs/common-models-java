@@ -115,6 +115,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
     final SocialNetworkRelationship model = new SocialNetworkRelationship();
     model.userId = String.valueOf(index);
     model.type = SocialNetworkRelationshipType.values()[index % (SocialNetworkRelationshipType.values().length - 1)];
+    model.weight = index % 1000 / 1000.0;
     return model;
 
   }
@@ -224,7 +225,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
    * @see SocialNetworkRelationship#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidAmodelWithoutAType(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidModelWithoutType(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createNewEmptyProfile(vertx, testContext.succeeding(profile -> {
       final SocialNetworkRelationship model = new SocialNetworkRelationship();
@@ -245,12 +246,34 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
    * @see SocialNetworkRelationship#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidAmodelWithoutAUserId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidModelWithoutUserId(final Vertx vertx, final VertxTestContext testContext) {
 
     final SocialNetworkRelationship model = new SocialNetworkRelationship();
     model.type = SocialNetworkRelationshipType.colleague;
     model.userId = null;
     assertIsNotValid(model, "userId", vertx, testContext);
+
+  }
+
+  /**
+   * Check that a model is not valid without a bad weight.
+   *
+   * @param weight      that is not valid.
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see SocialNetworkRelationship#validate(String, Vertx)
+   */
+  @ParameterizedTest(name = "Should a social network relationship with a weight {0} not be valid")
+  @ValueSource(doubles = { -0.00001d, 1.000001d, -23d, +23d })
+  public void shouldNotBeValidModelWithBadWeight(final double weight, final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+      model.weight = weight;
+      assertIsNotValid(model, "weight", vertx, testContext);
+
+    }));
 
   }
 
