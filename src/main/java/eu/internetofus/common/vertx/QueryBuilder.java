@@ -192,9 +192,9 @@ public class QueryBuilder {
 
     if (value != null) {
 
-      if (value.length() > 1 && value.startsWith("/") && value.endsWith("/")) {
+      if (this.containsPattern(value)) {
 
-        final String pattern = value.substring(1, value.length() - 2);
+        final String pattern = this.extractPattern(value);
         return this.withRegex(fieldName, pattern);
 
       } else {
@@ -206,6 +206,72 @@ public class QueryBuilder {
 
     return this;
 
+  }
+
+  /**
+   * Check if a value contains a pattern.
+   *
+   * @param value to check.
+   *
+   * @return {@code true} if the value contains a pattern.
+   */
+  protected boolean containsPattern(final String value) {
+
+    return value.length() > 1 && value.startsWith("/") && value.endsWith("/");
+  }
+
+  /**
+   * Extract the pattern define din a value.
+   *
+   * @param value to get the pattern.
+   *
+   * @return the pattern defined on the value.
+   */
+  protected String extractPattern(final String value) {
+
+    return value.substring(1, value.length() - 1);
+  }
+
+  /**
+   * Add a the restrictions to mark an array field that contains some elements that match a value or a regular expression.
+   * It it is a regular expression it has to be between {@code /}.
+   *
+   * @param fieldName name of the field that contains an array.
+   * @param values    or regular expression for the field. If it is {@code null} the field is ignored.
+   *
+   * @return the factory that is using.
+   */
+  public QueryBuilder withEqOrRegex(final String fieldName, final Iterable<String> values) {
+
+    if (values != null) {
+
+      final JsonArray patternsMatch = new JsonArray();
+      for (final String value : values) {
+
+        if (value != null) {
+
+          final JsonObject elementMatch = new JsonObject();
+          if (this.containsPattern(value)) {
+
+            final String pattern = this.extractPattern(value);
+            elementMatch.put("$regex", pattern);
+
+          } else {
+
+            elementMatch.put("$eq", value);
+          }
+
+          patternsMatch.add(new JsonObject().put("$elemMatch", elementMatch));
+        }
+
+      }
+      if (patternsMatch.size() != 0) {
+
+        this.query.put(fieldName, new JsonObject().put("$all", patternsMatch));
+      }
+
+    }
+    return this;
   }
 
   /**
