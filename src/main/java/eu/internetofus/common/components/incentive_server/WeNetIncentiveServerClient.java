@@ -49,7 +49,7 @@ public class WeNetIncentiveServerClient extends ComponentClient implements WeNet
   /**
    * The name of the configuration property that contains the URL to the incentive server API.
    */
-  public static final String INCENTIVE_SERVER_CONF_KEY = "incentiveSserver";
+  public static final String INCENTIVE_SERVER_CONF_KEY = "incentiveServer";
 
   /**
    * Create a new incentive_server.
