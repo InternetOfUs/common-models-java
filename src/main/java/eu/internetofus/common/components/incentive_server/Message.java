@@ -26,30 +26,21 @@
 
 package eu.internetofus.common.components.incentive_server;
 
-import eu.internetofus.common.components.ModelTestCase;
+import eu.internetofus.common.components.Model;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Test the {@link TaskStatus}
- *
- * @see TaskStatus
+ * The message on an {@link Incentive}
  *
  * @author UDT-IA, IIIA-CSIC
  */
-
-public class TaskStatusTest extends ModelTestCase<TaskStatus> {
+@Schema(hidden = true, name = "Message", description = "The message on an incentive.")
+public class Message extends Model {
 
   /**
-   * {@inheritDoc}
+   * The content of the message.
    */
-  @Override
-  public TaskStatus createModelExample(final int index) {
-    final TaskStatus model = new TaskStatus();
-    model.user_id = "WeNet_user" + index;
-    model.community_id = "WeNet_community_" + index;
-    model.task_id = "WeNet_task" + index;
-    model.Action = "Action" + index;
-    model.Message = "some message " + index;
-    return model;
-  }
+  @Schema(example = "we are happy to see your participation in the I-log app you are doing a great job!")
+  public String content;
 
 }

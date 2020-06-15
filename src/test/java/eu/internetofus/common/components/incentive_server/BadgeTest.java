@@ -29,26 +29,25 @@ package eu.internetofus.common.components.incentive_server;
 import eu.internetofus.common.components.ModelTestCase;
 
 /**
- * Test the {@link TaskStatus}
+ * Test the {@link Badge}.
  *
- * @see TaskStatus
+ * @see Badge
  *
  * @author UDT-IA, IIIA-CSIC
  */
-
-public class TaskStatusTest extends ModelTestCase<TaskStatus> {
+public class BadgeTest extends ModelTestCase<Badge> {
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public TaskStatus createModelExample(final int index) {
-    final TaskStatus model = new TaskStatus();
-    model.user_id = "WeNet_user" + index;
-    model.community_id = "WeNet_community_" + index;
-    model.task_id = "WeNet_task" + index;
-    model.Action = "Action" + index;
-    model.Message = "some message " + index;
+  public Badge createModelExample(final int index) {
+
+    final Badge model = new Badge();
+    model.BadgeClass = "class " + index;
+    model.ImgUrl = "http://3.126.161.118:8000/media/uploads/badges/assertion-OYmfmtDFSIKG-qeZfXz4QQ.png?index=" + index;
+    model.Criteria = "criteria " + index;
+    model.Message = "message " + index;
     return model;
   }
 

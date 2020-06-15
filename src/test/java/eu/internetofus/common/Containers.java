@@ -69,7 +69,7 @@ public interface Containers {
   /**
    * The name of the WeNet profile manager docker container to use.
    */
-  String WENET_PROFILE_MANAGER_DOCKER_NAME = "wenet/profile-manager:0.13.0";
+  String WENET_PROFILE_MANAGER_DOCKER_NAME = "wenet/profile-manager:0.14.0";
 
   /**
    * The name of the WeNet profile manager database.
@@ -79,7 +79,7 @@ public interface Containers {
   /**
    * The name of the WeNet task manager docker container to use.
    */
-  String WENET_TASK_MANAGER_DOCKER_NAME = "wenet/task-manager:0.4.0";
+  String WENET_TASK_MANAGER_DOCKER_NAME = "wenet/task-manager:0.5.0";
 
   /**
    * The name of the WeNet task manager database.
@@ -89,7 +89,7 @@ public interface Containers {
   /**
    * The name of the WeNet interaction manager docker container to use.
    */
-  String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "wenet/interaction-protocol-engine:0.9.0";
+  String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "wenet/interaction-protocol-engine:0.10.0";
 
   /**
    * The name of the WeNet interaction manager database.

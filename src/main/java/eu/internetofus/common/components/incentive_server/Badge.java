@@ -26,30 +26,39 @@
 
 package eu.internetofus.common.components.incentive_server;
 
-import eu.internetofus.common.components.ModelTestCase;
+import eu.internetofus.common.components.Model;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Test the {@link TaskStatus}
- *
- * @see TaskStatus
+ * The badge on an {@link Incentive}
  *
  * @author UDT-IA, IIIA-CSIC
  */
-
-public class TaskStatusTest extends ModelTestCase<TaskStatus> {
+@Schema(hidden = true, name = "Badge", description = "The badge on an incentive.")
+public class Badge extends Model {
 
   /**
-   * {@inheritDoc}
+   * The badge class.
    */
-  @Override
-  public TaskStatus createModelExample(final int index) {
-    final TaskStatus model = new TaskStatus();
-    model.user_id = "WeNet_user" + index;
-    model.community_id = "WeNet_community_" + index;
-    model.task_id = "WeNet_task" + index;
-    model.Action = "Action" + index;
-    model.Message = "some message " + index;
-    return model;
-  }
+  @Schema(example = "hpqAdI7hQf2maQ13AW1jXA")
+  public String BadgeClass;
+
+  /**
+   * The badge image.
+   */
+  @Schema(example = "http://3.126.161.118:8000/media/uploads/badges/assertion-OYmfmtDFSIKG-qeZfXz4QQ.png")
+  public String ImgUrl;
+
+  /**
+   * The badge criteria.
+   */
+  @Schema(example = "The user will get this badge for 50 relations in tweeter.")
+  public String Criteria;
+
+  /**
+   * The badge message.
+   */
+  @Schema(example = "congratulations! you just earned a new badge for your relations on tweeter.")
+  public String Message;
 
 }

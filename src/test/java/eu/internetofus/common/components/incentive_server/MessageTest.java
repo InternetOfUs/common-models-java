@@ -29,26 +29,22 @@ package eu.internetofus.common.components.incentive_server;
 import eu.internetofus.common.components.ModelTestCase;
 
 /**
- * Test the {@link TaskStatus}
+ * Test the {@link Message}.
  *
- * @see TaskStatus
+ * @see Message
  *
  * @author UDT-IA, IIIA-CSIC
  */
-
-public class TaskStatusTest extends ModelTestCase<TaskStatus> {
+public class MessageTest extends ModelTestCase<Message> {
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public TaskStatus createModelExample(final int index) {
-    final TaskStatus model = new TaskStatus();
-    model.user_id = "WeNet_user" + index;
-    model.community_id = "WeNet_community_" + index;
-    model.task_id = "WeNet_task" + index;
-    model.Action = "Action" + index;
-    model.Message = "some message " + index;
+  public Message createModelExample(final int index) {
+
+    final Message model = new Message();
+    model.content = "content " + index;
     return model;
   }
 

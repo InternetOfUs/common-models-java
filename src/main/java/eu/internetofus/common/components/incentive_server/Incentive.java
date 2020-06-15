@@ -26,30 +26,52 @@
 
 package eu.internetofus.common.components.incentive_server;
 
-import eu.internetofus.common.components.ModelTestCase;
+import eu.internetofus.common.components.Model;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Test the {@link TaskStatus}
- *
- * @see TaskStatus
+ * Represents an incentive for an user.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-
-public class TaskStatusTest extends ModelTestCase<TaskStatus> {
+@Schema(hidden = true, name = "Incentive", description = "An user incentive.")
+public class Incentive extends Model {
 
   /**
-   * {@inheritDoc}
+   * Identifier of the application.
    */
-  @Override
-  public TaskStatus createModelExample(final int index) {
-    final TaskStatus model = new TaskStatus();
-    model.user_id = "WeNet_user" + index;
-    model.community_id = "WeNet_community_" + index;
-    model.task_id = "WeNet_task" + index;
-    model.Action = "Action" + index;
-    model.Message = "some message " + index;
-    return model;
-  }
+  @Schema(example = "1")
+  public String AppID;
+
+
+  /**
+   * Identifier of the user.
+   */
+  @Schema(example = "6")
+  public String UserId;
+
+  /**
+   * type of incentive.
+   */
+  @Schema(example = "Message/Badge (only one)")
+  public String IncentiveType;
+
+  /**
+   * Identifier of the application.
+   */
+  @Schema(example = "WeNet issuer")
+  public String Issuer;
+
+  /**
+   * Identifier of the application.
+   */
+  @Schema(description="Message of the icentive")
+  public Message Message;
+
+  /**
+   * Identifier of the application.
+   */
+  @Schema(description="Badge of the icentive")
+  public Badge Badge;
 
 }
