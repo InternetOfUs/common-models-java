@@ -68,7 +68,7 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   @Override
   public void retrieveJsonArraySocialRelations(final String userId, final Handler<AsyncResult<JsonArray>> retrieveHandler) {
 
-    this.getJsonArray(retrieveHandler, "/social/relations", userId);
+    this.getJsonArray(retrieveHandler, "/social/relations", userId, "/");
 
   }
 
@@ -78,7 +78,7 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   @Override
   public void updatePreferencesForUserOnTask(final String userId, final String taskId, final JsonArray volunteers, final Handler<AsyncResult<JsonArray>> updateHandler) {
 
-    this.post(volunteers, updateHandler, "/social/preferences", userId, taskId);
+    this.post(volunteers, updateHandler, "/social/preferences", userId, taskId, "/");
 
   }
 
@@ -88,7 +88,7 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   @Override
   public void retrieveJsonSocialExplanation(final String userId, final String taskId, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-    this.getJsonObject(retrieveHandler, "/social/explanations", userId, taskId);
+    this.getJsonObject(retrieveHandler, "/social/explanations", userId, taskId, "/");
 
   }
 
