@@ -85,4 +85,24 @@ public abstract class WeNetSocialContextBuilderTestCase {
 
   }
 
+  /**
+   * Should retrieve social relations.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldRetrievSocialRelations(final Vertx vertx, final VertxTestContext testContext) {
+
+    final String userId = UUID.randomUUID().toString();
+    final String taskId = UUID.randomUUID().toString();
+    WeNetSocialContextBuilder.createProxy(vertx).retrieveSocialExplanation(userId, taskId, testContext.succeeding(relations -> testContext.verify(() -> {
+
+      assertThat(relations).isNotNull();
+      testContext.completeNow();
+
+    })));
+
+  }
+
 }

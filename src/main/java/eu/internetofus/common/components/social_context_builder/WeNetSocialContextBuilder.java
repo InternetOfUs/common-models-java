@@ -109,4 +109,26 @@ public interface WeNetSocialContextBuilder {
    */
   void updatePreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId, @NotNull JsonArray volunteers, @NotNull Handler<AsyncResult<JsonArray>> retrieveHandler);
 
+  /**
+   * Return the social explanation why an user is selected to be a possible volunteer.
+   *
+   * @param userId          identifier of the user.
+   * @param taskId          identifier of the task the user is involved.
+   * @param retrieveHandler handler to inform of the found explanation.
+   */
+  @GenIgnore
+  default void retrieveSocialExplanation(@NotNull final String userId, @NotNull final String taskId, @NotNull final Handler<AsyncResult<SocialExplanation>> retrieveHandler) {
+
+    this.retrieveJsonSocialExplanation(userId, taskId, ComponentClient.handlerForModel(SocialExplanation.class, retrieveHandler));
+  }
+
+  /**
+   * Return the social explanation object why an user is selected to be a possible volunteer.
+   *
+   * @param userId          identifier of the user.
+   * @param taskId          identifier of the task the user is involved.
+   * @param retrieveHandler handler to inform of the found explanation.
+   */
+  void retrieveJsonSocialExplanation(@NotNull final String userId, @NotNull final String taskId, @NotNull final Handler<AsyncResult<JsonObject>> retrieveHandler);
+
 }

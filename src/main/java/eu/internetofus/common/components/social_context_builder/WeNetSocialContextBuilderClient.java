@@ -82,4 +82,14 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveJsonSocialExplanation(final String userId, final String taskId, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
+
+    this.getJsonObject(retrieveHandler, "/social/explanations", userId, taskId);
+
+  }
+
 }

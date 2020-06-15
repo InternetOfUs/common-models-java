@@ -36,7 +36,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "user_relation", description = " \n" + "A User to User relation.")
+@Schema(hidden = true, name = "user_relation", description ="A User to User relation.")
 public class UserRelation extends Model {
 
   /**
