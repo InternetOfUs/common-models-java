@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>eu.internetofus</groupId>
 	<artifactId>wenet-common</artifactId>
-	<version>0.1.0</version>
+	<version>0.2.0</version>
 	<description>This project will be used to provide the common classes for the UDT-IA IIIA-CSIC WeNet components.</description>
 	<organization>
 		<name>UDT-IA, IIIA-CSIC</name>
