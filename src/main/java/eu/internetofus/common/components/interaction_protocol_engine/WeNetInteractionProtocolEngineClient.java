@@ -73,4 +73,14 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void sendIncentive(final JsonObject incentive, final Handler<AsyncResult<JsonObject>> sendHandler) {
+
+    this.post(incentive, sendHandler, "/incentives");
+
+  }
+
 }

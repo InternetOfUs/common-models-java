@@ -39,37 +39,36 @@ import org.junit.jupiter.api.Test;
  */
 public class TaskSelectionNotificationTest extends TaskNotificationTestCase<TaskSelectionNotification> {
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see TaskSelectionNotification#TaskSelectionNotification()
-	 */
-	@Override
-	public TaskSelectionNotification createEmptyMessage() {
+  /**
+   * {@inheritDoc}
+   *
+   * @see TaskSelectionNotification#TaskSelectionNotification()
+   */
+  @Override
+  public TaskSelectionNotification createEmptyMessage() {
 
-		return new TaskSelectionNotification();
-	}
+    return new TaskSelectionNotification();
+  }
 
-	/**
-	 * Verify that the notification type is a task volunteer.
-	 */
-	@Test
-	public void shouldNotificationTypeByTaskVolunteer() {
+  /**
+   * Verify that the notification type is a task volunteer.
+   */
+  @Test
+  public void shouldNotificationTypeByTaskVolunteer() {
 
-		final TaskSelectionNotification model = this.createEmptyMessage();
-		assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.selectionVolunteer);
-	}
+    final TaskSelectionNotification model = this.createEmptyMessage();
+    assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.selectionVolunteer);
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public TaskSelectionNotification createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public TaskSelectionNotification createModelExample(final int index) {
 
-		final TaskSelectionNotification model = super.createModelExample(index);
-		model.outcome = TaskSelectionNotification.Outcome.values()[index
-				% (TaskSelectionNotification.Outcome.values().length - 1)];
-		return model;
-	}
+    final TaskSelectionNotification model = super.createModelExample(index);
+    model.outcome = TaskSelectionNotification.Outcome.values()[index % TaskSelectionNotification.Outcome.values().length];
+    return model;
+  }
 
 }

@@ -72,7 +72,7 @@ public class ComponentClient {
    * @param client       to interact with the other modules.
    * @param componentURL the URL to the component.
    */
-  public ComponentClient(WebClient client, String componentURL) {
+  public ComponentClient(final WebClient client, final String componentURL) {
 
     this.client = client;
     this.componentURL = componentURL;
@@ -86,7 +86,7 @@ public class ComponentClient {
    *
    * @return the absolute URL to component path.
    */
-  protected String createAbsoluteUrlWith(Object... paths) {
+  protected String createAbsoluteUrlWith(final Object... paths) {
 
     final StringBuilder builder = new StringBuilder();
     builder.append(this.componentURL);
@@ -120,7 +120,7 @@ public class ComponentClient {
    *
    * @param <T>           expected responses for the HTTP request.
    */
-  protected <T> void notifyErrorTo(Handler<AsyncResult<T>> actionHandler, HttpResponse<Buffer> response) {
+  protected <T> void notifyErrorTo(final Handler<AsyncResult<T>> actionHandler, final HttpResponse<Buffer> response) {
 
     final ErrorMessage message = Model.fromResponse(response, ErrorMessage.class);
     if (message != null) {
@@ -146,7 +146,7 @@ public class ComponentClient {
    *
    * @param <T>           type of model to send.
    */
-  protected <T extends Model> void sendModelAsJson(@NotNull HttpRequest<Buffer> request, @NotNull String action, @NotNull String url, @NotNull T content, @NotNull Handler<AsyncResult<T>> resultHandler) {
+  protected <T extends Model> void sendModelAsJson(@NotNull final HttpRequest<Buffer> request, @NotNull final String action, @NotNull final String url, @NotNull final T content, @NotNull final Handler<AsyncResult<T>> resultHandler) {
 
     final JsonObject body = content.toJsonObject();
     request.sendJsonObject(body, send -> {
@@ -198,7 +198,7 @@ public class ComponentClient {
    * @param <T>           type of content for the response.
    *
    */
-  protected <T> void successing(AsyncResult<HttpResponse<Buffer>> action, @NotNull String actionId, @NotNull Handler<AsyncResult<T>> resultHandler, BiConsumer<Handler<AsyncResult<T>>, HttpResponse<Buffer>> consumer) {
+  protected <T> void successing(final AsyncResult<HttpResponse<Buffer>> action, @NotNull final String actionId, @NotNull final Handler<AsyncResult<T>> resultHandler, final BiConsumer<Handler<AsyncResult<T>>, HttpResponse<Buffer>> consumer) {
 
     if (action.failed()) {
 
@@ -231,7 +231,7 @@ public class ComponentClient {
    *
    * @return the consumer that obtain a JSON array.
    */
-  protected BiConsumer<Handler<AsyncResult<JsonArray>>, HttpResponse<Buffer>> jsonArrayConsumer(@NotNull String actionId) {
+  protected BiConsumer<Handler<AsyncResult<JsonArray>>, HttpResponse<Buffer>> jsonArrayConsumer(@NotNull final String actionId) {
 
     return (handler, response) -> {
 
@@ -267,7 +267,7 @@ public class ComponentClient {
    *
    * @return the consumer that obtain a JSON object.
    */
-  protected BiConsumer<Handler<AsyncResult<JsonObject>>, HttpResponse<Buffer>> jsonObjectConsumer(@NotNull String actionId) {
+  protected BiConsumer<Handler<AsyncResult<JsonObject>>, HttpResponse<Buffer>> jsonObjectConsumer(@NotNull final String actionId) {
 
     return (handler, response) -> {
 
@@ -307,7 +307,7 @@ public class ComponentClient {
    *
    * @return the consumer that obtain a JSON array.
    */
-  protected <T extends Model> BiConsumer<Handler<AsyncResult<T>>, HttpResponse<Buffer>> modelConsumer(@NotNull Class<T> type, @NotNull String actionId) {
+  protected <T extends Model> BiConsumer<Handler<AsyncResult<T>>, HttpResponse<Buffer>> modelConsumer(@NotNull final Class<T> type, @NotNull final String actionId) {
 
     return (handler, response) -> {
 
@@ -335,7 +335,7 @@ public class ComponentClient {
    *
    * @return the consumer for the no content.
    */
-  protected BiConsumer<Handler<AsyncResult<Void>>, HttpResponse<Buffer>> noContentConsumer(@NotNull String actionId) {
+  protected BiConsumer<Handler<AsyncResult<Void>>, HttpResponse<Buffer>> noContentConsumer(@NotNull final String actionId) {
 
     return (handler, response) -> {
 
@@ -363,7 +363,7 @@ public class ComponentClient {
    *
    * @param <T>         type of model to post.
    */
-  protected <T extends Model> void post(@NotNull T content, @NotNull Handler<AsyncResult<T>> postHandler, @NotNull Object... paths) {
+  protected <T extends Model> void post(@NotNull final T content, @NotNull final Handler<AsyncResult<T>> postHandler, @NotNull final Object... paths) {
 
     final String url = this.createAbsoluteUrlWith(paths);
     final String actionId = UUID.randomUUID().toString();
@@ -382,7 +382,7 @@ public class ComponentClient {
    * @param postHandler the handler to manager the posted resource.
    * @param paths       to the component to post.
    */
-  protected void post(JsonArray content, Handler<AsyncResult<JsonArray>> postHandler, Object... paths) {
+  protected void post(final JsonArray content, final Handler<AsyncResult<JsonArray>> postHandler, final Object... paths) {
 
     final String url = this.createAbsoluteUrlWith(paths);
     final String actionId = UUID.randomUUID().toString();
@@ -398,7 +398,7 @@ public class ComponentClient {
    * @param postHandler the handler to manager the posted resource.
    * @param paths       to the component to post.
    */
-  protected void post(JsonObject content, Handler<AsyncResult<JsonObject>> postHandler, Object... paths) {
+  protected void post(final JsonObject content, final Handler<AsyncResult<JsonObject>> postHandler, final Object... paths) {
 
     final String url = this.createAbsoluteUrlWith(paths);
     final String actionId = UUID.randomUUID().toString();
@@ -416,7 +416,7 @@ public class ComponentClient {
    *
    * @param <T>        type of model to put.
    */
-  protected <T extends Model> void put(@NotNull T content, @NotNull Handler<AsyncResult<T>> putHandler, @NotNull Object... paths) {
+  protected <T extends Model> void put(@NotNull final T content, @NotNull final Handler<AsyncResult<T>> putHandler, @NotNull final Object... paths) {
 
     final String url = this.createAbsoluteUrlWith(paths);
     final String actionId = UUID.randomUUID().toString();
@@ -434,7 +434,7 @@ public class ComponentClient {
    * @param putHandler the handler to manager the put resource.
    * @param paths      to the component to put.
    */
-  protected void put(JsonArray content, Handler<AsyncResult<JsonArray>> putHandler, Object... paths) {
+  protected void put(final JsonArray content, final Handler<AsyncResult<JsonArray>> putHandler, final Object... paths) {
 
     final String url = this.createAbsoluteUrlWith(paths);
     final String actionId = UUID.randomUUID().toString();
@@ -450,7 +450,7 @@ public class ComponentClient {
    * @param putHandler the handler to manager the put resource.
    * @param paths      to the component to put.
    */
-  protected void put(JsonObject content, Handler<AsyncResult<JsonObject>> putHandler, Object... paths) {
+  protected void put(final JsonObject content, final Handler<AsyncResult<JsonObject>> putHandler, final Object... paths) {
 
     final String url = this.createAbsoluteUrlWith(paths);
     final String actionId = UUID.randomUUID().toString();
@@ -468,7 +468,7 @@ public class ComponentClient {
    *
    * @param <T>        type of model to get.
    */
-  protected <T extends Model> void getModel(Class<T> type, @NotNull Handler<AsyncResult<T>> getHandler, Object... paths) {
+  protected <T extends Model> void getModel(final Class<T> type, @NotNull final Handler<AsyncResult<T>> getHandler, final Object... paths) {
 
     final String url = this.createAbsoluteUrlWith(paths);
     final String actionId = UUID.randomUUID().toString();
@@ -483,7 +483,7 @@ public class ComponentClient {
    * @param getHandler the handler to manage the receiver resource.
    * @param paths      to the resource to get.
    */
-  protected void getJsonArray(@NotNull Handler<AsyncResult<JsonArray>> getHandler, Object... paths) {
+  protected void getJsonArray(@NotNull final Handler<AsyncResult<JsonArray>> getHandler, final Object... paths) {
 
     final String url = this.createAbsoluteUrlWith(paths);
     final String actionId = UUID.randomUUID().toString();
@@ -498,7 +498,7 @@ public class ComponentClient {
    * @param getHandler the handler to manage the receiver resource.
    * @param paths      to the resource to get.
    */
-  protected void getJsonObject(@NotNull Handler<AsyncResult<JsonObject>> getHandler, Object... paths) {
+  protected void getJsonObject(@NotNull final Handler<AsyncResult<JsonObject>> getHandler, final Object... paths) {
 
     final String url = this.createAbsoluteUrlWith(paths);
     final String actionId = UUID.randomUUID().toString();
@@ -513,7 +513,7 @@ public class ComponentClient {
    * @param deleteHandler the handler to manage the delete result.
    * @param paths         to the resource to remove.
    */
-  protected void delete(Handler<AsyncResult<Void>> deleteHandler, Object... paths) {
+  protected void delete(final Handler<AsyncResult<Void>> deleteHandler, final Object... paths) {
 
     final String url = this.createAbsoluteUrlWith(paths);
     final String actionId = UUID.randomUUID().toString();
@@ -532,7 +532,7 @@ public class ComponentClient {
    *
    * @return a handler to process the {@link JsonObject} and return the model
    */
-  public static <T extends Model> Handler<AsyncResult<JsonObject>> handlerForModel(Class<T> type, Handler<AsyncResult<T>> retrieveHandler) {
+  public static <T extends Model> Handler<AsyncResult<JsonObject>> handlerForModel(final Class<T> type, final Handler<AsyncResult<T>> retrieveHandler) {
 
     return handler -> {
 
@@ -576,7 +576,7 @@ public class ComponentClient {
    *
    * @return a handler to process the {@link JsonArray} and return the list models.
    */
-  public static <T extends Model> Handler<AsyncResult<JsonArray>> handlerForListModel(Class<T> type, Handler<AsyncResult<List<T>>> retrieveHandler) {
+  public static <T extends Model> Handler<AsyncResult<JsonArray>> handlerForListModel(final Class<T> type, final Handler<AsyncResult<List<T>>> retrieveHandler) {
 
     return handler -> {
 
@@ -593,10 +593,10 @@ public class ComponentClient {
 
         } else {
 
-          List<T> models = new ArrayList<>();
+          final List<T> models = new ArrayList<>();
           for (int i = 0; i < result.size(); i++) {
 
-            JsonObject object = result.getJsonObject(i);
+            final JsonObject object = result.getJsonObject(i);
             final T model = Model.fromJsonObject(object, type);
             if (model == null) {
 

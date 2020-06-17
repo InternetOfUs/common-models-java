@@ -28,6 +28,7 @@ package eu.internetofus.common.components.interaction_protocol_engine;
 
 import javax.validation.constraints.NotNull;
 
+import eu.internetofus.common.components.incentive_server.Incentive;
 import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -91,9 +92,29 @@ public interface WeNetInteractionProtocolEngine {
    * @param sendHandler handler to send process.
    */
   @GenIgnore
-  default void sendMessage(@NotNull final InteractionProtocolMessage message, @NotNull final Handler<AsyncResult<InteractionProtocolMessage>> sendHandler) {
+  default void sendMessage(@NotNull final Message message, @NotNull final Handler<AsyncResult<Message>> sendHandler) {
 
-    this.sendMessage(message.toJsonObject(), ComponentClient.handlerForModel(InteractionProtocolMessage.class, sendHandler));
+    this.sendMessage(message.toJsonObject(), ComponentClient.handlerForModel(Message.class, sendHandler));
+  }
+
+  /**
+   * Send a incentive to be processed.
+   *
+   * @param incentive   to be processed.
+   * @param sendHandler handler to send process.
+   */
+  void sendIncentive(@NotNull JsonObject incentive, @NotNull Handler<AsyncResult<JsonObject>> sendHandler);
+
+  /**
+   * Send a incentive to be processed.
+   *
+   * @param incentive   to be processed.
+   * @param sendHandler handler to send process.
+   */
+  @GenIgnore
+  default void sendIncentive(@NotNull final Incentive incentive, @NotNull final Handler<AsyncResult<Incentive>> sendHandler) {
+
+    this.sendIncentive(incentive.toJsonObject(), ComponentClient.handlerForModel(Incentive.class, sendHandler));
   }
 
 }

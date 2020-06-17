@@ -4,6 +4,11 @@ Background:
 	* configure cors = true
 
 Scenario: pathMatches('/messages') && methodIs('post')
+    * def responseStatus = 202
+    * def response = request
+
+Scenario: pathMatches('/incentives') && methodIs('post')
+    * def responseStatus = 202
     * def response = request
 
 Scenario:

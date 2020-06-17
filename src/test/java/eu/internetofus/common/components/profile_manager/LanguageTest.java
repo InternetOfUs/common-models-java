@@ -51,216 +51,215 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(VertxExtension.class)
 public class LanguageTest extends ModelTestCase<Language> {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Language createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Language createModelExample(final int index) {
 
-		final Language name = new Language();
-		name.code = "ca";
-		name.name = "name_" + index;
-		name.level = LanguageLevel.values()[index % (LanguageLevel.values().length - 1)];
-		return name;
-	}
+    final Language name = new Language();
+    name.code = "ca";
+    name.name = "name_" + index;
+    name.level = LanguageLevel.values()[index % LanguageLevel.values().length];
+    return name;
+  }
 
-	/**
-	 * Check that the {@link #createModelExample(int)} is valid.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Language#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldExample1BeValid(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the {@link #createModelExample(int)} is valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Language#validate(String, Vertx)
+   */
+  @Test
+  public void shouldExample1BeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Language model = new Language();
-		model.code = "  ca   ";
-		model.name = "   name_1     ";
-		model.level = LanguageLevel.C1;
+    final Language model = new Language();
+    model.code = "  ca   ";
+    model.name = "   name_1     ";
+    model.level = LanguageLevel.C1;
 
-		assertIsValid(model, vertx, testContext, () -> {
+    assertIsValid(model, vertx, testContext, () -> {
 
-			final Language expected = this.createModelExample(1);
-			assertThat(model).isEqualTo(expected);
-		});
+      final Language expected = this.createModelExample(1);
+      assertThat(model).isEqualTo(expected);
+    });
 
-	}
+  }
 
-	/**
-	 * Check that the name is not valid if has a large code.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Language#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidWithALargeCode(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the name is not valid if has a large code.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Language#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithALargeCode(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Language model = new Language();
-		model.code = "cat";
-		assertIsNotValid(model, "code", vertx, testContext);
+    final Language model = new Language();
+    model.code = "cat";
+    assertIsNotValid(model, "code", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that the name is not valid if has a large name.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Language#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidWithALargeName(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the name is not valid if has a large name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Language#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithALargeName(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Language model = new Language();
-		model.name = ValidationsTest.STRING_256;
-		assertIsNotValid(model, "name", vertx, testContext);
+    final Language model = new Language();
+    model.name = ValidationsTest.STRING_256;
+    assertIsNotValid(model, "name", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that merge two models.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Language#merge(Language, String, Vertx)
-	 */
-	@Test
-	public void shouldMerge(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge two models.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Language#merge(Language, String, Vertx)
+   */
+  @Test
+  public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Language target = this.createModelExample(1);
-		final Language source = this.createModelExample(23);
-		assertCanMerge(target, source, vertx, testContext,
-				merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
+    final Language target = this.createModelExample(1);
+    final Language source = this.createModelExample(23);
+    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
 
-	}
+  }
 
-	/**
-	 * Check that merge with {@code null}.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Language#merge(Language, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeWithNull(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge with {@code null}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Language#merge(Language, String, Vertx)
+   */
+  @Test
+  public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Language target = this.createModelExample(1);
-		assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    final Language target = this.createModelExample(1);
+    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
-	}
+  }
 
-	/**
-	 * Check that merge only the name.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Language#merge(Language, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeOnlyName(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge only the name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Language#merge(Language, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyName(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Language target = this.createModelExample(1);
-		final Language source = new Language();
-		source.name = "NEW VALUE";
-		assertCanMerge(target, source, vertx, testContext, merged -> {
+    final Language target = this.createModelExample(1);
+    final Language source = new Language();
+    source.name = "NEW VALUE";
+    assertCanMerge(target, source, vertx, testContext, merged -> {
 
-			assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-			target.name = "NEW VALUE";
-			assertThat(merged).isEqualTo(target);
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      target.name = "NEW VALUE";
+      assertThat(merged).isEqualTo(target);
 
-		});
-	}
+    });
+  }
 
-	/**
-	 * Check that not merge with a bad name.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Language#merge(Language, String, Vertx)
-	 */
-	@Test
-	public void shouldNotMergeWithBadName(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that not merge with a bad name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Language#merge(Language, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeWithBadName(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Language target = this.createModelExample(1);
-		final Language source = new Language();
-		source.name = ValidationsTest.STRING_256;
-		assertCannotMerge(target, source, "name", vertx, testContext);
+    final Language target = this.createModelExample(1);
+    final Language source = new Language();
+    source.name = ValidationsTest.STRING_256;
+    assertCannotMerge(target, source, "name", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that merge only the code.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Language#merge(Language, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeOnlyCode(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge only the code.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Language#merge(Language, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyCode(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Language target = this.createModelExample(1);
-		final Language source = new Language();
-		source.code = "en";
-		assertCanMerge(target, source, vertx, testContext, merged -> {
+    final Language target = this.createModelExample(1);
+    final Language source = new Language();
+    source.code = "en";
+    assertCanMerge(target, source, vertx, testContext, merged -> {
 
-			assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-			target.code = "en";
-			assertThat(merged).isEqualTo(target);
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      target.code = "en";
+      assertThat(merged).isEqualTo(target);
 
-		});
+    });
 
-	}
+  }
 
-	/**
-	 * Check that not merge with a bad code.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Language#merge(Language, String, Vertx)
-	 */
-	@Test
-	public void shouldNotMergeWithBadCode(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that not merge with a bad code.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Language#merge(Language, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeWithBadCode(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Language target = this.createModelExample(1);
-		final Language source = new Language();
-		source.code = "english";
-		assertCannotMerge(target, source, "code", vertx, testContext);
+    final Language target = this.createModelExample(1);
+    final Language source = new Language();
+    source.code = "english";
+    assertCannotMerge(target, source, "code", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that merge only the level.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Language#merge(Language, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeOnlyLevel(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge only the level.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Language#merge(Language, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyLevel(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Language target = this.createModelExample(1);
-		final Language source = new Language();
-		source.level = LanguageLevel.B1;
-		assertCanMerge(target, source, vertx, testContext, merged -> {
+    final Language target = this.createModelExample(1);
+    final Language source = new Language();
+    source.level = LanguageLevel.B1;
+    assertCanMerge(target, source, vertx, testContext, merged -> {
 
-			assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-			target.level = LanguageLevel.B1;
-			assertThat(merged).isEqualTo(target);
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      target.level = LanguageLevel.B1;
+      assertThat(merged).isEqualTo(target);
 
-		});
+    });
 
-	}
+  }
 
 }

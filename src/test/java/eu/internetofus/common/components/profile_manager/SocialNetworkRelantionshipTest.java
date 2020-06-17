@@ -114,7 +114,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
 
     final SocialNetworkRelationship model = new SocialNetworkRelationship();
     model.userId = String.valueOf(index);
-    model.type = SocialNetworkRelationshipType.values()[index % (SocialNetworkRelationshipType.values().length - 1)];
+    model.type = SocialNetworkRelationshipType.values()[index % SocialNetworkRelationshipType.values().length];
     model.weight = index % 1000 / 1000.0;
     return model;
 

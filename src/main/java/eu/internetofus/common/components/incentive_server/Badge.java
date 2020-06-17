@@ -27,7 +27,13 @@
 package eu.internetofus.common.components.incentive_server;
 
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.Validable;
+import eu.internetofus.common.components.ValidationErrorException;
+import eu.internetofus.common.components.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 
 /**
  * The badge on an {@link Incentive}
@@ -35,7 +41,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Badge", description = "The badge on an incentive.")
-public class Badge extends Model {
+public class Badge extends Model implements Validable {
 
   /**
    * The badge class.
@@ -60,5 +66,29 @@ public class Badge extends Model {
    */
   @Schema(example = "congratulations! you just earned a new badge for your relations on tweeter.")
   public String Message;
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+
+    final Promise<Void> promise = Promise.promise();
+
+    try {
+
+      this.BadgeClass = Validations.validateStringField(codePrefix, "BadgeClass", 255, this.BadgeClass);
+      this.ImgUrl = Validations.validateNullableURLField(codePrefix, "ImgUrl", this.ImgUrl);
+      this.Criteria = Validations.validateStringField(codePrefix, "Criteria", 255, this.Criteria);
+      this.Message = Validations.validateStringField(codePrefix, "Message", 1023, this.Message);
+      promise.complete();
+
+    } catch (final ValidationErrorException validationError) {
+
+      promise.fail(validationError);
+    }
+
+    return promise.future();
+  }
 
 }

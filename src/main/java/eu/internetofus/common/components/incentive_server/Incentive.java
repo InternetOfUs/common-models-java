@@ -27,7 +27,15 @@
 package eu.internetofus.common.components.incentive_server;
 
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.Validable;
+import eu.internetofus.common.components.ValidationErrorException;
+import eu.internetofus.common.components.Validations;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
+import eu.internetofus.common.components.service.WeNetService;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 
 /**
  * Represents an incentive for an user.
@@ -35,14 +43,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Incentive", description = "An user incentive.")
-public class Incentive extends Model {
+public class Incentive extends Model implements Validable {
 
   /**
    * Identifier of the application.
    */
   @Schema(example = "1")
   public String AppID;
-
 
   /**
    * Identifier of the user.
@@ -57,21 +64,104 @@ public class Incentive extends Model {
   public String IncentiveType;
 
   /**
-   * Identifier of the application.
+   * Identifier of the issuer.
    */
   @Schema(example = "WeNet issuer")
   public String Issuer;
 
   /**
-   * Identifier of the application.
+   * Message of the incentive.
    */
-  @Schema(description="Message of the icentive")
+  @Schema(description = "Message of the icentive")
   public Message Message;
 
   /**
-   * Identifier of the application.
+   * Badge of the incentive.
    */
-  @Schema(description="Badge of the icentive")
+  @Schema(description = "Badge of the icentive")
   public Badge Badge;
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+
+    final Promise<Void> promise = Promise.promise();
+    Future<Void> future = promise.future();
+    try {
+
+      this.AppID = Validations.validateNullableStringField(codePrefix, "AppID", 255, this.AppID);
+      if (this.AppID != null) {
+
+        future = future.compose(val -> {
+
+          final Promise<Void> checkExistApp = Promise.promise();
+          WeNetService.createProxy(vertx).retrieveApp(this.AppID, retrieve -> {
+
+            if (retrieve.failed()) {
+
+              checkExistApp.fail(new ValidationErrorException(codePrefix + ".AppID", "No found application associated to the specified identifier"));
+
+            } else {
+
+              checkExistApp.complete();
+            }
+
+          });
+
+          return checkExistApp.future();
+        });
+      }
+      this.UserId = Validations.validateNullableStringField(codePrefix, "UserId", 255, this.UserId);
+      if (this.UserId != null) {
+
+        future = future.compose(val -> {
+
+          final Promise<Void> checkExistUser = Promise.promise();
+          WeNetProfileManager.createProxy(vertx).retrieveProfile(this.UserId, retrieve -> {
+
+            if (retrieve.failed()) {
+
+              checkExistUser.fail(new ValidationErrorException(codePrefix + ".UserId", "No found user associated to the specified identifier"));
+
+            } else {
+
+              checkExistUser.complete();
+            }
+
+          });
+
+          return checkExistUser.future();
+        });
+      }
+      this.IncentiveType = Validations.validateNullableStringField(codePrefix, "IncentiveType", 255, this.IncentiveType);
+      this.Issuer = Validations.validateNullableStringField(codePrefix, "Issuer", 255, this.Issuer);
+      if (this.Message == null && this.Badge == null) {
+
+        promise.fail(new ValidationErrorException(codePrefix + ".Message", "You must specify a message or a badge"));
+      }
+
+      if (this.Message != null) {
+
+        future = future.compose(val -> this.Message.validate(codePrefix + ".Message", vertx));
+      }
+
+      if (this.Badge != null) {
+
+        future = future.compose(val -> this.Badge.validate(codePrefix + ".Badge", vertx));
+
+      }
+
+      promise.tryComplete();
+
+    } catch (final ValidationErrorException validationError) {
+
+      promise.fail(validationError);
+    }
+
+    return future;
+
+  }
 
 }

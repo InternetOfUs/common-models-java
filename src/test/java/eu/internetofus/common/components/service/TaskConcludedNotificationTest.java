@@ -39,37 +39,36 @@ import org.junit.jupiter.api.Test;
  */
 public class TaskConcludedNotificationTest extends TaskNotificationTestCase<TaskConcludedNotification> {
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see TaskConcludedNotification#TaskConcludedNotification()
-	 */
-	@Override
-	public TaskConcludedNotification createEmptyMessage() {
+  /**
+   * {@inheritDoc}
+   *
+   * @see TaskConcludedNotification#TaskConcludedNotification()
+   */
+  @Override
+  public TaskConcludedNotification createEmptyMessage() {
 
-		return new TaskConcludedNotification();
-	}
+    return new TaskConcludedNotification();
+  }
 
-	/**
-	 * Verify that the notification type is a task concluded.
-	 */
-	@Test
-	public void shouldNotificationTypeByTaskConcluded() {
+  /**
+   * Verify that the notification type is a task concluded.
+   */
+  @Test
+  public void shouldNotificationTypeByTaskConcluded() {
 
-		final TaskConcludedNotification model = this.createEmptyMessage();
-		assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.taskConcluded);
-	}
+    final TaskConcludedNotification model = this.createEmptyMessage();
+    assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.taskConcluded);
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public TaskConcludedNotification createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public TaskConcludedNotification createModelExample(final int index) {
 
-		final TaskConcludedNotification model = super.createModelExample(index);
-		model.outcome = TaskConcludedNotification.Outcome.values()[index
-				% (TaskConcludedNotification.Outcome.values().length - 1)];
-		return model;
-	}
+    final TaskConcludedNotification model = super.createModelExample(index);
+    model.outcome = TaskConcludedNotification.Outcome.values()[index % TaskConcludedNotification.Outcome.values().length];
+    return model;
+  }
 
 }

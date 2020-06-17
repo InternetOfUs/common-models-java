@@ -26,7 +26,22 @@
 
 package eu.internetofus.common.components.incentive_server;
 
+import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
+import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
+import eu.internetofus.common.components.ValidationsTest;
+import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
+import io.vertx.core.Vertx;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 
 /**
  * Test the {@link Badge}.
@@ -35,6 +50,7 @@ import eu.internetofus.common.components.ModelTestCase;
  *
  * @author UDT-IA, IIIA-CSIC
  */
+@ExtendWith(VertxExtension.class)
 public class BadgeTest extends ModelTestCase<Badge> {
 
   /**
@@ -49,6 +65,96 @@ public class BadgeTest extends ModelTestCase<Badge> {
     model.Criteria = "criteria " + index;
     model.Message = "message " + index;
     return model;
+  }
+
+  /**
+   * Check that the {@link #createModelExample(int)} is valid.
+   *
+   * @param index       to verify
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @ParameterizedTest(name = "The model example {0} has to be valid")
+  @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
+  public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
+
+    final Badge model = this.createModelExample(index);
+    final Badge expected = Model.fromJsonObject(model.toJsonObject(), Badge.class);
+    model.BadgeClass = "   \n  " + model.BadgeClass + "   \n";
+    model.Criteria = "   \n  " + model.Criteria + "   \n";
+    model.ImgUrl = "   \n  " + model.ImgUrl + "   \n";
+    model.Message = "   \n  " + model.Message + "   \n";
+    assertIsValid(model, vertx, testContext, () -> {
+
+      assertThat(model).isEqualTo(expected);
+    });
+
+  }
+
+  /**
+   * Check that not accept a large class.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithALargeClass(final Vertx vertx, final VertxTestContext testContext) {
+
+    final Badge model = this.createModelExample(1);
+    model.BadgeClass = ValidationsTest.STRING_256;
+    assertIsNotValid(model, "BadgeClass", vertx, testContext);
+  }
+
+  /**
+   * Check that not accept a large criteria.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithALargeCriteria(final Vertx vertx, final VertxTestContext testContext) {
+
+    final Badge model = this.createModelExample(1);
+    model.Criteria = ValidationsTest.STRING_256;
+    assertIsNotValid(model, "Criteria", vertx, testContext);
+  }
+
+  /**
+   * Check that not accept a large message.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithALargeMessage(final Vertx vertx, final VertxTestContext testContext) {
+
+    final Badge model = this.createModelExample(1);
+    model.Message = ValidationsTest.STRING_1024;
+    assertIsNotValid(model, "Message", vertx, testContext);
+  }
+
+  /**
+   * Check that not accept a bad image URL.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithABadImgUrl(final Vertx vertx, final VertxTestContext testContext) {
+
+    final Badge model = this.createModelExample(1);
+    model.ImgUrl = ValidationsTest.STRING_1024;
+    assertIsNotValid(model, "ImgUrl", vertx, testContext);
   }
 
 }
