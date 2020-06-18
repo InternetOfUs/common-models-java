@@ -47,46 +47,62 @@ import io.vertx.core.json.JsonObject;
 @Schema(hidden = true, name = "TaskTransaction", description = "Describe a transition to do over a task.")
 public class TaskTransaction extends Model implements Validable {
 
-	/**
-	 * The identifier of the task that it refers.
-	 */
-	@Schema(description = "The unique identifier this transaction is associated to.", example = "b129e5509c9bb79")
-	public String taskId;
+  /**
+   * The identifier of the task that it refers.
+   */
+  @Schema(description = "The unique identifier this transaction is associated to.", example = "b129e5509c9bb79")
+  public String taskId;
 
-	/**
-	 * The identifier of the task type.
-	 */
-	@Schema(description = "The label associated to the transaction type.", example = "acceptVolunteer")
-	public String label;
+  /**
+   * The identifier of the task type.
+   */
+  @Schema(description = "The label associated to the transaction type.", example = "acceptVolunteer")
+  public String label;
 
-	/**
-	 * The attributes set to the transaction.
-	 */
-	@Schema(type = "object", description = "The attributes that are set in the associated transaction type.")
-	@JsonDeserialize(using = JsonObjectDeserializer.class)
-	public JsonObject attributes;
+  /**
+   * The attributes set to the transaction.
+   */
+  @Schema(type = "object", description = "The attributes that are set in the associated transaction type.")
+  @JsonDeserialize(using = JsonObjectDeserializer.class)
+  public JsonObject attributes;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-		final Promise<Void> promise = Promise.promise();
-		final Future<Void> future = promise.future();
-		try {
+    final Promise<Void> promise = Promise.promise();
+    Future<Void> future = promise.future();
+    try {
 
-			this.taskId = Validations.validateStringField(codePrefix, "taskId", 255, this.taskId);
-			this.label = Validations.validateStringField(codePrefix, "label", 255, this.label);
-			// TODO verify the attributes are valid for the task transaction type
-			promise.complete();
+      this.taskId = Validations.validateStringField(codePrefix, "taskId", 255, this.taskId);
+      future = future.compose(mapper -> {
 
-		} catch (final ValidationErrorException validationError) {
+        final Promise<Void> verifyNotRepeatedIdPromise = Promise.promise();
+        WeNetTaskManager.createProxy(vertx).retrieveTask(this.taskId, task -> {
 
-			promise.fail(validationError);
-		}
+          if (!task.failed()) {
 
-		return future;
-	}
+            verifyNotRepeatedIdPromise.complete();
+
+          } else {
+
+            verifyNotRepeatedIdPromise.fail(new ValidationErrorException(codePrefix + ".taskId", "The '" + this.taskId + "' is not defined."));
+          }
+        });
+        return verifyNotRepeatedIdPromise.future();
+      });
+      this.label = Validations.validateStringField(codePrefix, "label", 255, this.label);
+      // TODO verify the attributes are valid for the task transaction type
+      promise.complete();
+
+    } catch (final ValidationErrorException validationError) {
+
+      promise.fail(validationError);
+    }
+
+    return future;
+  }
 
 }

@@ -32,7 +32,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import eu.internetofus.common.components.ModelTestCase;
-import eu.internetofus.common.components.profile_manager.Material;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 
@@ -47,22 +46,22 @@ import io.vertx.junit5.VertxTestContext;
  */
 public abstract class MaterialTestCase<T extends Material> extends ModelTestCase<T> {
 
-	/**
-	 * Check that the {@link #createModelExample(int)} is valid.
-	 *
-	 * @param index       to verify
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Material#validate(String, io.vertx.core.Vertx)
-	 */
-	@ParameterizedTest(name = "The model example {0} has to be valid")
-	@ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
-	public void shouldExampleBeValid(int index, Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the {@link #createModelExample(int)} is valid.
+   *
+   * @param index       to verify
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Material#validate(String, io.vertx.core.Vertx)
+   */
+  @ParameterizedTest(name = "The model example {0} has to be valid")
+  @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
+  public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-		final T model = this.createModelExample(index);
-		assertIsValid(model, vertx, testContext);
+    final T model = this.createModelExample(index);
+    assertIsValid(model, vertx, testContext);
 
-	}
+  }
 
 }

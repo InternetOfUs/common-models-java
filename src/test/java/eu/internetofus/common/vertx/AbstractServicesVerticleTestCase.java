@@ -32,7 +32,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import eu.internetofus.common.vertx.AbstractServicesVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -42,8 +41,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 /**
- * General test over the classes that extends the
- * {@link AbstractServicesVerticle}.
+ * General test over the classes that extends the {@link AbstractServicesVerticle}.
  *
  * @param <T> type of services verticle to test.
  *
@@ -51,60 +49,60 @@ import io.vertx.junit5.VertxTestContext;
  */
 public abstract class AbstractServicesVerticleTestCase<T extends AbstractServicesVerticle> {
 
-	/**
-	 * Create the verticle to start the services.
-	 *
-	 * @return the instance of the services verticle to test.
-	 */
-	protected abstract T createServicesVerticle();
+  /**
+   * Create the verticle to start the services.
+   *
+   * @return the instance of the services verticle to test.
+   */
+  protected abstract T createServicesVerticle();
 
-	/**
-	 * Check that not stop the server if it is not started.
-	 */
-	@Test
-	public void shouldNotStopIfServerNotStarted() {
+  /**
+   * Check that not stop the server if it is not started.
+   */
+  @Test
+  public void shouldNotStopIfServerNotStarted() {
 
-		final T service = this.createServicesVerticle();
-		assertThatCode(() -> service.stop()).doesNotThrowAnyException();
+    final T service = this.createServicesVerticle();
+    assertThatCode(() -> service.stop()).doesNotThrowAnyException();
 
-	}
+  }
 
-	/**
-	 * Check that not stop the server if it is not started.
-	 */
-	@Test
-	public void shouldStopIfServerStarted() {
+  /**
+   * Check that not stop the server if it is not started.
+   */
+  @Test
+  public void shouldStopIfServerStarted() {
 
-		final T service = this.createServicesVerticle();
-		service.client = WebClient.create(Vertx.vertx(), new WebClientOptions(new JsonObject()));
-		assertThatCode(() -> service.stop()).doesNotThrowAnyException();
-		assertThat(service.client).isNull();
+    final T service = this.createServicesVerticle();
+    service.client = WebClient.create(Vertx.vertx(), new WebClientOptions(new JsonObject()));
+    assertThatCode(() -> service.stop()).doesNotThrowAnyException();
+    assertThat(service.client).isNull();
 
-	}
+  }
 
-	/**
-	 * Check that not start verticle that is not deployed.
-	 *
-	 * @param testContext context to manage the test.
-	 *
-	 * @throws Exception If it can not start the verticle.
-	 */
-	@Test
-	@ExtendWith(VertxExtension.class)
-	public void shouldNotStartUndeployedVerticle(VertxTestContext testContext) throws Exception {
+  /**
+   * Check that not start verticle that is not deployed.
+   *
+   * @param testContext context to manage the test.
+   *
+   * @throws Exception If it can not start the verticle.
+   */
+  @Test
+  @ExtendWith(VertxExtension.class)
+  public void shouldNotStartUndeployedVerticle(final VertxTestContext testContext) throws Exception {
 
-		final T service = this.createServicesVerticle();
-		final Promise<Void> startPromise = Promise.promise();
-		service.start(startPromise);
-		startPromise.future().onComplete(start -> {
+    final T service = this.createServicesVerticle();
+    final Promise<Void> startPromise = Promise.promise();
+    service.start(startPromise);
+    startPromise.future().onComplete(start -> {
 
-			testContext.verify(() -> {
-				assertThat(start.failed()).isTrue();
-				assertThat(start.cause()).isNotNull();
-			});
-			testContext.completeNow();
-		});
+      testContext.verify(() -> {
+        assertThat(start.failed()).isTrue();
+        assertThat(start.cause()).isNotNull();
+      });
+      testContext.completeNow();
+    });
 
-	}
+  }
 
 }

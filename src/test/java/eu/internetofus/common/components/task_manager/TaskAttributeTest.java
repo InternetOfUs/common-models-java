@@ -39,7 +39,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.ValidationsTest;
-import eu.internetofus.common.components.task_manager.TaskAttribute;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -54,232 +53,231 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(VertxExtension.class)
 public class TaskAttributeTest extends ModelTestCase<TaskAttribute> {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public TaskAttribute createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public TaskAttribute createModelExample(final int index) {
 
-		final TaskAttribute model = new TaskAttribute();
-		model.name = "name_" + index;
-		model.value = "value_" + index;
-		return model;
-	}
+    final TaskAttribute model = new TaskAttribute();
+    model.name = "name_" + index;
+    model.value = "value_" + index;
+    return model;
+  }
 
-	/**
-	 * Check that the {@link #createModelExample(int)} is valid.
-	 *
-	 * @param index       to verify
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see TaskAttribute#validate(String, Vertx)
-	 */
-	@ParameterizedTest(name = "The model example {0} has to be valid")
-	@ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
-	public void shouldExampleBeValid(int index, Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the {@link #createModelExample(int)} is valid.
+   *
+   * @param index       to verify
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskAttribute#validate(String, Vertx)
+   */
+  @ParameterizedTest(name = "The model example {0} has to be valid")
+  @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
+  public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskAttribute model = this.createModelExample(index);
-		assertIsValid(model, vertx, testContext);
+    final TaskAttribute model = this.createModelExample(index);
+    assertIsValid(model, vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that the name is not valid if has a large name.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see TaskAttribute#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidWithALargeName(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the name is not valid if has a large name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskAttribute#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithALargeName(final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskAttribute model = new TaskAttribute();
-		model.name = ValidationsTest.STRING_256;
-		assertIsNotValid(model, "name", vertx, testContext);
+    final TaskAttribute model = new TaskAttribute();
+    model.name = ValidationsTest.STRING_256;
+    assertIsNotValid(model, "name", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that the attribute is not valid without a name.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see TaskAttribute#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidWithoutAName(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the attribute is not valid without a name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskAttribute#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithoutAName(final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskAttribute model = new TaskAttribute();
-		model.value = ValidationsTest.STRING_256;
-		assertIsNotValid(model, "name", vertx, testContext);
+    final TaskAttribute model = new TaskAttribute();
+    model.value = ValidationsTest.STRING_256;
+    assertIsNotValid(model, "name", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that the name is not valid if has a large name.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see TaskAttribute#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldBeValidANameWithSpaces(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the name is not valid if has a large name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskAttribute#validate(String, Vertx)
+   */
+  @Test
+  public void shouldBeValidANameWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskAttribute model = new TaskAttribute();
-		model.name = "   1234567890   ";
-		assertIsValid(model, vertx, testContext, () -> assertThat(model.name).isEqualTo("1234567890"));
+    final TaskAttribute model = new TaskAttribute();
+    model.name = "   1234567890   ";
+    assertIsValid(model, vertx, testContext, () -> assertThat(model.name).isEqualTo("1234567890"));
 
-	}
+  }
 
-	/**
-	 * Check that the name is not merge if has a large name.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
-	 */
-	@Test
-	public void shouldNotMergeWithALargeName(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the name is not merge if has a large name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeWithALargeName(final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskAttribute target = new TaskAttribute();
-		final TaskAttribute source = new TaskAttribute();
-		source.name = ValidationsTest.STRING_256;
-		assertCannotMerge(target, source, "name", vertx, testContext);
+    final TaskAttribute target = new TaskAttribute();
+    final TaskAttribute source = new TaskAttribute();
+    source.name = ValidationsTest.STRING_256;
+    assertCannotMerge(target, source, "name", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that can not merge is a name is not defined.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
-	 */
-	@Test
-	public void shouldNotMergeWithoutAName(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that can not merge is a name is not defined.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeWithoutAName(final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskAttribute target = new TaskAttribute();
-		final TaskAttribute source = new TaskAttribute();
-		source.value = ValidationsTest.STRING_256;
-		assertCannotMerge(target, source, "name", vertx, testContext);
+    final TaskAttribute target = new TaskAttribute();
+    final TaskAttribute source = new TaskAttribute();
+    source.value = ValidationsTest.STRING_256;
+    assertCannotMerge(target, source, "name", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that the name is not merge if has a large name.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeANameWithSpaces(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the name is not merge if has a large name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
+   */
+  @Test
+  public void shouldMergeANameWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskAttribute target = new TaskAttribute();
-		final TaskAttribute source = new TaskAttribute();
-		source.name = "   1234567890   ";
-		assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.name).isEqualTo("1234567890"));
+    final TaskAttribute target = new TaskAttribute();
+    final TaskAttribute source = new TaskAttribute();
+    source.name = "   1234567890   ";
+    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.name).isEqualTo("1234567890"));
 
-	}
+  }
 
-	/**
-	 * Check that merge two models.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
-	 */
-	@Test
-	public void shouldMerge(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge two models.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
+   */
+  @Test
+  public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskAttribute target = this.createModelExample(1);
-		final TaskAttribute source = this.createModelExample(23);
-		assertCanMerge(target, source, vertx, testContext,
-				merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
+    final TaskAttribute target = this.createModelExample(1);
+    final TaskAttribute source = this.createModelExample(23);
+    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
 
-	}
+  }
 
-	/**
-	 * Check that merge with {@code null}.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeWithNull(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge with {@code null}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
+   */
+  @Test
+  public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskAttribute target = this.createModelExample(1);
-		assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    final TaskAttribute target = this.createModelExample(1);
+    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
-	}
+  }
 
-	/**
-	 * Check that can merge with an empty model.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeWithEmptyModel(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that can merge with an empty model.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
+   */
+  @Test
+  public void shouldMergeWithEmptyModel(final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskAttribute target = this.createModelExample(1);
-		assertCanMerge(target, new TaskAttribute(), vertx, testContext, merged -> assertThat(merged).isEqualTo(target));
+    final TaskAttribute target = this.createModelExample(1);
+    assertCanMerge(target, new TaskAttribute(), vertx, testContext, merged -> assertThat(merged).isEqualTo(target));
 
-	}
+  }
 
-	/**
-	 * Check that merge only the name.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeOnlyName(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge only the name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyName(final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskAttribute target = this.createModelExample(1);
-		final TaskAttribute source = new TaskAttribute();
-		source.name = "NEW NAME";
-		assertCanMerge(target, source, vertx, testContext, merged -> {
-			assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-			target.name = "NEW NAME";
-			assertThat(merged).isEqualTo(target);
-		});
-	}
+    final TaskAttribute target = this.createModelExample(1);
+    final TaskAttribute source = new TaskAttribute();
+    source.name = "NEW NAME";
+    assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      target.name = "NEW NAME";
+      assertThat(merged).isEqualTo(target);
+    });
+  }
 
-	/**
-	 * Check that merge only the value.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeOnlyValue(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge only the value.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskAttribute#merge(TaskAttribute, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyValue(final Vertx vertx, final VertxTestContext testContext) {
 
-		final TaskAttribute target = this.createModelExample(1);
-		final TaskAttribute source = new TaskAttribute();
-		source.value = "NEW VALUE";
-		assertCanMerge(target, source, vertx, testContext, merged -> {
-			assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-			target.value = "NEW VALUE";
-			assertThat(merged).isEqualTo(target);
-		});
-	}
+    final TaskAttribute target = this.createModelExample(1);
+    final TaskAttribute source = new TaskAttribute();
+    source.value = "NEW VALUE";
+    assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      target.value = "NEW VALUE";
+      assertThat(merged).isEqualTo(target);
+    });
+  }
 
 }

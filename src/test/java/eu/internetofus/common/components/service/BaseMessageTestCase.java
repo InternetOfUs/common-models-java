@@ -31,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import eu.internetofus.common.components.ModelTestCase;
-import eu.internetofus.common.components.service.BaseMessage;
 
 /**
  * Test the classes that extends the {@link BaseMessage}
@@ -42,21 +41,21 @@ import eu.internetofus.common.components.service.BaseMessage;
  */
 public abstract class BaseMessageTestCase<T extends BaseMessage> extends ModelTestCase<T> {
 
-	/**
-	 * Create an empty message.
-	 *
-	 * @return the created empty message.
-	 */
-	public abstract T createEmptyMessage();
+  /**
+   * Create an empty message.
+   *
+   * @return the created empty message.
+   */
+  public abstract T createEmptyMessage();
 
-	/**
-	 * Verify that is the the type of the message when it is created.
-	 */
-	@Test
-	public void shouldHaveType() {
+  /**
+   * Verify that is the the type of the message when it is created.
+   */
+  @Test
+  public void shouldHaveType() {
 
-		final T model = this.createEmptyMessage();
-		assertThat(model.type).isNotNull();
-	}
+    final T model = this.createEmptyMessage();
+    assertThat(model.type).isNotNull();
+  }
 
 }

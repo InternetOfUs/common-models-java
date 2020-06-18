@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import eu.internetofus.common.components.profile_manager.ProfileDate;
-
 /**
  * Test the {@link ProfileDate}.
  *
@@ -37,14 +35,14 @@ import eu.internetofus.common.components.profile_manager.ProfileDate;
  */
 public class ProfileDateTest extends ProfileDateTestCase<ProfileDate> {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ProfileDate createEmptyModel() {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public ProfileDate createEmptyModel() {
 
-		return new ProfileDate();
+    return new ProfileDate();
 
-	}
+  }
 
 }

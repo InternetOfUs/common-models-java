@@ -33,7 +33,6 @@ import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 
-import eu.internetofus.common.components.profile_manager.AliveBirthDate;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 
@@ -46,92 +45,92 @@ import io.vertx.junit5.VertxTestContext;
  */
 public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public AliveBirthDate createEmptyModel() {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public AliveBirthDate createEmptyModel() {
 
-		return new AliveBirthDate();
-	}
+    return new AliveBirthDate();
+  }
 
-	/**
-	 * Should not be valid to born in the future.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see AliveBirthDate#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidToBornOnTheFuture(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Should not be valid to born in the future.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see AliveBirthDate#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidToBornOnTheFuture(final Vertx vertx, final VertxTestContext testContext) {
 
-		final AliveBirthDate model = this.createEmptyModel();
-		final LocalDate tomorrow = LocalDate.now().plusDays(1);
-		model.year = tomorrow.getYear();
-		model.month = (byte) tomorrow.getMonthValue();
-		model.day = (byte) tomorrow.getDayOfMonth();
-		assertIsNotValid(model, vertx, testContext);
+    final AliveBirthDate model = this.createEmptyModel();
+    final LocalDate tomorrow = LocalDate.now().plusDays(1);
+    model.year = tomorrow.getYear();
+    model.month = (byte) tomorrow.getMonthValue();
+    model.day = (byte) tomorrow.getDayOfMonth();
+    assertIsNotValid(model, vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Should not be valid to born before the oldest person on the world.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see AliveBirthDate#validate(String, Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidToBornBeforeTheOldestPersonOnTheWorld(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Should not be valid to born before the oldest person on the world.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see AliveBirthDate#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidToBornBeforeTheOldestPersonOnTheWorld(final Vertx vertx, final VertxTestContext testContext) {
 
-		final AliveBirthDate model = this.createEmptyModel();
-		model.year = 1903;
-		model.month = 1;
-		model.day = 1;
-		assertIsNotValid(model, vertx, testContext);
-	}
+    final AliveBirthDate model = this.createEmptyModel();
+    model.year = 1903;
+    model.month = 1;
+    model.day = 1;
+    assertIsNotValid(model, vertx, testContext);
+  }
 
-	/**
-	 * Should not merge to born in the future.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see AliveBirthDate#merge(ProfileDate, String, Vertx)
-	 */
-	@Test
-	public void shouldNotMergeToBornOnTheFuture(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Should not merge to born in the future.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see AliveBirthDate#merge(ProfileDate, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeToBornOnTheFuture(final Vertx vertx, final VertxTestContext testContext) {
 
-		final AliveBirthDate target = this.createEmptyModel();
-		final AliveBirthDate source = this.createEmptyModel();
-		final LocalDate tomorrow = LocalDate.now().plusDays(1);
-		source.year = tomorrow.getYear();
-		source.month = (byte) tomorrow.getMonthValue();
-		source.day = (byte) tomorrow.getDayOfMonth();
-		assertCannotMerge(target, source, vertx, testContext);
+    final AliveBirthDate target = this.createEmptyModel();
+    final AliveBirthDate source = this.createEmptyModel();
+    final LocalDate tomorrow = LocalDate.now().plusDays(1);
+    source.year = tomorrow.getYear();
+    source.month = (byte) tomorrow.getMonthValue();
+    source.day = (byte) tomorrow.getDayOfMonth();
+    assertCannotMerge(target, source, vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Should not merge to born before the oldest person on the world.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see AliveBirthDate#merge(ProfileDate, String, Vertx)
-	 */
-	@Test
-	public void shouldNotMergeToBornBeforeTheOldestPersonOnTheWorld(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Should not merge to born before the oldest person on the world.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see AliveBirthDate#merge(ProfileDate, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeToBornBeforeTheOldestPersonOnTheWorld(final Vertx vertx, final VertxTestContext testContext) {
 
-		final AliveBirthDate target = this.createEmptyModel();
-		final AliveBirthDate source = this.createEmptyModel();
-		source.year = 1903;
-		source.month = 1;
-		source.day = 1;
-		assertCannotMerge(target, source, vertx, testContext);
+    final AliveBirthDate target = this.createEmptyModel();
+    final AliveBirthDate source = this.createEmptyModel();
+    source.year = 1903;
+    source.month = 1;
+    source.day = 1;
+    assertCannotMerge(target, source, vertx, testContext);
 
-	}
+  }
 
 }

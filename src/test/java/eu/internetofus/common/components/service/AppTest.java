@@ -29,7 +29,6 @@ package eu.internetofus.common.components.service;
 import java.util.ArrayList;
 
 import eu.internetofus.common.components.ModelTestCase;
-import eu.internetofus.common.components.service.App;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -41,21 +40,21 @@ import io.vertx.core.json.JsonObject;
  */
 public class AppTest extends ModelTestCase<App> {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public App createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public App createModelExample(final int index) {
 
-		final App model = new App();
-		model.appId = "appId_" + index;
-		model.appToken = "token_" + index;
-		model.messageCallbackUrl = "https://app.endpoint.com/messages/" + index;
-		model.metadata = new JsonObject().put("index", index);
-		model.allowedPlatforms = new ArrayList<>();
-		model.allowedPlatforms.add(new JsonObject().put("platform", index));
-		return model;
+    final App model = new App();
+    model.appId = "appId_" + index;
+    model.appToken = "token_" + index;
+    model.messageCallbackUrl = "https://app.endpoint.com/messages/" + index;
+    model.metadata = new JsonObject().put("index", index);
+    model.allowedPlatforms = new ArrayList<>();
+    model.allowedPlatforms.add(new JsonObject().put("platform", index));
+    return model;
 
-	}
+  }
 
 }

@@ -31,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import org.junit.jupiter.api.Test;
 
-import eu.internetofus.common.vertx.AbstractAPIVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
 
@@ -44,38 +43,38 @@ import io.vertx.core.http.HttpServerOptions;
  */
 public abstract class AbstractAPIVerticleTestCase<T extends AbstractAPIVerticle> {
 
-	/**
-	 * Check that not stop the server if it is not started.
-	 */
-	@Test
-	public void shouldNotStopIfServerNotStarted() {
+  /**
+   * Check that not stop the server if it is not started.
+   */
+  @Test
+  public void shouldNotStopIfServerNotStarted() {
 
-		final T api = this.createAPIVerticle();
-		assertThatCode(() -> api.stop()).doesNotThrowAnyException();
+    final T api = this.createAPIVerticle();
+    assertThatCode(() -> api.stop()).doesNotThrowAnyException();
 
-	}
+  }
 
-	/**
-	 * Return the {@link AbstractAPIVerticle} to test.
-	 *
-	 * @return the instance of the API verticle to test.
-	 */
-	protected abstract T createAPIVerticle();
+  /**
+   * Return the {@link AbstractAPIVerticle} to test.
+   *
+   * @return the instance of the API verticle to test.
+   */
+  protected abstract T createAPIVerticle();
 
-	/**
-	 * Check that not stop the server if it is not started.
-	 */
-	@Test
-	public void shouldStopIfServerStarted() {
+  /**
+   * Check that not stop the server if it is not started.
+   */
+  @Test
+  public void shouldStopIfServerStarted() {
 
-		final T api = this.createAPIVerticle();
-		final HttpServerOptions options = new HttpServerOptions();
-		options.setHost("localhost");
-		options.setPort(0);
-		api.server = Vertx.vertx().createHttpServer(options);
-		assertThatCode(() -> api.stop()).doesNotThrowAnyException();
-		assertThat(api.server).isNull();
+    final T api = this.createAPIVerticle();
+    final HttpServerOptions options = new HttpServerOptions();
+    options.setHost("localhost");
+    options.setPort(0);
+    api.server = Vertx.vertx().createHttpServer(options);
+    assertThatCode(() -> api.stop()).doesNotThrowAnyException();
+    assertThat(api.server).isNull();
 
-	}
+  }
 
 }

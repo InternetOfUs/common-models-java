@@ -37,11 +37,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import eu.internetofus.common.components.ModelTestCase;
+import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
-import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.service.WeNetServiceMocker;
+import eu.internetofus.common.components.service.WeNetServiceSimulator;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -121,7 +124,51 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   }
 
   /**
-   * Check that the {@link #createModelExample(int)} is valid.
+   * Create a valid task transaction example.
+   *
+   * @param index       of the example to create.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return a future with the created task transaction.
+   *
+   */
+  public Future<TaskTransaction> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
+
+    final Promise<TaskTransaction> promise = Promise.promise();
+    StoreServices.storeTaskExample(index, vertx, testContext, testContext.succeeding(task -> {
+
+      final TaskTransaction model = this.createModelExample(index);
+      model.taskId = task.id;
+      promise.complete(model);
+    }
+
+        ));
+
+    return promise.future();
+
+  }
+
+  /**
+   * Check that the {@link #createModelExample(int)} is not valid.
+   *
+   * @param index       to verify.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(String, Vertx)
+   */
+  @ParameterizedTest(name = "The model example {0} has to be valid")
+  @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
+  public void shouldExampleNotBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
+
+    final TaskTransaction model = this.createModelExample(index);
+    assertIsNotValid(model, "taskId", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the {@link #createModelExample(int,Vertx,VertxTestContext)} is valid.
    *
    * @param index       to verify.
    * @param vertx       event bus to use.
@@ -133,8 +180,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransaction model = this.createModelExample(index);
-    assertIsValid(model, vertx, testContext);
+    this.createModelExample(index, vertx, testContext).onComplete(testContext.succeeding(model -> assertIsValid(model, vertx, testContext)));
 
   }
 
@@ -163,9 +209,11 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   @Test
   public void shouldTaskTransactionBeNotValidWithoutTaskId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransaction model = this.createModelExample(1);
-    model.taskId = null;
-    assertIsNotValid(model, "taskId", vertx, testContext);
+    this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> {
+      model.taskId = null;
+      assertIsNotValid(model, "taskId", vertx, testContext);
+    }));
+
   }
 
   /**
@@ -179,9 +227,11 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   @Test
   public void shouldTaskTransactionBeNotValidWithoutTaskLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransaction model = this.createModelExample(1);
-    model.label = null;
-    assertIsNotValid(model, "label", vertx, testContext);
+    this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> {
+      model.label = null;
+      assertIsNotValid(model, "label", vertx, testContext);
+
+    }));
   }
 
 }

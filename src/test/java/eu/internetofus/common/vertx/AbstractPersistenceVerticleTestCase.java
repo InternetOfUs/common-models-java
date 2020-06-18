@@ -32,12 +32,10 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.Test;
 
-import eu.internetofus.common.vertx.AbstractPersistenceVerticle;
 import io.vertx.ext.mongo.MongoClient;
 
 /**
- * General test over the classes that extends the
- * {@link AbstractPersistenceVerticle}.
+ * General test over the classes that extends the {@link AbstractPersistenceVerticle}.
  *
  * @param <T> type of persitence verticle to test.
  *
@@ -45,35 +43,35 @@ import io.vertx.ext.mongo.MongoClient;
  */
 public abstract class AbstractPersistenceVerticleTestCase<T extends AbstractPersistenceVerticle> {
 
-	/**
-	 * Create the verticle to start the persistence repositories.
-	 *
-	 * @return the instance of the persistence verticle to test.
-	 */
-	protected abstract T createPersitenceVerticle();
+  /**
+   * Create the verticle to start the persistence repositories.
+   *
+   * @return the instance of the persistence verticle to test.
+   */
+  protected abstract T createPersitenceVerticle();
 
-	/**
-	 * Check that not stop the server if it is not started.
-	 */
-	@Test
-	public void shouldNotStopIfServerNotStarted() {
+  /**
+   * Check that not stop the server if it is not started.
+   */
+  @Test
+  public void shouldNotStopIfServerNotStarted() {
 
-		final T persistence = this.createPersitenceVerticle();
-		assertThatCode(() -> persistence.stop()).doesNotThrowAnyException();
+    final T persistence = this.createPersitenceVerticle();
+    assertThatCode(() -> persistence.stop()).doesNotThrowAnyException();
 
-	}
+  }
 
-	/**
-	 * Check that not stop the server if it is not started.
-	 */
-	@Test
-	public void shouldStopIfServerStarted() {
+  /**
+   * Check that not stop the server if it is not started.
+   */
+  @Test
+  public void shouldStopIfServerStarted() {
 
-		final T persistence = this.createPersitenceVerticle();
-		persistence.pool = mock(MongoClient.class);
-		assertThatCode(() -> persistence.stop()).doesNotThrowAnyException();
-		assertThat(persistence.pool).isNull();
+    final T persistence = this.createPersitenceVerticle();
+    persistence.pool = mock(MongoClient.class);
+    assertThatCode(() -> persistence.stop()).doesNotThrowAnyException();
+    assertThat(persistence.pool).isNull();
 
-	}
+  }
 
 }

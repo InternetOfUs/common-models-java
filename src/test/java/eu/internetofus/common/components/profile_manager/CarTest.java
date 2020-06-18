@@ -36,7 +36,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import eu.internetofus.common.components.ValidationsTest;
-import eu.internetofus.common.components.profile_manager.Car;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -51,261 +50,260 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(VertxExtension.class)
 public class CarTest extends MaterialTestCase<Car> {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Car createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Car createModelExample(final int index) {
 
-		final Car car = new Car();
-		car.id = null;
-		car.carPlate = "car_plate_" + index;
-		car.carType = "car_type_" + index;
-		return car;
-	}
+    final Car car = new Car();
+    car.id = null;
+    car.carPlate = "car_plate_" + index;
+    car.carType = "car_type_" + index;
+    return car;
+  }
 
-	/**
-	 * Check that a model with all the values is valid.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#validate(String, io.vertx.core.Vertx)
-	 */
-	@Test
-	public void shouldFullModelBeValid(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that a model with all the values is valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#validate(String, io.vertx.core.Vertx)
+   */
+  @Test
+  public void shouldFullModelBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Car model = new Car();
-		model.id = "      ";
-		model.carType = "    car type    ";
-		model.carPlate = "    car plate    ";
+    final Car model = new Car();
+    model.id = "      ";
+    model.carType = "    car type    ";
+    model.carPlate = "    car plate    ";
 
-		assertIsValid(model, vertx, testContext, () -> {
+    assertIsValid(model, vertx, testContext, () -> {
 
-			final Car expected = new Car();
-			expected.id = model.id;
-			expected.carType = "car type";
-			expected.carPlate = "car plate";
-			assertThat(model).isEqualTo(expected);
+      final Car expected = new Car();
+      expected.id = model.id;
+      expected.carType = "car type";
+      expected.carPlate = "car plate";
+      assertThat(model).isEqualTo(expected);
 
-		});
+    });
 
-	}
+  }
 
-	/**
-	 * Check that the model with id is not valid.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#validate(String, io.vertx.core.Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidWithAnId(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the model with id is not valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#validate(String, io.vertx.core.Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Car model = new Car();
-		model.id = "has_id";
-		assertIsNotValid(model, "id", vertx, testContext);
+    final Car model = new Car();
+    model.id = "has_id";
+    assertIsNotValid(model, "id", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that not accept cars with bad car type.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#validate(String, io.vertx.core.Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidWithABadCarType(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that not accept cars with bad car type.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#validate(String, io.vertx.core.Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithABadCarType(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Car model = new Car();
-		model.carType = ValidationsTest.STRING_256;
-		assertIsNotValid(model, "carType", vertx, testContext);
+    final Car model = new Car();
+    model.carType = ValidationsTest.STRING_256;
+    assertIsNotValid(model, "carType", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that not accept cars with bad car plate.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#validate(String, io.vertx.core.Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidWithABadCarPlate(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that not accept cars with bad car plate.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#validate(String, io.vertx.core.Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithABadCarPlate(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Car model = new Car();
-		model.carPlate = ValidationsTest.STRING_256;
-		assertIsNotValid(model, "carPlate", vertx, testContext);
+    final Car model = new Car();
+    model.carPlate = ValidationsTest.STRING_256;
+    assertIsNotValid(model, "carPlate", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that not merge with bad car type.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#merge(Material, String, Vertx)
-	 */
-	@Test
-	public void shouldNotMergeWithABadCarType(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that not merge with bad car type.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#merge(Material, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeWithABadCarType(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Car target = this.createModelExample(1);
-		final Car source = new Car();
-		source.carType = ValidationsTest.STRING_256;
-		assertCannotMerge(target, source, "carType", vertx, testContext);
+    final Car target = this.createModelExample(1);
+    final Car source = new Car();
+    source.carType = ValidationsTest.STRING_256;
+    assertCannotMerge(target, source, "carType", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that not merge with bad car plate.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#merge(Material, String, Vertx)
-	 */
-	@Test
-	public void shouldNotMergeWithABadCarPlate(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that not merge with bad car plate.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#merge(Material, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeWithABadCarPlate(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Car target = this.createModelExample(1);
-		final Car source = new Car();
-		source.carPlate = ValidationsTest.STRING_256;
-		assertCannotMerge(target, source, "carPlate", vertx, testContext);
+    final Car target = this.createModelExample(1);
+    final Car source = new Car();
+    source.carPlate = ValidationsTest.STRING_256;
+    assertCannotMerge(target, source, "carPlate", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that merge two models.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#merge(Material, String, Vertx)
-	 */
-	@Test
-	public void shouldMerge(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge two models.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#merge(Material, String, Vertx)
+   */
+  @Test
+  public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Car target = this.createModelExample(1);
-		target.id = "1";
-		final Car source = this.createModelExample(2);
-		assertCanMerge(target, source, vertx, testContext, merged -> {
+    final Car target = this.createModelExample(1);
+    target.id = "1";
+    final Car source = this.createModelExample(2);
+    assertCanMerge(target, source, vertx, testContext, merged -> {
 
-			assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-			source.id = "1";
-			assertThat(merged).isEqualTo(source);
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = "1";
+      assertThat(merged).isEqualTo(source);
 
-		});
-	}
+    });
+  }
 
-	/**
-	 * Check that merge with {@code null} source.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#merge(Material, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeWithNull(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge with {@code null} source.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#merge(Material, String, Vertx)
+   */
+  @Test
+  public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Car target = this.createModelExample(1);
-		assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    final Car target = this.createModelExample(1);
+    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
-	}
+  }
 
-	/**
-	 * Check that merge with {@code null} source.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#merge(Material, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeCarWithNull(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge with {@code null} source.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#merge(Material, String, Vertx)
+   */
+  @Test
+  public void shouldMergeCarWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Car target = this.createModelExample(1);
-		target.mergeCar(null, "codePrefix", vertx).onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
+    final Car target = this.createModelExample(1);
+    target.mergeCar(null, "codePrefix", vertx).onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
 
-			assertThat(merged).isSameAs(target);
-			testContext.completeNow();
+      assertThat(merged).isSameAs(target);
+      testContext.completeNow();
 
-		})));
+    })));
 
-	}
+  }
 
-	/**
-	 * Check that merge only car type.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#merge(Material, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeOnlyCarType(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge only car type.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#merge(Material, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyCarType(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Car target = this.createModelExample(1);
-		target.id = "1";
-		final Car source = new Car();
-		source.carType = "NEW CAR TYPE";
-		assertCanMerge(target, source, vertx, testContext, merged -> {
+    final Car target = this.createModelExample(1);
+    target.id = "1";
+    final Car source = new Car();
+    source.carType = "NEW CAR TYPE";
+    assertCanMerge(target, source, vertx, testContext, merged -> {
 
-			assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-			target.carType = "NEW CAR TYPE";
-			assertThat(merged).isEqualTo(target);
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      target.carType = "NEW CAR TYPE";
+      assertThat(merged).isEqualTo(target);
 
-		});
+    });
 
-	}
+  }
 
-	/**
-	 * Check that merge only car plate.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#merge(Material, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeOnlyCarPlate(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge only car plate.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#merge(Material, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyCarPlate(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Car target = this.createModelExample(1);
-		target.id = "1";
-		final Car source = new Car();
-		source.carPlate = "NEW CAR PLATE";
-		assertCanMerge(target, source, vertx, testContext, merged -> {
+    final Car target = this.createModelExample(1);
+    target.id = "1";
+    final Car source = new Car();
+    source.carPlate = "NEW CAR PLATE";
+    assertCanMerge(target, source, vertx, testContext, merged -> {
 
-			assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-			target.carPlate = "NEW CAR PLATE";
-			assertThat(merged).isEqualTo(target);
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      target.carPlate = "NEW CAR PLATE";
+      assertThat(merged).isEqualTo(target);
 
-		});
+    });
 
-	}
+  }
 
-	/**
-	 * Check that merge only id.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#merge(Material, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeOnlyId(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge only id.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#merge(Material, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyId(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Car target = this.createModelExample(1);
-		target.id = "1";
-		final Car source = new Car();
-		assertCanMerge(target, source, vertx, testContext,
-				merged -> assertThat(merged).isEqualTo(target).isNotSameAs(target).isNotEqualTo(source));
+    final Car target = this.createModelExample(1);
+    target.id = "1";
+    final Car source = new Car();
+    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isEqualTo(target).isNotSameAs(target).isNotEqualTo(source));
 
-	}
+  }
 
 }

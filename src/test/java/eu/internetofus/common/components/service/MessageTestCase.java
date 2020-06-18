@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.components.service;
 
-import eu.internetofus.common.components.service.Message;
-
 /**
  * Test the classes that extends the {@link Message}
  *
@@ -37,19 +35,19 @@ import eu.internetofus.common.components.service.Message;
  */
 public abstract class MessageTestCase<T extends Message> extends BaseMessageTestCase<T> {
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see #createEmptyMessage()
-	 */
-	@Override
-	public T createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   *
+   * @see #createEmptyMessage()
+   */
+  @Override
+  public T createModelExample(final int index) {
 
-		final T model = this.createEmptyMessage();
-		model.recipientId = "RecipientId_" + index;
-		model.title = "Title_" + index;
-		model.text = "Text_" + index;
-		return model;
-	}
+    final T model = this.createEmptyMessage();
+    model.recipientId = "RecipientId_" + index;
+    model.title = "Title_" + index;
+    model.text = "Text_" + index;
+    return model;
+  }
 
 }
