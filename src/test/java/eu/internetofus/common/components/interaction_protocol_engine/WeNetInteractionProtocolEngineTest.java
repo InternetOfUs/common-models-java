@@ -30,6 +30,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
+import eu.internetofus.common.components.service.WeNetService;
+import eu.internetofus.common.components.service.WeNetServiceMocker;
+import eu.internetofus.common.components.service.WeNetServiceSimulator;
+import eu.internetofus.common.components.task_manager.WeNetTaskManager;
+import eu.internetofus.common.components.task_manager.WeNetTaskManagerMocker;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -48,17 +55,35 @@ import io.vertx.junit5.VertxExtension;
 public class WeNetInteractionProtocolEngineTest extends WeNetInteractionProtocolEngineTestCase {
 
   /**
-   * The profile manager mocked server.
+   * The task manager mocked server.
    */
-  protected static WeNetInteractionProtocolEngineMocker mocker;
+  protected static WeNetTaskManagerMocker taskMocker;
 
   /**
-   * Start the mocker server.
+   * The profile manager mocked server.
+   */
+  protected static WeNetProfileManagerMocker profileMocker;
+
+  /**
+   * The service mocked server.
+   */
+  protected static WeNetServiceMocker serviceMocker;
+
+  /**
+   * The interaction protocol engine mocked server.
+   */
+  protected static WeNetInteractionProtocolEngineMocker interactionProtocolEngineMocker;
+
+  /**
+   * Start the mocker servers.
    */
   @BeforeAll
-  public static void startMocker() {
+  public static void startMockers() {
 
-    mocker = WeNetInteractionProtocolEngineMocker.start();
+    taskMocker = WeNetTaskManagerMocker.start();
+    profileMocker = WeNetProfileManagerMocker.start();
+    serviceMocker = WeNetServiceMocker.start();
+    interactionProtocolEngineMocker = WeNetInteractionProtocolEngineMocker.start();
   }
 
   /**
@@ -70,7 +95,18 @@ public class WeNetInteractionProtocolEngineTest extends WeNetInteractionProtocol
   public void registerClient(final Vertx vertx) {
 
     final WebClient client = WebClient.create(vertx);
-    final JsonObject conf = mocker.getComponentConfiguration();
-    WeNetInteractionProtocolEngine.register(vertx, client, conf);
+    final JsonObject taskConf = taskMocker.getComponentConfiguration();
+    WeNetTaskManager.register(vertx, client, taskConf);
+
+    final JsonObject profileConf = profileMocker.getComponentConfiguration();
+    WeNetProfileManager.register(vertx, client, profileConf);
+
+    final JsonObject conf = serviceMocker.getComponentConfiguration();
+    WeNetService.register(vertx, client, conf);
+    WeNetServiceSimulator.register(vertx, client, conf);
+
+    final JsonObject interactionProtocolEngineMockerConf = interactionProtocolEngineMocker.getComponentConfiguration();
+    WeNetInteractionProtocolEngine.register(vertx, client, interactionProtocolEngineMockerConf);
+
   }
 }

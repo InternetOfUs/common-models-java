@@ -30,9 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import eu.internetofus.common.components.incentive_server.Incentive;
+import eu.internetofus.common.components.incentive_server.IncentiveTest;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 
 /**
@@ -53,14 +52,17 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
   @Test
   public void shouldSendMessage(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Message message = new Message();
-    message.content = new JsonObject();
-    WeNetInteractionProtocolEngine.createProxy(vertx).sendMessage(message, testContext.succeeding(sent -> testContext.verify(() -> {
+    new MessageTest().createModelExample(1, vertx, testContext, testContext.succeeding(message -> {
 
-      assertThat(message).isEqualTo(sent);
-      testContext.completeNow();
+      message.norms = null;
+      WeNetInteractionProtocolEngine.createProxy(vertx).sendMessage(message, testContext.succeeding(sent -> testContext.verify(() -> {
 
-    })));
+        assertThat(message).isEqualTo(sent);
+        testContext.completeNow();
+
+      })));
+
+    }));
 
   }
 
@@ -73,13 +75,16 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
   @Test
   public void shouldSendIncentive(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Incentive incentive = new Incentive();
-    WeNetInteractionProtocolEngine.createProxy(vertx).sendIncentive(incentive, testContext.succeeding(sent -> testContext.verify(() -> {
+    new IncentiveTest().createModelExample(1, vertx, testContext, testContext.succeeding(incentive -> {
 
-      assertThat(incentive).isEqualTo(sent);
-      testContext.completeNow();
+      WeNetInteractionProtocolEngine.createProxy(vertx).sendIncentive(incentive, testContext.succeeding(sent -> testContext.verify(() -> {
 
-    })));
+        assertThat(incentive).isEqualTo(sent);
+        testContext.completeNow();
+
+      })));
+
+    }));
 
   }
 
