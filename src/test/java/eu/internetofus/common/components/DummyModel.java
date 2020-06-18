@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.components;
 
-import eu.internetofus.common.components.Model;
-
 /**
  * Basic implementation of a {@link Model}
  *
@@ -35,26 +33,26 @@ import eu.internetofus.common.components.Model;
  */
 public class DummyModel extends Model {
 
-	/**
-	 * The index of the model.
-	 */
-	public int index;
+  /**
+   * The index of the model.
+   */
+  public int index;
 
-	/**
-	 * Create an empty model.
-	 */
-	public DummyModel() {
+  /**
+   * Create an empty model.
+   */
+  public DummyModel() {
 
-	}
+  }
 
-	/**
-	 * Create a model with an index.
-	 *
-	 * @param index of the model.
-	 */
-	public DummyModel(int index) {
+  /**
+   * Create a model with an index.
+   *
+   * @param index of the model.
+   */
+  public DummyModel(final int index) {
 
-		this.index = index;
-	}
+    this.index = index;
+  }
 
 }

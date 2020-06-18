@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.components;
 
-import eu.internetofus.common.components.ErrorMessage;
-
 /**
  * Test the {@link ErrorMessage}.
  *
@@ -37,13 +35,13 @@ import eu.internetofus.common.components.ErrorMessage;
  */
 public class ErrorMessageTest extends ModelTestCase<ErrorMessage> {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ErrorMessage createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public ErrorMessage createModelExample(final int index) {
 
-		return new ErrorMessage("code_" + index, "message_" + index);
-	}
+    return new ErrorMessage("code_" + index, "message_" + index);
+  }
 
 }

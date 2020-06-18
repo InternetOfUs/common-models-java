@@ -29,9 +29,9 @@ package eu.internetofus.common.vertx;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-import eu.internetofus.common.components.ErrorException;
 import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ValidationErrorException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -39,6 +39,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.api.OperationResponse;
+import io.vertx.serviceproxy.ServiceException;
 
 /**
  * Classes used to generate handlers for an {@link OperationResponse}.
@@ -49,102 +50,108 @@ import io.vertx.ext.web.api.OperationResponse;
  */
 public interface OperationReponseHandlers {
 
-	/**
-	 * Handle with an error message.
-	 *
-	 * @param resultHandler handler that will manage the response.
-	 * @param status        HTTP status code.
-	 * @param throwable     cause that explains why has failed the request.
-	 */
-	static void responseFailedWith(Handler<AsyncResult<OperationResponse>> resultHandler, Status status,
-			Throwable throwable) {
+  /**
+   * Handle with an error message.
+   *
+   * @param resultHandler handler that will manage the response.
+   * @param status        HTTP status code.
+   * @param throwable     cause that explains why has failed the request.
+   */
+  static void responseFailedWith(final Handler<AsyncResult<OperationResponse>> resultHandler, final Status status, final Throwable throwable) {
 
-		if (throwable == null) {
+    if (throwable == null) {
 
-			responseWith(resultHandler, status, new ErrorMessage("undefined", "Unexpected failure"));
+      responseWith(resultHandler, status, new ErrorMessage("undefined", "Unexpected failure"));
 
-		} else {
+    } else {
 
-			String code;
-			if (throwable instanceof ErrorException) {
+      ErrorMessage message = null;
+      if (throwable instanceof ServiceException) {
 
-				code = ((ErrorException) throwable).getCode();
+        final ServiceException exception = (ServiceException) throwable;
+        message = Model.fromJsonObject(exception.getDebugInfo(), ErrorMessage.class);
+        if (message == null) {
 
-			} else {
+          message = new ErrorMessage(String.valueOf(exception.failureCode()), exception.getMessage());
 
-				code = throwable.getClass().getSimpleName();
+        }
 
-			}
+      } else if (throwable instanceof ValidationErrorException) {
 
-			responseWith(resultHandler, status, new ErrorMessage(code, throwable.getMessage()));
+        final ValidationErrorException validation = (ValidationErrorException) throwable;
+        message = new ErrorMessage(validation.getCode(), throwable.getMessage());
 
-		}
-	}
+      } else {
 
-	/**
-	 * Handle with an error message.
-	 *
-	 * @param resultHandler handler that will manage the response.
-	 * @param status        HTTP status code.
-	 * @param code          of the error.
-	 * @param message       of the error.
-	 */
-	static void responseWithErrorMessage(Handler<AsyncResult<OperationResponse>> resultHandler, Status status,
-			String code, String message) {
+        message = new ErrorMessage(throwable.getClass().getSimpleName(), throwable.getMessage());
+      }
 
-		responseWith(resultHandler, status, new ErrorMessage(code, message));
+      responseWith(resultHandler, status, message);
 
-	}
+    }
+  }
 
-	/**
-	 * Handle with a successful model.
-	 *
-	 * @param resultHandler handler that will manage the response.
-	 * @param model         to response.
-	 */
-	static void responseOk(Handler<AsyncResult<OperationResponse>> resultHandler, Object model) {
+  /**
+   * Handle with an error message.
+   *
+   * @param resultHandler handler that will manage the response.
+   * @param status        HTTP status code.
+   * @param code          of the error.
+   * @param message       of the error.
+   */
+  static void responseWithErrorMessage(final Handler<AsyncResult<OperationResponse>> resultHandler, final Status status, final String code, final String message) {
 
-		responseWith(resultHandler, Status.OK, model);
+    responseWith(resultHandler, status, new ErrorMessage(code, message));
 
-	}
+  }
 
-	/**
-	 * Handle with a successful empty content.
-	 *
-	 * @param resultHandler handler that will manage the response.
-	 */
-	static void responseOk(Handler<AsyncResult<OperationResponse>> resultHandler) {
+  /**
+   * Handle with a successful model.
+   *
+   * @param resultHandler handler that will manage the response.
+   * @param model         to response.
+   */
+  static void responseOk(final Handler<AsyncResult<OperationResponse>> resultHandler, final Object model) {
 
-		resultHandler.handle(Future.succeededFuture(new OperationResponse().setStatusCode(Status.NO_CONTENT.getStatusCode())
-				.putHeader(HttpHeaders.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON)));
+    responseWith(resultHandler, Status.OK, model);
 
-	}
+  }
 
-	/**
-	 * Handle with a response with the specified status and content.
-	 *
-	 * @param resultHandler handler that will manage the response.
-	 * @param status        HTTP status code.
-	 * @param model         to send.
-	 */
-	static void responseWith(Handler<AsyncResult<OperationResponse>> resultHandler, Status status, Object model) {
+  /**
+   * Handle with a successful empty content.
+   *
+   * @param resultHandler handler that will manage the response.
+   */
+  static void responseOk(final Handler<AsyncResult<OperationResponse>> resultHandler) {
 
-		Buffer buffer;
-		if (model instanceof Model) {
+    resultHandler.handle(Future.succeededFuture(new OperationResponse().setStatusCode(Status.NO_CONTENT.getStatusCode()).putHeader(HttpHeaders.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON)));
 
-			buffer = ((Model) model).toBuffer();
+  }
 
-		} else if (model instanceof JsonObject) {
+  /**
+   * Handle with a response with the specified status and content.
+   *
+   * @param resultHandler handler that will manage the response.
+   * @param status        HTTP status code.
+   * @param model         to send.
+   */
+  static void responseWith(final Handler<AsyncResult<OperationResponse>> resultHandler, final Status status, final Object model) {
 
-			buffer = ((JsonObject) model).toBuffer();
+    Buffer buffer;
+    if (model instanceof Model) {
 
-		} else {
+      buffer = ((Model) model).toBuffer();
 
-			buffer = Buffer.buffer(String.valueOf(model));
-		}
-		resultHandler.handle(Future.succeededFuture(new OperationResponse().setStatusCode(status.getStatusCode())
-				.putHeader(HttpHeaders.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON).setPayload(buffer)));
+    } else if (model instanceof JsonObject) {
 
-	}
+      buffer = ((JsonObject) model).toBuffer();
+
+    } else {
+
+      buffer = Buffer.buffer(String.valueOf(model));
+    }
+    resultHandler.handle(Future.succeededFuture(new OperationResponse().setStatusCode(status.getStatusCode()).putHeader(HttpHeaders.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON).setPayload(buffer)));
+
+  }
 
 }

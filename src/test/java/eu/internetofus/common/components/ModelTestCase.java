@@ -30,7 +30,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import eu.internetofus.common.components.Model;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
@@ -43,82 +42,82 @@ import io.vertx.core.json.JsonObject;
  */
 public abstract class ModelTestCase<T extends Model> {
 
-	/**
-	 * Create an example model that has the specified index.
-	 *
-	 * @param index to use in the example.
-	 *
-	 * @return the example.
-	 */
-	public abstract T createModelExample(int index);
+  /**
+   * Create an example model that has the specified index.
+   *
+   * @param index to use in the example.
+   *
+   * @return the example.
+   */
+  public abstract T createModelExample(int index);
 
-	/**
-	 * Check two models are equals.
-	 */
-	@Test
-	public void shouldBeEquals() {
+  /**
+   * Check two models are equals.
+   */
+  @Test
+  public void shouldBeEquals() {
 
-		final T model1 = this.createModelExample(1);
-		final T model2 = this.createModelExample(1);
-		assertThat(model1).isEqualTo(model2);
-		assertThat(model1.hashCode()).isEqualTo(model2.hashCode());
-		assertThat(model1.toString()).isEqualTo(model2.toString());
-		assertThat(model1.toJsonString()).isEqualTo(model2.toJsonString());
+    final T model1 = this.createModelExample(1);
+    final T model2 = this.createModelExample(1);
+    assertThat(model1).isEqualTo(model2);
+    assertThat(model1.hashCode()).isEqualTo(model2.hashCode());
+    assertThat(model1.toString()).isEqualTo(model2.toString());
+    assertThat(model1.toJsonString()).isEqualTo(model2.toJsonString());
 
-	}
+  }
 
-	/**
-	 * Check two models are different.
-	 */
-	@Test
-	public void shouldNotBeEquals() {
+  /**
+   * Check two models are different.
+   */
+  @Test
+  public void shouldNotBeEquals() {
 
-		final T model1 = this.createModelExample(1);
-		final T model2 = this.createModelExample(2);
-		assertThat(model1).isNotEqualTo(model2);
-		assertThat(model1.hashCode()).isNotEqualTo(model2.hashCode());
-		assertThat(model1.toString()).isNotEqualTo(model2.toString());
-		assertThat(model1.toJsonString()).isNotEqualTo(model2.toJsonString());
+    final T model1 = this.createModelExample(1);
+    final T model2 = this.createModelExample(2);
+    assertThat(model1).isNotEqualTo(model2);
+    assertThat(model1.hashCode()).isNotEqualTo(model2.hashCode());
+    assertThat(model1.toString()).isNotEqualTo(model2.toString());
+    assertThat(model1.toJsonString()).isNotEqualTo(model2.toJsonString());
 
-	}
+  }
 
-	/**
-	 * Check the model can be encoded decoded from JSON.
-	 */
-	@Test
-	public void shouldJSONManipulable() {
+  /**
+   * Check the model can be encoded decoded from JSON.
+   */
+  @Test
+  public void shouldJSONManipulable() {
 
-		final T model = this.createModelExample(1);
-		final String value = model.toJsonString();
-		assertThat(value).isNotEmpty();
-		assertThat(Model.fromString(value, model.getClass())).isEqualTo(model);
+    final T model = this.createModelExample(1);
+    final String value = model.toJsonString();
+    assertThat(value).isNotEmpty();
+    assertThat(Model.fromString(value, model.getClass())).isEqualTo(model);
 
-	}
+  }
 
-	/**
-	 * Check the model can be encoded decoded from {@link JsonObject}.
-	 */
-	@Test
-	public void shouldJsonObjectManipulable() {
+  /**
+   * Check the model can be encoded decoded from {@link JsonObject}.
+   */
+  @Test
+  public void shouldJsonObjectManipulable() {
 
-		final T model = this.createModelExample(1);
-		final JsonObject value = model.toJsonObject();
-		assertThat(value).isNotEmpty();
-		assertThat(Model.fromJsonObject(value, model.getClass())).isEqualTo(model);
+    final T model = this.createModelExample(1);
+    final JsonObject value = model.toJsonObject();
+    assertThat(value).isNotEmpty();
+    assertThat(Model.fromJsonObject(value, model.getClass())).isEqualTo(model);
 
-	}
+  }
 
-	/**
-	 * Check the model can be encoded decoded from {@link Buffer}.
-	 */
-	@Test
-	public void shouldBufferManipulable() {
+  /**
+   * Check the model can be encoded decoded from {@link Buffer}.
+   */
+  @Test
+  public void shouldBufferManipulable() {
 
-		final T model = this.createModelExample(1);
-		final Buffer value = model.toBuffer();
-		assertThat(value).isNotNull();
-		assertThat(Model.fromBuffer(value, model.getClass())).isEqualTo(model);
+    final T model = this.createModelExample(1);
+    final Buffer value = model.toBuffer();
+    assertThat(value).isNotNull();
+    assertThat(Model.fromBuffer(value, model.getClass())).isEqualTo(model);
 
-	}
+  }
 
 }

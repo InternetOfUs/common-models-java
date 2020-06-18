@@ -36,7 +36,6 @@ import javax.ws.rs.core.Response.Status;
 
 import org.tinylog.Logger;
 
-import eu.internetofus.common.components.ErrorException;
 import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.Model;
 import io.vertx.core.AsyncResult;
@@ -48,6 +47,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.serviceproxy.ServiceException;
 
 /**
  * A HTTP client to interact with a WeNet platform components.
@@ -122,17 +122,18 @@ public class ComponentClient {
    */
   protected <T> void notifyErrorTo(final Handler<AsyncResult<T>> actionHandler, final HttpResponse<Buffer> response) {
 
+    ServiceException cause = null;
     final ErrorMessage message = Model.fromResponse(response, ErrorMessage.class);
     if (message != null) {
 
-      actionHandler.handle(Future.failedFuture(new ErrorException(message)));
+      cause = new ServiceException(response.statusCode(), response.statusMessage(), message.toJsonObject());
 
     } else {
 
-      final String error = response.bodyAsString();
-      actionHandler.handle(Future.failedFuture(error));
+      cause = new ServiceException(response.statusCode(), response.statusMessage());
     }
 
+    actionHandler.handle(Future.failedFuture(cause));
   }
 
   /**
@@ -163,22 +164,33 @@ public class ComponentClient {
         final int code = response.statusCode();
         if (Status.Family.familyOf(code) == Status.Family.SUCCESSFUL) {
 
-          @SuppressWarnings("unchecked")
-          final Class<T> type = (Class<T>) content.getClass();
-          final T result = Model.fromResponse(response, type);
-          if (result == null) {
+          if (code == Status.NO_CONTENT.getStatusCode()) {
 
-            Logger.trace("FAILED {} {} to {}, because the body {} is not of the type {}.", () -> action, () -> url, () -> result, () -> response.bodyAsString(), () -> type);
-            resultHandler.handle(Future.failedFuture(new ErrorException("decode_content_error", "The response content is not of the expected type.")));
+            Logger.trace("SUCCESSFUL {} {} to {} responds without content.", () -> action, () -> content, () -> url);
+            resultHandler.handle(Future.succeededFuture());
 
           } else {
 
-            Logger.trace("FAILED {} {} to {}, because {} ({}).", () -> action, () -> content, () -> url, () -> response.bodyAsString(), () -> code);
-            this.notifyErrorTo(resultHandler, response);
+            @SuppressWarnings("unchecked")
+            final Class<T> type = (Class<T>) content.getClass();
+            final T result = Model.fromResponse(response, type);
+            if (result == null) {
 
+              Logger.trace("FAILED {} {} to {}, because the body {} is not of the type {}.", () -> action, () -> url, () -> result, () -> response.bodyAsString(), () -> type);
+              resultHandler.handle(Future.failedFuture(new ServiceException(400, "Bad JSON response", new ErrorMessage("decode_content_error", "The response content is not of the expected type.").toJsonObject())));
+
+            } else {
+
+              Logger.trace("SUCCESSFUL {} {} to {} responds {} with {}.", () -> action, () -> content, () -> url, () -> code, () -> result);
+              resultHandler.handle(Future.succeededFuture(result));
+
+            }
           }
 
         } else {
+
+          Logger.trace("FAILED {} {} to {}, because {} ({}).", () -> action, () -> content, () -> url, () -> response.bodyAsString(), () -> code);
+          this.notifyErrorTo(resultHandler, response);
 
         }
 
@@ -198,7 +210,8 @@ public class ComponentClient {
    * @param <T>           type of content for the response.
    *
    */
-  protected <T> void successing(final AsyncResult<HttpResponse<Buffer>> action, @NotNull final String actionId, @NotNull final Handler<AsyncResult<T>> resultHandler, final BiConsumer<Handler<AsyncResult<T>>, HttpResponse<Buffer>> consumer) {
+  protected <T> void successing(final AsyncResult<HttpResponse<Buffer>> action, @NotNull final String actionId, @NotNull final Handler<AsyncResult<T>> resultHandler,
+      final BiConsumer<Handler<AsyncResult<T>>, HttpResponse<Buffer>> consumer) {
 
     if (action.failed()) {
 

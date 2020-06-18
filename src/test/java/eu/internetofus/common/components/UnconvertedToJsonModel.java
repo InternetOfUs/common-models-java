@@ -28,8 +28,6 @@ package eu.internetofus.common.components;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import eu.internetofus.common.components.Model;
-
 /**
  * A model that can not be converted to JSON.
  *
@@ -37,16 +35,16 @@ import eu.internetofus.common.components.Model;
  */
 public class UnconvertedToJsonModel extends Model {
 
-	/**
-	 * The identifier of the class.
-	 */
-	@JsonProperty("id")
-	public String id;
+  /**
+   * The identifier of the class.
+   */
+  @JsonProperty("id")
+  public String id;
 
-	/**
-	 * Another id that fail the JSON encoding.
-	 */
-	@JsonProperty("id")
-	public long _id;
+  /**
+   * Another id that fail the JSON encoding.
+   */
+  @JsonProperty("id")
+  public long _id;
 
 }

@@ -31,48 +31,67 @@ package eu.internetofus.common.components;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class ValidationErrorException extends ErrorException {
+public class ValidationErrorException extends Exception {
 
-	/**
-	 * Serialization identifier.
-	 */
-	private static final long serialVersionUID = 1L;
+  /**
+   * Serialization identifier.
+   */
+  private static final long serialVersionUID = 1L;
 
-	/**
-	 * Create a new validation error exception.
-	 *
-	 * @param code    for the error message.
-	 * @param message a brief description of the error to be read by a human.
-	 */
-	public ValidationErrorException(String code, String message) {
+  /**
+   * The code of the error.
+   */
+  protected String code;
 
-		super(code, message);
+  /**
+   * Create a new validation error exception.
+   *
+   * @param code    for the error message.
+   * @param message a brief description of the error to be read by a human.
+   */
+  public ValidationErrorException(final String code, final String message) {
 
-	}
+    super(message);
+    this.code = code;
 
-	/**
-	 * Create a new validation error exception with a message an a cause.
-	 *
-	 * @param code    for the error message.
-	 * @param message a brief description of the error to be read by a human.
-	 * @param cause   because the model is not right.
-	 */
-	public ValidationErrorException(String code, String message, Throwable cause) {
+  }
 
-		super(code, message, cause);
+  /**
+   * Create a new validation error exception with a message an a cause.
+   *
+   * @param code    for the error message.
+   * @param message a brief description of the error to be read by a human.
+   * @param cause   because the model is not right.
+   */
+  public ValidationErrorException(final String code, final String message, final Throwable cause) {
 
-	}
+    super(message, cause);
+    this.code = code;
 
-	/**
-	 * Create a new validation error exception with a message an a cause.
-	 *
-	 * @param code  for the error message.
-	 * @param cause because the model is not right.
-	 */
-	public ValidationErrorException(String code, Throwable cause) {
+  }
 
-		super(code, cause);
+  /**
+   * Create a new validation error exception with a message an a cause.
+   *
+   * @param code  for the error message.
+   * @param cause because the model is not right.
+   */
+  public ValidationErrorException(final String code, final Throwable cause) {
 
-	}
+    super(cause);
+    this.code = code;
+  }
+
+  /**
+   * The code associated to the error.
+   *
+   * @return the error code.
+   *
+   * @see #code
+   */
+  public String getCode() {
+
+    return this.code;
+  }
 
 }
