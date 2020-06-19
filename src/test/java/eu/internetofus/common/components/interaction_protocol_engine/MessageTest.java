@@ -51,6 +51,7 @@ import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
 import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.service.WeNetServiceMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
+import eu.internetofus.common.components.task_manager.TaskTest;
 import eu.internetofus.common.components.task_manager.TaskTransactionTest;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.components.task_manager.WeNetTaskManagerMocker;
@@ -134,7 +135,11 @@ public class MessageTest extends ModelTestCase<Message> {
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(index));
     model.type = Message.Type.values()[index % Message.Type.values().length];
-    if (model.type == Type.TASK_TRANSACTION) {
+    if (model.type == Type.TASK_CREATED) {
+
+      model.content = new TaskTest().createModelExample(index).toJsonObject();
+
+    } else if (model.type == Type.TASK_TRANSACTION) {
 
       model.content = new TaskTransactionTest().createModelExample(index).toJsonObject();
 
@@ -164,7 +169,11 @@ public class MessageTest extends ModelTestCase<Message> {
       model.senderId = task.requesterId;
       model.taskId = task.id;
       final JsonObject content = (JsonObject) model.content;
-      if (model.type == Type.TASK_TRANSACTION) {
+      if (model.type == Type.TASK_CREATED) {
+
+        model.content = task.toJsonObject();
+
+      } else if (model.type == Type.TASK_TRANSACTION) {
 
         content.put("taskId", model.taskId);
 
@@ -190,7 +199,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @see WeNetUserProfile#validate(String, Vertx)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
-  @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
+  @ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6 })
   public void shouldExampleNotBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final Message model = this.createModelExample(index);
@@ -208,7 +217,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @see WeNetUserProfile#validate(String, Vertx)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
-  @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
+  @ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(index, vertx, testContext, testContext.succeeding(model -> assertIsValid(model, vertx, testContext)));
@@ -260,7 +269,7 @@ public class MessageTest extends ModelTestCase<Message> {
   @Test
   public void shouldNotBeValidWithUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(2, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
       // do not use message with incentive because otherwise the error is that the appId of the content not match the message.
       assert model.type == Type.TASK_TRANSACTION;
       model.appId = "undefined";
@@ -398,7 +407,7 @@ public class MessageTest extends ModelTestCase<Message> {
   @Test
   public void shouldNotBeValidWithAnUndefinedTaskId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(2, vertx, testContext, testContext.succeeding(model -> {
       model.taskId = "undefined";
       assertIsNotValid(model, "taskId", vertx, testContext);
     }));
@@ -458,6 +467,24 @@ public class MessageTest extends ModelTestCase<Message> {
   }
 
   /**
+   * Check that not accept a content not match the task creation.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWitAContentNotMathcTypeTaskCreation(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+      model.type = Type.TASK_CREATED;
+      model.content = new JsonObject().put("key", "value");
+      assertIsNotValid(model, "content", vertx, testContext);
+    }));
+  }
+
+  /**
    * Check that not accept a content not match the type task transaction.
    *
    * @param vertx       event bus to use.
@@ -502,11 +529,33 @@ public class MessageTest extends ModelTestCase<Message> {
    * @see WeNetUserProfile#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidWitATrasactionTaskIdDiferentToTheMessageTaskId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWitATaskIdDiferentToTheMessageTaskId(final Vertx vertx, final VertxTestContext testContext) {
 
     StoreServices.storeTaskExample(2, vertx, testContext, testContext.succeeding(task -> {
 
-      this.createModelExample(2, vertx, testContext, testContext.succeeding(model -> {
+      this.createModelExample(0, vertx, testContext, testContext.succeeding(model -> {
+        assert model.type == Type.TASK_CREATED;
+        model.content = task.toJsonObject();
+        assertIsNotValid(model, "content", vertx, testContext);
+      }));
+
+    }));
+  }
+
+  /**
+   * Check that not accept a content with a different taskId.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWitATransactionTaskIdDiferentToTheMessageTaskId(final Vertx vertx, final VertxTestContext testContext) {
+
+    StoreServices.storeTaskExample(2, vertx, testContext, testContext.succeeding(task -> {
+
+      this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
         assert model.type == Type.TASK_TRANSACTION;
         model.content = new JsonObject().put("taskId", task.id);
         assertIsNotValid(model, "content", vertx, testContext);
@@ -524,16 +573,53 @@ public class MessageTest extends ModelTestCase<Message> {
    * @see WeNetUserProfile#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidWitATrasactionAppIdDiferentToTheMessageAppId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWitAppIdDiferentToTheMessageAppId(final Vertx vertx, final VertxTestContext testContext) {
 
     StoreServices.storeAppExample(2, vertx, testContext, testContext.succeeding(app -> {
 
-      this.createModelExample(3, vertx, testContext, testContext.succeeding(model -> {
+      this.createModelExample(2, vertx, testContext, testContext.succeeding(model -> {
         assert model.type == Type.INCENTIVE;
         model.content = new JsonObject().put("AppID", app.appId);
         assertIsNotValid(model, "content", vertx, testContext);
       }));
 
+    }));
+  }
+
+  /**
+   * Check that not accept a content with an undefined task.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWitAnUndefinedTaskForTaskCreation(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(0, vertx, testContext, testContext.succeeding(model -> {
+      assert model.type == Type.TASK_CREATED;
+      model.taskId = null;
+      ((JsonObject) model.content).put("id", "undefined");
+      assertIsNotValid(model, "content", vertx, testContext);
+    }));
+  }
+
+  /**
+   * Check that not accept a content with an undefined task.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWitAnDiferentTaskForTaskCreation(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(0, vertx, testContext, testContext.succeeding(model -> {
+      assert model.type == Type.TASK_CREATED;
+      ((JsonObject) model.content).put("goal", new JsonObject().put("name", "different name"));
+      assertIsNotValid(model, "content", vertx, testContext);
     }));
   }
 

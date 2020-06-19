@@ -92,9 +92,9 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
    * {@inheritDoc}
    */
   @Override
-  public void retrieveJsonCallbacks(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
+  public void retrieveJsonCallbacks(final String id, final Handler<AsyncResult<JsonArray>> retrieveHandler) {
 
-    this.getJsonObject(retrieveHandler, "/callback", id);
+    this.getJsonArray(retrieveHandler, "/callback", id);
 
   }
 

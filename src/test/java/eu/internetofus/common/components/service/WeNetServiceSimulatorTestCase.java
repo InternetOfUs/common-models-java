@@ -155,24 +155,29 @@ public abstract class WeNetServiceSimulatorTestCase {
     final WeNetServiceSimulator service = WeNetServiceSimulator.createProxy(vertx);
     service.createApp(new App(), testContext.succeeding(created -> {
 
-      final JsonObject callbacks = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
-      service.addJsonCallBack(created.appId, callbacks, testContext.succeeding(create -> {
+      final JsonObject message1 = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
+      service.addJsonCallBack(created.appId, message1, testContext.succeeding(create1 -> {
 
-        service.retrieveJsonCallbacks(created.appId, testContext.succeeding(retrieve -> testContext.verify(() -> {
+        final JsonObject message2 = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
+        service.addJsonCallBack(created.appId, message2, testContext.succeeding(create2 -> {
 
-          assertThat(retrieve).isEqualTo(callbacks);
-          service.deleteCallbacks(created.appId, testContext.succeeding(empty -> {
+          service.retrieveJsonCallbacks(created.appId, testContext.succeeding(retrieve -> testContext.verify(() -> {
 
-            service.retrieveJsonCallbacks(created.appId, testContext.failing(handler -> {
+            assertThat(retrieve).isEqualTo(new JsonArray().add(message1).add(message2));
+            service.deleteCallbacks(created.appId, testContext.succeeding(empty -> {
 
-              service.deleteApp(created.appId, testContext.succeeding(emptyApp -> {
+              service.retrieveJsonCallbacks(created.appId, testContext.succeeding(retrieve2 -> testContext.verify(() -> {
 
-                testContext.completeNow();
+                assertThat(retrieve2).isEqualTo(new JsonArray());
+                service.deleteApp(created.appId, testContext.succeeding(emptyApp -> {
 
-              }));
+                  testContext.completeNow();
+
+                }));
+              })));
             }));
-          }));
-        })));
+          })));
+        }));
       }));
     }));
 
@@ -228,7 +233,7 @@ public abstract class WeNetServiceSimulatorTestCase {
 
         service.retrieveJsonCallbacks(created.appId, testContext.succeeding(retrieve -> testContext.verify(() -> {
 
-          assertThat(retrieve).isEqualTo(message);
+          assertThat(retrieve).isEqualTo(new JsonArray().add(message));
 
           service.deleteApp(created.appId, testContext.succeeding(emptyApp -> {
 

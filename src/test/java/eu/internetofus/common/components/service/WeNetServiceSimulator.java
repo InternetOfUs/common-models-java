@@ -133,7 +133,7 @@ public interface WeNetServiceSimulator {
    * @param id              identifier of the app to get the callback messages.
    * @param retrieveHandler handler to manage the retrieve process.
    */
-  void retrieveJsonCallbacks(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+  void retrieveJsonCallbacks(@NotNull String id, @NotNull Handler<AsyncResult<JsonArray>> retrieveHandler);
 
   /**
    * Add a callback message for an application.

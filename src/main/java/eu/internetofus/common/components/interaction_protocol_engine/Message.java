@@ -39,6 +39,7 @@ import eu.internetofus.common.components.incentive_server.Incentive;
 import eu.internetofus.common.components.profile_manager.Norm;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.service.WeNetService;
+import eu.internetofus.common.components.task_manager.Task;
 import eu.internetofus.common.components.task_manager.TaskTransaction;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -103,6 +104,10 @@ public class Message extends Model implements Validable {
    * The possible types of the message.
    */
   public enum Type {
+    /**
+     * The message is to inform to a task is created.
+     */
+    TASK_CREATED,
     /**
      * The message is a transaction that has to be done in a task.
      */
@@ -207,6 +212,42 @@ public class Message extends Model implements Validable {
       } else {
 
         switch (this.type) {
+        case TASK_CREATED:
+          final Task task = Model.fromJsonObject((JsonObject) this.content, Task.class);
+          if (task == null) {
+
+            promise.fail(new ValidationErrorException(codePrefix + ".content", "You must define the created task"));
+
+          } else if (this.taskId != null && !this.taskId.equals(task.id)) {
+
+            promise.fail(new ValidationErrorException(codePrefix + ".content", "The mesage taskId not match the taskId of the task defined on the content"));
+
+          } else {
+
+            future = future.compose(mapper -> {
+
+              final Promise<Void> verifyEqualsStoredPromise = Promise.promise();
+              WeNetTaskManager.createProxy(vertx).retrieveTask(this.taskId, storedTask -> {
+
+                if (storedTask.failed()) {
+
+                  verifyEqualsStoredPromise.fail(new ValidationErrorException(codePrefix + ".content", "No found task associated to the specified identifier"));
+
+                } else if (!task.equals(storedTask.result())) {
+
+                  verifyEqualsStoredPromise.fail(new ValidationErrorException(codePrefix + ".content", "The task on the content is not equals to the stored one."));
+
+                } else {
+
+                  verifyEqualsStoredPromise.complete();
+
+                }
+              });
+              return verifyEqualsStoredPromise.future();
+            });
+          }
+          break;
+
         case TASK_TRANSACTION:
           final TaskTransaction transaction = Model.fromJsonObject((JsonObject) this.content, TaskTransaction.class);
           if (transaction == null) {

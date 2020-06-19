@@ -79,7 +79,10 @@ Scenario: pathMatches('/app/{appId}/users') && methodIs('delete')
 Scenario: pathMatches('/callback/{appId}') && methodIs('get') && callbacks[pathParams.appId] != null
     * def response = callbacks[pathParams.appId]
 
-Scenario: pathMatches('/callback/{appId}s') && methodIs('get')
+Scenario: pathMatches('/callback/{appId}') && methodIs('get') && apps[pathParams.appId] != null
+    * def response = []
+
+Scenario: pathMatches('/callback/{appId}') && methodIs('get')
     * def responseStatus = 404
     * def response = {"code":"not_found","message":"No App associated to the ID."}
 
@@ -88,9 +91,10 @@ Scenario: pathMatches('/callback/{appId}') && methodIs('post') && apps[pathParam
     * def response = {"code":"bad_app","message":"No app associated to the ID."}
 
 Scenario: pathMatches('/callback/{appId}') && methodIs('post')
-	* def newCallbacks = request
-	* callbacks[pathParams.appId] = newCallbacks;
-    * def response = newCallbacks
+	* def currentCallbacks = (callbacks[pathParams.appId] || [])  
+	* def void = ( currentCallbacks.add(request) )
+	* callbacks[pathParams.appId] = currentCallbacks;
+    * def response = request
     * def responseStatus = 201
 
 Scenario: pathMatches('/callback/{appId}') && methodIs('delete') && apps[pathParams.appId] != null
