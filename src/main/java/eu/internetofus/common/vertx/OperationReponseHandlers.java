@@ -59,36 +59,42 @@ public interface OperationReponseHandlers {
    */
   static void responseFailedWith(final Handler<AsyncResult<OperationResponse>> resultHandler, final Status status, final Throwable throwable) {
 
-    if (throwable == null) {
+    String code = "undefined";
+    String message = "Unexpected failure";
+    if (throwable instanceof ServiceException) {
 
-      responseWith(resultHandler, status, new ErrorMessage("undefined", "Unexpected failure"));
+      final ServiceException exception = (ServiceException) throwable;
+      code = String.valueOf(exception.failureCode());
+      message = exception.getMessage();
+      final ErrorMessage errorMessage = Model.fromJsonObject(exception.getDebugInfo(), ErrorMessage.class);
+      if (errorMessage != null) {
 
-    } else {
+        if (errorMessage.code != null) {
 
-      ErrorMessage message = null;
-      if (throwable instanceof ServiceException) {
+          code = errorMessage.code;
 
-        final ServiceException exception = (ServiceException) throwable;
-        message = Model.fromJsonObject(exception.getDebugInfo(), ErrorMessage.class);
-        if (message == null) {
+        }
+        if (errorMessage.message != null) {
 
-          message = new ErrorMessage(String.valueOf(exception.failureCode()), exception.getMessage());
+          message = errorMessage.message;
 
         }
 
-      } else if (throwable instanceof ValidationErrorException) {
-
-        final ValidationErrorException validation = (ValidationErrorException) throwable;
-        message = new ErrorMessage(validation.getCode(), throwable.getMessage());
-
-      } else {
-
-        message = new ErrorMessage(throwable.getClass().getSimpleName(), throwable.getMessage());
       }
 
-      responseWith(resultHandler, status, message);
+    } else if (throwable instanceof ValidationErrorException) {
 
+      final ValidationErrorException validation = (ValidationErrorException) throwable;
+      code = validation.getCode();
+      message = validation.getMessage();
+
+    } else if (throwable != null) {
+
+      code = throwable.getClass().getSimpleName();
+      message = throwable.getMessage();
     }
+
+    responseWithErrorMessage(resultHandler, status, code, message);
   }
 
   /**
