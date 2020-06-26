@@ -77,9 +77,7 @@ public abstract class AbstractComponentMocker {
     this.stop();
     final Feature feature = this.createComponentFeature();
     this.server = new FeatureServer(feature, port, false, variables);
-    final int bindPort = this.server.getPort();
-    System.setProperty("wenet.component." + this.getComponentConfigurationName() + ".port", String.valueOf(bindPort));
-    return bindPort;
+    return this.server.getPort();
 
   }
 

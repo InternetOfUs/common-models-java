@@ -26,15 +26,16 @@
 
 package eu.internetofus.common.components.task_manager;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
-import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.service.WeNetServiceMocker;
+import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -55,12 +56,12 @@ public class WeNetTaskManagerTest extends WeNetTaskManagerTestCase {
   /**
    * The task manager mocked server.
    */
-  protected static WeNetTaskManagerMocker taskMocker;
+  protected static WeNetTaskManagerMocker taskManagerMocker;
 
   /**
    * The profile manager mocked server.
    */
-  protected static WeNetProfileManagerMocker profileMocker;
+  protected static WeNetProfileManagerMocker profileManagerMocker;
 
   /**
    * The service mocked server.
@@ -73,9 +74,20 @@ public class WeNetTaskManagerTest extends WeNetTaskManagerTestCase {
   @BeforeAll
   public static void startMockers() {
 
-    taskMocker = WeNetTaskManagerMocker.start();
-    profileMocker = WeNetProfileManagerMocker.start();
+    taskManagerMocker = WeNetTaskManagerMocker.start();
+    profileManagerMocker = WeNetProfileManagerMocker.start();
     serviceMocker = WeNetServiceMocker.start();
+  }
+
+  /**
+   * Stop the mocker server.
+   */
+  @AfterAll
+  public static void stopMockers() {
+
+    profileManagerMocker.stop();
+    taskManagerMocker.stop();
+    serviceMocker.stop();
   }
 
   /**
@@ -87,10 +99,10 @@ public class WeNetTaskManagerTest extends WeNetTaskManagerTestCase {
   public void registerClient(final Vertx vertx) {
 
     final WebClient client = WebClient.create(vertx);
-    final JsonObject taskConf = taskMocker.getComponentConfiguration();
+    final JsonObject taskConf = taskManagerMocker.getComponentConfiguration();
     WeNetTaskManager.register(vertx, client, taskConf);
 
-    final JsonObject profileConf = profileMocker.getComponentConfiguration();
+    final JsonObject profileConf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, profileConf);
 
     final JsonObject conf = serviceMocker.getComponentConfiguration();

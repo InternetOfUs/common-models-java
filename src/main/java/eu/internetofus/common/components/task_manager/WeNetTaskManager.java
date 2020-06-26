@@ -198,4 +198,25 @@ public interface WeNetTaskManager {
    */
   void deleteTaskType(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
 
+  /**
+   * Do a transaction over a task.
+   *
+   * @param taskTransaction to do.
+   * @param doHandler       handler to manage the transaction process.
+   */
+  void doTaskTransaction(@NotNull JsonObject taskTransaction, @NotNull Handler<AsyncResult<JsonObject>> doHandler);
+
+  /**
+   * Do a transaction over a task.
+   *
+   * @param taskTransaction to do.
+   * @param doHandler       handler to manage the transaction process.
+   */
+  @GenIgnore
+  default void doTaskTransaction(@NotNull final TaskTransaction taskTransaction, @NotNull final Handler<AsyncResult<TaskTransaction>> doHandler) {
+
+    this.doTaskTransaction(taskTransaction.toJsonObject(), ComponentClient.handlerForModel(TaskTransaction.class, doHandler));
+
+  }
+
 }

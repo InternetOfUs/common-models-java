@@ -134,4 +134,14 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void doTaskTransaction(final JsonObject taskTransaction, final Handler<AsyncResult<JsonObject>> doHandler) {
+
+    this.post(taskTransaction, doHandler, "/tasks/transactions");
+
+  }
+
 }

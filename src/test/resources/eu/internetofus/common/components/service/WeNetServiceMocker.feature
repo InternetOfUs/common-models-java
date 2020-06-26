@@ -6,9 +6,9 @@ Background:
 	* def App = Java.type('eu.internetofus.common.components.service.App')
 	* def toApp = function(data){return Model.fromString(data, App.class) }
 	* def uuid = function(){ return java.util.UUID.randomUUID() + '' }
-	* def createMessageCallbackUrlFor = function(id){ return 'http://localhost:'+karate.properties['wenet.component.service.port']+'/callback/'+id}
-	* def apps = {"1":{"appId":"1","messageCallbackUrl":"#(createMessageCallbackUrlFor(1))"}}
-	* def users = {"1":["1","2","3","4","5"]}
+	* def createMessageCallbackUrlFor = function(requestUrlBase,id){return requestUrlBase+'/callback/'+id}
+	* def apps = {}
+	* def users = {}
 	* def callbacks = {}
 
 Scenario: pathMatches('/app/{appId}') && methodIs('get') && apps[pathParams.appId] != null
@@ -25,10 +25,11 @@ Scenario: pathMatches('/app') && methodIs('post') && toApp(karate.pretty(request
 Scenario: pathMatches('/app') && methodIs('post') && request.appId == null
 	* def app = request
 	* app.appId = uuid()
-	* app.messageCallbackUrl = createMessageCallbackUrlFor(app.appId)
+	* app.messageCallbackUrl = createMessageCallbackUrlFor(requestUrlBase,app.appId)
 	* apps[app.appId] = app;
     * def response = app
     * def responseStatus = 201
+    * karate.log('Created app:',app)
 
 Scenario: pathMatches('/app') && methodIs('post') && apps[request.appId] != null
     * def responseStatus = 400
@@ -36,16 +37,18 @@ Scenario: pathMatches('/app') && methodIs('post') && apps[request.appId] != null
 
 Scenario: pathMatches('/app') && methodIs('post')
 	* def app = request
-	* app.messageCallbackUrl = createMessageCallbackUrlFor(app.appId)
+	* app.messageCallbackUrl = createMessageCallbackUrlFor(requestUrlBase,app.appId)
 	* apps[app.appId] = app;
     * def response = app
     * def responseStatus = 201
+    * karate.log('Created app:',app)
 
 Scenario: pathMatches('/app/{appId}') && methodIs('delete') && apps[pathParams.appId] != null
     * karate.remove('apps', '$.' + pathParams.appId)
     * karate.remove('users', '$.' + pathParams.appId)
     * karate.remove('callbacks', '$.' + pathParams.appId)
     * def responseStatus = 204
+    * karate.log('Deleted app:',pathParams.appId)
 
 Scenario: pathMatches('/app/{appId}') && methodIs('delete')
     * def responseStatus = 404
@@ -59,7 +62,7 @@ Scenario: pathMatches('/app/{appId}/users') && methodIs('get')
     * def response = {"code":"not_found","message":"No App associated to the ID."}
 
 Scenario: pathMatches('/app/{appId}/users') && methodIs('post') && apps[pathParams.appId] == null
-    * def responseStatus = 400
+    * def responseStatus = 404
     * def response = {"code":"bad_app","message":"No app associated to the ID."}
 
 Scenario: pathMatches('/app/{appId}/users') && methodIs('post')
@@ -67,10 +70,12 @@ Scenario: pathMatches('/app/{appId}/users') && methodIs('post')
 	* users[pathParams.appId] = newUsers;
     * def response = newUsers
     * def responseStatus = 201
+    * karate.log('Stored on the app ',pathParams.appId,' the users ',newUsers)
 
 Scenario: pathMatches('/app/{appId}/users') && methodIs('delete') && apps[pathParams.appId] != null
     * karate.remove('users', '$.' + pathParams.appId)
     * def responseStatus = 204
+    * karate.log('Delete user on the app ',pathParams.appId)
 
 Scenario: pathMatches('/app/{appId}/users') && methodIs('delete')
     * def responseStatus = 404
@@ -87,7 +92,7 @@ Scenario: pathMatches('/callback/{appId}') && methodIs('get')
     * def response = {"code":"not_found","message":"No App associated to the ID."}
 
 Scenario: pathMatches('/callback/{appId}') && methodIs('post') && apps[pathParams.appId] == null
-    * def responseStatus = 400
+    * def responseStatus = 404
     * def response = {"code":"bad_app","message":"No app associated to the ID."}
 
 Scenario: pathMatches('/callback/{appId}') && methodIs('post')
@@ -96,15 +101,17 @@ Scenario: pathMatches('/callback/{appId}') && methodIs('post')
 	* callbacks[pathParams.appId] = currentCallbacks;
     * def response = request
     * def responseStatus = 201
+    * karate.log('Stored on the app ',pathParams.appId,' the callbacks ',currentCallbacks)
 
 Scenario: pathMatches('/callback/{appId}') && methodIs('delete') && apps[pathParams.appId] != null
     * karate.remove('callbacks', '$.' + pathParams.appId)
     * def responseStatus = 204
+    * karate.log('Delete callback on the app ',pathParams.appId)
 
 Scenario: pathMatches('/callback/{appId}') && methodIs('delete')
     * def responseStatus = 404
     * def response = {"code":"not_found","message":"No App associated to the ID."}
-
+    
 Scenario:
     * def responseStatus = 501
     * def response = {"code":"not_implemented","message":"Sorry, This API call is not mocked."}

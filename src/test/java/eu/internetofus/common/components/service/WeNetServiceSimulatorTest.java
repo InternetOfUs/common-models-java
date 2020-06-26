@@ -26,6 +26,7 @@
 
 package eu.internetofus.common.components.service;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,6 +60,15 @@ public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
   public static void startMockers() {
 
     serviceMocker = WeNetServiceMocker.start();
+  }
+
+  /**
+   * Stop the mocker server.
+   */
+  @AfterAll
+  public static void stopMockers() {
+
+    serviceMocker.stop();
   }
 
   /**

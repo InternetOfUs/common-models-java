@@ -29,6 +29,7 @@ package eu.internetofus.common.components.task_manager;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,6 +86,17 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
     profileManagerMocker = WeNetProfileManagerMocker.start();
     taskManagerMocker = WeNetTaskManagerMocker.start();
     serviceMocker = WeNetServiceMocker.start();
+  }
+
+  /**
+   * Stop the mocker server.
+   */
+  @AfterAll
+  public static void stopMockers() {
+
+    profileManagerMocker.stop();
+    taskManagerMocker.stop();
+    serviceMocker.stop();
   }
 
   /**

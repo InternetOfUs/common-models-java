@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.components.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.Test;
 
 import io.vertx.core.Vertx;
@@ -59,26 +57,6 @@ public abstract class WeNetServiceTestCase {
   }
 
   /**
-   * Should retrieve app 1.
-   *
-   * @param vertx       that contains the event bus to use.
-   * @param testContext context over the tests.
-   */
-  @Test
-  public void shouldRetrieveFirstApp(final Vertx vertx, final VertxTestContext testContext) {
-
-    WeNetService.createProxy(vertx).retrieveApp("1", testContext.succeeding(app -> testContext.verify(() -> {
-
-      assertThat(app).isNotNull();
-      assertThat(app.appId).isEqualTo("1");
-      assertThat(app.messageCallbackUrl).isNotNull();
-      testContext.completeNow();
-
-    })));
-
-  }
-
-  /**
    * Should not retrieve undefined app.
    *
    * @param vertx       that contains the event bus to use.
@@ -91,24 +69,6 @@ public abstract class WeNetServiceTestCase {
       testContext.completeNow();
 
     }));
-
-  }
-
-  /**
-   * Should retrieve app 1.
-   *
-   * @param vertx       that contains the event bus to use.
-   * @param testContext context over the tests.
-   */
-  @Test
-  public void shouldRetrieveUserFromFirstApp(final Vertx vertx, final VertxTestContext testContext) {
-
-    WeNetService.createProxy(vertx).retrieveJsonArrayAppUserIds("1", testContext.succeeding(users -> testContext.verify(() -> {
-
-      assertThat(users).isNotNull();
-      testContext.completeNow();
-
-    })));
 
   }
 

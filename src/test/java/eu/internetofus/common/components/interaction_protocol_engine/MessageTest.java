@@ -31,6 +31,7 @@ import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 
 import java.util.ArrayList;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -98,6 +99,17 @@ public class MessageTest extends ModelTestCase<Message> {
     profileManagerMocker = WeNetProfileManagerMocker.start();
     taskManagerMocker = WeNetTaskManagerMocker.start();
     serviceMocker = WeNetServiceMocker.start();
+  }
+
+  /**
+   * Stop the mocker server.
+   */
+  @AfterAll
+  public static void stopMockers() {
+
+    profileManagerMocker.stop();
+    taskManagerMocker.stop();
+    serviceMocker.stop();
   }
 
   /**

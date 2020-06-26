@@ -29,6 +29,7 @@ package eu.internetofus.common.components.incentive_server;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -83,6 +84,16 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
 
     profileManagerMocker = WeNetProfileManagerMocker.start();
     serviceMocker = WeNetServiceMocker.start();
+  }
+
+  /**
+   * Stop the mocker server.
+   */
+  @AfterAll
+  public static void stopMockers() {
+
+    profileManagerMocker.stop();
+    serviceMocker.stop();
   }
 
   /**
