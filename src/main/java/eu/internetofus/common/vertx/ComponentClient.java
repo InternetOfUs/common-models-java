@@ -44,7 +44,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceException;
@@ -92,17 +91,15 @@ public class ComponentClient {
     builder.append(this.componentURL);
     for (final Object path : paths) {
 
-      final String element = String.valueOf(path);
       if (builder.charAt(builder.length() - 1) != '/') {
 
-        if (element.charAt(0) != '/') {
+        builder.append('/');
+      }
 
-          builder.append('/');
-        }
+      String element = String.valueOf(path).trim();
+      if (element.charAt(0) == '/') {
 
-      } else if (element.charAt(0) != '/') {
-
-        element.substring(1);
+        element = element.substring(1);
       }
       builder.append(element);
 
@@ -134,69 +131,6 @@ public class ComponentClient {
     }
 
     actionHandler.handle(Future.failedFuture(cause));
-  }
-
-  /**
-   * Send a model as JSON by HTTP request.
-   *
-   * @param request       to the server.
-   * @param action        name of the HTTP action.
-   * @param url           to do the request.
-   * @param content       to send.
-   * @param resultHandler handler that manage the result.
-   *
-   * @param <T>           type of model to send.
-   */
-  protected <T extends Model> void sendModelAsJson(@NotNull final HttpRequest<Buffer> request, @NotNull final String action, @NotNull final String url, @NotNull final T content, @NotNull final Handler<AsyncResult<T>> resultHandler) {
-
-    final JsonObject body = content.toJsonObject();
-    request.sendJsonObject(body, send -> {
-
-      if (send.failed()) {
-
-        final Throwable cause = send.cause();
-        Logger.trace(cause, "FAILED {} {} to {}", action, content, url);
-        resultHandler.handle(Future.failedFuture(cause));
-
-      } else {
-
-        final HttpResponse<Buffer> response = send.result();
-        final int code = response.statusCode();
-        if (Status.Family.familyOf(code) == Status.Family.SUCCESSFUL) {
-
-          if (code == Status.NO_CONTENT.getStatusCode()) {
-
-            Logger.trace("SUCCESSFUL {} {} to {} responds without content.", () -> action, () -> content, () -> url);
-            resultHandler.handle(Future.succeededFuture());
-
-          } else {
-
-            @SuppressWarnings("unchecked")
-            final Class<T> type = (Class<T>) content.getClass();
-            final T result = Model.fromResponse(response, type);
-            if (result == null) {
-
-              Logger.trace("FAILED {} {} to {}, because the body {} is not of the type {}.", () -> action, () -> url, () -> result, () -> response.bodyAsString(), () -> type);
-              resultHandler.handle(Future.failedFuture(new ServiceException(400, "Bad JSON response", new ErrorMessage("decode_content_error", "The response content is not of the expected type.").toJsonObject())));
-
-            } else {
-
-              Logger.trace("SUCCESSFUL {} {} to {} responds {} with {}.", () -> action, () -> content, () -> url, () -> code, () -> result);
-              resultHandler.handle(Future.succeededFuture(result));
-
-            }
-          }
-
-        } else {
-
-          Logger.trace("FAILED {} {} to {}, because {} ({}).", () -> action, () -> content, () -> url, () -> response.bodyAsString(), () -> code);
-          this.notifyErrorTo(resultHandler, response);
-
-        }
-
-      }
-    });
-
   }
 
   /**
