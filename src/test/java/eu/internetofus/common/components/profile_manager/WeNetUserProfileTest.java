@@ -974,7 +974,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   }
 
   /**
-   * Check that not merge profiles with not defined planned activity id.
+   * Check that not merge profiles with a duplicated planned activity id.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -982,15 +982,16 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
    */
   @Test
-  public void shouldNotMergeWithNotDefinecPlannedActivityId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithDuplicatedPlannedActivityId(final Vertx vertx, final VertxTestContext testContext) {
 
     final WeNetUserProfile source = new WeNetUserProfile();
     source.plannedActivities = new ArrayList<>();
     source.plannedActivities.add(new PlannedActivity());
     source.plannedActivities.add(new PlannedActivity());
     source.plannedActivities.add(new PlannedActivity());
+    source.plannedActivities.get(0).id = "1";
     source.plannedActivities.get(1).id = "1";
-    assertCannotMerge(new WeNetUserProfile(), source, "plannedActivities[1].id", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "plannedActivities[1]", vertx, testContext);
 
   }
 
@@ -1074,7 +1075,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   }
 
   /**
-   * Check that not merge profiles with not defined relevant location id.
+   * Check that not merge profiles with a duplicated relevant location id.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -1082,15 +1083,16 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
    */
   @Test
-  public void shouldNotMergeWithNotDefinecRelevantLocationId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithDuplicatedRelevantLocationId(final Vertx vertx, final VertxTestContext testContext) {
 
     final WeNetUserProfile source = new WeNetUserProfile();
     source.relevantLocations = new ArrayList<>();
     source.relevantLocations.add(new RelevantLocation());
     source.relevantLocations.add(new RelevantLocation());
     source.relevantLocations.add(new RelevantLocation());
+    source.relevantLocations.get(0).id = "1";
     source.relevantLocations.get(1).id = "1";
-    assertCannotMerge(new WeNetUserProfile(), source, "relevantLocations[1].id", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "relevantLocations[1]", vertx, testContext);
 
   }
 
@@ -1264,15 +1266,16 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
    */
   @Test
-  public void shouldNotMergeWithNotDefinecSocialPracticeId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithDuplicatedSocialPracticeId(final Vertx vertx, final VertxTestContext testContext) {
 
     final WeNetUserProfile source = new WeNetUserProfile();
     source.socialPractices = new ArrayList<>();
     source.socialPractices.add(new SocialPractice());
     source.socialPractices.add(new SocialPractice());
     source.socialPractices.add(new SocialPractice());
+    source.socialPractices.get(0).id = "1";
     source.socialPractices.get(1).id = "1";
-    assertCannotMerge(new WeNetUserProfile(), source, "socialPractices[1].id", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "socialPractices[1]", vertx, testContext);
 
   }
 

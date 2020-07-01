@@ -52,188 +52,183 @@ import io.vertx.core.Vertx;
 @Schema(description = "An activity planned by an user.")
 public class PlannedActivity extends Model implements Validable, Mergeable<PlannedActivity> {
 
-	/**
-	 * The identifier of the activity.
-	 */
-	@Schema(description = "The identifier of the activity", example = "hfdsfs888")
+  /**
+   * The identifier of the activity.
+   */
+  @Schema(description = "The identifier of the activity", example = "hfdsfs888")
 
-	public String id;
+  public String id;
 
-	/**
-	 * The starting time of the activity.
-	 */
-	@Schema(description = "The starting time of the activity", example = "2017-07-21T17:32:00Z")
-	public String startTime;
+  /**
+   * The starting time of the activity.
+   */
+  @Schema(description = "The starting time of the activity", example = "2017-07-21T17:32:00Z")
+  public String startTime;
 
-	/**
-	 * The ending time of the activity.
-	 */
-	@Schema(description = "The ending time of the activity", example = "2019-07-21T17:32:23Z")
-	public String endTime;
+  /**
+   * The ending time of the activity.
+   */
+  @Schema(description = "The ending time of the activity", example = "2019-07-21T17:32:23Z")
+  public String endTime;
 
-	/**
-	 * The description of the activity.
-	 */
-	@Schema(description = "The description of the activity", example = "A few beers for relaxing")
-	public String description;
+  /**
+   * The description of the activity.
+   */
+  @Schema(description = "The description of the activity", example = "A few beers for relaxing")
+  public String description;
 
-	/**
-	 * The identifier of other WeNet user taking part to the activity.
-	 */
-	@ArraySchema(
-			schema = @Schema(implementation = String.class),
-			arraySchema = @Schema(
-					description = "The identifier of other wenet user taking part to the activity",
-					example = "[15d85f1d-b1ce-48de-b221-bec9ae954a88]"))
-	public List<String> attendees;
+  /**
+   * The identifier of other WeNet user taking part to the activity.
+   */
+  @ArraySchema(
+      schema = @Schema(implementation = String.class),
+      arraySchema = @Schema(
+          description = "The identifier of other wenet user taking part to the activity",
+          example = "[15d85f1d-b1ce-48de-b221-bec9ae954a88]"))
+  public List<String> attendees;
 
-	/**
-	 * The current status of the activity.
-	 */
-	@Schema(description = "The current status of the activity", example = "confirmed")
-	public PlannedActivityStatus status;
+  /**
+   * The current status of the activity.
+   */
+  @Schema(description = "The current status of the activity", example = "confirmed")
+  public PlannedActivityStatus status;
 
-	/**
-	 * Create an empty activity.
-	 */
-	public PlannedActivity() {
+  /**
+   * Create an empty activity.
+   */
+  public PlannedActivity() {
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-		final Promise<Void> promise = Promise.promise();
-		Future<Void> future = promise.future();
-		try {
+    final Promise<Void> promise = Promise.promise();
+    Future<Void> future = promise.future();
+    try {
 
-			this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
-			if (this.id != null) {
+      this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
+      if (this.id == null) {
 
-				return Future.failedFuture(new ValidationErrorException(codePrefix + ".id",
-						"You can not specify the identifier of the planned activity to create"));
+        this.id = UUID.randomUUID().toString();
+      }
+      this.startTime = Validations.validateNullableStringDateField(codePrefix, "startTime",
+          DateTimeFormatter.ISO_INSTANT, this.startTime);
+      this.endTime = Validations.validateNullableStringDateField(codePrefix, "endTime", DateTimeFormatter.ISO_INSTANT,
+          this.endTime);
+      this.description = Validations.validateNullableStringField(codePrefix, "description", 255, this.description);
+      if (this.attendees != null && !this.attendees.isEmpty()) {
 
-			} else {
+        for (final ListIterator<String> ids = this.attendees.listIterator(); ids.hasNext();) {
 
-				this.id = UUID.randomUUID().toString();
-			}
-			this.startTime = Validations.validateNullableStringDateField(codePrefix, "startTime",
-					DateTimeFormatter.ISO_INSTANT, this.startTime);
-			this.endTime = Validations.validateNullableStringDateField(codePrefix, "endTime", DateTimeFormatter.ISO_INSTANT,
-					this.endTime);
-			this.description = Validations.validateNullableStringField(codePrefix, "description", 255, this.description);
-			if (this.attendees != null && !this.attendees.isEmpty()) {
+          final int index = ids.nextIndex();
+          final String id = Validations.validateNullableStringField(codePrefix, "attendees[" + index + "]", 255,
+              ids.next());
+          ids.remove();
+          if (id != null) {
 
-				for (final ListIterator<String> ids = this.attendees.listIterator(); ids.hasNext();) {
+            ids.add(id);
+            for (int j = 0; j < index; j++) {
 
-					final int index = ids.nextIndex();
-					final String id = Validations.validateNullableStringField(codePrefix, "attendees[" + index + "]", 255,
-							ids.next());
-					ids.remove();
-					if (id != null) {
+              if (id.equals(this.attendees.get(j))) {
 
-						ids.add(id);
-						for (int j = 0; j < index; j++) {
+                return Future.failedFuture(new ValidationErrorException(codePrefix + ".attendees[" + index + "]",
+                    "Duplicated attendee. It is equals to the attendees[" + j + "]."));
 
-							if (id.equals(this.attendees.get(j))) {
+              }
+            }
 
-								return Future.failedFuture(new ValidationErrorException(codePrefix + ".attendees[" + index + "]",
-										"Duplicated attendee. It is equals to the attendees[" + j + "]."));
+            future = future.compose((Function<Void, Future<Void>>) map -> {
 
-							}
-						}
+              final Promise<Void> searchPromise = Promise.promise();
+              WeNetProfileManager.createProxy(vertx).retrieveProfile(id, search -> {
 
-						future = future.compose((Function<Void, Future<Void>>) map -> {
+                if (search.result() != null) {
 
-							final Promise<Void> searchPromise = Promise.promise();
-							WeNetProfileManager.createProxy(vertx).retrieveProfile(id, search -> {
+                  searchPromise.complete();
 
-								if (search.result() != null) {
+                } else {
 
-									searchPromise.complete();
+                  searchPromise.fail(new ValidationErrorException(codePrefix + ".attendees[" + index + "]",
+                      "Does not exist an user with the identifier '" + id + "'."));
+                }
 
-								} else {
+              });
 
-									searchPromise.fail(new ValidationErrorException(codePrefix + ".attendees[" + index + "]",
-											"Does not exist an user with the identifier '" + id + "'."));
-								}
+              return searchPromise.future();
+            });
+          }
 
-							});
+        }
 
-							return searchPromise.future();
-						});
-					}
+      }
+      promise.complete();
 
-				}
+    } catch (final ValidationErrorException validationError) {
 
-			}
-			promise.complete();
+      promise.fail(validationError);
+    }
 
-		} catch (final ValidationErrorException validationError) {
+    return future;
 
-			promise.fail(validationError);
-		}
+  }
 
-		return future;
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<PlannedActivity> merge(final PlannedActivity source, final String codePrefix, final Vertx vertx) {
 
-	}
+    final Promise<PlannedActivity> promise = Promise.promise();
+    Future<PlannedActivity> future = promise.future();
+    if (source != null) {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<PlannedActivity> merge(PlannedActivity source, String codePrefix, Vertx vertx) {
+      // merge the values
+      final PlannedActivity merged = new PlannedActivity();
+      merged.startTime = source.startTime;
+      if (merged.startTime == null) {
 
-		final Promise<PlannedActivity> promise = Promise.promise();
-		Future<PlannedActivity> future = promise.future();
-		if (source != null) {
+        merged.startTime = this.startTime;
+      }
+      merged.endTime = source.endTime;
+      if (merged.endTime == null) {
 
-			// merge the values
-			final PlannedActivity merged = new PlannedActivity();
-			merged.startTime = source.startTime;
-			if (merged.startTime == null) {
+        merged.endTime = this.endTime;
+      }
+      merged.description = source.description;
+      if (merged.description == null) {
 
-				merged.startTime = this.startTime;
-			}
-			merged.endTime = source.endTime;
-			if (merged.endTime == null) {
+        merged.description = this.description;
+      }
+      merged.attendees = source.attendees;
+      if (merged.attendees == null) {
 
-				merged.endTime = this.endTime;
-			}
-			merged.description = source.description;
-			if (merged.description == null) {
+        merged.attendees = this.attendees;
+      }
+      merged.status = source.status;
+      if (merged.status == null) {
 
-				merged.description = this.description;
-			}
-			merged.attendees = source.attendees;
-			if (merged.attendees == null) {
+        merged.status = this.status;
+      }
+      promise.complete(merged);
 
-				merged.attendees = this.attendees;
-			}
-			merged.status = source.status;
-			if (merged.status == null) {
+      // validate the merged value and set the i<d
+      future = future.compose(Merges.validateMerged(codePrefix, vertx)).map(mergedValidatedModel -> {
 
-				merged.status = this.status;
-			}
-			promise.complete(merged);
+        mergedValidatedModel.id = this.id;
+        return mergedValidatedModel;
+      });
 
-			// validate the merged value and set the i<d
-			future = future.compose(Merges.validateMerged(codePrefix, vertx)).map(mergedValidatedModel -> {
+    } else {
 
-				mergedValidatedModel.id = this.id;
-				return mergedValidatedModel;
-			});
+      promise.complete(this);
 
-		} else {
+    }
+    return future;
 
-			promise.complete(this);
-
-		}
-		return future;
-
-	}
+  }
 
 }

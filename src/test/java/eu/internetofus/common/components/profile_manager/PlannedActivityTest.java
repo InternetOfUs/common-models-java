@@ -233,7 +233,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   }
 
   /**
-   * Check that the model with id is not valid.
+   * Check that the model with id is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -241,11 +241,11 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @see PlannedActivity#validate(String,Vertx)
    */
   @Test
-  public void shouldNotBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
 
     final PlannedActivity model = new PlannedActivity();
     model.id = "has_id";
-    assertIsNotValid(model, "id", vertx, testContext);
+    assertIsValid(model,  vertx, testContext);
 
   }
 

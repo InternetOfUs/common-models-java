@@ -49,75 +49,70 @@ import io.vertx.core.Vertx;
 @JsonDeserialize(using = CompetenceDeserialize.class)
 public class Competence extends Model implements Validable, Mergeable<Competence> {
 
-	/**
-	 * The identifier of the competence.
-	 */
-	@Schema(description = "The identifier of the competence", example = "aisufh9sdokjnd")
-	public String id;
+  /**
+   * The identifier of the competence.
+   */
+  @Schema(description = "The identifier of the competence", example = "aisufh9sdokjnd")
+  public String id;
 
-	/**
-	 * Create a new empty competence.
-	 */
-	public Competence() {
+  /**
+   * Create a new empty competence.
+   */
+  public Competence() {
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-		final Promise<Void> promise = Promise.promise();
-		try {
+    final Promise<Void> promise = Promise.promise();
+    try {
 
-			this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
-			if (this.id != null) {
+      this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
+      if (this.id == null) {
 
-				promise.fail(new ValidationErrorException(codePrefix + ".id",
-						"You can not specify the identifier of the competence to create"));
+        this.id = UUID.randomUUID().toString();
+      }
+      promise.complete();
 
-			} else {
+    } catch (final ValidationErrorException validationCause) {
 
-				this.id = UUID.randomUUID().toString();
-				promise.complete();
-			}
+      promise.fail(validationCause);
+    }
 
-		} catch (final ValidationErrorException validationCause) {
+    return promise.future();
+  }
 
-			promise.fail(validationCause);
-		}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Competence> merge(final Competence source, final String codePrefix, final Vertx vertx) {
 
-		return promise.future();
-	}
+    if (this instanceof DrivingLicense && source instanceof DrivingLicense) {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Competence> merge(Competence source, String codePrefix, Vertx vertx) {
+      return ((DrivingLicense) this).mergeDrivingLicense((DrivingLicense) source, codePrefix, vertx).map(license -> {
 
-		if (this instanceof DrivingLicense && source instanceof DrivingLicense) {
+        license.id = this.id;
+        return (Competence) license;
 
-			return ((DrivingLicense) this).mergeDrivingLicense((DrivingLicense) source, codePrefix, vertx).map(license -> {
+      });
 
-				license.id = this.id;
-				return (Competence) license;
+    } else if (source == null) {
 
-			});
+      return Future.succeededFuture(this);
 
-		} else if (source == null) {
+    } else {
 
-			return Future.succeededFuture(this);
+      return source.validate(codePrefix, vertx).map(validation -> {
+        source.id = this.id;
+        return source;
+      });
 
-		} else {
-
-			return source.validate(codePrefix, vertx).map(validation -> {
-				source.id = this.id;
-				return source;
-			});
-
-		}
-	}
+    }
+  }
 
 }

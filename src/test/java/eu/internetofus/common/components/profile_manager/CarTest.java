@@ -92,7 +92,7 @@ public class CarTest extends MaterialTestCase<Car> {
   }
 
   /**
-   * Check that the model with id is not valid.
+   * Check that the model with id is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -100,11 +100,11 @@ public class CarTest extends MaterialTestCase<Car> {
    * @see Car#validate(String, io.vertx.core.Vertx)
    */
   @Test
-  public void shouldNotBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
 
     final Car model = new Car();
     model.id = "has_id";
-    assertIsNotValid(model, "id", vertx, testContext);
+    assertIsValid(model,  vertx, testContext);
 
   }
 

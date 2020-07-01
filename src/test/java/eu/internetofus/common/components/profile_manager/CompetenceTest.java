@@ -28,6 +28,7 @@ package eu.internetofus.common.components.profile_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
+import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -48,121 +49,121 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(VertxExtension.class)
 public class CompetenceTest {
 
-	/**
-	 * Check that the mode is not valid with an identifier.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Competence#merge(Competence, String, Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidWithIdentifier(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the mode is valid with an identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Competence#merge(Competence, String, Vertx)
+   */
+  @Test
+  public void shouldBeValidWithIdentifier(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Competence model = new Competence();
-		model.id = "Target_Id";
-		assertIsNotValid(model, "id", vertx, testContext);
-	}
+    final Competence model = new Competence();
+    model.id = "Target_Id";
+    assertIsValid(model, vertx, testContext);
+  }
 
-	/**
-	 * Check that the mode is not valid with a large identifier.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Competence#merge(Competence, String, Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidWithLargeIdentifier(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the mode is not valid with a large identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Competence#merge(Competence, String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithLargeIdentifier(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Competence model = new Competence();
-		model.id = ValidationsTest.STRING_256;
-		assertIsNotValid(model, "id", vertx, testContext);
-	}
+    final Competence model = new Competence();
+    model.id = ValidationsTest.STRING_256;
+    assertIsNotValid(model, "id", vertx, testContext);
+  }
 
-	/**
-	 * Check that merge two models.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Competence#merge(Competence, String, Vertx)
-	 */
-	@Test
-	public void shouldMerge(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge two models.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Competence#merge(Competence, String, Vertx)
+   */
+  @Test
+  public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Competence target = new DrivingLicenseTest().createModelExample(1);
-		target.id = "1";
-		final Competence source = new DrivingLicenseTest().createModelExample(2);
-		assertCanMerge(target, source, vertx, testContext, merged -> {
+    final Competence target = new DrivingLicenseTest().createModelExample(1);
+    target.id = "1";
+    final Competence source = new DrivingLicenseTest().createModelExample(2);
+    assertCanMerge(target, source, vertx, testContext, merged -> {
 
-			assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-			source.id = "1";
-			assertThat(merged).isEqualTo(source);
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = "1";
+      assertThat(merged).isEqualTo(source);
 
-		});
+    });
 
-	}
+  }
 
-	/**
-	 * Check that merge with {@code null} source.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Competence#merge(Competence, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeWithNull(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge with {@code null} source.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Competence#merge(Competence, String, Vertx)
+   */
+  @Test
+  public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Competence target = new Competence();
-		assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    final Competence target = new Competence();
+    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
-	}
+  }
 
-	/**
-	 * Check that merge with two different classes.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Competence#merge(Competence, String, Vertx)
-	 */
-	@Test
-	public void shouldNotMergeWithDiferentClasses(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge with two different classes.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Competence#merge(Competence, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeWithDiferentClasses(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Competence target = new Competence();
-		target.id = "Target_Id";
-		final Competence source = new DrivingLicense();
-		assertCanMerge(target, source, vertx, testContext, merged -> {
+    final Competence target = new Competence();
+    target.id = "Target_Id";
+    final Competence source = new DrivingLicense();
+    assertCanMerge(target, source, vertx, testContext, merged -> {
 
-			assertThat(merged).isSameAs(source);
-			assertThat(merged.id).isEqualTo(target.id);
+      assertThat(merged).isSameAs(source);
+      assertThat(merged.id).isEqualTo(target.id);
 
-		});
+    });
 
-	}
+  }
 
-	/**
-	 * Check that merge two competences.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Competence#merge(Competence, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeTwoCompetences(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge two competences.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Competence#merge(Competence, String, Vertx)
+   */
+  @Test
+  public void shouldMergeTwoCompetences(final Vertx vertx, final VertxTestContext testContext) {
 
-		final Competence target = new Competence();
-		final Competence source = new Competence();
-		assertCanMerge(target, source, vertx, testContext, merged -> {
+    final Competence target = new Competence();
+    final Competence source = new Competence();
+    assertCanMerge(target, source, vertx, testContext, merged -> {
 
-			assertThat(merged).isSameAs(source);
-			assertThat(merged.id).isEqualTo(target.id);
+      assertThat(merged).isSameAs(source);
+      assertThat(merged.id).isEqualTo(target.id);
 
-		});
+    });
 
-	}
+  }
 
 }

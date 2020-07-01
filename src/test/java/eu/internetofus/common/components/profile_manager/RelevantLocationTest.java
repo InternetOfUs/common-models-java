@@ -111,7 +111,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   }
 
   /**
-   * Check that the model with id is not valid.
+   * Check that the model with id is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -119,11 +119,11 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @see RelevantLocation#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
 
     final RelevantLocation model = new RelevantLocation();
     model.id = "has_id";
-    assertIsNotValid(model, "id", vertx, testContext);
+    assertIsValid(model, vertx, testContext);
 
   }
 

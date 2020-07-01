@@ -48,129 +48,119 @@ import io.vertx.core.Vertx;
 @Schema(description = "A social practice of an user.")
 public class SocialPractice extends Model implements Validable, Mergeable<SocialPractice> {
 
-	/**
-	 * The identifier of the social practice.
-	 */
-	@Schema(description = "The identifier of the social practice", example = "f9dofgljdksdf")
-	public String id;
+  /**
+   * The identifier of the social practice.
+   */
+  @Schema(description = "The identifier of the social practice", example = "f9dofgljdksdf")
+  public String id;
 
-	/**
-	 * The descriptor of the social practice.
-	 */
-	@Schema(description = "The descriptor of the social practice", example = "commuter")
-	public String label;
+  /**
+   * The descriptor of the social practice.
+   */
+  @Schema(description = "The descriptor of the social practice", example = "commuter")
+  public String label;
 
-	/**
-	 * The materials necessaries for the social practice.
-	 */
-	@Schema(description = "The materials necessaries for the social practice", anyOf = { Car.class })
-	public Material materials;
+  /**
+   * The materials necessaries for the social practice.
+   */
+  @Schema(description = "The materials necessaries for the social practice", anyOf = { Car.class })
+  public Material materials;
 
-	/**
-	 * The competences necessaries for the social practice.
-	 */
-	@Schema(description = "The competences necessaries for the social practice", anyOf = { DrivingLicense.class })
-	public Competence competences;
+  /**
+   * The competences necessaries for the social practice.
+   */
+  @Schema(description = "The competences necessaries for the social practice", anyOf = { DrivingLicense.class })
+  public Competence competences;
 
-	/**
-	 * The norms of the social practice.
-	 */
-	@ArraySchema(
-			schema = @Schema(implementation = Norm.class),
-			arraySchema = @Schema(description = "The norms of the social practice"))
-	public List<Norm> norms;
+  /**
+   * The norms of the social practice.
+   */
+  @ArraySchema(schema = @Schema(implementation = Norm.class), arraySchema = @Schema(description = "The norms of the social practice"))
+  public List<Norm> norms;
 
-	/**
-	 * Create an empty practice.
-	 */
-	public SocialPractice() {
+  /**
+   * Create an empty practice.
+   */
+  public SocialPractice() {
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-		try {
+    try {
 
-			this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
-			if (this.id != null) {
+      this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
+      if (this.id == null) {
 
-				return Future.failedFuture(new ValidationErrorException(codePrefix + ".id",
-						"You can not specify the identifier of the social practice to create"));
+        this.id = UUID.randomUUID().toString();
+      }
 
-			} else {
+      this.label = Validations.validateNullableStringField(codePrefix, "label", 255, this.label);
 
-				this.id = UUID.randomUUID().toString();
+      Future<Void> future = Future.succeededFuture();
+      if (this.competences != null) {
 
-				this.label = Validations.validateNullableStringField(codePrefix, "label", 255, this.label);
+        future = future.compose(mapper -> this.competences.validate(codePrefix + ".competences", vertx));
 
-				Future<Void> future = Future.succeededFuture();
-				if (this.competences != null) {
+      }
 
-					future = future.compose(mapper -> this.competences.validate(codePrefix + ".competences", vertx));
+      if (this.materials != null) {
 
-				}
+        future = future.compose(mapper -> this.materials.validate(codePrefix + ".materials", vertx));
+      }
 
-				if (this.materials != null) {
+      future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
 
-					future = future.compose(mapper -> this.materials.validate(codePrefix + ".materials", vertx));
-				}
+      return future;
 
-				future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+    } catch (final ValidationErrorException validationError) {
 
-				return future;
-			}
+      return Future.failedFuture(validationError);
+    }
 
-		} catch (final ValidationErrorException validationError) {
+  }
 
-			return Future.failedFuture(validationError);
-		}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<SocialPractice> merge(final SocialPractice source, final String codePrefix, final Vertx vertx) {
 
-	}
+    if (source != null) {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<SocialPractice> merge(SocialPractice source, String codePrefix, Vertx vertx) {
+      final SocialPractice merged = new SocialPractice();
+      merged.label = source.label;
+      if (merged.label == null) {
 
-		if (source != null) {
+        merged.label = this.label;
+      }
 
-			final SocialPractice merged = new SocialPractice();
-			merged.label = source.label;
-			if (merged.label == null) {
+      Future<SocialPractice> future = merged.validate(codePrefix, vertx).map(empty -> merged);
 
-				merged.label = this.label;
-			}
+      future = future.compose(Merges.mergeField(this.competences, source.competences, codePrefix + ".competences", vertx, (model, mergedCompetences) -> model.competences = mergedCompetences));
+      future = future.compose(Merges.mergeField(this.materials, source.materials, codePrefix + ".materials", vertx, (model, mergedMaterials) -> model.materials = mergedMaterials));
 
-			Future<SocialPractice> future = merged.validate(codePrefix, vertx).map(empty -> merged);
+      future = future.compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
+        model.norms = mergedNorms;
+      }));
+      // When merged set the fixed field values
+      future = future.map(mergedValidatedModel -> {
 
-			future = future.compose(Merges.mergeField(this.competences, source.competences, codePrefix + ".competences",
-					vertx, (model, mergedCompetences) -> model.competences = mergedCompetences));
-			future = future.compose(Merges.mergeField(this.materials, source.materials, codePrefix + ".materials", vertx,
-					(model, mergedMaterials) -> model.materials = mergedMaterials));
+        mergedValidatedModel.id = this.id;
+        return mergedValidatedModel;
+      });
 
-			future = future
-					.compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
-						model.norms = mergedNorms;
-					}));
-			// When merged set the fixed field values
-			future = future.map(mergedValidatedModel -> {
+      return future;
 
-				mergedValidatedModel.id = this.id;
-				return mergedValidatedModel;
-			});
+    } else {
 
-			return future;
+      return Future.succeededFuture(this);
+    }
 
-		} else {
-
-			return Future.succeededFuture(this);
-		}
-
-	}
+  }
 
 }

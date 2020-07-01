@@ -49,75 +49,70 @@ import io.vertx.core.Vertx;
 @JsonDeserialize(using = MaterialDeserialize.class)
 public class Material extends Model implements Validable, Mergeable<Material> {
 
-	/**
-	 * The identifier of the material.
-	 */
-	@Schema(description = "The identifier of the material", example = "aisufh9sdokjnd")
-	public String id;
+  /**
+   * The identifier of the material.
+   */
+  @Schema(description = "The identifier of the material", example = "aisufh9sdokjnd")
+  public String id;
 
-	/**
-	 * Create a new empty material.
-	 */
-	public Material() {
+  /**
+   * Create a new empty material.
+   */
+  public Material() {
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-		final Promise<Void> promise = Promise.promise();
-		try {
+    final Promise<Void> promise = Promise.promise();
+    try {
 
-			this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
-			if (this.id != null) {
+      this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
+      if (this.id == null) {
 
-				promise.fail(new ValidationErrorException(codePrefix + ".id",
-						"You can not specify the identifier of the material to create"));
+        this.id = UUID.randomUUID().toString();
+      }
+      promise.complete();
 
-			} else {
+    } catch (final ValidationErrorException validationError) {
 
-				this.id = UUID.randomUUID().toString();
-				promise.complete();
-			}
+      promise.fail(validationError);
+    }
+    return promise.future();
 
-		} catch (final ValidationErrorException validationError) {
+  }
 
-			promise.fail(validationError);
-		}
-		return promise.future();
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Material> merge(final Material source, final String codePrefix, final Vertx vertx) {
 
-	}
+    if (this instanceof Car && source instanceof Car) {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Material> merge(Material source, String codePrefix, Vertx vertx) {
+      return ((Car) this).mergeCar((Car) source, codePrefix, vertx).map(car -> {
 
-		if (this instanceof Car && source instanceof Car) {
+        car.id = this.id;
+        return (Material) car;
 
-			return ((Car) this).mergeCar((Car) source, codePrefix, vertx).map(car -> {
+      });
 
-				car.id = this.id;
-				return (Material) car;
+    } else if (source == null) {
 
-			});
+      return Future.succeededFuture(this);
 
-		} else if (source == null) {
+    } else {
 
-			return Future.succeededFuture(this);
+      return source.validate(codePrefix, vertx).map(validation -> {
+        source.id = this.id;
+        return source;
+      });
 
-		} else {
-
-			return source.validate(codePrefix, vertx).map(validation -> {
-				source.id = this.id;
-				return source;
-			});
-
-		}
-	}
+    }
+  }
 
 }

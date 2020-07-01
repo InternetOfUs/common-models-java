@@ -50,199 +50,199 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(VertxExtension.class)
 public class DrivingLicenseTest extends CompetenceTestCase<DrivingLicense> {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public DrivingLicense createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public DrivingLicense createModelExample(final int index) {
 
-		final DrivingLicense drivinglicense = new DrivingLicense();
-		drivinglicense.id = null;
-		drivinglicense.drivingLicenseId = "driving_license_id_" + index;
-		return drivinglicense;
-	}
+    final DrivingLicense drivinglicense = new DrivingLicense();
+    drivinglicense.id = null;
+    drivinglicense.drivingLicenseId = "driving_license_id_" + index;
+    return drivinglicense;
+  }
 
-	/**
-	 * Check that a model with all the values is valid.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see DrivingLicense#validate(String, io.vertx.core.Vertx)
-	 */
-	@Test
-	public void shouldFullModelBeValid(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that a model with all the values is valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see DrivingLicense#validate(String, io.vertx.core.Vertx)
+   */
+  @Test
+  public void shouldFullModelBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-		final DrivingLicense model = new DrivingLicense();
-		model.id = "      ";
-		model.drivingLicenseId = "    driving license id    ";
+    final DrivingLicense model = new DrivingLicense();
+    model.id = "      ";
+    model.drivingLicenseId = "    driving license id    ";
 
-		assertIsValid(model, vertx, testContext, () -> {
+    assertIsValid(model, vertx, testContext, () -> {
 
-			final DrivingLicense expected = new DrivingLicense();
-			expected.id = model.id;
-			expected.drivingLicenseId = "driving license id";
-			assertThat(model).isEqualTo(expected);
+      final DrivingLicense expected = new DrivingLicense();
+      expected.id = model.id;
+      expected.drivingLicenseId = "driving license id";
+      assertThat(model).isEqualTo(expected);
 
-		});
+    });
 
-	}
+  }
 
-	/**
-	 * Check that the model with id is not valid.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see DrivingLicense#validate(String, io.vertx.core.Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidWithAnId(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that the model with id is valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see DrivingLicense#validate(String, io.vertx.core.Vertx)
+   */
+  @Test
+  public void shouldBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
 
-		final DrivingLicense model = new DrivingLicense();
-		model.id = "has_id";
-		assertIsNotValid(model, "id", vertx, testContext);
+    final DrivingLicense model = new DrivingLicense();
+    model.id = "has_id";
+    assertIsValid(model,  vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that not accept driving licenses with bad driving license id.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see DrivingLicense#validate(String, io.vertx.core.Vertx)
-	 */
-	@Test
-	public void shouldNotBeValidWithABadDrivingLicenseId(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that not accept driving licenses with bad driving license id.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see DrivingLicense#validate(String, io.vertx.core.Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithABadDrivingLicenseId(final Vertx vertx, final VertxTestContext testContext) {
 
-		final DrivingLicense model = new DrivingLicense();
-		model.drivingLicenseId = ValidationsTest.STRING_256;
-		assertIsNotValid(model, "drivingLicenseId", vertx, testContext);
+    final DrivingLicense model = new DrivingLicense();
+    model.drivingLicenseId = ValidationsTest.STRING_256;
+    assertIsNotValid(model, "drivingLicenseId", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that not merge with bad driving license id.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see DrivingLicense#merge(Competence, String, Vertx)
-	 */
-	@Test
-	public void shouldNotMergeWithABadDrivingLicenseId(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that not merge with bad driving license id.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see DrivingLicense#merge(Competence, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeWithABadDrivingLicenseId(final Vertx vertx, final VertxTestContext testContext) {
 
-		final DrivingLicense target = this.createModelExample(1);
-		final DrivingLicense source = new DrivingLicense();
-		source.drivingLicenseId = ValidationsTest.STRING_256;
-		assertCannotMerge(target, source, "drivingLicenseId", vertx, testContext);
+    final DrivingLicense target = this.createModelExample(1);
+    final DrivingLicense source = new DrivingLicense();
+    source.drivingLicenseId = ValidationsTest.STRING_256;
+    assertCannotMerge(target, source, "drivingLicenseId", vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Check that merge two models.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see DrivingLicense#merge(Competence, String, Vertx)
-	 */
-	@Test
-	public void shouldMerge(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge two models.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see DrivingLicense#merge(Competence, String, Vertx)
+   */
+  @Test
+  public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-		final DrivingLicense target = this.createModelExample(1);
-		target.id = "1";
-		final DrivingLicense source = this.createModelExample(2);
-		assertCanMerge(target, source, vertx, testContext, merged -> {
+    final DrivingLicense target = this.createModelExample(1);
+    target.id = "1";
+    final DrivingLicense source = this.createModelExample(2);
+    assertCanMerge(target, source, vertx, testContext, merged -> {
 
-			assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-			source.id = "1";
-			assertThat(merged).isEqualTo(source);
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = "1";
+      assertThat(merged).isEqualTo(source);
 
-		});
+    });
 
-	}
+  }
 
-	/**
-	 * Check that merge with {@code null} source.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see DrivingLicense#merge(Competence, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeWithNull(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge with {@code null} source.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see DrivingLicense#merge(Competence, String, Vertx)
+   */
+  @Test
+  public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-		final DrivingLicense target = this.createModelExample(1);
-		assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    final DrivingLicense target = this.createModelExample(1);
+    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
-	}
+  }
 
-	/**
-	 * Check that merge with {@code null} source.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see Car#merge(Material, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeCarWithNull(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge with {@code null} source.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Car#merge(Material, String, Vertx)
+   */
+  @Test
+  public void shouldMergeCarWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-		final DrivingLicense target = this.createModelExample(1);
-		target.mergeDrivingLicense(null, "codePrefix", vertx)
-				.onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
+    final DrivingLicense target = this.createModelExample(1);
+    target.mergeDrivingLicense(null, "codePrefix", vertx)
+    .onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
 
-					assertThat(merged).isSameAs(target);
-					testContext.completeNow();
+      assertThat(merged).isSameAs(target);
+      testContext.completeNow();
 
-				})));
+    })));
 
-	}
+  }
 
-	/**
-	 * Check that merge only driving license id.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see DrivingLicense#merge(Competence, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeOnlyDrivingLicenseId(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge only driving license id.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see DrivingLicense#merge(Competence, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyDrivingLicenseId(final Vertx vertx, final VertxTestContext testContext) {
 
-		final DrivingLicense target = this.createModelExample(1);
-		target.id = "1";
-		final DrivingLicense source = new DrivingLicense();
-		source.drivingLicenseId = "NEW DRIVINGLICENSE TYPE";
-		assertCanMerge(target, source, vertx, testContext, merged -> {
+    final DrivingLicense target = this.createModelExample(1);
+    target.id = "1";
+    final DrivingLicense source = new DrivingLicense();
+    source.drivingLicenseId = "NEW DRIVINGLICENSE TYPE";
+    assertCanMerge(target, source, vertx, testContext, merged -> {
 
-			assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-			target.drivingLicenseId = "NEW DRIVINGLICENSE TYPE";
-			assertThat(merged).isEqualTo(target);
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      target.drivingLicenseId = "NEW DRIVINGLICENSE TYPE";
+      assertThat(merged).isEqualTo(target);
 
-		});
-	}
+    });
+  }
 
-	/**
-	 * Check that merge only id.
-	 *
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 *
-	 * @see DrivingLicense#merge(Competence, String, Vertx)
-	 */
-	@Test
-	public void shouldMergeOnlyId(Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Check that merge only id.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see DrivingLicense#merge(Competence, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyId(final Vertx vertx, final VertxTestContext testContext) {
 
-		final DrivingLicense target = this.createModelExample(1);
-		target.id = "1";
-		final DrivingLicense source = new DrivingLicense();
-		assertCanMerge(target, source, vertx, testContext,
-				merged -> assertThat(merged).isEqualTo(target).isNotSameAs(target).isNotEqualTo(source));
+    final DrivingLicense target = this.createModelExample(1);
+    target.id = "1";
+    final DrivingLicense source = new DrivingLicense();
+    assertCanMerge(target, source, vertx, testContext,
+        merged -> assertThat(merged).isEqualTo(target).isNotSameAs(target).isNotEqualTo(source));
 
-	}
+  }
 
 }

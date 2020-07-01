@@ -112,7 +112,6 @@ public class TaskTest extends ModelTestCase<Task> {
     serviceMocker.stop();
   }
 
-
   /**
    * Register the necessary services before to test.
    *
@@ -1188,4 +1187,43 @@ public class TaskTest extends ModelTestCase<Task> {
 
   }
 
+  /**
+   * Check that can not be valid without a goal.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithoutGoal(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+      model.goal = null;
+      assertIsNotValid(model, "goal", vertx, testContext);
+
+    }));
+
+  }
+
+  /**
+   * Check that can not be valid with a too soon close time stamp.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithATooSoonCloseTimeStampn(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+      model.closeTs = model._creationTs - 1;
+      assertIsNotValid(model, "closeTs", vertx, testContext);
+
+    }));
+
+  }
 }
