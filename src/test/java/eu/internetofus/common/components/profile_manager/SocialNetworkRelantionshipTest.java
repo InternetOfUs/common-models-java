@@ -26,6 +26,8 @@
 
 package eu.internetofus.common.components.profile_manager;
 
+import static eu.internetofus.common.components.MergesTest.assertCanMerge;
+import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -276,5 +278,145 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
     }));
 
   }
+
+  /**
+   * Check that merge only the user identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      this.createNewEmptyProfile(vertx, testContext.succeeding(profile -> {
+        final SocialNetworkRelationship source = new SocialNetworkRelationship();
+        source.userId = profile.id;
+        assertCanMerge(target, source, vertx, testContext, merged -> {
+
+          assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
+          target.userId = profile.id;
+          assertThat(merged).isEqualTo(target);
+
+        });
+      }));
+    }));
+  }
+
+  /**
+   * Check that not merge undefined user identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldMergeUndefinedUserId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final SocialNetworkRelationship source = new SocialNetworkRelationship();
+      source.userId = "undefinedUserId";
+      assertCannotMerge(target, source, "userId", vertx, testContext);
+    }));
+  }
+
+  /**
+   * Check that merge only the type.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyType(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final SocialNetworkRelationship source = new SocialNetworkRelationship();
+      source.type = SocialNetworkRelationshipType.follower;
+      assertCanMerge(target, source, vertx, testContext, merged -> {
+
+        assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
+        target.type = SocialNetworkRelationshipType.follower;
+        assertThat(merged).isEqualTo(target);
+
+      });
+    }));
+  }
+
+  /**
+   * Check that merge only the weight.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldMergeOnlyWeight(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final SocialNetworkRelationship source = new SocialNetworkRelationship();
+      double weight = 0;
+      do {
+
+        weight = Math.random();
+
+      } while (weight == target.weight);
+      source.weight = weight;
+      assertCanMerge(target, source, vertx, testContext, merged -> {
+
+        assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
+        target.weight = source.weight;
+        assertThat(merged).isEqualTo(target);
+
+      });
+    }));
+  }
+
+  /**
+   * Check can not merge without a bad weight.
+   *
+   * @param weight      that is not valid.
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see SocialNetworkRelationship#validate(String, Vertx)
+   */
+  @ParameterizedTest(name = "Should not merge a social network relationship with a weight {0} ")
+  @ValueSource(doubles = { -0.00001d, 1.000001d, -23d, +23d })
+  public void shouldNotMergeWithBadWeight(final double weight, final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final SocialNetworkRelationship source = new SocialNetworkRelationship();
+      source.weight = weight;
+      assertCannotMerge(target, source, "weight", vertx, testContext);
+
+    }));
+  }
+
+  /**
+   * Check that merge two examples.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldMergeTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> this.createModelExample(2, vertx, testContext,
+        testContext.succeeding(source -> assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))))));
+  }
+
 
 }

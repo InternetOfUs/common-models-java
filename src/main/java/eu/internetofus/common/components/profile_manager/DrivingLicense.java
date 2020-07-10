@@ -46,82 +46,82 @@ import io.vertx.core.Vertx;
 @JsonDeserialize(using = JsonDeserializer.None.class)
 public class DrivingLicense extends Competence {
 
-	/**
-	 * The identifier of the driving license.
-	 */
-	@Schema(description = "The driving license if", example = "ESdfg09dofgk")
-	public String drivingLicenseId;
+  /**
+   * The identifier of the driving license.
+   */
+  @Schema(description = "The driving license if", example = "ESdfg09dofgk")
+  public String drivingLicenseId;
 
-	/**
-	 * Create an empty driving license.
-	 */
-	public DrivingLicense() {
+  /**
+   * Create an empty driving license.
+   */
+  public DrivingLicense() {
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-		return super.validate(codePrefix, vertx).compose(map -> {
-			final Promise<Void> promise = Promise.promise();
-			try {
+    return super.validate(codePrefix, vertx).compose(map -> {
+      final Promise<Void> promise = Promise.promise();
+      try {
 
-				this.drivingLicenseId = Validations.validateNullableStringField(codePrefix, "drivingLicenseId", 255,
-						this.drivingLicenseId);
-				promise.complete();
+        this.drivingLicenseId = Validations.validateNullableStringField(codePrefix, "drivingLicenseId", 255,
+            this.drivingLicenseId);
+        promise.complete();
 
-			} catch (final ValidationErrorException validationError) {
+      } catch (final ValidationErrorException validationError) {
 
-				promise.fail(validationError);
-			}
+        promise.fail(validationError);
+      }
 
-			return promise.future();
-		});
+      return promise.future();
+    });
 
-	}
+  }
 
-	/**
-	 * Merge the current driving license with a new one, and verify the result is
-	 * valid.
-	 *
-	 * @param source     driving license to merge with the current one.
-	 * @param codePrefix the prefix of the code to use for the error message.
-	 * @param vertx      the event bus infrastructure to use.
-	 *
-	 * @return the future that provide the merged model that has to be valid. If it
-	 *         can not merge or the merged value is not valid the cause will be a
-	 *         {@link ValidationErrorException}.
-	 *
-	 * @see ValidationErrorException
-	 */
-	public Future<DrivingLicense> mergeDrivingLicense(DrivingLicense source, String codePrefix, Vertx vertx) {
+  /**
+   * Merge the current driving license with a new one, and verify the result is
+   * valid.
+   *
+   * @param source     driving license to merge with the current one.
+   * @param codePrefix the prefix of the code to use for the error message.
+   * @param vertx      the event bus infrastructure to use.
+   *
+   * @return the future that provide the merged model that has to be valid. If it
+   *         cannot merge or the merged value is not valid the cause will be a
+   *         {@link ValidationErrorException}.
+   *
+   * @see ValidationErrorException
+   */
+  public Future<DrivingLicense> mergeDrivingLicense(final DrivingLicense source, final String codePrefix, final Vertx vertx) {
 
-		final Promise<DrivingLicense> promise = Promise.promise();
-		Future<DrivingLicense> future = promise.future();
-		if (source != null) {
+    final Promise<DrivingLicense> promise = Promise.promise();
+    Future<DrivingLicense> future = promise.future();
+    if (source != null) {
 
-			final DrivingLicense merged = new DrivingLicense();
-			merged.drivingLicenseId = source.drivingLicenseId;
-			if (merged.drivingLicenseId == null) {
+      final DrivingLicense merged = new DrivingLicense();
+      merged.drivingLicenseId = source.drivingLicenseId;
+      if (merged.drivingLicenseId == null) {
 
-				merged.drivingLicenseId = this.drivingLicenseId;
-			}
-			promise.complete(merged);
+        merged.drivingLicenseId = this.drivingLicenseId;
+      }
+      promise.complete(merged);
 
-			// validate the merged value and set the id
-			future = future.compose(Merges.validateMerged(codePrefix, vertx)).map(mergedValidatedModel -> {
+      // validate the merged value and set the id
+      future = future.compose(Merges.validateMerged(codePrefix, vertx)).map(mergedValidatedModel -> {
 
-				mergedValidatedModel.id = this.id;
-				return mergedValidatedModel;
-			});
+        mergedValidatedModel.id = this.id;
+        return mergedValidatedModel;
+      });
 
-		} else {
+    } else {
 
-			promise.complete(this);
-		}
-		return future;
-	}
+      promise.complete(this);
+    }
+    return future;
+  }
 }

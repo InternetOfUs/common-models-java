@@ -26,6 +26,8 @@
 
 package eu.internetofus.common.components.profile_manager;
 
+import eu.internetofus.common.components.Mergeable;
+import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
@@ -41,7 +43,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "A social relationship with another WeNet user.")
-public class SocialNetworkRelationship extends Model implements Validable {
+public class SocialNetworkRelationship extends Model implements Validable, Mergeable<SocialNetworkRelationship> {
 
   /**
    * The identifier of the WeNet user the relationship is related to.
@@ -131,6 +133,49 @@ public class SocialNetworkRelationship extends Model implements Validable {
       promise.fail(validationError);
     }
 
+    return future;
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<SocialNetworkRelationship> merge(final SocialNetworkRelationship source, final String codePrefix, final Vertx vertx) {
+
+    final Promise<SocialNetworkRelationship> promise = Promise.promise();
+    Future<SocialNetworkRelationship> future = promise.future();
+    if (source != null) {
+
+      final SocialNetworkRelationship merged = new SocialNetworkRelationship();
+      merged.userId = source.userId;
+      if (merged.userId == null) {
+
+        merged.userId = this.userId;
+      }
+
+      merged.type = source.type;
+      if (merged.type == null) {
+
+        merged.type = this.type;
+      }
+
+      merged.weight = source.weight;
+      if (merged.weight == null) {
+
+        merged.weight = this.weight;
+      }
+
+      promise.complete(merged);
+
+      // validate the merged value and set the id
+      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+
+    } else {
+
+      promise.complete(this);
+
+    }
     return future;
 
   }

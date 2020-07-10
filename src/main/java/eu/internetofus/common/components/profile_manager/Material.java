@@ -92,7 +92,11 @@ public class Material extends Model implements Validable, Mergeable<Material> {
   @Override
   public Future<Material> merge(final Material source, final String codePrefix, final Vertx vertx) {
 
-    if (this instanceof Car && source instanceof Car) {
+    if (source == null) {
+
+      return Future.succeededFuture(this);
+
+    } else if ((source.id == null || this.id.equals(source.id)) && this instanceof Car && source instanceof Car) {
 
       return ((Car) this).mergeCar((Car) source, codePrefix, vertx).map(car -> {
 
@@ -100,10 +104,6 @@ public class Material extends Model implements Validable, Mergeable<Material> {
         return (Material) car;
 
       });
-
-    } else if (source == null) {
-
-      return Future.succeededFuture(this);
 
     } else {
 

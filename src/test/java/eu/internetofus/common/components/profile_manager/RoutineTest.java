@@ -364,7 +364,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldMergeTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> this.createModelExample(1, vertx, testContext,
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> this.createModelExample(2, vertx, testContext,
         testContext.succeeding(source -> assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))))));
   }
 

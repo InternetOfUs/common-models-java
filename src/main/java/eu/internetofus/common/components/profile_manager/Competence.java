@@ -92,7 +92,11 @@ public class Competence extends Model implements Validable, Mergeable<Competence
   @Override
   public Future<Competence> merge(final Competence source, final String codePrefix, final Vertx vertx) {
 
-    if (this instanceof DrivingLicense && source instanceof DrivingLicense) {
+    if (source == null) {
+
+      return Future.succeededFuture(this);
+
+    } else if ((source.id == null || this.id.equals(source.id)) && this instanceof DrivingLicense && source instanceof DrivingLicense) {
 
       return ((DrivingLicense) this).mergeDrivingLicense((DrivingLicense) source, codePrefix, vertx).map(license -> {
 
@@ -100,10 +104,6 @@ public class Competence extends Model implements Validable, Mergeable<Competence
         return (Competence) license;
 
       });
-
-    } else if (source == null) {
-
-      return Future.succeededFuture(this);
 
     } else {
 
@@ -113,6 +113,7 @@ public class Competence extends Model implements Validable, Mergeable<Competence
       });
 
     }
+
   }
 
 }

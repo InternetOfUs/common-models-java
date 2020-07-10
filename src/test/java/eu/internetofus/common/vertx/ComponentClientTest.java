@@ -260,27 +260,6 @@ public class ComponentClientTest {
   }
 
   /**
-   * Should fail when consumer an array from a {@code null} response.
-   *
-   * @param client      to use.
-   * @param testContext context that manage the test.
-   *
-   * @see ComponentClient#notifyErrorTo(io.vertx.core.Handler, io.vertx.ext.web.client.HttpResponse)
-   */
-  @Test
-  public void shouldFailConsumeArrayWithNullReponse(final WebClient client, final VertxTestContext testContext) {
-
-    final ComponentClient componentClient = new ComponentClient(client, "http://localhost:8080");
-    componentClient.jsonArrayConsumer("actionId").accept(testContext.failing(exception -> testContext.verify(() -> {
-
-      assertThat(exception).isInstanceOf(NullPointerException.class);
-      testContext.completeNow();
-
-    })), null);
-
-  }
-
-  /**
    * Should fail when consumer an array from an object response.
    *
    * @param client      to use.
@@ -330,27 +309,6 @@ public class ComponentClientTest {
       testContext.completeNow();
 
     })), response);
-
-  }
-
-  /**
-   * Should fail when consumer an object from a {@code null} response.
-   *
-   * @param client      to use.
-   * @param testContext context that manage the test.
-   *
-   * @see ComponentClient#notifyErrorTo(io.vertx.core.Handler, io.vertx.ext.web.client.HttpResponse)
-   */
-  @Test
-  public void shouldFailConsumeObjectWithNullReponse(final WebClient client, final VertxTestContext testContext) {
-
-    final ComponentClient componentClient = new ComponentClient(client, "http://localhost:8080");
-    componentClient.jsonObjectConsumer("actionId").accept(testContext.failing(exception -> testContext.verify(() -> {
-
-      assertThat(exception).isInstanceOf(NullPointerException.class);
-      testContext.completeNow();
-
-    })), null);
 
   }
 

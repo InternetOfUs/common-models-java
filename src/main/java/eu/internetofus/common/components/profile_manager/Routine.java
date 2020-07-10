@@ -239,9 +239,7 @@ public class Routine extends Model implements Validable, Mergeable<Routine> {
       // validate the merged value and set the id
       future = future.compose(Merges.validateMerged(codePrefix, vertx));
 
-    } else
-
-    {
+    } else {
 
       promise.complete(this);
 
