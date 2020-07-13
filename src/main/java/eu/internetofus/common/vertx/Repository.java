@@ -154,24 +154,58 @@ public class Repository {
    */
   protected void updateOneDocument(final String collectionName, final JsonObject query, final JsonObject updateModel, final Handler<AsyncResult<Void>> updateHandler) {
 
-    final JsonObject updateQuery = new JsonObject().put("$set", updateModel);
-    final UpdateOptions options = new UpdateOptions().setMulti(false);
-    this.pool.updateCollectionWithOptions(collectionName, query, updateQuery, options, update -> {
+    if (updateModel == null) {
 
-      if (update.failed()) {
+      updateHandler.handle(Future.failedFuture("Not found document to update"));
 
-        updateHandler.handle(Future.failedFuture(update.cause()));
+    } else {
 
-      } else if (update.result().getDocModified() != 1) {
+      final JsonObject setFields = new JsonObject();
+      final JsonObject unsetFields = new JsonObject();
+      for (final String fieldName : updateModel.fieldNames()) {
 
-        updateHandler.handle(Future.failedFuture("Not found document to update"));
+        final Object fieldValue = updateModel.getValue(fieldName);
+        if (fieldValue != null) {
 
-      } else {
+          setFields.put(fieldName, fieldValue);
 
-        updateHandler.handle(Future.succeededFuture());
+        } else {
+
+          unsetFields.put(fieldName, "");
+        }
+
       }
-    });
 
+      final JsonObject updateQuery = new JsonObject();
+      if (!setFields.isEmpty()) {
+
+        updateQuery.put("$set", setFields);
+
+      }
+      if (!unsetFields.isEmpty()) {
+
+        updateQuery.put("$unset", unsetFields);
+
+      }
+
+      final UpdateOptions options = new UpdateOptions().setMulti(false);
+      this.pool.updateCollectionWithOptions(collectionName, query, updateQuery, options, update -> {
+
+        if (update.failed()) {
+
+          updateHandler.handle(Future.failedFuture(update.cause()));
+
+        } else if (update.result().getDocModified() != 1) {
+
+          updateHandler.handle(Future.failedFuture("Not found document to update"));
+
+        } else {
+
+          updateHandler.handle(Future.succeededFuture());
+        }
+      });
+
+    }
   }
 
   /**

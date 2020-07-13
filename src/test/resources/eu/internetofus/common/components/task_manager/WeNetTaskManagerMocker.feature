@@ -11,10 +11,10 @@ Background:
 	* def toTaskType = function(data){return Model.fromString(data, TaskType.class) }
 	* def taskTypes = {}
 
-Scenario: pathMatches('/tasks/{userId}') && methodIs('get') && tasks[pathParams.userId] != null
-    * def response = tasks[pathParams.userId]
+Scenario: pathMatches('/tasks/{taskId}') && methodIs('get') && tasks[pathParams.taskId] != null
+    * def response = tasks[pathParams.taskId]
 
-Scenario: pathMatches('/tasks/{userId}') && methodIs('get')
+Scenario: pathMatches('/tasks/{taskId}') && methodIs('get')
     * def responseStatus = 404
     * def response = {"code":"not_found","message":"No Task associated to the ID."}
 
@@ -39,18 +39,37 @@ Scenario: pathMatches('/tasks') && methodIs('post')
     * def response = task
     * def responseStatus = 201
 
-Scenario: pathMatches('/tasks/{userId}') && methodIs('delete') && tasks[pathParams.userId] != null
-    * karate.remove('tasks', '$.' + pathParams.userId)
+Scenario: pathMatches('/tasks/{taskId}') && methodIs('delete') && tasks[pathParams.taskId] != null
+    * karate.remove('tasks', '$.' + pathParams.taskId)
     * def responseStatus = 204
 
-Scenario: pathMatches('/tasks/{userId}') && methodIs('delete')
+Scenario: pathMatches('/tasks/{taskId}') && methodIs('delete')
     * def responseStatus = 404
     * def response = {"code":"not_found","message":"No Task associated to the ID."}
 
-Scenario: pathMatches('/tasks/types/{userId}') && methodIs('get') && taskTypes[pathParams.userId] != null
-    * def response = taskTypes[pathParams.userId]
+Scenario: pathMatches('/tasks/{taskId}') && methodIs('put') && tasks[pathParams.taskId] != null && toTask(karate.pretty(request)) != null
+	* def task = request
+	* task.id = pathParams.taskId
+	* tasks[task.id] = task;
+    * def response = task
+    * def responseStatus = 200
 
-Scenario: pathMatches('/tasks/types/{userId}') && methodIs('get')
+Scenario: pathMatches('/tasks/{taskId}') && methodIs('put') 
+    * def responseStatus = 404
+    * def response = {"code":"not_found","message":"No Task associated to the ID."}
+
+Scenario: pathMatches('/tasks/{taskId}') && methodIs('delete') && tasks[pathParams.taskId] != null
+    * karate.remove('tasks', '$.' + pathParams.taskId)
+    * def responseStatus = 204
+
+Scenario: pathMatches('/tasks/{taskId}') && methodIs('patch')
+    * def responseStatus = 404
+    * def response = {"code":"not_found","message":"No Task associated to the ID."}
+
+Scenario: pathMatches('/tasks/types/{taskTypeId}') && methodIs('get') && taskTypes[pathParams.taskTypeId] != null
+    * def response = taskTypes[pathParams.taskTypeId]
+
+Scenario: pathMatches('/tasks/types/{taskTypeId}') && methodIs('get')
     * def responseStatus = 404
     * def response = {"code":"not_found","message":"No TaskType associated to the ID."}
 
@@ -75,11 +94,11 @@ Scenario: pathMatches('/tasks/types') && methodIs('post')
     * def response = taskType
     * def responseStatus = 201
 
-Scenario: pathMatches('/tasks/types/{userId}') && methodIs('delete') && taskTypes[pathParams.userId] != null
-    * karate.remove('taskTypes', '$.' + pathParams.userId)
+Scenario: pathMatches('/tasks/types/{taskTypeId}') && methodIs('delete') && taskTypes[pathParams.taskTypeId] != null
+    * karate.remove('taskTypes', '$.' + pathParams.taskTypeId)
     * def responseStatus = 204
 
-Scenario: pathMatches('/tasks/types/{userId}') && methodIs('delete')
+Scenario: pathMatches('/tasks/types/{taskTypeId}') && methodIs('delete')
     * def responseStatus = 404
     * def response = {"code":"not_found","message":"No TaskType associated to the ID."}
 

@@ -39,7 +39,6 @@ import eu.internetofus.common.components.profile_manager.PlannedActivity;
 import eu.internetofus.common.components.profile_manager.RelevantLocation;
 import eu.internetofus.common.components.profile_manager.Routine;
 import eu.internetofus.common.components.profile_manager.SocialPractice;
-import eu.internetofus.common.components.task_manager.TaskAttribute;
 import eu.internetofus.common.components.task_manager.TaskAttributeType;
 import eu.internetofus.common.components.task_manager.TaskTransactionType;
 import io.vertx.core.Future;
@@ -261,27 +260,6 @@ public interface Merges {
   static <M> Function<M, Future<M>> mergeRoutines(final List<Routine> targetRoutines, final List<Routine> sourceRoutines, final String codePrefix, final Vertx vertx, final BiConsumer<M, List<Routine>> setter) {
 
     return Merges.mergeFieldList(targetRoutines, sourceRoutines, codePrefix, vertx, routine -> false, (targetRoutine, sourceRoutine) -> false, setter);
-
-  }
-
-  /**
-   * Merge two list of task attributes.
-   *
-   * @param targetTaskAttributes target task attributes to merge.
-   * @param sourceTaskAttributes source task attributes to merge.
-   * @param codePrefix           prefix for the error code.
-   * @param vertx                the event bus infrastructure to use.
-   * @param setter               function to set the merged field list into the merged model.
-   *
-   * @param <M>                  type of merging model.
-   *
-   * @return the future that will provide the merged list of task attributes.
-   */
-  static <M> Function<M, Future<M>> mergeTaskAttributes(final List<TaskAttribute> targetTaskAttributes, final List<TaskAttribute> sourceTaskAttributes, final String codePrefix, final Vertx vertx,
-      final BiConsumer<M, List<TaskAttribute>> setter) {
-
-    return Merges.mergeFieldList(targetTaskAttributes, sourceTaskAttributes, codePrefix, vertx, taskAttribute -> taskAttribute.name != null,
-        (targetTaskAttribute, sourceTaskAttribute) -> targetTaskAttribute.name.equals(sourceTaskAttribute.name), setter);
 
   }
 

@@ -120,4 +120,18 @@ public abstract class ModelTestCase<T extends Model> {
 
   }
 
+  /**
+   * Check that is converted with the empty values.
+   */
+  @Test
+  public void shouldToJsonObjectWithEmptyValues() {
+
+    final T model = this.createModelExample(1);
+    @SuppressWarnings("unchecked")
+    final
+    T emptyModel = (T) Model.fromString("{}", model.getClass());
+    assertThat(emptyModel.toJsonObjectWithEmptyValues()).isNotEqualTo(new JsonObject());
+
+  }
+
 }

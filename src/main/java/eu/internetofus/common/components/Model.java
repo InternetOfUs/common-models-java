@@ -39,11 +39,13 @@ import org.tinylog.Logger;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.client.HttpResponse;
 
 /**
@@ -337,4 +339,34 @@ public class Model {
 
   }
 
+  /**
+   * Mix-in class.
+   *
+   * @author UDT-IA, IIIA-CSIC
+   */
+  @JsonInclude(JsonInclude.Include.ALWAYS)
+  private class MixIn {
+  }
+
+  /**
+   * Convert a model to a {@link JsonObject} with all the {@code null} and empty values.
+   *
+   * @return the object of the model or {@code null} if can not convert it.
+   */
+  public JsonObject toJsonObjectWithEmptyValues() {
+
+    try {
+
+      final ObjectMapper mapper = DatabindCodec.mapper().copy();
+      mapper.addMixIn(this.getClass(), MixIn.class);
+      final String json = mapper.writeValueAsString(this);
+      return new JsonObject(json);
+
+    } catch (final Throwable throwable) {
+
+      Logger.trace(throwable);
+      return null;
+    }
+
+  }
 }

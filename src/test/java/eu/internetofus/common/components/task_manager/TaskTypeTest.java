@@ -355,6 +355,40 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   }
 
   /**
+   * Check that the model is not valid if the transactions are {@code null}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskType#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithNullTransactions(final Vertx vertx, final VertxTestContext testContext) {
+
+    final TaskType model = this.createModelExample(1);
+    model.transactions = null;
+    assertIsNotValid(model, "transactions", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the model is not valid if the transactions is empty.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskType#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithEmptyTransactions(final Vertx vertx, final VertxTestContext testContext) {
+
+    final TaskType model = this.createModelExample(1);
+    model.transactions.clear();
+    assertIsNotValid(model, "transactions", vertx, testContext);
+
+  }
+
+  /**
    * Check that the model does not merge if has a large name.
    *
    * @param vertx       event bus to use.

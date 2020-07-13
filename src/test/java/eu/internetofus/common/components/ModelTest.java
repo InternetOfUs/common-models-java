@@ -195,4 +195,14 @@ public class ModelTest {
 
   }
 
+  /**
+   * Check not convert to JSON with empty values object the {@link UnconvertedToJsonModel}.
+   */
+  @Test
+  public void shouldNotConvertToJsonObjectWithEmptyValues() {
+
+    assertThat(new UnconvertedToJsonModel().toJsonObjectWithEmptyValues()).isNull();
+
+  }
+
 }

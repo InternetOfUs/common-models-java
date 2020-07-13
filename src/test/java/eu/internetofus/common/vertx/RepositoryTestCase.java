@@ -48,7 +48,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
-import io.vertx.ext.mongo.MongoClientUpdateResult;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
@@ -63,278 +62,273 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(MockitoExtension.class)
 public abstract class RepositoryTestCase<T extends Repository> {
 
-	/**
-	 * Create the repository to use in the tests.
-	 *
-	 * @param pool the mocked mongo client.
-	 *
-	 * @return the instance to use in the tests.
-	 */
-	protected abstract T createRepository(MongoClient pool);
+  /**
+   * Create the repository to use in the tests.
+   *
+   * @param pool the mocked mongo client.
+   *
+   * @return the instance to use in the tests.
+   */
+  protected abstract T createRepository(MongoClient pool);
 
-	/**
-	 * Check search communities fail because can not obtain the number of
-	 * communities that match.
-	 *
-	 * @param pool        mocked MongoDB client.
-	 * @param testContext test context.
-	 */
-	@Test
-	public void shouldSearchPageObjectFailedByMongoClientCount(@Mock MongoClient pool, VertxTestContext testContext) {
+  /**
+   * Check search communities fail because can not obtain the number of
+   * communities that match.
+   *
+   * @param pool        mocked MongoDB client.
+   * @param testContext test context.
+   */
+  @Test
+  public void shouldSearchPageObjectFailedByMongoClientCount(@Mock final MongoClient pool, final VertxTestContext testContext) {
 
-		final T repository = this.createRepository(pool);
-		repository.searchPageObject(null, null, new FindOptions(), null, null, testContext.failing(search -> {
-			testContext.completeNow();
-		}));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<Long>>> handler = ArgumentCaptor.forClass(Handler.class);
-		verify(pool, times(1)).count(any(), any(), handler.capture());
-		handler.getValue().handle(Future.failedFuture("Internal error"));
+    final T repository = this.createRepository(pool);
+    repository.searchPageObject(null, null, new FindOptions(), null, null, testContext.failing(search -> {
+      testContext.completeNow();
+    }));
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<Long>>> handler = ArgumentCaptor.forClass(Handler.class);
+    verify(pool, times(1)).count(any(), any(), handler.capture());
+    handler.getValue().handle(Future.failedFuture("Internal error"));
 
-	}
+  }
 
-	/**
-	 * Check search communities fail because can not find.
-	 *
-	 * @param pool        mocked MongoDB client.
-	 * @param testContext test context.
-	 */
-	@Test
-	public void shouldSearchPageObjectFailedByMongoClientFind(@Mock MongoClient pool, VertxTestContext testContext) {
+  /**
+   * Check search communities fail because can not find.
+   *
+   * @param pool        mocked MongoDB client.
+   * @param testContext test context.
+   */
+  @Test
+  public void shouldSearchPageObjectFailedByMongoClientFind(@Mock final MongoClient pool, final VertxTestContext testContext) {
 
-		final T repository = this.createRepository(pool);
-		repository.searchPageObject(null, null, new FindOptions(), null, null, testContext.failing(search -> {
-			testContext.completeNow();
-		}));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<Long>>> handler = ArgumentCaptor.forClass(Handler.class);
-		verify(pool, times(1)).count(any(), any(), handler.capture());
-		handler.getValue().handle(Future.succeededFuture(100L));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<List<JsonObject>>>> findHandler = ArgumentCaptor.forClass(Handler.class);
-		verify(pool, times(1)).findWithOptions(any(), any(), any(), findHandler.capture());
-		findHandler.getValue().handle(Future.failedFuture("Internal error"));
+    final T repository = this.createRepository(pool);
+    repository.searchPageObject(null, null, new FindOptions(), null, null, testContext.failing(search -> {
+      testContext.completeNow();
+    }));
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<Long>>> handler = ArgumentCaptor.forClass(Handler.class);
+    verify(pool, times(1)).count(any(), any(), handler.capture());
+    handler.getValue().handle(Future.succeededFuture(100L));
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<List<JsonObject>>>> findHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(pool, times(1)).findWithOptions(any(), any(), any(), findHandler.capture());
+    findHandler.getValue().handle(Future.failedFuture("Internal error"));
 
-	}
+  }
 
-	/**
-	 * Check search page return empty page because the model and map it.
-	 *
-	 * @param pool        mocked MongoDB client.
-	 * @param testContext test context.
-	 */
-	@Test
-	public void shouldSearchPageReturnEmptyWhenTotalIsZero(@Mock MongoClient pool, VertxTestContext testContext) {
+  /**
+   * Check search page return empty page because the model and map it.
+   *
+   * @param pool        mocked MongoDB client.
+   * @param testContext test context.
+   */
+  @Test
+  public void shouldSearchPageReturnEmptyWhenTotalIsZero(@Mock final MongoClient pool, final VertxTestContext testContext) {
 
-		final T repository = this.createRepository(pool);
-		final FindOptions options = new FindOptions();
-		final int offset = 23;
-		options.setSkip(offset);
-		repository.searchPageObject(null, null, options, "resultKey", null,
-				testContext.succeeding(page -> testContext.verify(() -> {
+    final T repository = this.createRepository(pool);
+    final FindOptions options = new FindOptions();
+    final int offset = 23;
+    options.setSkip(offset);
+    repository.searchPageObject(null, null, options, "resultKey", null,
+        testContext.succeeding(page -> testContext.verify(() -> {
 
-					assertThat(page.getInteger("offset")).isEqualTo(offset);
-					assertThat(page.getLong("total")).isEqualTo(0L);
-					assertThat(page.containsKey("resultKey")).isFalse();
-					testContext.completeNow();
-				})));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<Long>>> handler = ArgumentCaptor.forClass(Handler.class);
-		verify(pool, times(1)).count(any(), any(), handler.capture());
-		handler.getValue().handle(Future.succeededFuture(0L));
+          assertThat(page.getInteger("offset")).isEqualTo(offset);
+          assertThat(page.getLong("total")).isEqualTo(0L);
+          assertThat(page.containsKey("resultKey")).isFalse();
+          testContext.completeNow();
+        })));
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<Long>>> handler = ArgumentCaptor.forClass(Handler.class);
+    verify(pool, times(1)).count(any(), any(), handler.capture());
+    handler.getValue().handle(Future.succeededFuture(0L));
 
-	}
+  }
 
-	/**
-	 * Check store model and map it.
-	 *
-	 * @param pool        mocked MongoDB client.
-	 * @param testContext test context.
-	 */
-	@Test
-	public void shouldSearchPage(@Mock MongoClient pool, VertxTestContext testContext) {
+  /**
+   * Check store model and map it.
+   *
+   * @param pool        mocked MongoDB client.
+   * @param testContext test context.
+   */
+  @Test
+  public void shouldSearchPage(@Mock final MongoClient pool, final VertxTestContext testContext) {
 
-		final T repository = this.createRepository(pool);
-		final FindOptions options = new FindOptions();
-		final int offset = 23;
-		options.setSkip(offset);
-		final long total = 25;
-		final List<JsonObject> models = new ArrayList<>();
-		models.add(new JsonObject().put("id", "1"));
-		models.add(new JsonObject().put("id", "2"));
-		repository.searchPageObject(null, null, options, "resultKey", null,
-				testContext.succeeding(page -> testContext.verify(() -> {
+    final T repository = this.createRepository(pool);
+    final FindOptions options = new FindOptions();
+    final int offset = 23;
+    options.setSkip(offset);
+    final long total = 25;
+    final List<JsonObject> models = new ArrayList<>();
+    models.add(new JsonObject().put("id", "1"));
+    models.add(new JsonObject().put("id", "2"));
+    repository.searchPageObject(null, null, options, "resultKey", null,
+        testContext.succeeding(page -> testContext.verify(() -> {
 
-					assertThat(page.getInteger("offset")).isEqualTo(offset);
-					assertThat(page.getLong("total")).isEqualTo(total);
-					assertThat(page.getJsonArray("resultKey")).isEqualTo(new JsonArray(models));
-					testContext.completeNow();
-				})));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<Long>>> handler = ArgumentCaptor.forClass(Handler.class);
-		verify(pool, times(1)).count(any(), any(), handler.capture());
-		handler.getValue().handle(Future.succeededFuture(total));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<List<JsonObject>>>> findHandler = ArgumentCaptor.forClass(Handler.class);
-		verify(pool, times(1)).findWithOptions(any(), any(), any(), findHandler.capture());
-		findHandler.getValue().handle(Future.succeededFuture(models));
+          assertThat(page.getInteger("offset")).isEqualTo(offset);
+          assertThat(page.getLong("total")).isEqualTo(total);
+          assertThat(page.getJsonArray("resultKey")).isEqualTo(new JsonArray(models));
+          testContext.completeNow();
+        })));
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<Long>>> handler = ArgumentCaptor.forClass(Handler.class);
+    verify(pool, times(1)).count(any(), any(), handler.capture());
+    handler.getValue().handle(Future.succeededFuture(total));
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<List<JsonObject>>>> findHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(pool, times(1)).findWithOptions(any(), any(), any(), findHandler.capture());
+    findHandler.getValue().handle(Future.succeededFuture(models));
 
-	}
+  }
 
-	/**
-	 * Check delete fail by mongo client.
-	 *
-	 * @param pool        mocked MongoDB client.
-	 * @param testContext test context.
-	 */
-	@Test
-	public void shouldDeleteOneDocuemntFailedByMongoClient(@Mock MongoClient pool, VertxTestContext testContext) {
+  /**
+   * Check delete fail by mongo client.
+   *
+   * @param pool        mocked MongoDB client.
+   * @param testContext test context.
+   */
+  @Test
+  public void shouldDeleteOneDocuemntFailedByMongoClient(@Mock final MongoClient pool, final VertxTestContext testContext) {
 
-		final T repository = this.createRepository(pool);
-		repository.deleteOneDocument(null, null, testContext.failing(delete -> {
-			testContext.completeNow();
-		}));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<MongoClientDeleteResult>>> handler = ArgumentCaptor
-				.forClass(Handler.class);
-		verify(pool, times(1)).removeDocument(any(), any(), handler.capture());
-		handler.getValue().handle(Future.failedFuture("Internal error"));
+    final T repository = this.createRepository(pool);
+    repository.deleteOneDocument(null, null, testContext.failing(delete -> {
+      testContext.completeNow();
+    }));
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<MongoClientDeleteResult>>> handler = ArgumentCaptor
+    .forClass(Handler.class);
+    verify(pool, times(1)).removeDocument(any(), any(), handler.capture());
+    handler.getValue().handle(Future.failedFuture("Internal error"));
 
-	}
+  }
 
-	/**
-	 * Check update fail by mongo client.
-	 *
-	 * @param pool        mocked MongoDB client.
-	 * @param testContext test context.
-	 */
-	@Test
-	public void shouldUpdateOneDocumentFailedByMongoClient(@Mock MongoClient pool, VertxTestContext testContext) {
+  /**
+   * Check update fail by mongo client.
+   *
+   * @param pool        mocked MongoDB client.
+   * @param testContext test context.
+   */
+  @Test
+  public void shouldUpdateOneDocumentFailedByMongoClient(@Mock final MongoClient pool, final VertxTestContext testContext) {
 
-		final T repository = this.createRepository(pool);
-		repository.updateOneDocument(null, null, null, testContext.failing(update -> {
-			testContext.completeNow();
-		}));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<MongoClientUpdateResult>>> handler = ArgumentCaptor
-				.forClass(Handler.class);
-		verify(pool, times(1)).updateCollectionWithOptions(any(), any(), any(), any(), handler.capture());
-		handler.getValue().handle(Future.failedFuture("Internal error"));
+    final T repository = this.createRepository(pool);
+    repository.updateOneDocument(null, null, null, testContext.failing(update -> {
+      testContext.completeNow();
+    }));
 
-	}
+  }
 
-	/**
-	 * Check store fail by mongo client.
-	 *
-	 * @param pool        mocked MongoDB client.
-	 * @param testContext test context.
-	 */
-	@Test
-	public void shouldStoreOneDocumentFailedByMongoClient(@Mock MongoClient pool, VertxTestContext testContext) {
+  /**
+   * Check store fail by mongo client.
+   *
+   * @param pool        mocked MongoDB client.
+   * @param testContext test context.
+   */
+  @Test
+  public void shouldStoreOneDocumentFailedByMongoClient(@Mock final MongoClient pool, final VertxTestContext testContext) {
 
-		final T repository = this.createRepository(pool);
-		repository.storeOneDocument(null, null, null, testContext.failing(update -> {
-			testContext.completeNow();
-		}));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<String>>> handler = ArgumentCaptor.forClass(Handler.class);
-		verify(pool, times(1)).insert(any(), any(), handler.capture());
-		handler.getValue().handle(Future.failedFuture("Internal error"));
+    final T repository = this.createRepository(pool);
+    repository.storeOneDocument(null, null, null, testContext.failing(update -> {
+      testContext.completeNow();
+    }));
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<String>>> handler = ArgumentCaptor.forClass(Handler.class);
+    verify(pool, times(1)).insert(any(), any(), handler.capture());
+    handler.getValue().handle(Future.failedFuture("Internal error"));
 
-	}
+  }
 
-	/**
-	 * Check search fail by mongo client.
-	 *
-	 * @param pool        mocked MongoDB client.
-	 * @param testContext test context.
-	 */
-	@Test
-	public void shouldSearchOneDocumentFailedByMongoClient(@Mock MongoClient pool, VertxTestContext testContext) {
+  /**
+   * Check search fail by mongo client.
+   *
+   * @param pool        mocked MongoDB client.
+   * @param testContext test context.
+   */
+  @Test
+  public void shouldSearchOneDocumentFailedByMongoClient(@Mock final MongoClient pool, final VertxTestContext testContext) {
 
-		final T repository = this.createRepository(pool);
-		repository.findOneDocument(null, null, null, null, testContext.failing(update -> {
-			testContext.completeNow();
-		}));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<JsonObject>>> handler = ArgumentCaptor.forClass(Handler.class);
-		verify(pool, times(1)).findOne(any(), any(), any(), handler.capture());
-		handler.getValue().handle(Future.failedFuture("Internal error"));
+    final T repository = this.createRepository(pool);
+    repository.findOneDocument(null, null, null, null, testContext.failing(update -> {
+      testContext.completeNow();
+    }));
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<JsonObject>>> handler = ArgumentCaptor.forClass(Handler.class);
+    verify(pool, times(1)).findOne(any(), any(), any(), handler.capture());
+    handler.getValue().handle(Future.failedFuture("Internal error"));
 
-	}
+  }
 
-	/**
-	 * Check store model without mapping it.
-	 *
-	 * @param pool        mocked MongoDB client.
-	 * @param testContext test context.
-	 */
-	@Test
-	public void shouldStoreOneDocumentWithoutMappingIt(@Mock MongoClient pool, VertxTestContext testContext) {
+  /**
+   * Check store model without mapping it.
+   *
+   * @param pool        mocked MongoDB client.
+   * @param testContext test context.
+   */
+  @Test
+  public void shouldStoreOneDocumentWithoutMappingIt(@Mock final MongoClient pool, final VertxTestContext testContext) {
 
-		final T repository = this.createRepository(pool);
-		final JsonObject model = new JsonObject();
-		repository.storeOneDocument(null, model, null, testContext.succeeding(stored -> testContext.verify(() -> {
+    final T repository = this.createRepository(pool);
+    final JsonObject model = new JsonObject();
+    repository.storeOneDocument(null, model, null, testContext.succeeding(stored -> testContext.verify(() -> {
 
-			assertThat(stored).isSameAs(model);
-			testContext.completeNow();
-		})));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<String>>> handler = ArgumentCaptor.forClass(Handler.class);
-		verify(pool, times(1)).insert(any(), any(), handler.capture());
-		handler.getValue().handle(Future.succeededFuture("id"));
+      assertThat(stored).isSameAs(model);
+      testContext.completeNow();
+    })));
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<String>>> handler = ArgumentCaptor.forClass(Handler.class);
+    verify(pool, times(1)).insert(any(), any(), handler.capture());
+    handler.getValue().handle(Future.succeededFuture("id"));
 
-	}
+  }
 
-	/**
-	 * Check store model and map it.
-	 *
-	 * @param pool        mocked MongoDB client.
-	 * @param testContext test context.
-	 */
-	@Test
-	public void shouldStoreOneDocumentAndMapResult(@Mock MongoClient pool, VertxTestContext testContext) {
+  /**
+   * Check store model and map it.
+   *
+   * @param pool        mocked MongoDB client.
+   * @param testContext test context.
+   */
+  @Test
+  public void shouldStoreOneDocumentAndMapResult(@Mock final MongoClient pool, final VertxTestContext testContext) {
 
-		final T repository = this.createRepository(pool);
-		final JsonObject model = new JsonObject();
-		repository.storeOneDocument(null, model, map -> map.put("id", "value"),
-				testContext.succeeding(stored -> testContext.verify(() -> {
+    final T repository = this.createRepository(pool);
+    final JsonObject model = new JsonObject();
+    repository.storeOneDocument(null, model, map -> map.put("id", "value"),
+        testContext.succeeding(stored -> testContext.verify(() -> {
 
-					assertThat(stored).isSameAs(model);
-					assertThat(stored.getString("id")).isSameAs("value");
-					testContext.completeNow();
-				})));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<String>>> handler = ArgumentCaptor.forClass(Handler.class);
-		verify(pool, times(1)).insert(any(), any(), handler.capture());
-		handler.getValue().handle(Future.succeededFuture("id"));
+          assertThat(stored).isSameAs(model);
+          assertThat(stored.getString("id")).isSameAs("value");
+          testContext.completeNow();
+        })));
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<String>>> handler = ArgumentCaptor.forClass(Handler.class);
+    verify(pool, times(1)).insert(any(), any(), handler.capture());
+    handler.getValue().handle(Future.succeededFuture("id"));
 
-	}
+  }
 
-	/**
-	 * Check store model and capture mapping exception.
-	 *
-	 * @param pool        mocked MongoDB client.
-	 * @param testContext test context.
-	 */
-	@Test
-	public void shouldStoreOneDocumentButCaptureMappingException(@Mock MongoClient pool, VertxTestContext testContext) {
+  /**
+   * Check store model and capture mapping exception.
+   *
+   * @param pool        mocked MongoDB client.
+   * @param testContext test context.
+   */
+  @Test
+  public void shouldStoreOneDocumentButCaptureMappingException(@Mock final MongoClient pool, final VertxTestContext testContext) {
 
-		final T repository = this.createRepository(pool);
-		final JsonObject model = new JsonObject();
-		final RuntimeException error = new RuntimeException("Unexpected error");
-		repository.storeOneDocument(null, model, map -> {
-			throw error;
-		}, testContext.failing(storeError -> testContext.verify(() -> {
+    final T repository = this.createRepository(pool);
+    final JsonObject model = new JsonObject();
+    final RuntimeException error = new RuntimeException("Unexpected error");
+    repository.storeOneDocument(null, model, map -> {
+      throw error;
+    }, testContext.failing(storeError -> testContext.verify(() -> {
 
-			assertThat(storeError).isSameAs(error);
-			testContext.completeNow();
-		})));
-		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Handler<AsyncResult<String>>> handler = ArgumentCaptor.forClass(Handler.class);
-		verify(pool, times(1)).insert(any(), any(), handler.capture());
-		handler.getValue().handle(Future.succeededFuture("id"));
+      assertThat(storeError).isSameAs(error);
+      testContext.completeNow();
+    })));
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<String>>> handler = ArgumentCaptor.forClass(Handler.class);
+    verify(pool, times(1)).insert(any(), any(), handler.capture());
+    handler.getValue().handle(Future.succeededFuture("id"));
 
-	}
+  }
 
 }
