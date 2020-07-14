@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+import eu.internetofus.common.components.Model;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
@@ -132,30 +133,31 @@ public abstract class WeNetTaskManagerTestCase {
   public void shouldCreateRetrieveUpdateAndDeleteTask(final Vertx vertx, final VertxTestContext testContext) {
 
     new TaskTest().createModelExample(1, vertx, testContext, testContext.succeeding(task -> {
-      final WeNetTaskManager service = WeNetTaskManager.createProxy(vertx);
-      service.createTask(task, testContext.succeeding(create -> {
 
-        final String id = create.id;
+      final WeNetTaskManager service = WeNetTaskManager.createProxy(vertx);
+      service.createTask(task, testContext.succeeding(createdTask -> {
+
+        final String id = createdTask.id;
         service.retrieveTask(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
 
-          assertThat(create).isEqualTo(retrieve);
-          new TaskTest().createModelExample(2, vertx, testContext, testContext.succeeding(source -> {
-            service.updateTask(id, source, testContext.succeeding(merged -> testContext.verify(() -> {
+          assertThat(createdTask).isEqualTo(retrieve);
+          final Task taskToUpdate = Model.fromJsonObject(createdTask.toJsonObject(), Task.class);
+          taskToUpdate.attributes = new JsonObject().put("newKey", "NEW VALUE");
+          service.updateTask(id, taskToUpdate, testContext.succeeding(updatedTask -> testContext.verify(() -> {
 
-              source.id = id;
-              assertThat(merged).isEqualTo(source);
-              service.deleteTask(id, testContext.succeeding(empty -> {
+            createdTask.attributes = new JsonObject().put("newKey", "NEW VALUE");
+            assertThat(updatedTask).isEqualTo(createdTask);
+            service.deleteTask(id, testContext.succeeding(empty -> {
 
-                service.retrieveTask(id, testContext.failing(handler -> {
-                  testContext.completeNow();
+              service.retrieveTask(id, testContext.failing(handler -> {
 
-                }));
+                testContext.completeNow();
 
               }));
 
-            })));
+            }));
 
-          }));
+          })));
 
         })));
 
