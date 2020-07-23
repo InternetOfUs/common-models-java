@@ -26,6 +26,7 @@
 
 package eu.internetofus.common.components;
 
+import java.net.InetAddress;
 import java.net.URL;
 import java.util.Map;
 
@@ -68,16 +69,38 @@ public abstract class AbstractComponentMocker {
    * @param port      to bind the mocker server.
    * @param variables to initialize the mocker, or {@code null} to use the default.
    *
-   * @return the port where the server is bind.
-   *
    * @see #createComponentFeature()
    */
-  public int start(final int port, final Map<String, Object> variables) {
+  public void start(final int port, final Map<String, Object> variables) {
 
     this.stop();
     final Feature feature = this.createComponentFeature();
     this.server = new FeatureServer(feature, port, false, variables);
-    return this.server.getPort();
+  }
+
+  /**
+   * Return the base URL to the API that the mocked service respond.
+   *
+   * @return the mocker API URL.
+   */
+  public String getApiUrl() {
+
+    final StringBuilder builder = new StringBuilder();
+    builder.append("http://");
+    try {
+
+      final InetAddress IP = InetAddress.getLocalHost();
+      builder.append(IP.getHostAddress());
+
+    } catch (final Throwable t) {
+
+      builder.append("localhost");
+    }
+
+    builder.append(":");
+    builder.append(this.getPort());
+
+    return builder.toString();
 
   }
 
