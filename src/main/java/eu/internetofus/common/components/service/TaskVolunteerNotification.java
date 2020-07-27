@@ -34,22 +34,29 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(
-		hidden = true,
-		name = "TaskVolunteerNotification",
-		description = "This notification is used in order to notify the task creator that a new volunteer is proposing to participate to the task.")
+    hidden = true,
+    name = "TaskVolunteerNotification",
+    description = "This notification is used in order to notify the task creator that a new volunteer is proposing to participate to the task.")
 public class TaskVolunteerNotification extends TaskNotification {
 
-	/**
-	 * The identifier of the volunteer.
-	 */
-	@Schema(description = "The wenet id of the user who is volunteering for the task.", example = "289615821")
-	public String volunteerId;
+  /**
+   * The identifier of the volunteer.
+   */
+  @Schema(description = "The wenet id of the user who is volunteering for the task.", example = "289615821")
+  public String volunteerId;
 
-	/**
-	 * Create a new task volunteer notification.
-	 */
-	public TaskVolunteerNotification() {
+  /**
+   * The explanation why the user has to be selected.
+   */
+  @Schema(description = "The reason why the user was selected to be a possible volunteer.", nullable = true,example = "It is your friend")
+  public String explanation;
 
-		this.notificationType = NotificationType.taskVolunteer;
-	}
+
+  /**
+   * Create a new task volunteer notification.
+   */
+  public TaskVolunteerNotification() {
+
+    this.notificationType = NotificationType.taskVolunteer;
+  }
 }
