@@ -27,13 +27,18 @@
 package eu.internetofus.common.components.profile_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
+import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
+import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.ValidationsTest;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
@@ -47,122 +52,221 @@ import io.vertx.junit5.VertxTestContext;
  * @author UDT-IA, IIIA-CSIC
  */
 @ExtendWith(VertxExtension.class)
-public class MaterialTest {
+public class MaterialTest extends ModelTestCase<Material> {
 
   /**
-   * Check that the mode is not valid with an identifier.
+   * {@inheritDoc}
+   */
+  @Override
+  public Material createModelExample(final int index) {
+
+    final Material model = new Material();
+    model.name = "name_" + index;
+    model.description = "description_" + index;
+    model.classification = "classification_" + index;
+    model.quantity = Math.max(1, index);
+    return model;
+  }
+
+  /**
+   * Check that the {@link #createModelExample(int)} is valid.
+   *
+   * @param index       of the example to test.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @ParameterizedTest(name = "Should be valid the example {0}")
+  @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
+  public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
+
+    final Material model = new Material();
+    model.name = "    name_" + index + "    ";
+    model.description = "    description_" + index + "    ";
+    model.classification = "    classification_" + index + "    ";
+    model.quantity = Math.max(1, index);
+
+    assertIsValid(model, vertx, testContext, () -> {
+
+      final Material expected = this.createModelExample(index);
+      assertThat(model).isEqualTo(expected);
+    });
+
+  }
+
+  /**
+   * Check that the material is not valid if has a bad name.
+   *
+   * @param name        that is invalid.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @ParameterizedTest(name = "Should not be valid with the name {0}")
+  @NullSource
+  @ValueSource(strings = { ValidationsTest.STRING_256 })
+  public void shouldNotBeValidWithABadName(final String name, final Vertx vertx, final VertxTestContext testContext) {
+
+    final Material model = this.createModelExample(1);
+    model.name = name;
+    assertIsNotValid(model, "name", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the material is not valid if has a bad description.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
-   *
-   * @see Material#merge(Material, String, Vertx)
    */
   @Test
-  public void shouldBeValidWithIdentifier(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWithABadDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material model = new Material();
-    model.id = "Target_Id";
+    final Material model = this.createModelExample(1);
+    model.description = ValidationsTest.STRING_1024;
+    assertIsNotValid(model, "description", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the material is valid with a {@code null} description.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @Test
+  public void shouldBeValidWithANullDescription(final Vertx vertx, final VertxTestContext testContext) {
+
+    final Material model = this.createModelExample(1);
+    model.description = null;
     assertIsValid(model, vertx, testContext);
-  }
-
-  /**
-   * Check that the mode is not valid with a large identifier.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see Material#merge(Material, String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithLargeIdentifier(final Vertx vertx, final VertxTestContext testContext) {
-
-    final Material model = new Material();
-    model.id = ValidationsTest.STRING_256;
-    assertIsNotValid(model, "id", vertx, testContext);
-  }
-
-  /**
-   * Check that merge two models.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see Material#merge(Material, String, Vertx)
-   */
-  @Test
-  public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
-
-    final Material target = new CarTest().createModelExample(1);
-    target.id = "1";
-    final Material source = new CarTest().createModelExample(2);
-    assertCanMerge(target, source, vertx, testContext, merged -> {
-
-      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-      source.id = "1";
-      assertThat(merged).isEqualTo(source);
-
-    });
 
   }
 
   /**
-   * Check that merge with {@code null} source.
+   * Check that the material is not valid if has a bad classification.
    *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see Material#merge(Material, String, Vertx)
+   * @param classification that is invalid.
+   * @param vertx          event bus to use.
+   * @param testContext    test context to use.
    */
-  @Test
-  public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
+  @ParameterizedTest(name = "Should not be valid with the classification {0}")
+  @NullSource
+  @ValueSource(strings = { ValidationsTest.STRING_256 })
+  public void shouldNotBeValidWithABadClassification(final String classification, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material target = new Material();
-    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    final Material model = this.createModelExample(1);
+    model.classification = classification;
+    assertIsNotValid(model, "classification", vertx, testContext);
 
   }
 
   /**
-   * Check that merge with two different classes.
+   * Check that the material is not valid if has a bad quantity.
    *
+   * @param quantity    that is invalid.
    * @param vertx       event bus to use.
    * @param testContext test context to use.
-   *
-   * @see Material#merge(Material, String, Vertx)
    */
-  @Test
-  public void shouldNotMergeWithDiferentClasses(final Vertx vertx, final VertxTestContext testContext) {
+  @ParameterizedTest(name = "Should not be valid with the quantity {0}")
+  @NullSource
+  @ValueSource(ints = { -1, 0 })
+  public void shouldNotBeValidWithABadQuantity(final Integer quantity, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material target = new Material();
-    target.id = "Target_Id";
-    final Material source = new Car();
-    assertCanMerge(target, source, vertx, testContext, merged -> {
-
-      assertThat(merged).isSameAs(source);
-      assertThat(merged.id).isEqualTo(target.id);
-
-    });
+    final Material model = this.createModelExample(1);
+    model.quantity = quantity;
+    assertIsNotValid(model, "quantity", vertx, testContext);
 
   }
 
   /**
-   * Check that merge two materials.
+   * Check that two {@link #createModelExample(int)} can be merged.
    *
+   * @param index       of the example to test.
    * @param vertx       event bus to use.
    * @param testContext test context to use.
-   *
-   * @see Material#merge(Material, String, Vertx)
    */
-  @Test
-  public void shouldMergeTwoMaterials(final Vertx vertx, final VertxTestContext testContext) {
+  @ParameterizedTest(name = "Should be valid the example {0}")
+  @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
+  public void shouldExampleCanMerged(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material target = new Material();
     final Material source = new Material();
+    source.name = "    name_" + index + "    ";
+    source.description = "    description_" + index + "    ";
+    source.classification = "    classification_" + index + "    ";
+    source.quantity = Math.max(1, index);
+
+    final Material target = this.createModelExample(index - 1);
+
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
-      assertThat(merged).isSameAs(source);
-      assertThat(merged.id).isEqualTo(target.id);
-
+      final Material expected = this.createModelExample(index);
+      assertThat(merged).isEqualTo(expected);
     });
+
+  }
+
+  /**
+   * Check that cannot merge a material with a bad name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @Test
+  public void shouldCannotMergeWithABadName(final Vertx vertx, final VertxTestContext testContext) {
+
+    final Material source = new Material();
+    source.name = ValidationsTest.STRING_256;
+    final Material target = this.createModelExample(1);
+    assertCannotMerge(target, source, "name", vertx, testContext);
+
+  }
+
+  /**
+   * Check that cannot merge a material with a bad description.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @Test
+  public void shouldCannotMergeWithABadDescription(final Vertx vertx, final VertxTestContext testContext) {
+
+    final Material source = new Material();
+    source.description = ValidationsTest.STRING_1024;
+    final Material target = this.createModelExample(1);
+    assertCannotMerge(target, source, "description", vertx, testContext);
+
+  }
+
+  /**
+   * Check that cannot merge a material with a bad classification.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @Test
+  public void shouldCannotMergeWithABadClassification(final Vertx vertx, final VertxTestContext testContext) {
+
+    final Material source = new Material();
+    source.classification = ValidationsTest.STRING_256;
+    final Material target = this.createModelExample(1);
+    assertCannotMerge(target, source, "classification", vertx, testContext);
+
+  }
+
+  /**
+   * Check that cannot merge a material with a bad quantity.
+   *
+   * @param quantity    that is invalid.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @ParameterizedTest(name = "Should not be merged with the quantity {0}")
+  @ValueSource(ints = { -1, 0 })
+  public void shouldCannotMergeWithABadQuantity(final Integer quantity, final Vertx vertx, final VertxTestContext testContext) {
+
+    final Material source = new Material();
+    source.quantity = quantity;
+    final Material target = this.createModelExample(1);
+    assertCannotMerge(target, source, "quantity", vertx, testContext);
 
   }
 

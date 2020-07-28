@@ -45,25 +45,25 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 /**
- * Test the {@link Competence}.
+ * Test the {@link Meaning}.
  *
- * @see Competence
+ * @see Meaning
  *
  * @author UDT-IA, IIIA-CSIC
  */
 @ExtendWith(VertxExtension.class)
-public class CompetenceTest extends ModelTestCase<Competence> {
+public class MeaningTest extends ModelTestCase<Meaning> {
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public Competence createModelExample(final int index) {
+  public Meaning createModelExample(final int index) {
 
-    final Competence model = new Competence();
+    final Meaning model = new Meaning();
     model.name = "name_" + index;
-    model.ontology = "ontology_" + index;
-    model.level = 1.0 / Math.max(1, index);
+    model.category = "category_" + index;
+    model.level = (double) index;
     return model;
   }
 
@@ -73,74 +73,79 @@ public class CompetenceTest extends ModelTestCase<Competence> {
    * @param index       of the example to test.
    * @param vertx       event bus to use.
    * @param testContext test context to use.
+   *
+   * @see Language#validate(String, Vertx)
    */
   @ParameterizedTest(name = "Should be valid the example {0}")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence model = new Competence();
+    final Meaning model = new Meaning();
     model.name = "    name_" + index + "    ";
-    model.ontology = "    ontology_" + index + "    ";
-    model.level = 1.0 / Math.max(1, index);
+    model.category = "    category_" + index + "    ";
+    model.level = (double) index;
 
     assertIsValid(model, vertx, testContext, () -> {
 
-      final Competence expected = this.createModelExample(index);
+      final Meaning expected = this.createModelExample(index);
       assertThat(model).isEqualTo(expected);
     });
 
   }
 
   /**
-   * Check that the competence is not valid if has a bad name.
+   * Check that the meaning is not valid if has a bad name.
    *
    * @param name        that is invalid.
    * @param vertx       event bus to use.
    * @param testContext test context to use.
+   *
+   * @see Language#validate(String, Vertx)
    */
   @ParameterizedTest(name = "Should not be valid with the name {0}")
   @NullSource
   @ValueSource(strings = { ValidationsTest.STRING_256 })
   public void shouldNotBeValidWithABadName(final String name, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence model = this.createModelExample(1);
+    final Meaning model = this.createModelExample(1);
     model.name = name;
     assertIsNotValid(model, "name", vertx, testContext);
 
   }
 
   /**
-   * Check that the competence is not valid if has a bad ontology.
+   * Check that the meaning is not valid if has a bad category.
    *
-   * @param ontology    that is invalid.
+   * @param category    that is invalid.
    * @param vertx       event bus to use.
    * @param testContext test context to use.
+   *
+   * @see Language#validate(String, Vertx)
    */
-  @ParameterizedTest(name = "Should not be valid with the ontology {0}")
+  @ParameterizedTest(name = "Should not be valid with the category {0}")
   @NullSource
   @ValueSource(strings = { ValidationsTest.STRING_256 })
-  public void shouldNotBeValidWithABadOntology(final String ontology, final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWithABadCategory(final String category, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence model = this.createModelExample(1);
-    model.ontology = ontology;
-    assertIsNotValid(model, "ontology", vertx, testContext);
+    final Meaning model = this.createModelExample(1);
+    model.category = category;
+    assertIsNotValid(model, "category", vertx, testContext);
 
   }
 
   /**
-   * Check that the competence is not valid if has a bad level.
+   * Check that the meaning is not valid if has a bad level.
    *
-   * @param level       that is invalid.
    * @param vertx       event bus to use.
    * @param testContext test context to use.
+   *
+   * @see Language#validate(String, Vertx)
    */
-  @ParameterizedTest(name = "Should not be valid with the level {0}")
-  @NullSource
-  @ValueSource(doubles = { -1, -0.1, 1.1, 2 })
-  public void shouldNotBeValidWithABadLevel(final Double level, final Vertx vertx, final VertxTestContext testContext) {
+  @Test
+  public void shouldNotBeValidWithABadLevel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence model = this.createModelExample(1);
-    model.level = level;
+    final Meaning model = this.createModelExample(1);
+    model.level = null;
     assertIsNotValid(model, "level", vertx, testContext);
 
   }
@@ -156,68 +161,71 @@ public class CompetenceTest extends ModelTestCase<Competence> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleCanMerged(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence source = new Competence();
+    final Meaning source = new Meaning();
     source.name = "    name_" + index + "    ";
-    source.ontology = "    ontology_" + index + "    ";
-    source.level = 1.0 / Math.max(1, index);
+    source.category = "    category_" + index + "    ";
+    source.level = (double) index;
 
-    final Competence target = this.createModelExample(index - 1);
+    final Meaning target = this.createModelExample(index - 1);
 
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
-      final Competence expected = this.createModelExample(index);
+      final Meaning expected = this.createModelExample(index);
       assertThat(merged).isEqualTo(expected);
     });
 
   }
 
   /**
-   * Check that cannot merge a competence with a bad name.
+   * Check that can merge will {@code null}.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    */
   @Test
+  public void shouldMergeNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    final Meaning target = this.createModelExample(1);
+    assertCanMerge(target, null, vertx, testContext, merged -> {
+
+      assertThat(merged).isSameAs(target);
+    });
+
+  }
+
+  /**
+   * Check that can not merge a meaning with a bad name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Language#validate(String, Vertx)
+   */
+  @Test
   public void shouldCannotMergeWithABadName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence source = new Competence();
+    final Meaning source = new Meaning();
     source.name = ValidationsTest.STRING_256;
-    final Competence target = this.createModelExample(1);
+    final Meaning target = this.createModelExample(1);
     assertCannotMerge(target, source, "name", vertx, testContext);
 
   }
 
   /**
-   * Check that cannot merge a competence with a bad ontology.
+   * Check that can not merge a meaning with a bad category.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
+   *
+   * @see Language#validate(String, Vertx)
    */
   @Test
-  public void shouldCannotMergeWithABadOntology(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldCannotMergeWithABadCategory(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence source = new Competence();
-    source.ontology = ValidationsTest.STRING_256;
-    final Competence target = this.createModelExample(1);
-    assertCannotMerge(target, source, "ontology", vertx, testContext);
-
-  }
-
-  /**
-   * Check that cannot merge a competence with a bad level.
-   *
-   * @param level       that is invalid.
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   */
-  @ParameterizedTest(name = "Should not be merged with the level {0}")
-  @ValueSource(doubles = { -1, -0.1, 1.1, 2 })
-  public void shouldCannotMergeWithABadLevel(final Double level, final Vertx vertx, final VertxTestContext testContext) {
-
-    final Competence source = new Competence();
-    source.level = level;
-    final Competence target = this.createModelExample(1);
-    assertCannotMerge(target, source, "level", vertx, testContext);
+    final Meaning source = new Meaning();
+    source.category = ValidationsTest.STRING_256;
+    final Meaning target = this.createModelExample(1);
+    assertCannotMerge(target, source, "category", vertx, testContext);
 
   }
 

@@ -26,11 +26,8 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import java.util.UUID;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 import eu.internetofus.common.components.Mergeable;
+import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
@@ -45,15 +42,26 @@ import io.vertx.core.Vertx;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(description = "A competence necessary for do a social practice.")
-@JsonDeserialize(using = CompetenceDeserialize.class)
+@Schema(hidden = true, name = "Competence", description = "It describe a competence of a user.")
 public class Competence extends Model implements Validable, Mergeable<Competence> {
 
   /**
-   * The identifier of the competence.
+   * The name of the competence.
    */
-  @Schema(description = "The identifier of the competence", example = "aisufh9sdokjnd")
-  public String id;
+  @Schema(description = "The name of the competence", example = "language_Italian_C1")
+  public String name;
+
+  /**
+   * The ontology of the competence.
+   */
+  @Schema(description = "The ontology of the competence, such as ESCO (https://ec.europa.eu/esco/portal) or ISCO (https://www.ilo.org/public/english/bureau/stat/isco/isco08/)", example = "esco")
+  public String ontology;
+
+  /**
+   * The level of the competence.
+   */
+  @Schema(description = "The level of the competence (value in between 0 and 1, both included)", example = "1")
+  public Double level;
 
   /**
    * Create a new empty competence.
@@ -71,11 +79,9 @@ public class Competence extends Model implements Validable, Mergeable<Competence
     final Promise<Void> promise = Promise.promise();
     try {
 
-      this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
-      if (this.id == null) {
-
-        this.id = UUID.randomUUID().toString();
-      }
+      this.name = Validations.validateStringField(codePrefix, "name", 255, this.name);
+      this.ontology = Validations.validateStringField(codePrefix, "ontology", 255, this.ontology);
+      this.level = Validations.validateNumberOnRange(codePrefix, "level", this.level, false, 0d, 1d);
       promise.complete();
 
     } catch (final ValidationErrorException validationCause) {
@@ -92,28 +98,38 @@ public class Competence extends Model implements Validable, Mergeable<Competence
   @Override
   public Future<Competence> merge(final Competence source, final String codePrefix, final Vertx vertx) {
 
-    if (source == null) {
+    final Promise<Competence> promise = Promise.promise();
+    Future<Competence> future = promise.future();
+    if (source != null) {
 
-      return Future.succeededFuture(this);
+      final Competence merged = new Competence();
+      merged.name = source.name;
+      if (merged.name == null) {
 
-    } else if ((source.id == null || this.id.equals(source.id)) && this instanceof DrivingLicense && source instanceof DrivingLicense) {
+        merged.name = this.name;
+      }
 
-      return ((DrivingLicense) this).mergeDrivingLicense((DrivingLicense) source, codePrefix, vertx).map(license -> {
+      merged.ontology = source.ontology;
+      if (merged.ontology == null) {
 
-        license.id = this.id;
-        return (Competence) license;
+        merged.ontology = this.ontology;
+      }
 
-      });
+      merged.level = source.level;
+      if (merged.level == null) {
+
+        merged.level = this.level;
+      }
+      promise.complete(merged);
+
+      // Validate the merged value
+      future = future.compose(Merges.validateMerged(codePrefix, vertx));
 
     } else {
 
-      return source.validate(codePrefix, vertx).map(validation -> {
-        source.id = this.id;
-        return source;
-      });
-
+      promise.complete(this);
     }
-
+    return future;
   }
 
 }

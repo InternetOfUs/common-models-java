@@ -38,41 +38,30 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 
 /**
- * A material necessary for do a social practice.
+ * A meaning necessary for do a social practice.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "Material", description = "It describes an object that is available to a user.")
-public class Material extends Model implements Validable, Mergeable<Material> {
+@Schema(hidden = true, name = "Meaning", description = "For defining more general purpose concepts.")
+public class Meaning extends Model implements Validable, Mergeable<Meaning> {
 
   /**
-   * The name of the material.
+   * The name of the meaning.
    */
-  @Schema(description = "The name of the object", example = "car")
+  @Schema(description = "The name of the concept represented by the meaning", example = "extraversion")
   public String name;
 
   /**
-   * The description of the material.
+   * The category of the meaning.
    */
-  @Schema(description = "A description of the object", example = "Fiat 500")
-  public String description;
+  @Schema(description = "The category associated to the meaning such as Post Jungian concepts (perception, judgment, extrovert, attitude, MBTI), Big Five concepts (Extraversion, Agreeableness, Conscientiousness,Neuroticism, Openness), Gardner intelligences(verbal, logicMathematics,visualSpatial, kinestesicaCorporal, musicalRhythmic,intrapersonal,interpersonal, naturalistEnvironmental), Other intelligences(practical, social, emotional, operative, successful,learning_potential), or Schwartz values (Self-Direction, Stimulation, Hedonism, Achievement, Power,Security, Conformity, Tradition, Benevolence, Universalism)", example = "big_five")
+  public String category;
 
   /**
-   * The quantity of the material.
+   * The level of the meaning.
    */
-  @Schema(description = "The amount of units available", example = "1")
-  public Integer quantity;
-
-  /**
-   * The classification of the material.
-   *
-   * <ul>
-   * <li>Global Product Classification (https://www.gs1.org/standards/gpc)</li>
-   * <li>NICE classification (Classification of Goods and Services)</li>
-   * </ul>
-   */
-  @Schema(description = "The classification used for representing the object, such as Global Product Classification (https://www.gs1.org/standards/gpc) or NICE classification (Classification of Goods and Services)", example = "nice")
-  public String classification;
+  @Schema(description = "The level associated to the concept", example = "1")
+  public Double level;
 
   /**
    * {@inheritDoc}
@@ -84,9 +73,8 @@ public class Material extends Model implements Validable, Mergeable<Material> {
     try {
 
       this.name = Validations.validateStringField(codePrefix, "name", 255, this.name);
-      this.description = Validations.validateNullableStringField(codePrefix, "description", 1023, this.description);
-      this.quantity = Validations.validateNumberOnRange(codePrefix, "quantity", this.quantity, false, 1, null);
-      this.classification = Validations.validateStringField(codePrefix, "classification", 255, this.classification);
+      this.category = Validations.validateStringField(codePrefix, "category", 255, this.category);
+      this.level = Validations.validateNumberOnRange(codePrefix, "level", this.level, false, null, null);
       promise.complete();
 
     } catch (final ValidationErrorException validationError) {
@@ -101,35 +89,29 @@ public class Material extends Model implements Validable, Mergeable<Material> {
    * {@inheritDoc}
    */
   @Override
-  public Future<Material> merge(final Material source, final String codePrefix, final Vertx vertx) {
+  public Future<Meaning> merge(final Meaning source, final String codePrefix, final Vertx vertx) {
 
-    final Promise<Material> promise = Promise.promise();
-    Future<Material> future = promise.future();
+    final Promise<Meaning> promise = Promise.promise();
+    Future<Meaning> future = promise.future();
     if (source != null) {
 
-      final Material merged = new Material();
+      final Meaning merged = new Meaning();
       merged.name = source.name;
       if (merged.name == null) {
 
         merged.name = this.name;
       }
 
-      merged.description = source.description;
-      if (merged.description == null) {
+      merged.category = source.category;
+      if (merged.category == null) {
 
-        merged.description = this.description;
+        merged.category = this.category;
       }
 
-      merged.quantity = source.quantity;
-      if (merged.quantity == null) {
+      merged.level = source.level;
+      if (merged.level == null) {
 
-        merged.quantity = this.quantity;
-      }
-
-      merged.classification = source.classification;
-      if (merged.classification == null) {
-
-        merged.classification = this.classification;
+        merged.level = this.level;
       }
 
       promise.complete(merged);
