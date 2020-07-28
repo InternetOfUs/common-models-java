@@ -112,8 +112,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.locale = "ca_AD";
     model.avatar = "https://internetofus.eu/wp-content/uploads/sites/38/2019/" + index + "/WeNet_logo.png";
     model.nationality = "nationality_" + index;
-    model.languages = new ArrayList<>();
-    model.languages.add(new LanguageTest().createModelExample(index));
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(index));
     model.occupation = "occupation " + index;
@@ -139,6 +137,12 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.socialPractices = new ArrayList<>();
     model.socialPractices.add(new SocialPracticeTest().createModelExample(index));
     model.personalBehaviors = null;
+    model.materials = new ArrayList<>();
+    model.materials.add(new MaterialTest().createModelExample(index));
+    model.competences = new ArrayList<>();
+    model.competences.add(new CompetenceTest().createModelExample(index));
+    model.meanings = new ArrayList<>();
+    model.meanings.add(new MeaningTest().createModelExample(index));
     model._creationTs = 1234567891 + index;
     model._lastUpdateTs = 1234567991 + index * 2;
     return model;
@@ -436,27 +440,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   }
 
   /**
-   * Check that not accept profiles with bad languages.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithABadLanguages(final Vertx vertx, final VertxTestContext testContext) {
-
-    final WeNetUserProfile model = new WeNetUserProfile();
-    model.languages = new ArrayList<>();
-    model.languages.add(new Language());
-    model.languages.add(new Language());
-    model.languages.add(new Language());
-    model.languages.get(1).code = "bad code";
-    assertIsNotValid(model, "languages[1].code", vertx, testContext);
-
-  }
-
-  /**
    * Check that not accept profiles with bad occupation.
    *
    * @param vertx       event bus to use.
@@ -650,6 +633,63 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   }
 
   /**
+   * Check that not accept profiles with bad materials.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithABadMaterials(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile model = new WeNetUserProfile();
+    model.materials = new ArrayList<>();
+    model.materials.add(new MaterialTest().createModelExample(1));
+    model.materials.add(new Material());
+    assertIsNotValid(model, "materials[1].name", vertx, testContext);
+
+  }
+
+  /**
+   * Check that not accept profiles with bad competences.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithABadCompetences(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile model = new WeNetUserProfile();
+    model.competences = new ArrayList<>();
+    model.competences.add(new CompetenceTest().createModelExample(1));
+    model.competences.add(new Competence());
+    assertIsNotValid(model, "competences[1].name", vertx, testContext);
+
+  }
+
+  /**
+   * Check that not accept profiles with bad meanings.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithABadMeanings(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile model = new WeNetUserProfile();
+    model.meanings = new ArrayList<>();
+    model.meanings.add(new MeaningTest().createModelExample(1));
+    model.meanings.add(new Meaning());
+    assertIsNotValid(model, "meanings[1].name", vertx, testContext);
+
+  }
+
+  /**
    * Check that the name is not valid.
    *
    * @param vertx       event bus to use.
@@ -806,27 +846,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     final WeNetUserProfile source = new WeNetUserProfile();
     source.nationality = ValidationsTest.STRING_256;
     assertCannotMerge(new WeNetUserProfile(), source, "nationality", vertx, testContext);
-
-  }
-
-  /**
-   * Check that not accept profiles with bad languages.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithABadLanguages(final Vertx vertx, final VertxTestContext testContext) {
-
-    final WeNetUserProfile source = new WeNetUserProfile();
-    source.languages = new ArrayList<>();
-    source.languages.add(new Language());
-    source.languages.add(new Language());
-    source.languages.add(new Language());
-    source.languages.get(1).code = "bad code";
-    assertCannotMerge(new WeNetUserProfile(), source, "languages[1].code", vertx, testContext);
 
   }
 
@@ -1745,80 +1764,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   }
 
   /**
-   * Check merge remove languages.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldMergeRemoveLanguages(final Vertx vertx, final VertxTestContext testContext) {
-
-    final WeNetUserProfile target = this.createBasicExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
-
-      final WeNetUserProfile source = new WeNetUserProfile();
-      source.languages = new ArrayList<>();
-      assertCanMerge(target, source, vertx, testContext, merged -> {
-
-        assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-        target.languages.clear();
-        assertThat(merged).isEqualTo(target);
-
-      });
-
-    });
-
-  }
-
-  /**
-   * Check merge add language and modify another.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldMergeAddAndModifyLanguages(final Vertx vertx, final VertxTestContext testContext) {
-
-    final WeNetUserProfile target = this.createBasicExample(1);
-    target.languages.add(new LanguageTest().createModelExample(2));
-    target.languages.get(1).code = "en";
-    target.languages.add(new LanguageTest().createModelExample(3));
-    target.languages.get(2).code = "fr";
-    assertIsValid(target, vertx, testContext, () -> {
-
-      final WeNetUserProfile source = new WeNetUserProfile();
-      source.languages = new ArrayList<>();
-      source.languages.add(new LanguageTest().createModelExample(2));
-      source.languages.add(new LanguageTest().createModelExample(4));
-      source.languages.add(new LanguageTest().createModelExample(3));
-      source.languages.add(new LanguageTest().createModelExample(1));
-      source.languages.get(0).code = "it";
-      source.languages.get(1).code = "es";
-      source.languages.get(2).code = "fr";
-      source.languages.get(2).level = LanguageLevel.B1;
-      source.languages.get(3).name = "Catalan";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
-
-        assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-        target.languages.add(target.languages.remove(0));
-        target.languages.get(0).code = "it";
-        target.languages.add(1, new LanguageTest().createModelExample(4));
-        target.languages.get(1).code = "es";
-        target.languages.get(2).level = LanguageLevel.B1;
-        target.languages.get(3).name = "Catalan";
-        assertThat(merged).isEqualTo(target);
-
-      });
-
-    });
-
-  }
-
-  /**
    * Check merge remove planned activities.
    *
    * @param vertx       event bus to use.
@@ -2294,4 +2239,280 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     }));
   }
 
+  /**
+   * Check that not accept profiles with bad materials.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeWithABadMaterials(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile source = new WeNetUserProfile();
+    source.materials = new ArrayList<>();
+    source.materials.add(new MaterialTest().createModelExample(1));
+    source.materials.add(new MaterialTest().createModelExample(2));
+    source.materials.add(new MaterialTest().createModelExample(3));
+    source.materials.get(1).name = null;
+    assertCannotMerge(new WeNetUserProfile(), source, "materials[1].name", vertx, testContext);
+
+  }
+
+  /**
+   * Check merge remove materials.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldMergeRemoveMaterials(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile target = this.createModelExample(1);
+    assertIsValid(target, vertx, testContext, () -> {
+
+      final WeNetUserProfile source = new WeNetUserProfile();
+      source.materials = new ArrayList<>();
+      assertCanMerge(target, source, vertx, testContext, merged -> {
+
+        assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+        target.materials.clear();
+        assertThat(merged).isEqualTo(target);
+
+      });
+
+    });
+
+  }
+
+  /**
+   * Check merge add material and modify another.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldMergeAddAndModifyMaterials(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile target = this.createModelExample(1);
+    target.materials.add(new MaterialTest().createModelExample(2));
+    target.materials.add(new MaterialTest().createModelExample(3));
+    assertIsValid(target, vertx, testContext, () -> {
+
+      final WeNetUserProfile source = new WeNetUserProfile();
+      source.materials = new ArrayList<>();
+      source.materials.add(new MaterialTest().createModelExample(2));
+      source.materials.add(new MaterialTest().createModelExample(4));
+      source.materials.add(new MaterialTest().createModelExample(3));
+      source.materials.add(new MaterialTest().createModelExample(1));
+      source.materials.get(0).quantity = 143;
+      source.materials.get(1).quantity = 144;
+      source.materials.get(2).quantity = 145;
+      source.materials.get(3).quantity = 146;
+      assertCanMerge(target, source, vertx, testContext, merged -> {
+
+        assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+        target.materials.add(target.materials.remove(0));
+        target.materials.get(0).quantity = 143;
+        target.materials.add(1, new MaterialTest().createModelExample(4));
+        target.materials.get(1).quantity = 144;
+        target.materials.get(2).quantity = 145;
+        target.materials.get(3).quantity = 146;
+        assertThat(merged).isEqualTo(target);
+
+      });
+
+    });
+
+  }
+
+  /**
+   * Check that not accept profiles with bad competences.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeWithABadCompetences(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile source = new WeNetUserProfile();
+    source.competences = new ArrayList<>();
+    source.competences.add(new CompetenceTest().createModelExample(1));
+    source.competences.add(new CompetenceTest().createModelExample(2));
+    source.competences.add(new CompetenceTest().createModelExample(3));
+    source.competences.get(1).name = null;
+    assertCannotMerge(new WeNetUserProfile(), source, "competences[1].name", vertx, testContext);
+
+  }
+
+  /**
+   * Check merge remove competences.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldMergeRemoveCompetences(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile target = this.createModelExample(1);
+    assertIsValid(target, vertx, testContext, () -> {
+
+      final WeNetUserProfile source = new WeNetUserProfile();
+      source.competences = new ArrayList<>();
+      assertCanMerge(target, source, vertx, testContext, merged -> {
+
+        assertThat(merged).isNotEqualTo(target);
+        assertThat(merged).isNotEqualTo(source);
+        target.competences.clear();
+        assertThat(merged).isEqualTo(target);
+
+      });
+
+    });
+
+  }
+
+  /**
+   * Check merge add competence and modify another.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldMergeAddAndModifyCompetences(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile target = this.createModelExample(1);
+    target.competences.add(new CompetenceTest().createModelExample(2));
+    target.competences.add(new CompetenceTest().createModelExample(3));
+    assertIsValid(target, vertx, testContext, () -> {
+
+      final WeNetUserProfile source = new WeNetUserProfile();
+      source.competences = new ArrayList<>();
+      source.competences.add(new CompetenceTest().createModelExample(2));
+      source.competences.add(new CompetenceTest().createModelExample(4));
+      source.competences.add(new CompetenceTest().createModelExample(3));
+      source.competences.add(new CompetenceTest().createModelExample(1));
+      source.competences.get(0).level = 0.143;
+      source.competences.get(1).level = 0.144;
+      source.competences.get(2).level = 0.145;
+      source.competences.get(3).level = 0.146;
+      assertCanMerge(target, source, vertx, testContext, merged -> {
+
+        assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+        target.competences.add(target.competences.remove(0));
+        target.competences.get(0).level = 0.143;
+        target.competences.add(1, new CompetenceTest().createModelExample(4));
+        target.competences.get(1).level = 0.144;
+        target.competences.get(2).level = 0.145;
+        target.competences.get(3).level = 0.146;
+        assertThat(merged).isEqualTo(target);
+
+      });
+
+    });
+
+  }
+
+  /**
+   * Check that not accept profiles with bad meanings.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldNotMergeWithABadMeanings(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile source = new WeNetUserProfile();
+    source.meanings = new ArrayList<>();
+    source.meanings.add(new MeaningTest().createModelExample(1));
+    source.meanings.add(new MeaningTest().createModelExample(2));
+    source.meanings.add(new MeaningTest().createModelExample(3));
+    source.meanings.get(1).name = null;
+    assertCannotMerge(new WeNetUserProfile(), source, "meanings[1].name", vertx, testContext);
+
+  }
+
+  /**
+   * Check merge remove meanings.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldMergeRemoveMeanings(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile target = this.createModelExample(1);
+    assertIsValid(target, vertx, testContext, () -> {
+
+      final WeNetUserProfile source = new WeNetUserProfile();
+      source.meanings = new ArrayList<>();
+      assertCanMerge(target, source, vertx, testContext, merged -> {
+
+        assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+        target.meanings.clear();
+        assertThat(merged).isEqualTo(target);
+
+      });
+
+    });
+
+  }
+
+  /**
+   * Check merge add meaning and modify another.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldMergeAddAndModifyMeanings(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile target = this.createModelExample(1);
+    target.meanings.add(new MeaningTest().createModelExample(2));
+    target.meanings.add(new MeaningTest().createModelExample(3));
+    assertIsValid(target, vertx, testContext, () -> {
+
+      final WeNetUserProfile source = new WeNetUserProfile();
+      source.meanings = new ArrayList<>();
+      source.meanings.add(new MeaningTest().createModelExample(2));
+      source.meanings.add(new MeaningTest().createModelExample(4));
+      source.meanings.add(new MeaningTest().createModelExample(3));
+      source.meanings.add(new MeaningTest().createModelExample(1));
+      source.meanings.get(0).level = 143d;
+      source.meanings.get(1).level = 144d;
+      source.meanings.get(2).level = 145d;
+      source.meanings.get(3).level = 146d;
+      assertCanMerge(target, source, vertx, testContext, merged -> {
+
+        assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+        target.meanings.add(target.meanings.remove(0));
+        target.meanings.get(0).level = 143d;
+        target.meanings.add(1, new MeaningTest().createModelExample(4));
+        target.meanings.get(1).level = 144d;
+        target.meanings.get(2).level = 145d;
+        target.meanings.get(3).level = 146d;
+        assertThat(merged).isEqualTo(target);
+
+      });
+
+    });
+
+  }
 }

@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.ValidationsTest;
 import io.vertx.core.Vertx;
@@ -63,8 +62,8 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final SocialPractice model = new SocialPractice();
     model.id = null;
     model.label = "label_" + index;
-    model.materials = new CarTest().createModelExample(index);
-    model.competences = new DrivingLicenseTest().createModelExample(index);
+    model.materials = new MaterialTest().createModelExample(index);
+    model.competences = new CompetenceTest().createModelExample(index);
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(index));
     return model;
@@ -99,8 +98,8 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final SocialPractice model = new SocialPractice();
     model.id = "      ";
     model.label = "    label    ";
-    model.competences = new DrivingLicenseTest().createModelExample(1);
-    model.materials = new CarTest().createModelExample(1);
+    model.competences = new CompetenceTest().createModelExample(1);
+    model.materials = new MaterialTest().createModelExample(1);
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(1));
     assertIsValid(model, vertx, testContext, () -> {
@@ -108,10 +107,8 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
       final SocialPractice expected = new SocialPractice();
       expected.id = model.id;
       expected.label = "label";
-      expected.competences = new DrivingLicenseTest().createModelExample(1);
-      expected.competences.id = model.competences.id;
-      expected.materials = new CarTest().createModelExample(1);
-      expected.materials.id = model.materials.id;
+      expected.competences = new CompetenceTest().createModelExample(1);
+      expected.materials = new MaterialTest().createModelExample(1);
       expected.norms = new ArrayList<>();
       expected.norms.add(new NormTest().createModelExample(1));
       expected.norms.get(0).id = model.norms.get(0).id;
@@ -133,7 +130,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
 
     final SocialPractice model = new SocialPractice();
     model.id = "has_id";
-    assertIsValid(model,  vertx, testContext);
+    assertIsValid(model, vertx, testContext);
 
   }
 
@@ -151,42 +148,6 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final SocialPractice model = new SocialPractice();
     model.label = ValidationsTest.STRING_256;
     assertIsNotValid(model, "label", vertx, testContext);
-
-  }
-
-  /**
-   * Check that not accept model with bad materials.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see SocialPractice#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithABadMaterials(final Vertx vertx, final VertxTestContext testContext) {
-
-    final SocialPractice model = new SocialPractice();
-    model.materials = new CarTest().createModelExample(1);
-    ((Car) model.materials).carType = ValidationsTest.STRING_256;
-    assertIsNotValid(model, "materials.carType", vertx, testContext);
-
-  }
-
-  /**
-   * Check that not accept model with bad competences.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see SocialPractice#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithABadCompetences(final Vertx vertx, final VertxTestContext testContext) {
-
-    final SocialPractice model = new SocialPractice();
-    model.competences = new DrivingLicenseTest().createModelExample(1);
-    ((DrivingLicense) model.competences).drivingLicenseId = ValidationsTest.STRING_256;
-    assertIsNotValid(model, "competences.drivingLicenseId", vertx, testContext);
 
   }
 
@@ -212,26 +173,6 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   }
 
   /**
-   * Check that can not be decoded with a generic material.
-   */
-  @Test
-  public void shouldNotDecodeWithAGenericMaterial() {
-
-    assertThat(Model.fromString("{\"materials\":{}}", SocialPractice.class)).isNull();
-
-  }
-
-  /**
-   * Check that can not be decoded with a generic material.
-   */
-  @Test
-  public void shouldNotDecodeWithAGenericCompetence() {
-
-    assertThat(Model.fromString("{\"competences\":{}}", SocialPractice.class)).isNull();
-
-  }
-
-  /**
    * Check that not merge social practices with bad label.
    *
    * @param vertx       event bus to use.
@@ -246,45 +187,6 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final SocialPractice source = new SocialPractice();
     source.label = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "label", vertx, testContext);
-
-  }
-
-  /**
-   * Check that not merge model with bad materials.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithABadMaterials(final Vertx vertx, final VertxTestContext testContext) {
-
-    final SocialPractice target = this.createModelExample(1);
-    target.id = "TargetId";
-    final SocialPractice source = new SocialPractice();
-    source.materials = new CarTest().createModelExample(1);
-    ((Car) source.materials).carType = ValidationsTest.STRING_256;
-    assertCannotMerge(target, source, "materials.carType", vertx, testContext);
-
-  }
-
-  /**
-   * Check that not merge model with bad competences.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithABadCompetences(final Vertx vertx, final VertxTestContext testContext) {
-
-    final SocialPractice target = this.createModelExample(1);
-    final SocialPractice source = new SocialPractice();
-    source.competences = new DrivingLicenseTest().createModelExample(1);
-    ((DrivingLicense) source.competences).drivingLicenseId = ValidationsTest.STRING_256;
-    assertCannotMerge(target, source, "competences.drivingLicenseId", vertx, testContext);
 
   }
 
@@ -327,8 +229,6 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
-      source.competences.id = merged.competences.id;
-      source.materials.id = merged.materials.id;
       source.norms.get(0).id = merged.norms.get(0).id;
       assertThat(merged).isEqualTo(source);
     });
@@ -371,183 +271,6 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
       target.label = "NEW LABEL";
       assertThat(merged).isEqualTo(target);
     });
-  }
-
-  /**
-   * Check that merge and add a new competence.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
-   */
-  @Test
-  public void shouldMergeNewCompetence(final Vertx vertx, final VertxTestContext testContext) {
-
-    final SocialPractice target = this.createModelExample(1);
-    target.id = "1";
-    target.competences.id = "2";
-    final SocialPractice source = new SocialPractice();
-    source.competences = new DrivingLicenseTest().createModelExample(2);
-    assertCanMerge(target, source, vertx, testContext, merged -> {
-      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-      target.competences = new DrivingLicenseTest().createModelExample(2);
-      target.competences.id = merged.competences.id;
-      assertThat(merged).isEqualTo(target);
-    });
-  }
-
-  /**
-   * Check that fail merge a new competence.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
-   */
-  @Test
-  public void shouldFailMergeNewCompetence(final Vertx vertx, final VertxTestContext testContext) {
-
-    final SocialPractice target = this.createModelExample(1);
-    target.id = "target identifier";
-    final SocialPractice source = new SocialPractice();
-    source.competences = new DrivingLicense();
-    ((DrivingLicense) source.competences).drivingLicenseId = ValidationsTest.STRING_256;
-    assertCannotMerge(target, source, "competences.drivingLicenseId", vertx, testContext);
-
-  }
-
-  /**
-   * Check that merge existing competence.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
-   */
-  @Test
-  public void shouldMergeExistingCompetence(final Vertx vertx, final VertxTestContext testContext) {
-
-    final SocialPractice target = this.createModelExample(1);
-    target.id = "target identifier";
-    final SocialPractice source = new SocialPractice();
-    source.competences = new DrivingLicense();
-    source.competences.id = target.competences.id;
-    ((DrivingLicense) source.competences).drivingLicenseId = "New drivingLicense";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
-      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-      ((DrivingLicense) target.competences).drivingLicenseId = "New drivingLicense";
-      assertThat(merged).isEqualTo(target);
-    });
-  }
-
-  /**
-   * Check that fail merge and existing competence.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
-   */
-  @Test
-  public void shouldFailMergeExistingCompetence(final Vertx vertx, final VertxTestContext testContext) {
-
-    final SocialPractice target = this.createModelExample(1);
-    target.id = "target identifier";
-    final SocialPractice source = new SocialPractice();
-    source.competences = new DrivingLicense();
-    source.competences.id = target.competences.id;
-    ((DrivingLicense) source.competences).drivingLicenseId = ValidationsTest.STRING_256;
-    assertCannotMerge(target, source, "competences.drivingLicenseId", vertx, testContext);
-  }
-
-  /**
-   * Check that merge and add a new material.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
-   */
-  @Test
-  public void shouldMergeNewMaterial(final Vertx vertx, final VertxTestContext testContext) {
-
-    final SocialPractice target = this.createModelExample(1);
-    target.id = "1";
-    target.materials.id = "2";
-    final SocialPractice source = new SocialPractice();
-    source.materials = new CarTest().createModelExample(2);
-    assertCanMerge(target, source, vertx, testContext, merged -> {
-      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-      target.materials = new CarTest().createModelExample(2);
-      target.materials.id = merged.materials.id;
-      assertThat(merged).isEqualTo(target);
-    });
-  }
-
-  /**
-   * Check that fail merge a new material.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
-   */
-  @Test
-  public void shouldFailMergeNewMaterial(final Vertx vertx, final VertxTestContext testContext) {
-
-    final SocialPractice target = this.createModelExample(1);
-    target.id = "1";
-    final SocialPractice source = new SocialPractice();
-    source.materials = new Car();
-    ((Car) source.materials).carPlate = ValidationsTest.STRING_256;
-    assertCannotMerge(target, source, "materials.carPlate", vertx, testContext);
-
-  }
-
-  /**
-   * Check that merge existing material.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
-   */
-  @Test
-  public void shouldMergeExistingMaterial(final Vertx vertx, final VertxTestContext testContext) {
-
-    final SocialPractice target = this.createModelExample(1);
-    target.id = "10";
-    final SocialPractice source = new SocialPractice();
-    source.materials = new Car();
-    source.materials.id = target.materials.id;
-    ((Car) source.materials).carPlate = "New car plate";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
-      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-      ((Car) target.materials).carPlate = "New car plate";
-      assertThat(merged).isEqualTo(target);
-    });
-  }
-
-  /**
-   * Check that fail merge and existing material.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
-   */
-  @Test
-  public void shouldFailMergeExistingMaterial(final Vertx vertx, final VertxTestContext testContext) {
-
-    final SocialPractice target = this.createModelExample(1);
-    target.id = "190";
-    final SocialPractice source = new SocialPractice();
-    source.materials = new Car();
-    source.materials.id = target.materials.id;
-    ((Car) source.materials).carPlate = ValidationsTest.STRING_256;
-    assertCannotMerge(target, source, "materials.carPlate", vertx, testContext);
-
   }
 
   /**

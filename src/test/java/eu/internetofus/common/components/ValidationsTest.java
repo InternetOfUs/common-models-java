@@ -860,29 +860,49 @@ public class ValidationsTest {
    * @param min minimum range value.
    * @param max maximum range value.
    *
-   * @see Validations#validateDoubleOnRange(String, String, Double, boolean, double, double)
+   * @see Validations#validateNumberOnRange(String, String, Number, boolean, Number, Number)
    */
   @ParameterizedTest(name = "The value {0} should not be valid")
-  @CsvSource({ "1,0,0.1", "1,2,3" })
-  public void shouldDoubleNotBeValid(final String val, final String min, final String max) {
+  @CsvSource({ "1,0,0.1", "1,2,3", "-1,0,", "10,,1" })
+  public void shouldNumberNotBeValid(final String val, final String min, final String max) {
 
     final Double value = Double.parseDouble(val);
     final boolean nullable = false;
-    final double minValue = Double.parseDouble(min);
-    final double maxValue = Double.parseDouble(max);
-    assertThat(assertThrows(ValidationErrorException.class, () -> Validations.validateDoubleOnRange("codePrefix", "fieldName", value, nullable, minValue, maxValue)).getCode()).isEqualTo("codePrefix.fieldName");
+    final Double minValue = this.extractDouble(min);
+    final Double maxValue = this.extractDouble(max);
+    assertThat(assertThrows(ValidationErrorException.class, () -> Validations.validateNumberOnRange("codePrefix", "fieldName", value, nullable, minValue, maxValue)).getCode()).isEqualTo("codePrefix.fieldName");
+
+  }
+
+  /**
+   * Return the double value defined on a string.
+   *
+   * @param value to extract the double.
+   *
+   * @return the double value or {@code null} if not double value defined.
+   */
+  private Double extractDouble(final String value) {
+
+    try {
+
+      return Double.parseDouble(value);
+
+    } catch (final Throwable t) {
+
+      return null;
+    }
 
   }
 
   /**
    * Check the a {@code null} value is not valid when the element is not nullable.
    *
-   * @see Validations#validateDoubleOnRange(String, String, Double, boolean, double, double)
+   * @see Validations#validateNumberOnRange(String, String, Number, boolean, Number, Number)
    */
   @Test
-  public void shouldNullDoubleNotBeValidWhenIsNotNullable() {
+  public void shouldNullNumberNotBeValidWhenIsNotNullable() {
 
-    assertThat(assertThrows(ValidationErrorException.class, () -> Validations.validateDoubleOnRange("codePrefix", "fieldName", null, false, 0d, 1d)).getCode()).isEqualTo("codePrefix.fieldName");
+    assertThat(assertThrows(ValidationErrorException.class, () -> Validations.validateNumberOnRange("codePrefix", "fieldName", null, false, 0d, 1d)).getCode()).isEqualTo("codePrefix.fieldName");
 
   }
 
@@ -893,17 +913,17 @@ public class ValidationsTest {
    * @param min minimum range value.
    * @param max maximum range value.
    *
-   * @see Validations#validateDoubleOnRange(String, String, Double, boolean, double, double)
+   * @see Validations#validateNumberOnRange(String, String, Number, boolean, Number, Number)
    */
   @ParameterizedTest(name = "The value {0} should not be valid")
-  @CsvSource({ "1,0,1", "1,1,3", "0.5,0,1" })
-  public void shouldDoubleBeValid(final String val, final String min, final String max) {
+  @CsvSource({ "1,0,1", "1,1,3", "0.5,0,1", "-1,,1", "1,0," })
+  public void shouldNumberBeValid(final String val, final String min, final String max) {
 
     final Double value = Double.parseDouble(val);
     final boolean nullable = false;
-    final double minValue = Double.parseDouble(min);
-    final double maxValue = Double.parseDouble(max);
-    assertThatCode(() -> assertThat(Validations.validateDoubleOnRange("codePrefix", "fieldName", value, nullable, minValue, maxValue)).isEqualTo(value)).doesNotThrowAnyException();
+    final Double minValue = this.extractDouble(min);
+    final Double maxValue = this.extractDouble(max);
+    assertThatCode(() -> assertThat(Validations.validateNumberOnRange("codePrefix", "fieldName", value, nullable, minValue, maxValue)).isEqualTo(value)).doesNotThrowAnyException();
 
   }
 

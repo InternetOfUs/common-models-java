@@ -115,7 +115,11 @@ public class Message extends Model implements Validable {
     /**
      * The message is an incentive to send to an user.
      */
-    INCENTIVE;
+    INCENTIVE,
+    /**
+     * The message is used to check the interaction with the SWIProlog.
+     */
+    SWI_PROLOG;
   }
 
   /**
@@ -278,6 +282,8 @@ public class Message extends Model implements Validable {
             future = future.compose(val -> incentive.validate(codePrefix + ".content", vertx));
           }
           break;
+        default:
+          //Nothing to check.
         }
 
         future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));

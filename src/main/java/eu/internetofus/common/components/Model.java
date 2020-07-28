@@ -340,25 +340,18 @@ public class Model {
   }
 
   /**
-   * Mix-in class.
-   *
-   * @author UDT-IA, IIIA-CSIC
-   */
-  @JsonInclude(JsonInclude.Include.ALWAYS)
-  private class MixIn {
-  }
-
-  /**
    * Convert a model to a {@link JsonObject} with all the {@code null} and empty values.
    *
    * @return the object of the model or {@code null} if can not convert it.
+   *
+   * @see ModelForJsonObjectWithEmptyValues
    */
   public JsonObject toJsonObjectWithEmptyValues() {
 
     try {
 
       final ObjectMapper mapper = DatabindCodec.mapper().copy();
-      mapper.addMixIn(this.getClass(), MixIn.class);
+      mapper.addMixIn(this.getClass(), ModelForJsonObjectWithEmptyValues.class);
       final String json = mapper.writeValueAsString(this);
       return new JsonObject(json);
 

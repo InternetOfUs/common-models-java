@@ -63,13 +63,13 @@ public class SocialPractice extends Model implements Validable, Mergeable<Social
   /**
    * The materials necessaries for the social practice.
    */
-  @Schema(description = "The materials necessaries for the social practice", anyOf = { Car.class })
+  @Schema(description = "The materials necessaries for the social practice")
   public Material materials;
 
   /**
    * The competences necessaries for the social practice.
    */
-  @Schema(description = "The competences necessaries for the social practice", anyOf = { DrivingLicense.class })
+  @Schema(description = "The competences necessaries for the social practice")
   public Competence competences;
 
   /**

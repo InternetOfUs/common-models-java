@@ -426,28 +426,30 @@ public interface Validations {
   }
 
   /**
-   * Validate that the double value is on the specified range.
+   * Validate that a number value is on the specified range.
    *
    * @param codePrefix the prefix of the code to use for the error message.
    * @param fieldName  name of the checking field.
    * @param value      to verify.
    * @param nullable   is{@code true} if the value can be {@code null}.
-   * @param minValue   minimum value, inclusive, of the range the value can be defined.
-   * @param maxValue   maximum value, inclusive, of the range the value can be defined.
+   * @param minValue   minimum value, inclusive, of the range the value can be defined, or {@code null} if not have
+   *                   minimum.
+   * @param maxValue   maximum value, inclusive, of the range the value can be defined, or {@code null} if not have
+   *                   maximum.
    *
    * @return the valid time stamp value.
    *
    * @throws ValidationErrorException If the value is not a valid time stamp.
    */
-  static Double validateDoubleOnRange(final String codePrefix, final String fieldName, final Double value, final boolean nullable, final double minValue, final double maxValue) throws ValidationErrorException {
+  static <T extends Number> T validateNumberOnRange(final String codePrefix, final String fieldName, final T value, final boolean nullable, final T minValue, final T maxValue) throws ValidationErrorException {
 
     if (value != null) {
 
-      if (value < minValue) {
+      if (minValue != null && value.doubleValue() < minValue.doubleValue()) {
 
         throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + value + "' is not valid because it is less than '" + minValue + "'.");
 
-      } else if (value > maxValue) {
+      } else if (maxValue != null && value.doubleValue() > maxValue.doubleValue()) {
 
         throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + value + "' is not valid because it is greather than '" + maxValue + "'.");
       }

@@ -33,7 +33,9 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import eu.internetofus.common.components.profile_manager.Language;
+import eu.internetofus.common.components.profile_manager.Competence;
+import eu.internetofus.common.components.profile_manager.Material;
+import eu.internetofus.common.components.profile_manager.Meaning;
 import eu.internetofus.common.components.profile_manager.Norm;
 import eu.internetofus.common.components.profile_manager.PlannedActivity;
 import eu.internetofus.common.components.profile_manager.RelevantLocation;
@@ -143,26 +145,6 @@ public interface Merges {
   }
 
   /**
-   * Merge two list of languages.
-   *
-   * @param targetLanguages target languages to merge.
-   * @param sourceLanguages source languages to merge.
-   * @param codePrefix      prefix for the error code.
-   * @param vertx           the event bus infrastructure to use.
-   * @param setter          function to set the merged field list into the merged model.
-   *
-   * @param <M>             type of merging model.
-   *
-   * @return the future that will provide the merged list of languages.
-   */
-  static <M> Function<M, Future<M>> mergeLanguages(final List<Language> targetLanguages, final List<Language> sourceLanguages, final String codePrefix, final Vertx vertx, final BiConsumer<M, List<Language>> setter) {
-
-    return Merges.mergeFieldList(targetLanguages, sourceLanguages, codePrefix, vertx, language -> language.code != null || language.name != null,
-        (targetLang, sourceLang) -> (targetLang.code != null && targetLang.code.equals(sourceLang.code) || targetLang.name != null && targetLang.name.equals(sourceLang.name)), setter);
-
-  }
-
-  /**
    * Merge two list of norms.
    *
    * @param targetNorms target norms to merge.
@@ -241,6 +223,66 @@ public interface Merges {
 
     return Merges.mergeFieldList(targetSocialPractices, sourceSocialPractices, codePrefix, vertx, socialpractice -> socialpractice.id != null,
         (targetSocialPractice, sourceSocialPractice) -> targetSocialPractice.id.equals(sourceSocialPractice.id), setter);
+
+  }
+
+  /**
+   * Merge two list of materials.
+   *
+   * @param targetMaterials target materials to merge.
+   * @param sourceMaterials source materials to merge.
+   * @param codePrefix      prefix for the error code.
+   * @param vertx           the event bus infrastructure to use.
+   * @param setter          function to set the merged field list into the merged model.
+   *
+   * @param <M>             type of merging model.
+   *
+   * @return the future that will provide the merged list of materials.
+   */
+  static <M> Function<M, Future<M>> mergeMaterials(final List<Material> targetMaterials, final List<Material> sourceMaterials, final String codePrefix, final Vertx vertx, final BiConsumer<M, List<Material>> setter) {
+
+    return Merges.mergeFieldList(targetMaterials, sourceMaterials, codePrefix, vertx, material -> material.name != null && material.classification != null,
+        (targetMaterial, sourceMaterial) -> targetMaterial.name.equals(sourceMaterial.name) && targetMaterial.classification.equals(sourceMaterial.classification), setter);
+
+  }
+
+  /**
+   * Merge two list of competences.
+   *
+   * @param targetCompetences target competences to merge.
+   * @param sourceCompetences source competences to merge.
+   * @param codePrefix        prefix for the error code.
+   * @param vertx             the event bus infrastructure to use.
+   * @param setter            function to set the merged field list into the merged model.
+   *
+   * @param <M>               type of merging model.
+   *
+   * @return the future that will provide the merged list of competences.
+   */
+  static <M> Function<M, Future<M>> mergeCompetences(final List<Competence> targetCompetences, final List<Competence> sourceCompetences, final String codePrefix, final Vertx vertx, final BiConsumer<M, List<Competence>> setter) {
+
+    return Merges.mergeFieldList(targetCompetences, sourceCompetences, codePrefix, vertx, competence -> competence.name != null && competence.ontology != null,
+        (targetCompetence, sourceCompetence) -> targetCompetence.name.equals(sourceCompetence.name) && targetCompetence.ontology.equals(sourceCompetence.ontology), setter);
+
+  }
+
+  /**
+   * Merge two list of meanings.
+   *
+   * @param targetMeanings target meanings to merge.
+   * @param sourceMeanings source meanings to merge.
+   * @param codePrefix     prefix for the error code.
+   * @param vertx          the event bus infrastructure to use.
+   * @param setter         function to set the merged field list into the merged model.
+   *
+   * @param <M>            type of merging model.
+   *
+   * @return the future that will provide the merged list of meanings.
+   */
+  static <M> Function<M, Future<M>> mergeMeanings(final List<Meaning> targetMeanings, final List<Meaning> sourceMeanings, final String codePrefix, final Vertx vertx, final BiConsumer<M, List<Meaning>> setter) {
+
+    return Merges.mergeFieldList(targetMeanings, sourceMeanings, codePrefix, vertx, meaning -> meaning.name != null && meaning.category != null,
+        (targetMeaning, sourceMeaning) -> targetMeaning.name.equals(sourceMeaning.name) && targetMeaning.category.equals(sourceMeaning.category), setter);
 
   }
 

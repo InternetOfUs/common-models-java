@@ -155,10 +155,16 @@ public class MessageTest extends ModelTestCase<Message> {
 
       model.content = new TaskTransactionTest().createModelExample(index).toJsonObject();
 
-    } else {
+    } else if (model.type == Type.INCENTIVE) {
 
       model.content = new IncentiveTest().createModelExample(index).toJsonObject();
+
+    }else {
+
+      model.content = new JsonObject();
     }
+
+
 
     return model;
 
@@ -189,10 +195,11 @@ public class MessageTest extends ModelTestCase<Message> {
 
         content.put("taskId", model.taskId);
 
-      } else {
+      } else if (model.type == Type.INCENTIVE) {
 
         content.put("AppID", model.appId);
         content.put("UserId", model.senderId);
+
       }
 
       createHandler.handle(Future.succeededFuture(model));

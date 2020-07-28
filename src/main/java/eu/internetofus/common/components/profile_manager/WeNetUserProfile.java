@@ -102,12 +102,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
   public String nationality;
 
   /**
-   * The languages that the user can understand.
-   */
-  @ArraySchema(schema = @Schema(implementation = Language.class), arraySchema = @Schema(description = "The languages that the user can understand"))
-  public List<Language> languages;
-
-  /**
    * The email of the user.
    */
   @Schema(description = "The occupation of the user", example = "nurse")
@@ -148,6 +142,24 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
    */
   @ArraySchema(schema = @Schema(implementation = Routine.class), arraySchema = @Schema(description = "The user routines"))
   public List<Routine> personalBehaviors;
+
+  /**
+   * The materials of the user.
+   */
+  @ArraySchema(schema = @Schema(implementation = Material.class), arraySchema = @Schema(description = "The materials that has the user"))
+  public List<Material> materials;
+
+  /**
+   * The competences of the user.
+   */
+  @ArraySchema(schema = @Schema(implementation = Competence.class), arraySchema = @Schema(description = "The competences of the user"))
+  public List<Competence> competences;
+
+  /**
+   * The meanings of the user.
+   */
+  @ArraySchema(schema = @Schema(implementation = Meaning.class), arraySchema = @Schema(description = "The meanings of the user"))
+  public List<Meaning> meanings;
 
   /**
    * {@inheritDoc}
@@ -195,7 +207,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
       this.phoneNumber = Validations.validateNullableTelephoneField(codePrefix, "phoneNumber", this.locale, this.phoneNumber);
       this.avatar = Validations.validateNullableURLField(codePrefix, "avatar", this.avatar);
       this.nationality = Validations.validateNullableStringField(codePrefix, "nationality", 255, this.nationality);
-      future = future.compose(Validations.validate(this.languages, (a, b) -> a.equals(b), codePrefix + ".languages", vertx));
       this.occupation = Validations.validateNullableStringField(codePrefix, "occupation", 255, this.occupation);
       future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
       future = future.compose(Validations.validate(this.plannedActivities, (a, b) -> a.equals(b), codePrefix + ".plannedActivities", vertx));
@@ -203,6 +214,9 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
       future = future.compose(Validations.validate(this.relationships, (a, b) -> a.equals(b), codePrefix + ".relationships", vertx));
       future = future.compose(Validations.validate(this.socialPractices, (a, b) -> a.equals(b), codePrefix + ".socialPractices", vertx));
       future = future.compose(Validations.validate(this.personalBehaviors, (a, b) -> a.equals(b), codePrefix + ".personalBehaviors", vertx));
+      future = future.compose(Validations.validate(this.materials, (a, b) -> a.equals(b), codePrefix + ".materials", vertx));
+      future = future.compose(Validations.validate(this.competences, (a, b) -> a.equals(b), codePrefix + ".competences", vertx));
+      future = future.compose(Validations.validate(this.meanings, (a, b) -> a.equals(b), codePrefix + ".meanings", vertx));
 
       promise.complete();
 
@@ -277,10 +291,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
 
       future = future.compose(Merges.mergeField(this.dateOfBirth, source.dateOfBirth, codePrefix + ".dateOfBirth", vertx, (model, mergedDateOfBirth) -> model.dateOfBirth = (AliveBirthDate) mergedDateOfBirth));
 
-      future = future.compose(Merges.mergeLanguages(this.languages, source.languages, codePrefix + ".languages", vertx, (model, languages) -> {
-        model.languages = languages;
-      }));
-
       future = future.compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
         model.norms = mergedNorms;
       }));
@@ -299,6 +309,18 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
 
       future = future.compose(Merges.mergeRoutines(this.personalBehaviors, source.personalBehaviors, codePrefix + ".personalBehaviors", vertx, (model, mergedPersonalBehaviors) -> {
         model.personalBehaviors = mergedPersonalBehaviors;
+      }));
+
+      future = future.compose(Merges.mergeMaterials(this.materials, source.materials, codePrefix + ".materials", vertx, (model, mergedMaterials) -> {
+        model.materials = mergedMaterials;
+      }));
+
+      future = future.compose(Merges.mergeCompetences(this.competences, source.competences, codePrefix + ".competences", vertx, (model, mergedCompetences) -> {
+        model.competences = mergedCompetences;
+      }));
+
+      future = future.compose(Merges.mergeMeanings(this.meanings, source.meanings, codePrefix + ".meanings", vertx, (model, mergedMeanings) -> {
+        model.meanings = mergedMeanings;
       }));
 
       promise.complete(merged);

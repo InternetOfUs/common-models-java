@@ -107,7 +107,7 @@ public class SocialNetworkRelationship extends Model implements Validable, Merge
 
         } else {
 
-          this.weight = Validations.validateDoubleOnRange(codePrefix, "weight", this.weight, true, 0d, 1d);
+          this.weight = Validations.validateNumberOnRange(codePrefix, "weight", this.weight, true, 0d, 1d);
           future = future.compose(mapper -> {
 
             final Promise<Void> searchPromise = Promise.promise();

@@ -205,4 +205,14 @@ public class ModelTest {
 
   }
 
+  /**
+   * Check capture exception when can not get form a response.
+   */
+  @Test
+  public void shouldCaptureExceptionWhenGetFromResponse() {
+
+    assertThat(Model.fromResponse(null, DummyModel.class)).isNull();
+
+  }
+
 }
