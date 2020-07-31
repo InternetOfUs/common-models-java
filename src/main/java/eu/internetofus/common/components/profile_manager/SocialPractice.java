@@ -63,14 +63,14 @@ public class SocialPractice extends Model implements Validable, Mergeable<Social
   /**
    * The materials necessaries for the social practice.
    */
-  @Schema(description = "The materials necessaries for the social practice")
-  public Material materials;
+  @ArraySchema(schema = @Schema(implementation = Material.class), arraySchema = @Schema(description = "The materials necessaries for the social practice"))
+  public List<Material> materials;
 
   /**
    * The competences necessaries for the social practice.
    */
-  @Schema(description = "The competences necessaries for the social practice")
-  public Competence competences;
+  @ArraySchema(schema = @Schema(implementation = Competence.class), arraySchema = @Schema(description = "The competences necessaries for the social practice"))
+  public List<Competence> competences;
 
   /**
    * The norms of the social practice.
@@ -102,17 +102,8 @@ public class SocialPractice extends Model implements Validable, Mergeable<Social
       this.label = Validations.validateNullableStringField(codePrefix, "label", 255, this.label);
 
       Future<Void> future = Future.succeededFuture();
-      if (this.competences != null) {
-
-        future = future.compose(mapper -> this.competences.validate(codePrefix + ".competences", vertx));
-
-      }
-
-      if (this.materials != null) {
-
-        future = future.compose(mapper -> this.materials.validate(codePrefix + ".materials", vertx));
-      }
-
+      future = future.compose(Validations.validate(this.materials, (a, b) -> a.name.equals(b.name) && a.classification.equals(b.classification), codePrefix + ".materials", vertx));
+      future = future.compose(Validations.validate(this.competences, (a, b) -> a.name.equals(b.name) && a.ontology.equals(b.ontology), codePrefix + ".competences", vertx));
       future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
 
       return future;
@@ -141,9 +132,12 @@ public class SocialPractice extends Model implements Validable, Mergeable<Social
 
       Future<SocialPractice> future = merged.validate(codePrefix, vertx).map(empty -> merged);
 
-      future = future.compose(Merges.mergeField(this.competences, source.competences, codePrefix + ".competences", vertx, (model, mergedCompetences) -> model.competences = mergedCompetences));
-      future = future.compose(Merges.mergeField(this.materials, source.materials, codePrefix + ".materials", vertx, (model, mergedMaterials) -> model.materials = mergedMaterials));
-
+      future = future.compose(Merges.mergeMaterials(this.materials, source.materials, codePrefix + ".materials", vertx, (model, mergedMaterials) -> {
+        model.materials = mergedMaterials;
+      }));
+      future = future.compose(Merges.mergeCompetences(this.competences, source.competences, codePrefix + ".competences", vertx, (model, mergedCompetences) -> {
+        model.competences = mergedCompetences;
+      }));
       future = future.compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
         model.norms = mergedNorms;
       }));

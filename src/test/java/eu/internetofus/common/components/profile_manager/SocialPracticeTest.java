@@ -62,8 +62,10 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final SocialPractice model = new SocialPractice();
     model.id = null;
     model.label = "label_" + index;
-    model.materials = new MaterialTest().createModelExample(index);
-    model.competences = new CompetenceTest().createModelExample(index);
+    model.materials = new ArrayList<>();
+    model.materials.add(new MaterialTest().createModelExample(index));
+    model.competences = new ArrayList<>();
+    model.competences.add(new CompetenceTest().createModelExample(index));
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(index));
     return model;
@@ -98,8 +100,10 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final SocialPractice model = new SocialPractice();
     model.id = "      ";
     model.label = "    label    ";
-    model.competences = new CompetenceTest().createModelExample(1);
-    model.materials = new MaterialTest().createModelExample(1);
+    model.materials = new ArrayList<>();
+    model.materials.add(new MaterialTest().createModelExample(1));
+    model.competences = new ArrayList<>();
+    model.competences.add(new CompetenceTest().createModelExample(1));
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(1));
     assertIsValid(model, vertx, testContext, () -> {
@@ -107,8 +111,10 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
       final SocialPractice expected = new SocialPractice();
       expected.id = model.id;
       expected.label = "label";
-      expected.competences = new CompetenceTest().createModelExample(1);
-      expected.materials = new MaterialTest().createModelExample(1);
+      expected.materials = new ArrayList<>();
+      expected.materials.add(new MaterialTest().createModelExample(1));
+      expected.competences = new ArrayList<>();
+      expected.competences.add(new CompetenceTest().createModelExample(1));
       expected.norms = new ArrayList<>();
       expected.norms.add(new NormTest().createModelExample(1));
       expected.norms.get(0).id = model.norms.get(0).id;
