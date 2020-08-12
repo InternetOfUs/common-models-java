@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
+import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
@@ -44,7 +45,9 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 
@@ -431,7 +434,7 @@ public interface Validations {
    * @param codePrefix the prefix of the code to use for the error message.
    * @param fieldName  name of the checking field.
    * @param value      to verify.
-   * @param nullable   is{@code true} if the value can be {@code null}.
+   * @param nullable   is {@code true} if the value can be {@code null}.
    * @param minValue   minimum value, inclusive, of the range the value can be defined, or {@code null} if not have
    *                   minimum.
    * @param maxValue   maximum value, inclusive, of the range the value can be defined, or {@code null} if not have
@@ -462,4 +465,50 @@ public interface Validations {
     return value;
   }
 
+  /**
+   * Validate that an identifier is valid.
+   *
+   * @param future     to compose.
+   * @param codePrefix the prefix of the code to use for the error message.
+   * @param fieldName  name of the checking field.
+   * @param id         value to verify.
+   * @param exist      is {@code true} if the identifier has to exist.
+   * @param searcher   component to search for the model.
+   *
+   * @param <T>        type of model associated to the id.
+   *
+   * @return the mapper that will check the identifier.
+   */
+  static <T> Future<Void> composeValidateId(final Future<Void> future, final String codePrefix, final String fieldName, final String id, final boolean exist, final BiConsumer<String, Handler<AsyncResult<T>>> searcher) {
+
+    return future.compose(mapper -> {
+
+      final Promise<Void> validatePromise = Promise.promise();
+      searcher.accept(id, search -> {
+
+        if (search.failed()) {
+
+          if (exist) {
+
+            validatePromise.fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' '" + id + "' is not defined."));
+
+          } else {
+
+            validatePromise.complete();
+          }
+
+        } else if (exist) {
+
+          validatePromise.complete();
+
+        } else {
+
+          validatePromise.fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' '" + id + "' has already defined."));
+        }
+      });
+
+      return validatePromise.future();
+
+    });
+  }
 }

@@ -293,7 +293,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.name = new UserNameTest().createModelExample(1);
     model.name.first = ValidationsTest.STRING_256;
     assertIsNotValid(model, "name.first", vertx, testContext);
-    assertIsNotValid(model, "name.first", vertx, testContext);
 
   }
 

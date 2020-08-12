@@ -93,4 +93,34 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void createCommunity(final JsonObject community, final Handler<AsyncResult<JsonObject>> createHandler) {
+
+    this.post(community, createHandler, "/communities");
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveJsonCommunity(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
+
+    this.getJsonObject(retrieveHandler, "/communities/", id);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteCommunity(final String id, final Handler<AsyncResult<Void>> deleteHandler) {
+
+    this.delete(deleteHandler, "/communities/", id);
+
+  }
+
 }

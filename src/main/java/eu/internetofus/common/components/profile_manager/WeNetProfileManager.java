@@ -46,86 +46,134 @@ import io.vertx.serviceproxy.ServiceBinder;
 @ProxyGen
 public interface WeNetProfileManager {
 
-	/**
-	 * The address of this service.
-	 */
-	String ADDRESS = "wenet_component.profileManager";
+  /**
+   * The address of this service.
+   */
+  String ADDRESS = "wenet_component.profileManager";
 
-	/**
-	 * Create a proxy of the {@link WeNetProfileManager}.
-	 *
-	 * @param vertx where the service has to be used.
-	 *
-	 * @return the task.
-	 */
-	static WeNetProfileManager createProxy(Vertx vertx) {
+  /**
+   * Create a proxy of the {@link WeNetProfileManager}.
+   *
+   * @param vertx where the service has to be used.
+   *
+   * @return the task.
+   */
+  static WeNetProfileManager createProxy(final Vertx vertx) {
 
-		return new WeNetProfileManagerVertxEBProxy(vertx, WeNetProfileManager.ADDRESS);
-	}
+    return new WeNetProfileManagerVertxEBProxy(vertx, WeNetProfileManager.ADDRESS);
+  }
 
-	/**
-	 * Register this service.
-	 *
-	 * @param vertx  that contains the event bus to use.
-	 * @param client to do HTTP requests to other services.
-	 * @param conf   configuration to use.
-	 */
-	static void register(Vertx vertx, WebClient client, JsonObject conf) {
+  /**
+   * Register this service.
+   *
+   * @param vertx  that contains the event bus to use.
+   * @param client to do HTTP requests to other services.
+   * @param conf   configuration to use.
+   */
+  static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-		new ServiceBinder(vertx).setAddress(WeNetProfileManager.ADDRESS).register(WeNetProfileManager.class,
-				new WeNetProfileManagerClient(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetProfileManager.ADDRESS).register(WeNetProfileManager.class, new WeNetProfileManagerClient(client, conf));
 
-	}
+  }
 
-	/**
-	 * Create a {@link WeNetUserProfile} in Json format.
-	 *
-	 * @param profile       to create.
-	 * @param createHandler handler to manage the creation process.
-	 */
-	void createProfile(@NotNull JsonObject profile, @NotNull Handler<AsyncResult<JsonObject>> createHandler);
+  /**
+   * Create a {@link WeNetUserProfile} in Json format.
+   *
+   * @param profile       to create.
+   * @param createHandler handler to manage the creation process.
+   */
+  void createProfile(@NotNull JsonObject profile, @NotNull Handler<AsyncResult<JsonObject>> createHandler);
 
-	/**
-	 * Create a profile.
-	 *
-	 * @param profile       to create.
-	 * @param createHandler handler to manage the creation process.
-	 */
-	@GenIgnore
-	default void createProfile(@NotNull WeNetUserProfile profile,
-			@NotNull Handler<AsyncResult<WeNetUserProfile>> createHandler) {
+  /**
+   * Create a profile.
+   *
+   * @param profile       to create.
+   * @param createHandler handler to manage the creation process.
+   */
+  @GenIgnore
+  default void createProfile(@NotNull final WeNetUserProfile profile, @NotNull final Handler<AsyncResult<WeNetUserProfile>> createHandler) {
 
-		this.createProfile(profile.toJsonObject(), ComponentClient.handlerForModel(WeNetUserProfile.class, createHandler));
+    this.createProfile(profile.toJsonObject(), ComponentClient.handlerForModel(WeNetUserProfile.class, createHandler));
 
-	}
+  }
 
-	/**
-	 * Return a {@link WeNetUserProfile} in Json format.
-	 *
-	 * @param id              identifier of the profile to get.
-	 * @param retrieveHandler handler to manage the retrieve process.
-	 */
-	void retrieveJsonProfile(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+  /**
+   * Return a {@link WeNetUserProfile} in Json format.
+   *
+   * @param id              identifier of the profile to get.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  void retrieveJsonProfile(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
 
-	/**
-	 * Return a profile.
-	 *
-	 * @param id              identifier of the profile to get.
-	 * @param retrieveHandler handler to manage the retrieve process.
-	 */
-	@GenIgnore
-	default void retrieveProfile(@NotNull String id, @NotNull Handler<AsyncResult<WeNetUserProfile>> retrieveHandler) {
+  /**
+   * Return a profile.
+   *
+   * @param id              identifier of the profile to get.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  @GenIgnore
+  default void retrieveProfile(@NotNull final String id, @NotNull final Handler<AsyncResult<WeNetUserProfile>> retrieveHandler) {
 
-		this.retrieveJsonProfile(id, ComponentClient.handlerForModel(WeNetUserProfile.class, retrieveHandler));
+    this.retrieveJsonProfile(id, ComponentClient.handlerForModel(WeNetUserProfile.class, retrieveHandler));
 
-	}
+  }
 
-	/**
-	 * Delete a profile.
-	 *
-	 * @param id            identifier of the profile to get.
-	 * @param deleteHandler handler to manage the delete process.
-	 */
-	void deleteProfile(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
+  /**
+   * Delete a profile.
+   *
+   * @param id            identifier of the profile to get.
+   * @param deleteHandler handler to manage the delete process.
+   */
+  void deleteProfile(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
+
+  /**
+   * Create a {@link CommunityProfile} in Json format.
+   *
+   * @param community     to create.
+   * @param createHandler handler to manage the creation process.
+   */
+  void createCommunity(@NotNull JsonObject community, @NotNull Handler<AsyncResult<JsonObject>> createHandler);
+
+  /**
+   * Create a community.
+   *
+   * @param community     to create.
+   * @param createHandler handler to manage the creation process.
+   */
+  @GenIgnore
+  default void createCommunity(@NotNull final CommunityProfile community, @NotNull final Handler<AsyncResult<CommunityProfile>> createHandler) {
+
+    this.createCommunity(community.toJsonObject(), ComponentClient.handlerForModel(CommunityProfile.class, createHandler));
+
+  }
+
+  /**
+   * Return a {@link CommunityProfile} in Json format.
+   *
+   * @param id              identifier of the community to get.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  void retrieveJsonCommunity(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+
+  /**
+   * Return a community.
+   *
+   * @param id              identifier of the community to get.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  @GenIgnore
+  default void retrieveCommunity(@NotNull final String id, @NotNull final Handler<AsyncResult<CommunityProfile>> retrieveHandler) {
+
+    this.retrieveJsonCommunity(id, ComponentClient.handlerForModel(CommunityProfile.class, retrieveHandler));
+
+  }
+
+  /**
+   * Delete a community.
+   *
+   * @param id            identifier of the community to get.
+   * @param deleteHandler handler to manage the delete process.
+   */
+  void deleteCommunity(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
 
 }

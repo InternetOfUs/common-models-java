@@ -33,6 +33,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import eu.internetofus.common.components.profile_manager.CommunityMember;
 import eu.internetofus.common.components.profile_manager.Competence;
 import eu.internetofus.common.components.profile_manager.Material;
 import eu.internetofus.common.components.profile_manager.Meaning;
@@ -406,6 +407,25 @@ public interface Merges {
 
     return Merges.mergeFieldList(targetTaskTransactionTypes, sourceTaskTransactionTypes, codePrefix, vertx, taskTransactionType -> taskTransactionType.label != null,
         (targetTaskTransactionType, sourceTaskTransactionType) -> targetTaskTransactionType.label.equals(sourceTaskTransactionType.label), setter);
+
+  }
+
+  /**
+   * Merge two list of community members.
+   *
+   * @param targetMembers target community members to merge.
+   * @param sourceMembers source community members to merge.
+   * @param codePrefix    prefix for the error code.
+   * @param vertx         the event bus infrastructure to use.
+   * @param setter        function to set the merged field list into the merged model.
+   *
+   * @param <M>           type of merging model.
+   *
+   * @return the future that will provide the merged list of community members.
+   */
+  static <M> Function<M, Future<M>> mergeMembers(final List<CommunityMember> targetMembers, final List<CommunityMember> sourceMembers, final String codePrefix, final Vertx vertx, final BiConsumer<M, List<CommunityMember>> setter) {
+
+    return Merges.mergeFieldList(targetMembers, sourceMembers, codePrefix, vertx, member -> member.userId != null, (targetMember, sourceMember) -> targetMember.userId.equals(sourceMember.userId), setter);
 
   }
 

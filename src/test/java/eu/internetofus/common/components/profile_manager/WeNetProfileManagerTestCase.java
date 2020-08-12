@@ -125,4 +125,87 @@ public abstract class WeNetProfileManagerTestCase {
 
   }
 
+
+  /**
+   * Should not create a bad community.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotCreateBadCommunity(final Vertx vertx, final VertxTestContext testContext) {
+
+    WeNetProfileManager.createProxy(vertx).createCommunity(new JsonObject().put("undefinedField", "value"),
+        testContext.failing(handler -> {
+          testContext.completeNow();
+
+        }));
+
+  }
+
+  /**
+   * Should not retrieve undefined community.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotRetrieveUndefinedCommunity(final Vertx vertx, final VertxTestContext testContext) {
+
+    WeNetProfileManager.createProxy(vertx).retrieveCommunity("undefined-community-identifier",
+        testContext.failing(handler -> {
+          testContext.completeNow();
+
+        }));
+
+  }
+
+  /**
+   * Should not delete undefined community.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotDeleteUndefinedCommunity(final Vertx vertx, final VertxTestContext testContext) {
+
+    WeNetProfileManager.createProxy(vertx).deleteCommunity("undefined-community-identifier",
+        testContext.failing(handler -> {
+          testContext.completeNow();
+
+        }));
+
+  }
+
+  /**
+   * Should create, retrieve and delete a community.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldCreateRetrieveAndDeleteCommunity(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetProfileManager service = WeNetProfileManager.createProxy(vertx);
+    service.createCommunity(new CommunityProfile(), testContext.succeeding(create -> {
+
+      final String id = create.id;
+      service.retrieveCommunity(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
+
+        assertThat(create).isEqualTo(retrieve);
+        service.deleteCommunity(id, testContext.succeeding(empty -> {
+
+          service.retrieveCommunity(id, testContext.failing(handler -> {
+            testContext.completeNow();
+
+          }));
+
+        }));
+
+      })));
+
+    }));
+
+  }
+
 }

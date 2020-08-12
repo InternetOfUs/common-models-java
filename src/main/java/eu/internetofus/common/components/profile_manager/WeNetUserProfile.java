@@ -236,8 +236,7 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
 
     final Promise<WeNetUserProfile> promise = Promise.promise();
     Future<WeNetUserProfile> future = promise.future();
-
-    try {
+    if (source != null) {
 
       final WeNetUserProfile merged = new WeNetUserProfile();
       merged.gender = source.gender;
@@ -273,7 +272,7 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
         merged.nationality = this.nationality;
       }
 
-      merged.occupation = Validations.validateNullableStringField(codePrefix, "occupation", 255, source.occupation);
+      merged.occupation = source.occupation;
       if (merged.occupation == null) {
 
         merged.occupation = this.occupation;
@@ -334,11 +333,10 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
         return mergedValidatedModel;
       });
 
-      return future;
 
-    } catch (final ValidationErrorException validationError) {
+    } else {
 
-      promise.fail(validationError);
+      promise.complete(this);
     }
 
     return future;

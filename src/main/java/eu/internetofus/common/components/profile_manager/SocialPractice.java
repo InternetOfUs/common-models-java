@@ -38,6 +38,7 @@ import eu.internetofus.common.components.Validations;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 
 /**
@@ -91,6 +92,9 @@ public class SocialPractice extends Model implements Validable, Mergeable<Social
   @Override
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
+    final Promise<Void> promise = Promise.promise();
+    Future<Void> future = promise.future();
+
     try {
 
       this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
@@ -101,17 +105,17 @@ public class SocialPractice extends Model implements Validable, Mergeable<Social
 
       this.label = Validations.validateNullableStringField(codePrefix, "label", 255, this.label);
 
-      Future<Void> future = Future.succeededFuture();
       future = future.compose(Validations.validate(this.materials, (a, b) -> a.name.equals(b.name) && a.classification.equals(b.classification), codePrefix + ".materials", vertx));
       future = future.compose(Validations.validate(this.competences, (a, b) -> a.name.equals(b.name) && a.ontology.equals(b.ontology), codePrefix + ".competences", vertx));
-      future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
-
-      return future;
+      future = future.compose(Validations.validate(this.norms, (a, b) -> a.id.equals(b.id), codePrefix + ".norms", vertx));
+      promise.complete();
 
     } catch (final ValidationErrorException validationError) {
 
-      return Future.failedFuture(validationError);
+      promise.fail(validationError);
     }
+
+    return future;
 
   }
 
