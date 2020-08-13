@@ -543,16 +543,25 @@ public class ComponentClient {
           final List<T> models = new ArrayList<>();
           for (int i = 0; i < result.size(); i++) {
 
-            final JsonObject object = result.getJsonObject(i);
-            final T model = Model.fromJsonObject(object, type);
-            if (model == null) {
+            try {
 
-              Logger.trace(handler.cause(), "Unexpected content {} at {} is not of the type {}", result, i, type);
+              final JsonObject object = result.getJsonObject(i);
+              final T model = Model.fromJsonObject(object, type);
+              if (model == null) {
+
+                Logger.trace("Unexpected content {} at {} is not of the type {}", result, i, type);
+                retrieveHandler.handle(Future.failedFuture(result + " at '" + i + "' is not of the type '" + type + "'."));
+
+              } else {
+
+                models.add(model);
+              }
+
+            }catch(final ClassCastException cause) {
+
+              Logger.trace(cause, "Unexpected content {} at {} is not of the type {}", result, i, type);
               retrieveHandler.handle(Future.failedFuture(result + " at '" + i + "' is not of the type '" + type + "'."));
 
-            } else {
-
-              models.add(model);
             }
 
           }
