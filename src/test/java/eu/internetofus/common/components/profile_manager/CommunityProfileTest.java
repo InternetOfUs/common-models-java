@@ -564,4 +564,36 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
 
   }
 
+  /**
+   * Check merge social practices profiles.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldMergeWithSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      target.socialPractices = new ArrayList<>();
+      target.socialPractices.add(new SocialPractice());
+      target.socialPractices.get(0).id = "1";
+      final CommunityProfile source = new CommunityProfile();
+      source.socialPractices = new ArrayList<>();
+      source.socialPractices.add(new SocialPractice());
+      source.socialPractices.add(new SocialPractice());
+      source.socialPractices.add(new SocialPractice());
+      source.socialPractices.get(1).id = "1";
+      assertCanMerge(target, source, vertx, testContext, merged -> {
+
+        assertThat(merged.socialPractices).isNotEqualTo(target.socialPractices).isEqualTo(source.socialPractices);
+        assertThat(merged.socialPractices.get(0).id).isNotEmpty();
+        assertThat(merged.socialPractices.get(1).id).isEqualTo("1");
+        assertThat(merged.socialPractices.get(2).id).isNotEmpty();
+
+      });
+    }));
+  }
+
 }

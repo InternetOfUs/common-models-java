@@ -134,8 +134,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.relevantLocations = new ArrayList<>();
     model.relevantLocations.add(new RelevantLocationTest().createModelExample(index));
     model.relationships = null;
-    model.socialPractices = new ArrayList<>();
-    model.socialPractices.add(new SocialPracticeTest().createModelExample(index));
     model.personalBehaviors = null;
     model.materials = new ArrayList<>();
     model.materials.add(new MaterialTest().createModelExample(index));
@@ -587,27 +585,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       assertIsValid(model, vertx, testContext);
 
     }));
-
-  }
-
-  /**
-   * Check that not accept profiles with bad social practices.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithABadSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
-
-    final WeNetUserProfile model = new WeNetUserProfile();
-    model.socialPractices = new ArrayList<>();
-    model.socialPractices.add(new SocialPractice());
-    model.socialPractices.add(new SocialPractice());
-    model.socialPractices.add(new SocialPractice());
-    model.socialPractices.get(1).label = ValidationsTest.STRING_256;
-    assertIsNotValid(model, "socialPractices[1].label", vertx, testContext);
 
   }
 
@@ -1225,107 +1202,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       });
 
     }));
-
-  }
-
-  /**
-   * Check that not accept profiles with bad social practices.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithABadSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
-
-    final WeNetUserProfile source = new WeNetUserProfile();
-    source.socialPractices = new ArrayList<>();
-    source.socialPractices.add(new SocialPractice());
-    source.socialPractices.add(new SocialPractice());
-    source.socialPractices.add(new SocialPractice());
-    source.socialPractices.get(1).label = ValidationsTest.STRING_256;
-    assertCannotMerge(new WeNetUserProfile(), source, "socialPractices[1].label", vertx, testContext);
-
-  }
-
-  /**
-   * Check that not merge profiles with duplicated social practice identifiers.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithADuplicatedSocialPracticeIds(final Vertx vertx, final VertxTestContext testContext) {
-
-    final WeNetUserProfile source = new WeNetUserProfile();
-    source.socialPractices = new ArrayList<>();
-    source.socialPractices.add(new SocialPractice());
-    source.socialPractices.add(new SocialPractice());
-    source.socialPractices.add(new SocialPractice());
-    source.socialPractices.get(1).id = "1";
-    source.socialPractices.get(2).id = "1";
-    final WeNetUserProfile target = new WeNetUserProfile();
-    target.socialPractices = new ArrayList<>();
-    target.socialPractices.add(new SocialPractice());
-    target.socialPractices.get(0).id = "1";
-    assertCannotMerge(target, source, "socialPractices[2]", vertx, testContext);
-
-  }
-
-  /**
-   * Check that not merge profiles with not defined social practice id.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithDuplicatedSocialPracticeId(final Vertx vertx, final VertxTestContext testContext) {
-
-    final WeNetUserProfile source = new WeNetUserProfile();
-    source.socialPractices = new ArrayList<>();
-    source.socialPractices.add(new SocialPractice());
-    source.socialPractices.add(new SocialPractice());
-    source.socialPractices.add(new SocialPractice());
-    source.socialPractices.get(0).id = "1";
-    source.socialPractices.get(1).id = "1";
-    assertCannotMerge(new WeNetUserProfile(), source, "socialPractices[1]", vertx, testContext);
-
-  }
-
-  /**
-   * Check merge social practices profiles.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldMergeWithSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
-
-    final WeNetUserProfile target = new WeNetUserProfile();
-    target.socialPractices = new ArrayList<>();
-    target.socialPractices.add(new SocialPractice());
-    target.socialPractices.get(0).id = "1";
-    final WeNetUserProfile source = new WeNetUserProfile();
-    source.socialPractices = new ArrayList<>();
-    source.socialPractices.add(new SocialPractice());
-    source.socialPractices.add(new SocialPractice());
-    source.socialPractices.add(new SocialPractice());
-    source.socialPractices.get(1).id = "1";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
-
-      assertThat(merged.socialPractices).isNotEqualTo(target.socialPractices).isEqualTo(source.socialPractices);
-      assertThat(merged.socialPractices.get(0).id).isNotEmpty();
-      assertThat(merged.socialPractices.get(1).id).isEqualTo("1");
-      assertThat(merged.socialPractices.get(2).id).isNotEmpty();
-
-    });
 
   }
 
@@ -2012,130 +1888,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
             target.relevantLocations.add(0, new RelevantLocation());
             target.relevantLocations.get(0).id = merged.relevantLocations.get(0).id;
             target.relevantLocations.get(1).label = "NEW label";
-            assertThat(merged).isEqualTo(target);
-
-          });
-        }));
-      });
-    }));
-  }
-
-  /**
-   * Check merge remove social practices.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldMergeRemoveSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(created -> {
-
-      assertIsValid(created, vertx, testContext, () -> {
-
-        StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
-
-          final WeNetUserProfile source = new WeNetUserProfile();
-          source.socialPractices = new ArrayList<>();
-          assertCanMerge(target, source, vertx, testContext, merged -> {
-
-            assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-            target.socialPractices.clear();
-            assertThat(merged).isEqualTo(target);
-
-          });
-        }));
-      });
-    }));
-  }
-
-  /**
-   * Check fail merge with a bad defined social practice.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  public void shouldFailMergeBadSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(created -> {
-
-      assertIsValid(created, vertx, testContext, () -> {
-
-        StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
-
-          final WeNetUserProfile source = new WeNetUserProfile();
-          source.socialPractices = new ArrayList<>();
-          source.socialPractices.add(new SocialPractice());
-          source.socialPractices.get(0).id = target.socialPractices.get(0).id;
-          source.socialPractices.get(0).label = ValidationsTest.STRING_256;
-          assertCannotMerge(target, source, "socialPractices[0].label", vertx, testContext);
-        }));
-      });
-    }));
-
-  }
-
-  /**
-   * Check fail merge with a bad new social practice.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldFailMergeBadNewSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(created -> {
-
-      assertIsValid(created, vertx, testContext, () -> {
-
-        StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
-
-          final WeNetUserProfile source = new WeNetUserProfile();
-          source.socialPractices = new ArrayList<>();
-          source.socialPractices.add(new SocialPractice());
-          source.socialPractices.get(0).label = ValidationsTest.STRING_256;
-          assertCannotMerge(target, source, "socialPractices[0].label", vertx, testContext);
-        }));
-      });
-    }));
-
-  }
-
-  /**
-   * Check merge add modify social practices.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldMergeAddModifySocialPractices(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(created -> {
-
-      assertIsValid(created, vertx, testContext, () -> {
-
-        StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
-
-          final WeNetUserProfile source = new WeNetUserProfile();
-          source.socialPractices = new ArrayList<>();
-          source.socialPractices.add(new SocialPractice());
-          source.socialPractices.add(new SocialPractice());
-          source.socialPractices.get(1).id = target.socialPractices.get(0).id;
-          source.socialPractices.get(1).label = "NEW label";
-          assertCanMerge(target, source, vertx, testContext, merged -> {
-
-            assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-            target.socialPractices.add(0, new SocialPractice());
-            target.socialPractices.get(0).id = merged.socialPractices.get(0).id;
-            target.socialPractices.get(1).label = "NEW label";
             assertThat(merged).isEqualTo(target);
 
           });

@@ -132,12 +132,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
   public List<SocialNetworkRelationship> relationships;
 
   /**
-   * The user social practices.
-   */
-  @ArraySchema(schema = @Schema(implementation = SocialPractice.class), arraySchema = @Schema(description = "The user social practices"))
-  public List<SocialPractice> socialPractices;
-
-  /**
    * The user routines.
    */
   @ArraySchema(schema = @Schema(implementation = Routine.class), arraySchema = @Schema(description = "The user routines"))
@@ -212,7 +206,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
       future = future.compose(Validations.validate(this.plannedActivities, (a, b) -> a.equals(b), codePrefix + ".plannedActivities", vertx));
       future = future.compose(Validations.validate(this.relevantLocations, (a, b) -> a.equals(b), codePrefix + ".relevantLocations", vertx));
       future = future.compose(Validations.validate(this.relationships, (a, b) -> a.equals(b), codePrefix + ".relationships", vertx));
-      future = future.compose(Validations.validate(this.socialPractices, (a, b) -> a.equals(b), codePrefix + ".socialPractices", vertx));
       future = future.compose(Validations.validate(this.personalBehaviors, (a, b) -> a.equals(b), codePrefix + ".personalBehaviors", vertx));
       future = future.compose(Validations.validate(this.materials, (a, b) -> a.equals(b), codePrefix + ".materials", vertx));
       future = future.compose(Validations.validate(this.competences, (a, b) -> a.equals(b), codePrefix + ".competences", vertx));
@@ -302,10 +295,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
         model.relevantLocations = mergedRelevantLocations;
       }));
 
-      future = future.compose(Merges.mergeSocialPractices(this.socialPractices, source.socialPractices, codePrefix + ".socialPractices", vertx, (model, mergedSocialPractices) -> {
-        model.socialPractices = mergedSocialPractices;
-      }));
-
       future = future.compose(Merges.mergeRoutines(this.personalBehaviors, source.personalBehaviors, codePrefix + ".personalBehaviors", vertx, (model, mergedPersonalBehaviors) -> {
         model.personalBehaviors = mergedPersonalBehaviors;
       }));
@@ -332,7 +321,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
         mergedValidatedModel._lastUpdateTs = this._lastUpdateTs;
         return mergedValidatedModel;
       });
-
 
     } else {
 
