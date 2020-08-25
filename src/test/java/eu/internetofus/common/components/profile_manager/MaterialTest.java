@@ -270,4 +270,22 @@ public class MaterialTest extends ModelTestCase<Material> {
 
   }
 
+  /**
+   * Should merge with {@code null}
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    assertCanMerge(target, null, vertx, testContext, merged -> {
+      assertThat(merged).isSameAs(target);
+    });
+
+  }
+
 }

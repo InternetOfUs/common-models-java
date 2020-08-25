@@ -43,6 +43,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
@@ -2266,4 +2267,92 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     });
 
   }
+
+  /**
+   * Should merge with {@code null}
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      assertCanMerge(target, null, vertx, testContext, merged -> {
+        assertThat(merged).isSameAs(target);
+      });
+    }));
+
+  }
+
+  /**
+   * Check that the model is not valid it has two norms with the same identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotValidWithDuplicatedNorms(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile model = new WeNetUserProfile();
+    model.norms = new ArrayList<>();
+    for (var i = 0; i < 2; i++) {
+
+      model.norms.add(new NormTest().createModelExample(i));
+      model.norms.get(i).id = "Duplicated Identifier";
+    }
+    assertIsNotValid(model, "norms[1]", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the model is not valid it has two relevant locations with the same identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotValidWithDuplicatedRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
+
+    final WeNetUserProfile model = new WeNetUserProfile();
+    model.relevantLocations = new ArrayList<>();
+    for (var i = 0; i < 2; i++) {
+
+      model.relevantLocations.add(new RelevantLocationTest().createModelExample(i));
+      model.relevantLocations.get(i).id = "Duplicated Identifier";
+    }
+    assertIsNotValid(model, "relevantLocations[1]", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the model is not valid it has two relevant locations with the same identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotValidWithDuplicatedPersonalBehaviors(final Vertx vertx, final VertxTestContext testContext) {
+
+    new RoutineTest().createModelExample(1, vertx, testContext, testContext.succeeding(routine -> {
+
+      final WeNetUserProfile model = new WeNetUserProfile();
+      model.personalBehaviors = new ArrayList<>();
+      model.personalBehaviors.add(routine);
+      model.personalBehaviors.add(Model.fromJsonObject(routine.toJsonObject(), Routine.class));
+      assertIsNotValid(model, "personalBehaviors[1]", vertx, testContext);
+
+    }));
+
+  }
+
 }

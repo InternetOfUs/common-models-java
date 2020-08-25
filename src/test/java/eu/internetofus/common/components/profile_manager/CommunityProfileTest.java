@@ -203,6 +203,85 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   }
 
   /**
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} with multiple members is valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldExampleWithMultipleMembersBeValid(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+      new CommunityMemberTest().createModelExample(2, vertx, testContext, testContext.succeeding(member2 -> {
+        new CommunityMemberTest().createModelExample(3, vertx, testContext, testContext.succeeding(member3 -> {
+
+          model.members.add(member2);
+          model.members.add(member3);
+          assertIsValid(model, vertx, testContext);
+
+        }));
+      }));
+    }));
+
+  }
+
+  /**
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} with multiple norms is valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldExampleWithMultipleNormsBeValid(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+      model.norms.add(new NormTest().createModelExample(2));
+      model.norms.add(new NormTest().createModelExample(3));
+      for (var i = 0; i < model.norms.size(); i++) {
+
+        model.norms.get(i).id = String.valueOf(i);
+      }
+
+      assertIsValid(model, vertx, testContext);
+
+    }));
+
+  }
+
+  /**
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} with multiple social practices is
+   * valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldExampleWithMultipleSocialPracticesBeValid(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+      model.socialPractices.add(new SocialPracticeTest().createModelExample(2));
+      model.socialPractices.add(new SocialPracticeTest().createModelExample(3));
+      for (var i = 0; i < model.socialPractices.size(); i++) {
+
+        model.socialPractices.get(i).norms.get(0).id = String.valueOf(i);
+      }
+
+      assertIsValid(model, vertx, testContext);
+
+    }));
+
+  }
+
+  /**
    * Check that it is not valid if the identifier exist.
    *
    * @param vertx       event bus to use.

@@ -202,9 +202,9 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
       this.avatar = Validations.validateNullableURLField(codePrefix, "avatar", this.avatar);
       this.nationality = Validations.validateNullableStringField(codePrefix, "nationality", 255, this.nationality);
       this.occupation = Validations.validateNullableStringField(codePrefix, "occupation", 255, this.occupation);
-      future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+      future = future.compose(Validations.validate(this.norms, (a, b) -> a.id.equals(b.id), codePrefix + ".norms", vertx));
       future = future.compose(Validations.validate(this.plannedActivities, (a, b) -> a.equals(b), codePrefix + ".plannedActivities", vertx));
-      future = future.compose(Validations.validate(this.relevantLocations, (a, b) -> a.equals(b), codePrefix + ".relevantLocations", vertx));
+      future = future.compose(Validations.validate(this.relevantLocations, (a, b) -> a.id.equals(b.id), codePrefix + ".relevantLocations", vertx));
       future = future.compose(Validations.validate(this.relationships, (a, b) -> a.equals(b), codePrefix + ".relationships", vertx));
       future = future.compose(Validations.validate(this.personalBehaviors, (a, b) -> a.equals(b), codePrefix + ".personalBehaviors", vertx));
       future = future.compose(Validations.validate(this.materials, (a, b) -> a.equals(b), codePrefix + ".materials", vertx));
