@@ -442,6 +442,8 @@ public interface Validations {
    *
    * @return the valid time stamp value.
    *
+   * @param <T> type of number to validate.
+   *
    * @throws ValidationErrorException If the value is not a valid time stamp.
    */
   static <T extends Number> T validateNumberOnRange(final String codePrefix, final String fieldName, final T value, final boolean nullable, final T minValue, final T maxValue) throws ValidationErrorException {
