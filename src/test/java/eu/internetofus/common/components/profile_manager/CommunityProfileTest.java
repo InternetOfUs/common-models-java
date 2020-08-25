@@ -130,6 +130,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
     model.members = new ArrayList<>();
     model.members.add(new CommunityMemberTest().createModelExample(index));
     model.name = "Name_" + index;
+    model.description = "Description_" + index;
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(index));
     model.socialPractices = new ArrayList<>();

@@ -268,6 +268,7 @@ public interface StoreServices {
 
     new CommunityProfileTest().createModelExample(index, vertx, testContext, testContext.succeeding(example -> {
 
+      example.id = null;
       storeCommunity(example, vertx, testContext, storeHandler);
 
     }));

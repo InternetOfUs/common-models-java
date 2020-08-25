@@ -52,11 +52,10 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotCreateBadProfile(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManager.createProxy(vertx).createProfile(new JsonObject().put("undefinedField", "value"),
-        testContext.failing(handler -> {
-          testContext.completeNow();
+    WeNetProfileManager.createProxy(vertx).createProfile(new JsonObject().put("undefinedField", "value"), testContext.failing(handler -> {
+      testContext.completeNow();
 
-        }));
+    }));
 
   }
 
@@ -69,11 +68,10 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotRetrieveUndefinedProfile(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManager.createProxy(vertx).retrieveProfile("undefined-profile-identifier",
-        testContext.failing(handler -> {
-          testContext.completeNow();
+    WeNetProfileManager.createProxy(vertx).retrieveProfile("undefined-profile-identifier", testContext.failing(handler -> {
+      testContext.completeNow();
 
-        }));
+    }));
 
   }
 
@@ -86,11 +84,10 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotDeleteUndefinedProfile(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManager.createProxy(vertx).deleteProfile("undefined-profile-identifier",
-        testContext.failing(handler -> {
-          testContext.completeNow();
+    WeNetProfileManager.createProxy(vertx).deleteProfile("undefined-profile-identifier", testContext.failing(handler -> {
+      testContext.completeNow();
 
-        }));
+    }));
 
   }
 
@@ -125,7 +122,6 @@ public abstract class WeNetProfileManagerTestCase {
 
   }
 
-
   /**
    * Should not create a bad community.
    *
@@ -135,11 +131,10 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotCreateBadCommunity(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManager.createProxy(vertx).createCommunity(new JsonObject().put("undefinedField", "value"),
-        testContext.failing(handler -> {
-          testContext.completeNow();
+    WeNetProfileManager.createProxy(vertx).createCommunity(new JsonObject().put("undefinedField", "value"), testContext.failing(handler -> {
+      testContext.completeNow();
 
-        }));
+    }));
 
   }
 
@@ -152,11 +147,10 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotRetrieveUndefinedCommunity(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManager.createProxy(vertx).retrieveCommunity("undefined-community-identifier",
-        testContext.failing(handler -> {
-          testContext.completeNow();
+    WeNetProfileManager.createProxy(vertx).retrieveCommunity("undefined-community-identifier", testContext.failing(handler -> {
+      testContext.completeNow();
 
-        }));
+    }));
 
   }
 
@@ -169,11 +163,10 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotDeleteUndefinedCommunity(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManager.createProxy(vertx).deleteCommunity("undefined-community-identifier",
-        testContext.failing(handler -> {
-          testContext.completeNow();
+    WeNetProfileManager.createProxy(vertx).deleteCommunity("undefined-community-identifier", testContext.failing(handler -> {
+      testContext.completeNow();
 
-        }));
+    }));
 
   }
 
@@ -186,23 +179,27 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldCreateRetrieveAndDeleteCommunity(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetProfileManager service = WeNetProfileManager.createProxy(vertx);
-    service.createCommunity(new CommunityProfile(), testContext.succeeding(create -> {
+    new CommunityProfileTest().createModelExample(1, vertx, testContext, testContext.succeeding(community -> {
 
-      final String id = create.id;
-      service.retrieveCommunity(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
+      final WeNetProfileManager service = WeNetProfileManager.createProxy(vertx);
+      service.createCommunity(community, testContext.succeeding(create -> {
 
-        assertThat(create).isEqualTo(retrieve);
-        service.deleteCommunity(id, testContext.succeeding(empty -> {
+        final String id = create.id;
+        service.retrieveCommunity(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
 
-          service.retrieveCommunity(id, testContext.failing(handler -> {
-            testContext.completeNow();
+          assertThat(create).isEqualTo(retrieve);
+          service.deleteCommunity(id, testContext.succeeding(empty -> {
+
+            service.retrieveCommunity(id, testContext.failing(handler -> {
+              testContext.completeNow();
+
+            }));
 
           }));
 
-        }));
+        })));
 
-      })));
+      }));
 
     }));
 
