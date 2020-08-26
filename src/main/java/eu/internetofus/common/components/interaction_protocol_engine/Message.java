@@ -283,10 +283,10 @@ public class Message extends Model implements Validable {
           }
           break;
         default:
-          //Nothing to check.
+          // Nothing to check.
         }
 
-        future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+        future = future.compose(Validations.validate(this.norms, (a, b) -> a.id.equals(b.id), codePrefix + ".norms", vertx));
 
         promise.tryComplete();
 

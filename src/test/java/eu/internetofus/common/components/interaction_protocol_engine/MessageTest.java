@@ -159,12 +159,10 @@ public class MessageTest extends ModelTestCase<Message> {
 
       model.content = new IncentiveTest().createModelExample(index).toJsonObject();
 
-    }else {
+    } else {
 
       model.content = new JsonObject();
     }
-
-
 
     return model;
 
@@ -640,6 +638,59 @@ public class MessageTest extends ModelTestCase<Message> {
       ((JsonObject) model.content).put("goal", new JsonObject().put("name", "different name"));
       assertIsNotValid(model, "content", vertx, testContext);
     }));
+  }
+
+  /**
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} with multiple norms is valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see Message#validate(String, Vertx)
+   */
+  @Test
+  public void shouldExampleWithMultipleNormsBeValid(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+      model.norms.add(new NormTest().createModelExample(2));
+      model.norms.add(new NormTest().createModelExample(3));
+      for (var i = 0; i < model.norms.size(); i++) {
+
+        model.norms.get(i).id = String.valueOf(i);
+      }
+
+      assertIsValid(model, vertx, testContext);
+
+    }));
+
+  }
+
+  /**
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} with multiple norms with the same id
+   * is not valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see Message#validate(String, Vertx)
+   */
+  @Test
+  public void shouldExampleWithDuplicatedNormIdsNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+      model.norms.add(new NormTest().createModelExample(2));
+      model.norms.add(new NormTest().createModelExample(3));
+      for (var i = 0; i < model.norms.size(); i++) {
+
+        model.norms.get(i).id = "1";
+      }
+
+      assertIsNotValid(model, "norms[1]", vertx, testContext);
+
+    }));
+
   }
 
 }
