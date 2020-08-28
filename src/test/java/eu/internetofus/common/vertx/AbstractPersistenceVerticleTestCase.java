@@ -56,7 +56,7 @@ public abstract class AbstractPersistenceVerticleTestCase<T extends AbstractPers
   @Test
   public void shouldNotStopIfServerNotStarted() {
 
-    final T persistence = this.createPersitenceVerticle();
+    final var persistence = this.createPersitenceVerticle();
     assertThatCode(() -> persistence.stop()).doesNotThrowAnyException();
 
   }
@@ -67,7 +67,7 @@ public abstract class AbstractPersistenceVerticleTestCase<T extends AbstractPers
   @Test
   public void shouldStopIfServerStarted() {
 
-    final T persistence = this.createPersitenceVerticle();
+    final var persistence = this.createPersitenceVerticle();
     persistence.pool = mock(MongoClient.class);
     assertThatCode(() -> persistence.stop()).doesNotThrowAnyException();
     assertThat(persistence.pool).isNull();

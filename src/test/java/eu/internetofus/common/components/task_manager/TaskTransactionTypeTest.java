@@ -61,7 +61,7 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Override
   public TaskTransactionType createModelExample(final int index) {
 
-    final TaskTransactionType model = new TaskTransactionType();
+    final var model = new TaskTransactionType();
     model.label = "Label_" + index;
     model.description = "Description_" + index;
     model.attributes = new ArrayList<>();
@@ -83,7 +83,7 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType model = this.createModelExample(index);
+    final var model = this.createModelExample(index);
     assertIsValid(model, vertx, testContext);
 
   }
@@ -99,7 +99,7 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldNotBeValidWithoutLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.label = null;
     assertIsNotValid(model, "label", vertx, testContext);
 
@@ -116,7 +116,7 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldNotBeValidWithALargeLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.label = ValidationsTest.STRING_256;
     assertIsNotValid(model, "label", vertx, testContext);
 
@@ -133,7 +133,7 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldBeValidALabelWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.label = "   1234567890   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.label).isEqualTo("1234567890"));
 
@@ -150,7 +150,7 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldNotBeValidWithALargeDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.description = ValidationsTest.STRING_1024;
     assertIsNotValid(model, "description", vertx, testContext);
 
@@ -167,7 +167,7 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldBeValidADescriptionWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.description = "   1234567890   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.description).isEqualTo("1234567890"));
 
@@ -184,7 +184,7 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldNotBeValidWithABadAttribute(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.attributes = new ArrayList<>();
     model.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
     model.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
@@ -204,7 +204,7 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldNotBeValidWithDuplicatedAttribute(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.attributes = new ArrayList<>();
     model.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
     model.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
@@ -228,8 +228,8 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExamplesBeMerged(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType source = this.createModelExample(index);
-    final TaskTransactionType target = this.createModelExample(index + 1);
+    final var source = this.createModelExample(index);
+    final var target = this.createModelExample(index + 1);
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
 
   }
@@ -245,8 +245,8 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldCannotMergeALargeLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType target = this.createModelExample(1);
-    final TaskTransactionType source = new TaskTransactionType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskTransactionType();
     source.label = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "label", vertx, testContext);
 
@@ -263,8 +263,8 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldMergeOnlyLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType target = this.createModelExample(1);
-    final TaskTransactionType source = new TaskTransactionType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskTransactionType();
     source.label = "NEW LABEL";
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -286,8 +286,8 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldCannotMergeALargeDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType target = this.createModelExample(1);
-    final TaskTransactionType source = new TaskTransactionType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskTransactionType();
     source.description = ValidationsTest.STRING_1024;
     assertCannotMerge(target, source, "description", vertx, testContext);
 
@@ -304,8 +304,8 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldMergeOnlyDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType target = this.createModelExample(1);
-    final TaskTransactionType source = new TaskTransactionType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskTransactionType();
     source.description = "NEW DESCRIPTION";
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -327,8 +327,8 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldCannotMergeABadAttribute(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType target = this.createModelExample(1);
-    final TaskTransactionType source = new TaskTransactionType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskTransactionType();
     source.attributes = new ArrayList<>();
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
@@ -348,8 +348,8 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldCannotMergeWithDuplicatedAttribute(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType target = this.createModelExample(1);
-    final TaskTransactionType source = new TaskTransactionType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskTransactionType();
     source.attributes = new ArrayList<>();
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
@@ -370,8 +370,8 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldMergeAnAttribute(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType target = this.createModelExample(1);
-    final TaskTransactionType source = new TaskTransactionType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskTransactionType();
     source.attributes = new ArrayList<>();
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
     source.attributes.get(0).description = "NEW DESCRIPTION";
@@ -395,10 +395,10 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldMergeRemovingAttribute(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
     target.attributes.add(new TaskAttributeTypeTest().createModelExample(3));
-    final TaskTransactionType source = new TaskTransactionType();
+    final var source = new TaskTransactionType();
     source.attributes = new ArrayList<>();
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -420,10 +420,10 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldMergeMixingAttribute(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
     target.attributes.add(new TaskAttributeTypeTest().createModelExample(3));
-    final TaskTransactionType source = new TaskTransactionType();
+    final var source = new TaskTransactionType();
     source.attributes = new ArrayList<>();
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(3));
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
@@ -451,7 +451,7 @@ public class TaskTransactionTypeTest extends ModelTestCase<TaskTransactionType> 
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransactionType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
   }
 

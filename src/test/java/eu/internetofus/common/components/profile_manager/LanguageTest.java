@@ -57,7 +57,7 @@ public class LanguageTest extends ModelTestCase<Language> {
   @Override
   public Language createModelExample(final int index) {
 
-    final Language name = new Language();
+    final var name = new Language();
     name.code = "ca";
     name.name = "name_" + index;
     name.level = LanguageLevel.values()[index % LanguageLevel.values().length];
@@ -75,14 +75,14 @@ public class LanguageTest extends ModelTestCase<Language> {
   @Test
   public void shouldExample1BeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Language model = new Language();
+    final var model = new Language();
     model.code = "  ca   ";
     model.name = "   name_1     ";
     model.level = LanguageLevel.C1;
 
     assertIsValid(model, vertx, testContext, () -> {
 
-      final Language expected = this.createModelExample(1);
+      final var expected = this.createModelExample(1);
       assertThat(model).isEqualTo(expected);
     });
 
@@ -99,7 +99,7 @@ public class LanguageTest extends ModelTestCase<Language> {
   @Test
   public void shouldNotBeValidWithALargeCode(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Language model = new Language();
+    final var model = new Language();
     model.code = "cat";
     assertIsNotValid(model, "code", vertx, testContext);
 
@@ -116,7 +116,7 @@ public class LanguageTest extends ModelTestCase<Language> {
   @Test
   public void shouldNotBeValidWithALargeName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Language model = new Language();
+    final var model = new Language();
     model.name = ValidationsTest.STRING_256;
     assertIsNotValid(model, "name", vertx, testContext);
 
@@ -133,8 +133,8 @@ public class LanguageTest extends ModelTestCase<Language> {
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Language target = this.createModelExample(1);
-    final Language source = this.createModelExample(23);
+    final var target = this.createModelExample(1);
+    final var source = this.createModelExample(23);
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
 
   }
@@ -150,7 +150,7 @@ public class LanguageTest extends ModelTestCase<Language> {
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Language target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
   }
@@ -166,8 +166,8 @@ public class LanguageTest extends ModelTestCase<Language> {
   @Test
   public void shouldMergeOnlyName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Language target = this.createModelExample(1);
-    final Language source = new Language();
+    final var target = this.createModelExample(1);
+    final var source = new Language();
     source.name = "NEW VALUE";
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -189,8 +189,8 @@ public class LanguageTest extends ModelTestCase<Language> {
   @Test
   public void shouldNotMergeWithBadName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Language target = this.createModelExample(1);
-    final Language source = new Language();
+    final var target = this.createModelExample(1);
+    final var source = new Language();
     source.name = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "name", vertx, testContext);
 
@@ -207,8 +207,8 @@ public class LanguageTest extends ModelTestCase<Language> {
   @Test
   public void shouldMergeOnlyCode(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Language target = this.createModelExample(1);
-    final Language source = new Language();
+    final var target = this.createModelExample(1);
+    final var source = new Language();
     source.code = "en";
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -231,8 +231,8 @@ public class LanguageTest extends ModelTestCase<Language> {
   @Test
   public void shouldNotMergeWithBadCode(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Language target = this.createModelExample(1);
-    final Language source = new Language();
+    final var target = this.createModelExample(1);
+    final var source = new Language();
     source.code = "english";
     assertCannotMerge(target, source, "code", vertx, testContext);
 
@@ -249,8 +249,8 @@ public class LanguageTest extends ModelTestCase<Language> {
   @Test
   public void shouldMergeOnlyLevel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Language target = this.createModelExample(1);
-    final Language source = new Language();
+    final var target = this.createModelExample(1);
+    final var source = new Language();
     source.level = LanguageLevel.B1;
     assertCanMerge(target, source, vertx, testContext, merged -> {
 

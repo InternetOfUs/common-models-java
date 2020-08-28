@@ -64,8 +64,7 @@ public class TaskNotification extends Message {
      */
     taskConcluded,
     /**
-     * This notification is used in order to notify the user who volunteered about
-     * the decision of the task creator.
+     * This notification is used in order to notify the user who volunteered about the decision of the task creator.
      */
     selectionVolunteer;
 

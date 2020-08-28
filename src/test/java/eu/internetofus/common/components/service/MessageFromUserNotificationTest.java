@@ -39,36 +39,36 @@ import org.junit.jupiter.api.Test;
  */
 public class MessageFromUserNotificationTest extends TaskNotificationTestCase<MessageFromUserNotification> {
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see MessageFromUserNotification#MessageFromUserNotification()
-	 */
-	@Override
-	public MessageFromUserNotification createEmptyMessage() {
+  /**
+   * {@inheritDoc}
+   *
+   * @see MessageFromUserNotification#MessageFromUserNotification()
+   */
+  @Override
+  public MessageFromUserNotification createEmptyMessage() {
 
-		return new MessageFromUserNotification();
-	}
+    return new MessageFromUserNotification();
+  }
 
-	/**
-	 * Verify that the notification type is a message from user.
-	 */
-	@Test
-	public void shouldNotificationTypeByMessageFromUser() {
+  /**
+   * Verify that the notification type is a message from user.
+   */
+  @Test
+  public void shouldNotificationTypeByMessageFromUser() {
 
-		final MessageFromUserNotification model = this.createEmptyMessage();
-		assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.messageFromUser);
-	}
+    final var model = this.createEmptyMessage();
+    assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.messageFromUser);
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public MessageFromUserNotification createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public MessageFromUserNotification createModelExample(final int index) {
 
-		final MessageFromUserNotification model = super.createModelExample(index);
-		model.senderId = "SenderId_" + index;
-		return model;
-	}
+    final var model = super.createModelExample(index);
+    model.senderId = "SenderId_" + index;
+    return model;
+  }
 
 }

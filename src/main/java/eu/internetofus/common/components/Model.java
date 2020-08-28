@@ -26,21 +26,14 @@
 
 package eu.internetofus.common.components;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.tinylog.Logger;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -54,50 +47,7 @@ import io.vertx.ext.web.client.HttpResponse;
  * @author UDT-IA, IIIA-CSIC
  */
 @JsonInclude(Include.NON_EMPTY)
-public class Model {
-
-  /**
-   * Reflections equals.
-   *
-   * {@inheritDoc}
-   *
-   * @see java.lang.Object#equals(java.lang.Object)
-   * @see EqualsBuilder#reflectionEquals(Object, Object,String...)
-   */
-  @Override
-  public boolean equals(final Object obj) {
-
-    return EqualsBuilder.reflectionEquals(this, obj);
-
-  }
-
-  /**
-   * Reflection hash code.
-   *
-   * {@inheritDoc}
-   *
-   * @see java.lang.Object#hashCode()
-   * @see HashCodeBuilder#reflectionHashCode(Object, String...)
-   */
-  @Override
-  public int hashCode() {
-
-    return HashCodeBuilder.reflectionHashCode(this);
-
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * @see java.lang.Object#toString()
-   * @see ToStringBuilder#reflectionToString(Object)
-   */
-  @Override
-  public String toString() {
-
-    return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
-
-  }
+public interface Model {
 
   /**
    * Obtain the model form the string representation.
@@ -148,7 +98,7 @@ public class Model {
    *
    * @return the string representation of this model in JSON or {@code null} if it can not convert it.
    */
-  public String toJsonString() {
+  default public String toJsonString() {
 
     try {
 
@@ -167,7 +117,7 @@ public class Model {
    *
    * @return the object of the model or {@code null} if can not convert it.
    */
-  public JsonObject toJsonObject() {
+  default public JsonObject toJsonObject() {
 
     try {
 
@@ -186,7 +136,7 @@ public class Model {
    *
    * @return the buffer that contains the JSON encoding of this model or {@code null} if can not convert it.
    */
-  public Buffer toBuffer() {
+  default public Buffer toBuffer() {
 
     try {
 
@@ -234,8 +184,8 @@ public class Model {
 
     try {
 
-      final InputStream stream = type.getClassLoader().getResourceAsStream(resourceName);
-      final String encoded = IOUtils.toString(stream);
+      final var stream = type.getClassLoader().getResourceAsStream(resourceName);
+      final var encoded = IOUtils.toString(stream);
       return fromString(encoded, type);
 
     } catch (final Throwable throwable) {
@@ -285,10 +235,10 @@ public class Model {
 
     } else {
 
-      final JsonArray array = new JsonArray();
+      final var array = new JsonArray();
       for (final T model : models) {
 
-        final JsonObject object = model.toJsonObject();
+        final var object = model.toJsonObject();
         array.add(object);
 
       }
@@ -315,12 +265,12 @@ public class Model {
     } else {
 
       final List<T> models = new ArrayList<>();
-      for (int i = 0; i < array.size(); i++) {
+      for (var i = 0; i < array.size(); i++) {
 
         try {
 
-          final JsonObject value = array.getJsonObject(i);
-          final T model = fromJsonObject(value, type);
+          final var value = array.getJsonObject(i);
+          final var model = fromJsonObject(value, type);
           if (model == null) {
 
             return null;
@@ -346,13 +296,13 @@ public class Model {
    *
    * @see ModelForJsonObjectWithEmptyValues
    */
-  public JsonObject toJsonObjectWithEmptyValues() {
+  default public JsonObject toJsonObjectWithEmptyValues() {
 
     try {
 
-      final ObjectMapper mapper = DatabindCodec.mapper().copy();
+      final var mapper = DatabindCodec.mapper().copy();
       mapper.addMixIn(this.getClass(), ModelForJsonObjectWithEmptyValues.class);
-      final String json = mapper.writeValueAsString(this);
+      final var json = mapper.writeValueAsString(this);
       return new JsonObject(json);
 
     } catch (final Throwable throwable) {

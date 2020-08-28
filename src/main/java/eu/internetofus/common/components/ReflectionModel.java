@@ -24,46 +24,64 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.vertx;
+package eu.internetofus.common.components;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
-import eu.internetofus.common.components.ErrorMessage;
-import io.vertx.core.Handler;
-import io.vertx.core.http.HttpHeaders;
-import io.vertx.ext.web.RoutingContext;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 /**
- * Handler when not found an API.
+ * A model that use reflections to do the basic operations.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class NotFoundHandler implements Handler<RoutingContext> {
+@JsonInclude(Include.NON_EMPTY)
+public class ReflectionModel {
 
   /**
-   * Create the handler for the not found.
+   * Reflections equals.
    *
-   * @return a new instance of the handler for the not found.
+   * {@inheritDoc}
+   *
+   * @see java.lang.Object#equals(java.lang.Object)
+   * @see EqualsBuilder#reflectionEquals(Object, Object,String...)
    */
-  public static Handler<RoutingContext> build() {
+  @Override
+  public boolean equals(final Object obj) {
 
-    return new NotFoundHandler();
+    return EqualsBuilder.reflectionEquals(this, obj);
+
+  }
+
+  /**
+   * Reflection hash code.
+   *
+   * {@inheritDoc}
+   *
+   * @see java.lang.Object#hashCode()
+   * @see HashCodeBuilder#reflectionHashCode(Object, String...)
+   */
+  @Override
+  public int hashCode() {
+
+    return HashCodeBuilder.reflectionHashCode(this);
+
   }
 
   /**
    * {@inheritDoc}
+   *
+   * @see java.lang.Object#toString()
+   * @see ToStringBuilder#reflectionToString(Object)
    */
   @Override
-  public void handle(final RoutingContext event) {
+  public String toString() {
 
-    final var response = event.response();
-    response.setStatusCode(Status.NOT_FOUND.getStatusCode());
-    response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-    final var path = event.normalisedPath();
-    final var error = new ErrorMessage("not_found_api_request_path", "The '" + path + "' is not defined on the API.");
-    final var body = error.toJsonString();
-    response.end(body);
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
 
   }
 

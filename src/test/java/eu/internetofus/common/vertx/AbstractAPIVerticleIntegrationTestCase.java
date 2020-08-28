@@ -60,7 +60,7 @@ public abstract class AbstractAPIVerticleIntegrationTestCase {
 
     testRequest(client, HttpMethod.POST, this.getBadRequestPostPath()).expect(res -> {
       assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-      final ErrorMessage error = HttpResponses.assertThatBodyIs(ErrorMessage.class, res);
+      final var error = HttpResponses.assertThatBodyIs(ErrorMessage.class, res);
       assertThat(error.code).isEqualTo("bad_api_request");
       assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
     }).sendJson(this.createBadRequestPostBody(), testContext);
@@ -93,10 +93,10 @@ public abstract class AbstractAPIVerticleIntegrationTestCase {
   @Test
   public void shouldReturnNotFoundErrorMessage(final WebClient client, final VertxTestContext testContext) {
 
-    final String undefinedPath = "/undefinedPath";
+    final var undefinedPath = "/undefinedPath";
     testRequest(client, HttpMethod.GET, undefinedPath).expect(res -> {
       assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-      final ErrorMessage error = HttpResponses.assertThatBodyIs(ErrorMessage.class, res);
+      final var error = HttpResponses.assertThatBodyIs(ErrorMessage.class, res);
       assertThat(error.code).isEqualTo("not_found_api_request_path");
       assertThat(error.message).isNotEmpty().isNotEqualTo(error.code).contains(undefinedPath);
     }).send(testContext);

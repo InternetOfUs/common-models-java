@@ -29,6 +29,7 @@ package eu.internetofus.common.components.task_manager;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -43,82 +44,80 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "The explanation of the task objective.")
-public class TaskGoal extends Model implements Validable, Mergeable<TaskGoal> {
+public class TaskGoal extends ReflectionModel implements Model, Validable, Mergeable<TaskGoal> {
 
-	/**
-	 * The user name prefix.
-	 */
-	@Schema(description = "A short description of the task goal.", example = "Go to dinner together")
-	public String name;
+  /**
+   * The user name prefix.
+   */
+  @Schema(description = "A short description of the task goal.", example = "Go to dinner together")
+  public String name;
 
-	/**
-	 * The user name name.
-	 */
-	@Schema(
-			description = "A human readable description of the objective of the task.",
-			example = "It is my anniversary and I want to celebrate together.")
-	public String description;
+  /**
+   * The user name name.
+   */
+  @Schema(description = "A human readable description of the objective of the task.", example = "It is my anniversary and I want to celebrate together.")
+  public String description;
 
-	/**
-	 * Create a new user name.
-	 */
-	public TaskGoal() {
+  /**
+   * Create a new user name.
+   */
+  public TaskGoal() {
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-		final Promise<Void> promise = Promise.promise();
-		try {
+    final Promise<Void> promise = Promise.promise();
+    try {
 
-			this.name = Validations.validateNullableStringField(codePrefix, "name", 255, this.name);
-			this.description = Validations.validateNullableStringField(codePrefix, "description", 1023, this.description);
-			promise.complete();
+      this.name = Validations.validateNullableStringField(codePrefix, "name", 255, this.name);
+      this.description = Validations.validateNullableStringField(codePrefix, "description", 1023, this.description);
+      promise.complete();
 
-		} catch (final ValidationErrorException validationError) {
+    } catch (final ValidationErrorException validationError) {
 
-			promise.fail(validationError);
-		}
+      promise.fail(validationError);
+    }
 
-		return promise.future();
-	}
+    return promise.future();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<TaskGoal> merge(TaskGoal source, String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<TaskGoal> merge(final TaskGoal source, final String codePrefix, final Vertx vertx) {
 
-		final Promise<TaskGoal> promise = Promise.promise();
-		Future<TaskGoal> future = promise.future();
-		if (source != null) {
+    final Promise<TaskGoal> promise = Promise.promise();
+    var future = promise.future();
+    if (source != null) {
 
-			final TaskGoal merged = new TaskGoal();
-			merged.name = source.name;
-			if (merged.name == null) {
+      final var merged = new TaskGoal();
+      merged.name = source.name;
+      if (merged.name == null) {
 
-				merged.name = this.name;
-			}
-			merged.description = source.description;
-			if (merged.description == null) {
+        merged.name = this.name;
+      }
+      merged.description = source.description;
+      if (merged.description == null) {
 
-				merged.description = this.description;
-			}
+        merged.description = this.description;
+      }
 
-			promise.complete(merged);
+      promise.complete(merged);
 
-			future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.compose(Merges.validateMerged(codePrefix, vertx));
 
-		} else {
+    } else {
 
-			promise.complete(this);
-		}
-		return future;
+      promise.complete(this);
+    }
+    return future;
 
-	}
+  }
 
 }

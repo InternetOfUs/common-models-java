@@ -31,6 +31,7 @@ import java.util.UUID;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -45,7 +46,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "A norm that has to be satisfied.")
-public class Norm extends Model implements Validable, Mergeable<Norm> {
+public class Norm extends ReflectionModel implements Model, Validable, Mergeable<Norm> {
 
   /**
    * The identifier of the norm.
@@ -119,10 +120,10 @@ public class Norm extends Model implements Validable, Mergeable<Norm> {
   public Future<Norm> merge(final Norm source, final String codePrefix, final Vertx vertx) {
 
     final Promise<Norm> promise = Promise.promise();
-    Future<Norm> future = promise.future();
+    var future = promise.future();
     if (source != null) {
 
-      final Norm merged = new Norm();
+      final var merged = new Norm();
       merged.attribute = source.attribute;
       if (merged.attribute == null) {
 

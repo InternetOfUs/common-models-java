@@ -33,25 +33,20 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(
-		hidden = true,
-		name = "MessageFromUserNotification",
-		description = "This notification is used in order to send a message exchanged between two participants to the same task.")
+@Schema(hidden = true, name = "MessageFromUserNotification", description = "This notification is used in order to send a message exchanged between two participants to the same task.")
 public class MessageFromUserNotification extends TaskNotification {
 
-	/**
-	 * The identifier of the volunteer.
-	 */
-	@Schema(
-			description = "The wenet id of the user who wrote the message for the recipient user.",
-			example = "ef3990b4-d75e-4339-b78a-125c23ab4614")
-	public String senderId;
+  /**
+   * The identifier of the volunteer.
+   */
+  @Schema(description = "The wenet id of the user who wrote the message for the recipient user.", example = "ef3990b4-d75e-4339-b78a-125c23ab4614")
+  public String senderId;
 
-	/**
-	 * Create a new task volunteer notification.
-	 */
-	public MessageFromUserNotification() {
+  /**
+   * Create a new task volunteer notification.
+   */
+  public MessageFromUserNotification() {
 
-		this.notificationType = NotificationType.messageFromUser;
-	}
+    this.notificationType = NotificationType.messageFromUser;
+  }
 }

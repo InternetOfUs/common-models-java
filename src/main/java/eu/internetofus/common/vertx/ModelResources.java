@@ -72,10 +72,10 @@ public interface ModelResources {
 
     return retrieve -> {
 
-      final T model = retrieve.result();
+      final var model = retrieve.result();
       if (retrieve.failed() || model == null) {
 
-        final Throwable cause = retrieve.cause();
+        final var cause = retrieve.cause();
         Logger.trace(cause, "Not found {} associated to {}.\n{}", () -> modelName, () -> id, () -> context.toJson().encodePrettily());
         OperationReponseHandlers.responseWithErrorMessage(resultHandler, Status.NOT_FOUND, "not_found_" + modelName, "Does not exist a '" + modelName + "' associated to '" + id + "'.");
 
@@ -124,7 +124,7 @@ public interface ModelResources {
 
       if (delete.failed()) {
 
-        final Throwable cause = delete.cause();
+        final var cause = delete.cause();
         Logger.trace(cause, "Cannot delete {} associated to {}.\n{}", () -> modelName, () -> id, () -> context.toJson().encodePrettily());
         OperationReponseHandlers.responseWithErrorMessage(resultHandler, Status.NOT_FOUND, "not_found_" + modelName, "Does not exist a '" + modelName + "' associated to '" + id + "'.");
 
@@ -171,12 +171,12 @@ public interface ModelResources {
 
     toModel(type, value, modelName, context, resultHandler, model -> {
 
-      final String codePrefix = "bad_" + modelName;
+      final var codePrefix = "bad_" + modelName;
       model.validate(codePrefix, vertx).onComplete(valid -> {
 
         if (valid.failed()) {
 
-          final Throwable cause = valid.cause();
+          final var cause = valid.cause();
           Logger.trace(cause, "The {} is not a valid.\n{}", () -> model, () -> context.toJson().encodePrettily());
           OperationReponseHandlers.responseFailedWith(resultHandler, Status.BAD_REQUEST, cause);
 
@@ -205,7 +205,7 @@ public interface ModelResources {
   static public <T extends Model> void toModel(@NotNull final Class<T> type, final JsonObject value, @NotNull final String modelName, @NotNull final OperationRequest context,
       @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
 
-    final T model = Model.fromJsonObject(value, type);
+    final var model = Model.fromJsonObject(value, type);
     if (model == null) {
 
       Logger.trace("The JSON does not represents a {}.\n{}\n{}", () -> type.getName(), () -> value.encodePrettily(), () -> context.toJson().encodePrettily());
@@ -236,13 +236,13 @@ public interface ModelResources {
 
       if (stored.failed()) {
 
-        final Throwable cause = stored.cause();
+        final var cause = stored.cause();
         Logger.trace(cause, "Cannot store {}.\n{}", () -> model, () -> context.toJson().encodePrettily());
         OperationReponseHandlers.responseFailedWith(resultHandler, Status.BAD_REQUEST, cause);
 
       } else {
 
-        final T storedModel = stored.result();
+        final var storedModel = stored.result();
         Logger.trace("Stored {}.\n{}", () -> storedModel, () -> context.toJson().encodePrettily());
         success.accept(storedModel);
       }
@@ -311,19 +311,27 @@ public interface ModelResources {
   static public <T extends Model & Mergeable<T>> void merge(@NotNull final T targetModel, final T sourceModel, @NotNull final Vertx vertx, @NotNull final String modelName, @NotNull final OperationRequest context,
       @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
 
-    final String codePrefix = "bad_" + modelName;
+    final var codePrefix = "bad_" + modelName;
     targetModel.merge(sourceModel, codePrefix, vertx).onComplete(merge -> {
 
       if (merge.failed()) {
 
-        final Throwable cause = merge.cause();
+        final var cause = merge.cause();
         Logger.trace(cause, "The {} can not be merged with {}.\n{}", () -> sourceModel, () -> targetModel, () -> context.toJson().encodePrettily());
         OperationReponseHandlers.responseFailedWith(resultHandler, Status.BAD_REQUEST, cause);
 
       } else {
 
         final var mergedModel = merge.result();
-        success.accept(mergedModel);
+        if (targetModel.equals(mergedModel)) {
+
+          Logger.trace("The merged model {} is equals to the original.\n{}", () -> mergedModel, () -> context.toJson().encodePrettily());
+          OperationReponseHandlers.responseWithErrorMessage(resultHandler, Status.BAD_REQUEST, codePrefix, "The merged '" + modelName + "' is equals to the current one.");
+
+        } else {
+
+          success.accept(mergedModel);
+        }
       }
     });
 
@@ -405,7 +413,7 @@ public interface ModelResources {
 
       if (stored.failed()) {
 
-        final Throwable cause = stored.cause();
+        final var cause = stored.cause();
         Logger.trace(cause, "Cannot update {}.\n{}", () -> model, () -> context.toJson().encodePrettily());
         OperationReponseHandlers.responseFailedWith(resultHandler, Status.BAD_REQUEST, cause);
 

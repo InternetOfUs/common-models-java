@@ -29,42 +29,38 @@ package eu.internetofus.common.components.service;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * A notification is used in order to notify the user who volunteered about the
- * decision of the task creator
+ * A notification is used in order to notify the user who volunteered about the decision of the task creator
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(
-		hidden = true,
-		name = "TaskSelectionNotification",
-		description = "This notification is used in order to notify the user who volunteered about the decision of the task creator.")
+@Schema(hidden = true, name = "TaskSelectionNotification", description = "This notification is used in order to notify the user who volunteered about the decision of the task creator.")
 public class TaskSelectionNotification extends TaskNotification {
 
-	/**
-	 * Explains how the selection.
-	 */
-	public enum Outcome {
-		/**
-		 * This happens when the task is cancelled by its creator.
-		 */
-		accepted,
-		/**
-		 * This happens when the task completes correctly.
-		 */
-		refused;
-	}
+  /**
+   * Explains how the selection.
+   */
+  public enum Outcome {
+    /**
+     * This happens when the task is cancelled by its creator.
+     */
+    accepted,
+    /**
+     * This happens when the task completes correctly.
+     */
+    refused;
+  }
 
-	/**
-	 * The identifier of the selection.
-	 */
-	@Schema(description = "The outcome of the selection.", example = "accepted")
-	public Outcome outcome;
+  /**
+   * The identifier of the selection.
+   */
+  @Schema(description = "The outcome of the selection.", example = "accepted")
+  public Outcome outcome;
 
-	/**
-	 * Create a new task volunteer notification.
-	 */
-	public TaskSelectionNotification() {
+  /**
+   * Create a new task volunteer notification.
+   */
+  public TaskSelectionNotification() {
 
-		this.notificationType = NotificationType.selectionVolunteer;
-	}
+    this.notificationType = NotificationType.selectionVolunteer;
+  }
 }

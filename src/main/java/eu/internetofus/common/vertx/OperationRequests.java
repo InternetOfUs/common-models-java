@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Locale.LanguageRange;
-
 import javax.ws.rs.core.HttpHeaders;
 
 import io.vertx.core.json.JsonArray;
@@ -50,8 +48,7 @@ public interface OperationRequests {
   /**
    * Obtain the accepted language defined on the header.
    *
-   * @param defaultLanguage   the language to return if it can not obtain the
-   *                          accepted language.
+   * @param defaultLanguage   the language to return if it can not obtain the accepted language.
    * @param request           to get the information.
    * @param poosibleLanguages the possible languages that can be used.
    *
@@ -64,8 +61,8 @@ public interface OperationRequests {
     try {
 
       final String acceptLanguages = request.getHeaders().get(HttpHeaders.ACCEPT_LANGUAGE);
-      final List<LanguageRange> range = Locale.LanguageRange.parse(acceptLanguages);
-      final String lang = Locale.lookupTag(range, Arrays.asList(poosibleLanguages));
+      final var range = Locale.LanguageRange.parse(acceptLanguages);
+      final var lang = Locale.lookupTag(range, Arrays.asList(poosibleLanguages));
       if (lang == null) {
 
         return defaultLanguage;
@@ -96,13 +93,11 @@ public interface OperationRequests {
   }
 
   /**
-   * Convert an array of values to a string list. This is useful to convert a
-   * array query parameter.
+   * Convert an array of values to a string list. This is useful to convert a array query parameter.
    *
    * @param array to convert.
    *
-   * @return the string list defined on the array. If the array is {@code null} or
-   *         empty it return a{@code null} value.
+   * @return the string list defined on the array. If the array is {@code null} or empty it return a{@code null} value.
    */
   static List<String> toListString(final JsonArray array) {
 
@@ -112,7 +107,7 @@ public interface OperationRequests {
 
     } else {
 
-      final int max = array.size();
+      final var max = array.size();
       if (max == 0) {
 
         return null;
@@ -120,7 +115,7 @@ public interface OperationRequests {
       } else {
 
         final List<String> values = new ArrayList<>();
-        for (int i = 0; i < max; i++) {
+        for (var i = 0; i < max; i++) {
 
           values.add(array.getString(i));
         }

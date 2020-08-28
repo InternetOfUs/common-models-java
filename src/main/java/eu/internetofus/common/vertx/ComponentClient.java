@@ -87,7 +87,7 @@ public class ComponentClient {
    */
   protected String createAbsoluteUrlWith(final Object... paths) {
 
-    final StringBuilder builder = new StringBuilder();
+    final var builder = new StringBuilder();
     builder.append(this.componentURL);
     for (final Object path : paths) {
 
@@ -96,7 +96,7 @@ public class ComponentClient {
         builder.append('/');
       }
 
-      String element = String.valueOf(path).trim();
+      var element = String.valueOf(path).trim();
       if (element.charAt(0) == '/') {
 
         element = element.substring(1);
@@ -120,7 +120,7 @@ public class ComponentClient {
   protected <T> void notifyErrorTo(final Handler<AsyncResult<T>> actionHandler, final HttpResponse<Buffer> response) {
 
     ServiceException cause = null;
-    final ErrorMessage message = Model.fromResponse(response, ErrorMessage.class);
+    final var message = Model.fromResponse(response, ErrorMessage.class);
     if (message != null) {
 
       cause = new ServiceException(response.statusCode(), response.statusMessage(), message.toJsonObject());
@@ -149,14 +149,14 @@ public class ComponentClient {
 
     if (action.failed()) {
 
-      final Throwable cause = action.cause();
+      final var cause = action.cause();
       Logger.trace(cause, "[{}] FAILED", actionId);
       resultHandler.handle(Future.failedFuture(cause));
 
     } else {
 
-      final HttpResponse<Buffer> response = action.result();
-      final int code = response.statusCode();
+      final var response = action.result();
+      final var code = response.statusCode();
       if (Status.Family.familyOf(code) == Status.Family.SUCCESSFUL) {
 
         consumer.accept(resultHandler, response);
@@ -258,7 +258,7 @@ public class ComponentClient {
 
     return (handler, response) -> {
 
-      final T model = Model.fromResponse(response, type);
+      final var model = Model.fromResponse(response, type);
       if (model == null) {
 
         Logger.trace("[{}] FAILED {} is not a {}", () -> actionId, () -> response.bodyAsString(), () -> type);
@@ -312,12 +312,12 @@ public class ComponentClient {
    */
   protected <T extends Model> void post(@NotNull final T content, @NotNull final Handler<AsyncResult<T>> postHandler, @NotNull final Object... paths) {
 
-    final String url = this.createAbsoluteUrlWith(paths);
-    final String actionId = UUID.randomUUID().toString();
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
     Logger.trace("[{}] POST {} to {}", actionId, content, url);
-    final JsonObject body = content.toJsonObject();
+    final var body = content.toJsonObject();
     @SuppressWarnings("unchecked")
-    final Class<T> type = (Class<T>) content.getClass();
+    final var type = (Class<T>) content.getClass();
     this.client.postAbs(url).sendJsonObject(body, response -> this.successing(response, actionId, postHandler, this.modelConsumer(type, actionId)));
 
   }
@@ -331,8 +331,8 @@ public class ComponentClient {
    */
   protected void post(final JsonArray content, final Handler<AsyncResult<JsonArray>> postHandler, final Object... paths) {
 
-    final String url = this.createAbsoluteUrlWith(paths);
-    final String actionId = UUID.randomUUID().toString();
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
     Logger.trace("[{}] POST {} to {}", actionId, content, url);
     this.client.postAbs(url).sendJson(content, response -> this.successing(response, actionId, postHandler, this.jsonArrayConsumer(actionId)));
 
@@ -347,8 +347,8 @@ public class ComponentClient {
    */
   protected void post(final JsonObject content, final Handler<AsyncResult<JsonObject>> postHandler, final Object... paths) {
 
-    final String url = this.createAbsoluteUrlWith(paths);
-    final String actionId = UUID.randomUUID().toString();
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
     Logger.trace("[{}] POST {} to {}", actionId, content, url);
     this.client.postAbs(url).sendJson(content, response -> this.successing(response, actionId, postHandler, this.jsonObjectConsumer(actionId)));
 
@@ -365,12 +365,12 @@ public class ComponentClient {
    */
   protected <T extends Model> void put(@NotNull final T content, @NotNull final Handler<AsyncResult<T>> putHandler, @NotNull final Object... paths) {
 
-    final String url = this.createAbsoluteUrlWith(paths);
-    final String actionId = UUID.randomUUID().toString();
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
     Logger.trace("[{}] PUT {} to {}", actionId, content, url);
-    final JsonObject body = content.toJsonObject();
+    final var body = content.toJsonObject();
     @SuppressWarnings("unchecked")
-    final Class<T> type = (Class<T>) content.getClass();
+    final var type = (Class<T>) content.getClass();
     this.client.putAbs(url).sendJsonObject(body, response -> this.successing(response, actionId, putHandler, this.modelConsumer(type, actionId)));
   }
 
@@ -383,8 +383,8 @@ public class ComponentClient {
    */
   protected void put(final JsonArray content, final Handler<AsyncResult<JsonArray>> putHandler, final Object... paths) {
 
-    final String url = this.createAbsoluteUrlWith(paths);
-    final String actionId = UUID.randomUUID().toString();
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
     Logger.trace("[{}] PUT {} to {}", actionId, content, url);
     this.client.putAbs(url).sendJson(content, response -> this.successing(response, actionId, putHandler, this.jsonArrayConsumer(actionId)));
 
@@ -399,8 +399,8 @@ public class ComponentClient {
    */
   protected void put(final JsonObject content, final Handler<AsyncResult<JsonObject>> putHandler, final Object... paths) {
 
-    final String url = this.createAbsoluteUrlWith(paths);
-    final String actionId = UUID.randomUUID().toString();
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
     Logger.trace("[{}] PUT {} to {}", actionId, content, url);
     this.client.putAbs(url).sendJson(content, response -> this.successing(response, actionId, putHandler, this.jsonObjectConsumer(actionId)));
 
@@ -417,8 +417,8 @@ public class ComponentClient {
    */
   protected <T extends Model> void getModel(final Class<T> type, @NotNull final Handler<AsyncResult<T>> getHandler, final Object... paths) {
 
-    final String url = this.createAbsoluteUrlWith(paths);
-    final String actionId = UUID.randomUUID().toString();
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
     Logger.trace("[{}] GET {}", actionId, url);
     this.client.getAbs(url).send(response -> this.successing(response, actionId, getHandler, this.modelConsumer(type, actionId)));
 
@@ -432,8 +432,8 @@ public class ComponentClient {
    */
   protected void getJsonArray(@NotNull final Handler<AsyncResult<JsonArray>> getHandler, final Object... paths) {
 
-    final String url = this.createAbsoluteUrlWith(paths);
-    final String actionId = UUID.randomUUID().toString();
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
     Logger.trace("[{}] GET {}", actionId, url);
     this.client.getAbs(url).send(response -> this.successing(response, actionId, getHandler, this.jsonArrayConsumer(actionId)));
 
@@ -447,8 +447,8 @@ public class ComponentClient {
    */
   protected void getJsonObject(@NotNull final Handler<AsyncResult<JsonObject>> getHandler, final Object... paths) {
 
-    final String url = this.createAbsoluteUrlWith(paths);
-    final String actionId = UUID.randomUUID().toString();
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
     Logger.trace("[{}] GET {}", actionId, url);
     this.client.getAbs(url).send(response -> this.successing(response, actionId, getHandler, this.jsonObjectConsumer(actionId)));
 
@@ -462,8 +462,8 @@ public class ComponentClient {
    */
   protected void delete(final Handler<AsyncResult<Void>> deleteHandler, final Object... paths) {
 
-    final String url = this.createAbsoluteUrlWith(paths);
-    final String actionId = UUID.randomUUID().toString();
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
     Logger.trace("[{}] DELETE {}", actionId, url);
     this.client.deleteAbs(url).send(response -> this.successing(response, actionId, deleteHandler, this.noContentConsumer(actionId)));
 
@@ -489,14 +489,14 @@ public class ComponentClient {
 
       } else {
 
-        final JsonObject result = handler.result();
+        final var result = handler.result();
         if (result == null) {
 
           retrieveHandler.handle(Future.succeededFuture());
 
         } else {
 
-          final T model = Model.fromJsonObject(result, type);
+          final var model = Model.fromJsonObject(result, type);
           if (model == null) {
 
             Logger.trace(handler.cause(), "Unexpected content {} is not of the type {}", result, type);
@@ -533,7 +533,7 @@ public class ComponentClient {
 
       } else {
 
-        final JsonArray result = handler.result();
+        final var result = handler.result();
         if (result == null) {
 
           retrieveHandler.handle(Future.succeededFuture());
@@ -541,12 +541,12 @@ public class ComponentClient {
         } else {
 
           final List<T> models = new ArrayList<>();
-          for (int i = 0; i < result.size(); i++) {
+          for (var i = 0; i < result.size(); i++) {
 
             try {
 
-              final JsonObject object = result.getJsonObject(i);
-              final T model = Model.fromJsonObject(object, type);
+              final var object = result.getJsonObject(i);
+              final var model = Model.fromJsonObject(object, type);
               if (model == null) {
 
                 Logger.trace("Unexpected content {} at {} is not of the type {}", result, i, type);
@@ -557,7 +557,7 @@ public class ComponentClient {
                 models.add(model);
               }
 
-            }catch(final ClassCastException cause) {
+            } catch (final ClassCastException cause) {
 
               Logger.trace(cause, "Unexpected content {} at {} is not of the type {}", result, i, type);
               retrieveHandler.handle(Future.failedFuture(result + " at '" + i + "' is not of the type '" + type + "'."));

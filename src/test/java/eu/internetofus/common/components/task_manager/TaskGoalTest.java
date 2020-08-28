@@ -59,7 +59,7 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Override
   public TaskGoal createModelExample(final int index) {
 
-    final TaskGoal model = new TaskGoal();
+    final var model = new TaskGoal();
     model.name = "name_" + index;
     model.description = "description_" + index;
     return model;
@@ -79,7 +79,7 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal model = this.createModelExample(index);
+    final var model = this.createModelExample(index);
     assertIsValid(model, vertx, testContext);
 
   }
@@ -95,7 +95,7 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Test
   public void shouldNotBeValidWithALargeName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal model = new TaskGoal();
+    final var model = new TaskGoal();
     model.name = ValidationsTest.STRING_256;
     assertIsNotValid(model, "name", vertx, testContext);
 
@@ -112,7 +112,7 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Test
   public void shouldBeValidANameWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal model = new TaskGoal();
+    final var model = new TaskGoal();
     model.name = "   1234567890   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.name).isEqualTo("1234567890"));
 
@@ -129,7 +129,7 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Test
   public void shouldNotBeValidWithALargeDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal model = new TaskGoal();
+    final var model = new TaskGoal();
     model.description = ValidationsTest.STRING_1024;
     assertIsNotValid(model, "description", vertx, testContext);
 
@@ -146,7 +146,7 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Test
   public void shouldBeValidADescriptionWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal model = new TaskGoal();
+    final var model = new TaskGoal();
     model.description = "   Description name 1234567890   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.description).isEqualTo("Description name 1234567890"));
 
@@ -163,8 +163,8 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Test
   public void shouldNotMergeWithALargeName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal target = new TaskGoal();
-    final TaskGoal source = new TaskGoal();
+    final var target = new TaskGoal();
+    final var source = new TaskGoal();
     source.name = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "name", vertx, testContext);
 
@@ -181,8 +181,8 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Test
   public void shouldMergeANameWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal target = new TaskGoal();
-    final TaskGoal source = new TaskGoal();
+    final var target = new TaskGoal();
+    final var source = new TaskGoal();
     source.name = "   1234567890   ";
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.name).isEqualTo("1234567890"));
 
@@ -199,8 +199,8 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Test
   public void shouldNotMergeWithALargeDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal target = new TaskGoal();
-    final TaskGoal source = new TaskGoal();
+    final var target = new TaskGoal();
+    final var source = new TaskGoal();
     source.description = ValidationsTest.STRING_1024;
     assertCannotMerge(target, source, "description", vertx, testContext);
 
@@ -217,8 +217,8 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Test
   public void shouldMergeADescriptionWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal target = new TaskGoal();
-    final TaskGoal source = new TaskGoal();
+    final var target = new TaskGoal();
+    final var source = new TaskGoal();
     source.description = "   Description name 1234567890   ";
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.description).isEqualTo("Description name 1234567890"));
 
@@ -235,8 +235,8 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal target = this.createModelExample(1);
-    final TaskGoal source = this.createModelExample(23);
+    final var target = this.createModelExample(1);
+    final var source = this.createModelExample(23);
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
 
   }
@@ -252,7 +252,7 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
   }
@@ -268,8 +268,8 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Test
   public void shouldMergeOnlyName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal target = this.createModelExample(1);
-    final TaskGoal source = new TaskGoal();
+    final var target = this.createModelExample(1);
+    final var source = new TaskGoal();
     source.name = "NEW NAME";
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -289,8 +289,8 @@ public class TaskGoalTest extends ModelTestCase<TaskGoal> {
   @Test
   public void shouldMergeOnlyDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskGoal target = this.createModelExample(1);
-    final TaskGoal source = new TaskGoal();
+    final var target = this.createModelExample(1);
+    final var source = new TaskGoal();
     source.description = "NEW DESCRIPTION";
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);

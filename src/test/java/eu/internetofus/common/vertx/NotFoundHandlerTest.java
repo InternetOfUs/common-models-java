@@ -36,7 +36,6 @@ import javax.ws.rs.core.MediaType;
 
 import org.junit.jupiter.api.Test;
 
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
@@ -50,33 +49,32 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class NotFoundHandlerTest {
 
-	/**
-	 * Verify that build handler.
-	 */
-	@Test
-	public void shouldBuildHandler() {
+  /**
+   * Verify that build handler.
+   */
+  @Test
+  public void shouldBuildHandler() {
 
-		final Handler<RoutingContext> handler = NotFoundHandler.build();
-		assertThat(handler).isNotNull();
+    final var handler = NotFoundHandler.build();
+    assertThat(handler).isNotNull();
 
-	}
+  }
 
-	/**
-	 * Verify that return a not found error.
-	 */
-	@Test
-	public void shouldReturnNotFoundErrorMessage() {
+  /**
+   * Verify that return a not found error.
+   */
+  @Test
+  public void shouldReturnNotFoundErrorMessage() {
 
-		final NotFoundHandler handler = new NotFoundHandler();
-		final RoutingContext event = mock(RoutingContext.class);
-		final HttpServerResponse response = mock(HttpServerResponse.class);
-		doReturn(response).when(event).response();
-		handler.handle(event);
-		verify(response, times(1)).setStatusCode(404);
-		verify(response, times(1)).putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-		verify(response, times(1))
-				.end("{\"code\":\"not_found_api_request_path\",\"message\":\"The 'null' is not defined on the API.\"}");
+    final var handler = new NotFoundHandler();
+    final var event = mock(RoutingContext.class);
+    final var response = mock(HttpServerResponse.class);
+    doReturn(response).when(event).response();
+    handler.handle(event);
+    verify(response, times(1)).setStatusCode(404);
+    verify(response, times(1)).putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+    verify(response, times(1)).end("{\"code\":\"not_found_api_request_path\",\"message\":\"The 'null' is not defined on the API.\"}");
 
-	}
+  }
 
 }

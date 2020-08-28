@@ -86,8 +86,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject conf = mocker.getComponentConfiguration();
+    final var client = WebClient.create(vertx);
+    final var conf = mocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, conf);
 
   }
@@ -98,7 +98,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @Override
   public PlannedActivity createModelExample(final int index) {
 
-    final PlannedActivity activity = new PlannedActivity();
+    final var activity = new PlannedActivity();
     activity.id = null;
     activity.startTime = "2017-07-21T17:32:0" + index % 10 + "Z";
     activity.endTime = "2019-07-21T17:32:2" + index % 10 + "Z";
@@ -120,7 +120,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
     this.createNewEmptyProfile(vertx, testContext.succeeding(profile -> {
 
-      final PlannedActivity activity = this.createModelExample(index);
+      final var activity = this.createModelExample(index);
       activity.attendees = new ArrayList<>();
       activity.attendees.add(profile.id);
       creation.handle(Future.succeededFuture(activity));
@@ -145,7 +145,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
       } else {
 
-        final WeNetUserProfile profile = Model.fromJsonObject(creationResult.result(), WeNetUserProfile.class);
+        final var profile = Model.fromJsonObject(creationResult.result(), WeNetUserProfile.class);
         if (profile == null) {
 
           creation.handle(Future.failedFuture("Can not obtain a profile form the JSON result"));
@@ -170,7 +170,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @Test
   public void shouldEmptyModelBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity model = new PlannedActivity();
+    final var model = new PlannedActivity();
     assertIsValid(model, vertx, testContext);
 
   }
@@ -188,7 +188,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity model = this.createModelExample(index);
+    final var model = this.createModelExample(index);
     assertIsValid(model, vertx, testContext);
 
   }
@@ -209,11 +209,11 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     this.createModelExample(index, vertx, testContext, testContext.succeeding(model -> {
 
       model.id = " ";
-      final String originalStartTime = model.startTime;
+      final var originalStartTime = model.startTime;
       model.startTime = " " + originalStartTime + " ";
-      final String originalEndTime = model.endTime;
+      final var originalEndTime = model.endTime;
       model.endTime = " " + originalEndTime + " ";
-      final String originalDescription = model.description;
+      final var originalDescription = model.description;
       model.description = " " + originalDescription + " ";
       final List<String> originalAttendees = new ArrayList<>(model.attendees);
       model.attendees.add(0, "");
@@ -243,9 +243,9 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @Test
   public void shouldBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity model = new PlannedActivity();
+    final var model = new PlannedActivity();
     model.id = "has_id";
-    assertIsValid(model,  vertx, testContext);
+    assertIsValid(model, vertx, testContext);
 
   }
 
@@ -262,7 +262,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
   public void shouldNotBeValidWithABadStartTime(final String badTime, final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity model = new PlannedActivity();
+    final var model = new PlannedActivity();
     model.startTime = badTime;
     assertIsNotValid(model, "startTime", vertx, testContext);
 
@@ -281,7 +281,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
   public void shouldNotBeValidWithABadEndTime(final String badTime, final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity model = new PlannedActivity();
+    final var model = new PlannedActivity();
     model.endTime = badTime;
     assertIsNotValid(model, "endTime", vertx, testContext);
 
@@ -298,7 +298,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @Test
   public void shouldNotBeValidWithABadDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity model = new PlannedActivity();
+    final var model = new PlannedActivity();
     model.description = ValidationsTest.STRING_256;
     assertIsNotValid(model, "description", vertx, testContext);
 
@@ -315,7 +315,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @Test
   public void shouldNotBeValidWithABadAttender(final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity model = new PlannedActivity();
+    final var model = new PlannedActivity();
     model.attendees = new ArrayList<>();
     model.attendees.add("undefined attendee identifier");
     assertIsNotValid(model, "attendees[0]", vertx, testContext);
@@ -333,7 +333,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @Test
   public void shouldBeValidEmptyAttender(final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity model = new PlannedActivity();
+    final var model = new PlannedActivity();
     model.attendees = new ArrayList<>();
     assertIsValid(model, vertx, testContext);
 
@@ -354,7 +354,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
       this.createNewEmptyProfile(vertx, testContext.succeeding(stored2 -> {
 
-        final PlannedActivity model = new PlannedActivity();
+        final var model = new PlannedActivity();
         model.attendees = new ArrayList<>();
         model.attendees.add(stored.id);
         model.attendees.add(stored2.id);
@@ -381,7 +381,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
       this.createNewEmptyProfile(vertx, testContext.succeeding(stored2 -> {
 
-        final PlannedActivity model = new PlannedActivity();
+        final var model = new PlannedActivity();
         model.attendees = new ArrayList<>();
         model.attendees.add(stored.id);
         model.attendees.add(stored2.id);
@@ -405,7 +405,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @Test
   public void shouldEmptyAttenderWillRemoved(final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity model = new PlannedActivity();
+    final var model = new PlannedActivity();
     model.attendees = new ArrayList<>();
     model.attendees.add(null);
     model.attendees.add("");
@@ -413,7 +413,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
     assertIsValid(model, vertx, testContext, () -> {
 
-      final PlannedActivity expected = new PlannedActivity();
+      final var expected = new PlannedActivity();
       expected.id = model.id;
       expected.attendees = new ArrayList<>();
       assertThat(model).isEqualTo(expected);
@@ -434,8 +434,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
   public void shouldNotMergeWithABadStartTime(final String badTime, final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity target = this.createModelExample(1);
-    final PlannedActivity source = new PlannedActivity();
+    final var target = this.createModelExample(1);
+    final var source = new PlannedActivity();
     source.startTime = badTime;
     assertCannotMerge(target, source, "startTime", vertx, testContext);
 
@@ -454,8 +454,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
   public void shouldNotMergeWithABadEndTime(final String badTime, final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity target = this.createModelExample(1);
-    final PlannedActivity source = new PlannedActivity();
+    final var target = this.createModelExample(1);
+    final var source = new PlannedActivity();
     source.endTime = badTime;
     assertCannotMerge(target, source, "endTime", vertx, testContext);
 
@@ -472,8 +472,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @Test
   public void shouldNotMergeWithABadDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity target = this.createModelExample(1);
-    final PlannedActivity source = new PlannedActivity();
+    final var target = this.createModelExample(1);
+    final var source = new PlannedActivity();
     source.description = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "description", vertx, testContext);
 
@@ -490,8 +490,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @Test
   public void shouldNotMergeWithABadAttender(final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity target = this.createModelExample(1);
-    final PlannedActivity source = new PlannedActivity();
+    final var target = this.createModelExample(1);
+    final var source = new PlannedActivity();
     source.attendees = new ArrayList<>();
     source.attendees.add("undefined attendee identifier");
     assertCannotMerge(target, source, "attendees[0]", vertx, testContext);
@@ -509,8 +509,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @Test
   public void shouldMergeEmptyAttender(final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity target = this.createModelExample(1);
-    final PlannedActivity source = new PlannedActivity();
+    final var target = this.createModelExample(1);
+    final var source = new PlannedActivity();
     source.attendees = new ArrayList<>();
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.attendees).isEmpty());
 
@@ -531,8 +531,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
       this.createNewEmptyProfile(vertx, testContext.succeeding(stored2 -> {
 
-        final PlannedActivity target = this.createModelExample(1);
-        final PlannedActivity source = new PlannedActivity();
+        final var target = this.createModelExample(1);
+        final var source = new PlannedActivity();
         source.attendees = new ArrayList<>();
         source.attendees.add(stored.id);
         source.attendees.add(stored2.id);
@@ -559,8 +559,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
       this.createNewEmptyProfile(vertx, testContext.succeeding(stored2 -> {
 
-        final PlannedActivity target = this.createModelExample(1);
-        final PlannedActivity source = new PlannedActivity();
+        final var target = this.createModelExample(1);
+        final var source = new PlannedActivity();
         source.attendees = new ArrayList<>();
         source.attendees.add(stored.id);
         source.attendees.add(stored2.id);
@@ -584,8 +584,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @Test
   public void shouldMergeEmptyAttenderWillRemoved(final Vertx vertx, final VertxTestContext testContext) {
 
-    final PlannedActivity target = this.createModelExample(1);
-    final PlannedActivity source = new PlannedActivity();
+    final var target = this.createModelExample(1);
+    final var source = new PlannedActivity();
     source.attendees = new ArrayList<>();
     source.attendees.add(null);
     source.attendees.add("");
@@ -660,7 +660,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
       target.id = "1";
-      final PlannedActivity source = new PlannedActivity();
+      final var source = new PlannedActivity();
       source.startTime = "2000-02-19T16:18:00Z";
       assertCanMerge(target, source, vertx, testContext, merged -> {
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -686,7 +686,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
       target.id = "1";
-      final PlannedActivity source = new PlannedActivity();
+      final var source = new PlannedActivity();
       source.endTime = "2020-02-19T16:18:00Z";
       assertCanMerge(target, source, vertx, testContext, merged -> {
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -711,7 +711,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
       target.id = "1";
-      final PlannedActivity source = new PlannedActivity();
+      final var source = new PlannedActivity();
       source.description = "New description";
       assertCanMerge(target, source, vertx, testContext, merged -> {
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -736,7 +736,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
       target.id = "1";
-      final PlannedActivity source = new PlannedActivity();
+      final var source = new PlannedActivity();
       source.status = PlannedActivityStatus.tentative;
       assertCanMerge(target, source, vertx, testContext, merged -> {
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -761,7 +761,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
       target.id = "1";
-      final PlannedActivity source = new PlannedActivity();
+      final var source = new PlannedActivity();
       source.attendees = new ArrayList<>();
       assertCanMerge(target, source, vertx, testContext, merged -> {
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -788,7 +788,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       target.id = "1";
       this.createNewEmptyProfile(vertx, testContext.succeeding(stored -> {
 
-        final PlannedActivity source = new PlannedActivity();
+        final var source = new PlannedActivity();
         source.attendees = new ArrayList<>();
         source.attendees.add(stored.id);
         source.attendees.addAll(target.attendees);

@@ -103,7 +103,7 @@ public class CommunityProfile extends CreateUpdateTsDetails implements Validable
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    Future<Void> future = promise.future();
+    var future = promise.future();
     try {
 
       this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
@@ -138,11 +138,11 @@ public class CommunityProfile extends CreateUpdateTsDetails implements Validable
   public Future<CommunityProfile> merge(final CommunityProfile source, final String codePrefix, final Vertx vertx) {
 
     final Promise<CommunityProfile> promise = Promise.promise();
-    Future<CommunityProfile> future = promise.future();
+    var future = promise.future();
 
     if (source != null) {
 
-      final CommunityProfile merged = new CommunityProfile();
+      final var merged = new CommunityProfile();
       merged.appId = source.appId;
       if (merged.appId == null) {
 

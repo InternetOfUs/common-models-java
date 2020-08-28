@@ -38,59 +38,58 @@ import io.vertx.ext.mongo.MongoClient;
  */
 public abstract class AbstractPersistenceVerticle extends AbstractVerticle {
 
-	/**
-	 * The name of the pool of connections.
-	 */
-	public static final String PERSISTENCE_POOL_NAME = "WENET_MODULE_POOL";
+  /**
+   * The name of the pool of connections.
+   */
+  public static final String PERSISTENCE_POOL_NAME = "WENET_MODULE_POOL";
 
-	/**
-	 * The pool of database connections.
-	 */
-	protected MongoClient pool;
+  /**
+   * The pool of database connections.
+   */
+  protected MongoClient pool;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void start(Promise<Void> startPromise) throws Exception {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void start(final Promise<Void> startPromise) throws Exception {
 
-		try {
-			// create the pool
-			final JsonObject persitenceConf = this.config().getJsonObject("persistence", new JsonObject());
-			this.pool = MongoClient.createShared(this.vertx, persitenceConf, PERSISTENCE_POOL_NAME);
+    try {
+      // create the pool
+      final var persitenceConf = this.config().getJsonObject("persistence", new JsonObject());
+      this.pool = MongoClient.createShared(this.vertx, persitenceConf, PERSISTENCE_POOL_NAME);
 
-			this.registerRepositories();
+      this.registerRepositories();
 
-			startPromise.complete();
+      startPromise.complete();
 
-		} catch (final Throwable cause) {
+    } catch (final Throwable cause) {
 
-			startPromise.fail(cause);
-		}
-	}
+      startPromise.fail(cause);
+    }
+  }
 
-	/**
-	 * Register the repository services that will be provided.
-	 *
-	 * @throws Exception If can not create or register the required persistence
-	 *                   services.
-	 */
-	protected abstract void registerRepositories() throws Exception;
+  /**
+   * Register the repository services that will be provided.
+   *
+   * @throws Exception If can not create or register the required persistence services.
+   */
+  protected abstract void registerRepositories() throws Exception;
 
-	/**
-	 * Close the connections pool.
-	 *
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void stop() throws Exception {
+  /**
+   * Close the connections pool.
+   *
+   * {@inheritDoc}
+   */
+  @Override
+  public void stop() throws Exception {
 
-		if (this.pool != null) {
+    if (this.pool != null) {
 
-			this.pool.close();
-			this.pool = null;
-		}
+      this.pool.close();
+      this.pool = null;
+    }
 
-	}
+  }
 
 }

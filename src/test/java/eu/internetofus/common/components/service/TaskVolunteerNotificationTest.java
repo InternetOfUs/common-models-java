@@ -39,36 +39,36 @@ import org.junit.jupiter.api.Test;
  */
 public class TaskVolunteerNotificationTest extends TaskNotificationTestCase<TaskVolunteerNotification> {
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see TaskVolunteerNotification#TaskVolunteerNotification()
-	 */
-	@Override
-	public TaskVolunteerNotification createEmptyMessage() {
+  /**
+   * {@inheritDoc}
+   *
+   * @see TaskVolunteerNotification#TaskVolunteerNotification()
+   */
+  @Override
+  public TaskVolunteerNotification createEmptyMessage() {
 
-		return new TaskVolunteerNotification();
-	}
+    return new TaskVolunteerNotification();
+  }
 
-	/**
-	 * Verify that the notification type is a task volunteer.
-	 */
-	@Test
-	public void shouldNotificationTypeByTaskVolunteer() {
+  /**
+   * Verify that the notification type is a task volunteer.
+   */
+  @Test
+  public void shouldNotificationTypeByTaskVolunteer() {
 
-		final TaskVolunteerNotification model = this.createEmptyMessage();
-		assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.taskVolunteer);
-	}
+    final var model = this.createEmptyMessage();
+    assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.taskVolunteer);
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public TaskVolunteerNotification createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public TaskVolunteerNotification createModelExample(final int index) {
 
-		final TaskVolunteerNotification model = super.createModelExample(index);
-		model.volunteerId = "VolunteerId_" + index;
-		return model;
-	}
+    final var model = super.createModelExample(index);
+    model.volunteerId = "VolunteerId_" + index;
+    return model;
+  }
 
 }

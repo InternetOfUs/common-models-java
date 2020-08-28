@@ -37,6 +37,7 @@ import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -44,7 +45,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -53,7 +53,7 @@ import io.vertx.core.json.JsonObject;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Routine", description = "Labels distribution for a given user, time and weekday.")
-public class Routine extends Model implements Validable, Mergeable<Routine> {
+public class Routine extends ReflectionModel implements Model, Validable, Mergeable<Routine> {
 
   /**
    * The identifier of the user.
@@ -94,7 +94,7 @@ public class Routine extends Model implements Validable, Mergeable<Routine> {
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    Future<Void> future = promise.future();
+    var future = promise.future();
     try {
 
       this.user_id = Validations.validateStringField(codePrefix, "user_id", 255, this.user_id);
@@ -126,9 +126,9 @@ public class Routine extends Model implements Validable, Mergeable<Routine> {
 
           try {
 
-            final JsonArray array = this.label_distribution.getJsonArray(fieldName);
-            final List<ScoredLabel> labels = Model.fromJsonArray(array, ScoredLabel.class);
-            final String scorePrefix = codePrefix + ".label_distribution." + fieldName;
+            final var array = this.label_distribution.getJsonArray(fieldName);
+            final var labels = Model.fromJsonArray(array, ScoredLabel.class);
+            final var scorePrefix = codePrefix + ".label_distribution." + fieldName;
             if (labels == null) {
 
               promise.fail(new ValidationErrorException(scorePrefix, "The '" + array + "' is not a valid array of ScoredLabel."));
@@ -172,10 +172,10 @@ public class Routine extends Model implements Validable, Mergeable<Routine> {
   public Future<Routine> merge(final Routine source, final String codePrefix, final Vertx vertx) {
 
     final Promise<Routine> promise = Promise.promise();
-    Future<Routine> future = promise.future();
+    var future = promise.future();
     if (source != null) {
 
-      final Routine merged = new Routine();
+      final var merged = new Routine();
       merged.user_id = source.user_id;
       if (merged.user_id == null) {
 
@@ -205,21 +205,21 @@ public class Routine extends Model implements Validable, Mergeable<Routine> {
 
           try {
 
-            final JsonArray sourceLabelDistributionArray = merged.label_distribution.getJsonArray(fieldName);
-            final List<ScoredLabel> sourceLabelDistribution = Model.fromJsonArray(sourceLabelDistributionArray, ScoredLabel.class);
-            final String scorePrefix = codePrefix + ".label_distribution." + fieldName;
+            final var sourceLabelDistributionArray = merged.label_distribution.getJsonArray(fieldName);
+            final var sourceLabelDistribution = Model.fromJsonArray(sourceLabelDistributionArray, ScoredLabel.class);
+            final var scorePrefix = codePrefix + ".label_distribution." + fieldName;
             if (sourceLabelDistribution == null) {
 
               promise.fail(new ValidationErrorException(scorePrefix, "The '" + sourceLabelDistributionArray + "' is not a valid array of ScoredLabel."));
               return future;
 
             }
-            final JsonArray targetLabelDistributionArray = this.label_distribution.getJsonArray(fieldName);
-            final List<ScoredLabel> targetLabelDistribution = Model.fromJsonArray(targetLabelDistributionArray, ScoredLabel.class);
+            final var targetLabelDistributionArray = this.label_distribution.getJsonArray(fieldName);
+            final var targetLabelDistribution = Model.fromJsonArray(targetLabelDistributionArray, ScoredLabel.class);
             future = future.compose(Merges.mergeFieldList(targetLabelDistribution, sourceLabelDistribution, scorePrefix, vertx, (Predicate<ScoredLabel>) scoredLabel -> scoredLabel.label != null && scoredLabel.label.name != null,
                 (BiPredicate<ScoredLabel, ScoredLabel>) (l1, l2) -> l1.label.name.equals(l2.label.name), (BiConsumer<Routine, List<ScoredLabel>>) (mergedRoutine, mergedScoredLabel) -> {
 
-                  final JsonArray value = Model.toJsonArray(mergedScoredLabel);
+                  final var value = Model.toJsonArray(mergedScoredLabel);
                   mergedRoutine.label_distribution.put(fieldName, value);
 
                 }));

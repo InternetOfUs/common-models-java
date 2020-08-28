@@ -56,10 +56,10 @@ public class DummyComplexModel extends DummyModel implements Validable, Mergeabl
   public Future<DummyComplexModel> merge(final DummyComplexModel source, final String codePrefix, final Vertx vertx) {
 
     final Promise<DummyComplexModel> promise = Promise.promise();
-    Future<DummyComplexModel> future = promise.future();
+    var future = promise.future();
     if (source != null) {
 
-      final DummyComplexModel merged = new DummyComplexModel();
+      final var merged = new DummyComplexModel();
       merged.id = source.id;
       if (merged.id == null) {
 
@@ -87,7 +87,7 @@ public class DummyComplexModel extends DummyModel implements Validable, Mergeabl
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    final Future<Void> future = promise.future();
+    final var future = promise.future();
     try {
 
       this.id = Validations.validateStringField(codePrefix, "id", 255, this.id);

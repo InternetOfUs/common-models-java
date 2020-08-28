@@ -33,17 +33,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(
-		hidden = true,
-		name = "TaskProposalNotification",
-		description = "This notification is used in order to propose a user to volunteer to a newly created task.")
+@Schema(hidden = true, name = "TaskProposalNotification", description = "This notification is used in order to propose a user to volunteer to a newly created task.")
 public class TaskProposalNotification extends TaskNotification {
 
-	/**
-	 * Create a new task proposal notification.
-	 */
-	public TaskProposalNotification() {
+  /**
+   * Create a new task proposal notification.
+   */
+  public TaskProposalNotification() {
 
-		this.notificationType = NotificationType.taskProposal;
-	}
+    this.notificationType = NotificationType.taskProposal;
+  }
 }

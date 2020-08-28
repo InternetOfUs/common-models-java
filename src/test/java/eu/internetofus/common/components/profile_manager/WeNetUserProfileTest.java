@@ -88,8 +88,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject conf = mocker.getComponentConfiguration();
+    final var client = WebClient.create(vertx);
+    final var conf = mocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, conf);
 
   }
@@ -103,7 +103,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    */
   public WeNetUserProfile createBasicExample(final int index) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.id = null;
     model.name = new UserNameTest().createModelExample(index);
     model.dateOfBirth = new AliveBirthDateTest().createModelExample(index);
@@ -127,7 +127,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Override
   public WeNetUserProfile createModelExample(final int index) {
 
-    final WeNetUserProfile model = this.createBasicExample(index);
+    final var model = this.createBasicExample(index);
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(index));
     model.plannedActivities = new ArrayList<>();
@@ -162,9 +162,9 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
       StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(stored2 -> {
 
-        final WeNetUserProfile profile = this.createModelExample(index);
+        final var profile = this.createModelExample(index);
 
-        final PlannedActivity activity = new PlannedActivityTest().createModelExample(3);
+        final var activity = new PlannedActivityTest().createModelExample(3);
         activity.attendees = new ArrayList<>();
         activity.attendees.add(stored1.id);
         activity.attendees.add(stored2.id);
@@ -195,7 +195,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldEmptyModelBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     testContext.assertComplete(model.validate("codePrefix", vertx)).onComplete(result -> testContext.completeNow());
 
   }
@@ -213,7 +213,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = this.createModelExample(index);
+    final var model = this.createModelExample(index);
     assertIsValid(model, vertx, testContext);
 
   }
@@ -252,7 +252,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
     WeNetProfileManager.createProxy(vertx).createProfile(new JsonObject(), testContext.succeeding(created -> {
 
-      final WeNetUserProfile model = new WeNetUserProfile();
+      final var model = new WeNetUserProfile();
       model.id = created.getString("id");
       assertIsNotValid(model, "id", vertx, testContext);
 
@@ -271,7 +271,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldBeValidWithAnNewId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.id = UUID.randomUUID().toString();
     assertIsValid(model, vertx, testContext);
 
@@ -288,7 +288,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.name = new UserNameTest().createModelExample(1);
     model.name.first = ValidationsTest.STRING_256;
     assertIsNotValid(model, "name.first", vertx, testContext);
@@ -306,7 +306,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadBirthDate(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.dateOfBirth = new AliveBirthDateTest().createModelExample(1);
     model.dateOfBirth.month = 0;
     assertIsNotValid(model, "dateOfBirth.month", vertx, testContext);
@@ -324,9 +324,9 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABirthDateOnTheFuture(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.dateOfBirth = new AliveBirthDate();
-    final LocalDate tomorrow = LocalDate.now().plusDays(1);
+    final var tomorrow = LocalDate.now().plusDays(1);
     model.dateOfBirth.year = tomorrow.getYear();
     model.dateOfBirth.month = (byte) tomorrow.getMonthValue();
     model.dateOfBirth.day = (byte) tomorrow.getDayOfMonth();
@@ -345,7 +345,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABirthDateBeforeTheBirthDateOldestPersonOnWorld(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.dateOfBirth = new AliveBirthDate();
     model.dateOfBirth.year = 1903;
     model.dateOfBirth.month = 1;
@@ -365,7 +365,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadEmail(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.email = " bad email @ adrress ";
     assertIsNotValid(model, "email", vertx, testContext);
 
@@ -382,7 +382,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadLocale(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.locale = " bad locale";
     assertIsNotValid(model, "locale", vertx, testContext);
   }
@@ -398,7 +398,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadPhoneNumber(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.phoneNumber = " bad phone number";
     assertIsNotValid(model, "phoneNumber", vertx, testContext);
 
@@ -415,7 +415,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadAvatar(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.avatar = " bad avatar";
     assertIsNotValid(model, "avatar", vertx, testContext);
   }
@@ -431,7 +431,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadNationality(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.nationality = ValidationsTest.STRING_256;
     assertIsNotValid(model, "nationality", vertx, testContext);
 
@@ -448,7 +448,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadOccupation(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.occupation = ValidationsTest.STRING_256;
     assertIsNotValid(model, "occupation", vertx, testContext);
 
@@ -465,7 +465,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.norms = new ArrayList<>();
     model.norms.add(new Norm());
     model.norms.add(new Norm());
@@ -486,7 +486,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadPlannedActivities(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.plannedActivities = new ArrayList<>();
     model.plannedActivities.add(new PlannedActivity());
     model.plannedActivities.add(new PlannedActivity());
@@ -507,7 +507,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.relevantLocations = new ArrayList<>();
     model.relevantLocations.add(new RelevantLocation());
     model.relevantLocations.add(new RelevantLocation());
@@ -528,7 +528,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadRelationships(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.relationships = new ArrayList<>();
     model.relationships.add(new SocialNetworkRelationship());
     assertIsNotValid(model, "relationships[0].type", vertx, testContext);
@@ -548,7 +548,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
     StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(stored -> {
 
-      final WeNetUserProfile model = new WeNetUserProfile();
+      final var model = new WeNetUserProfile();
       model.relationships = new ArrayList<>();
       model.relationships.add(new SocialNetworkRelationship());
       model.relationships.add(new SocialNetworkRelationship());
@@ -575,7 +575,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
     StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(stored -> {
 
-      final WeNetUserProfile model = new WeNetUserProfile();
+      final var model = new WeNetUserProfile();
       model.relationships = new ArrayList<>();
       model.relationships.add(new SocialNetworkRelationship());
       model.relationships.add(new SocialNetworkRelationship());
@@ -600,7 +600,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadPersonalBehaviors(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.personalBehaviors = new ArrayList<>();
     model.personalBehaviors.add(new Routine());
     model.personalBehaviors.add(new Routine());
@@ -620,7 +620,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadMaterials(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.materials = new ArrayList<>();
     model.materials.add(new MaterialTest().createModelExample(1));
     model.materials.add(new Material());
@@ -639,7 +639,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadCompetences(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.competences = new ArrayList<>();
     model.competences.add(new CompetenceTest().createModelExample(1));
     model.competences.add(new Competence());
@@ -658,7 +658,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithABadMeanings(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.meanings = new ArrayList<>();
     model.meanings.add(new MeaningTest().createModelExample(1));
     model.meanings.add(new Meaning());
@@ -677,7 +677,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.name = new UserNameTest().createModelExample(1);
     source.name.first = ValidationsTest.STRING_256;
     assertCannotMerge(new WeNetUserProfile(), source, "name.first", vertx, testContext);
@@ -695,7 +695,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadBirthDate(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.dateOfBirth = new AliveBirthDateTest().createModelExample(1);
     source.dateOfBirth.month = 13;
     assertCannotMerge(new WeNetUserProfile(), source, "dateOfBirth.month", vertx, testContext);
@@ -713,9 +713,9 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABirthDateOnTheFuture(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.dateOfBirth = new AliveBirthDate();
-    final LocalDate tomorrow = LocalDate.now().plusDays(1);
+    final var tomorrow = LocalDate.now().plusDays(1);
     source.dateOfBirth.year = tomorrow.getYear();
     source.dateOfBirth.month = (byte) tomorrow.getMonthValue();
     source.dateOfBirth.day = (byte) tomorrow.getDayOfMonth();
@@ -734,7 +734,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABirthDateBeforeTheBirthDateOldestPersonOnWorld(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.dateOfBirth = new AliveBirthDate();
     source.dateOfBirth.year = 1903;
     source.dateOfBirth.month = 1;
@@ -754,7 +754,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadEmail(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.email = " bad email @ adrress ";
     assertCannotMerge(new WeNetUserProfile(), source, "email", vertx, testContext);
 
@@ -771,7 +771,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadLocale(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.locale = " bad locale";
     assertCannotMerge(new WeNetUserProfile(), source, "locale", vertx, testContext);
   }
@@ -787,7 +787,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadPhoneNumber(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.phoneNumber = " bad phone number";
     assertCannotMerge(new WeNetUserProfile(), source, "phoneNumber", vertx, testContext);
 
@@ -804,7 +804,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadAvatar(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.avatar = " bad avatar";
     assertCannotMerge(new WeNetUserProfile(), source, "avatar", vertx, testContext);
   }
@@ -820,7 +820,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadNationality(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.nationality = ValidationsTest.STRING_256;
     assertCannotMerge(new WeNetUserProfile(), source, "nationality", vertx, testContext);
 
@@ -837,7 +837,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadOccupation(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.occupation = ValidationsTest.STRING_256;
     assertCannotMerge(new WeNetUserProfile(), source, "occupation", vertx, testContext);
 
@@ -854,7 +854,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.norms = new ArrayList<>();
     source.norms.add(new Norm());
     source.norms.add(new Norm());
@@ -875,14 +875,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithADuplicatedNormIds(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.norms = new ArrayList<>();
     source.norms.add(new Norm());
     source.norms.add(new Norm());
     source.norms.add(new Norm());
     source.norms.get(1).id = "1";
     source.norms.get(2).id = "1";
-    final WeNetUserProfile target = new WeNetUserProfile();
+    final var target = new WeNetUserProfile();
     target.norms = new ArrayList<>();
     target.norms.add(new Norm());
     target.norms.get(0).id = "1";
@@ -901,11 +901,11 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeWithNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = new WeNetUserProfile();
+    final var target = new WeNetUserProfile();
     target.norms = new ArrayList<>();
     target.norms.add(new Norm());
     target.norms.get(0).id = "1";
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.norms = new ArrayList<>();
     source.norms.add(new Norm());
     source.norms.add(new Norm());
@@ -933,7 +933,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadPlannedActivities(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.plannedActivities = new ArrayList<>();
     source.plannedActivities.add(new PlannedActivity());
     source.plannedActivities.add(new PlannedActivity());
@@ -954,14 +954,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithADuplicatedPlannedActivityIds(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.plannedActivities = new ArrayList<>();
     source.plannedActivities.add(new PlannedActivity());
     source.plannedActivities.add(new PlannedActivity());
     source.plannedActivities.add(new PlannedActivity());
     source.plannedActivities.get(1).id = "1";
     source.plannedActivities.get(2).id = "1";
-    final WeNetUserProfile target = new WeNetUserProfile();
+    final var target = new WeNetUserProfile();
     target.plannedActivities = new ArrayList<>();
     target.plannedActivities.add(new PlannedActivity());
     target.plannedActivities.get(0).id = "1";
@@ -980,7 +980,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithDuplicatedPlannedActivityId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.plannedActivities = new ArrayList<>();
     source.plannedActivities.add(new PlannedActivity());
     source.plannedActivities.add(new PlannedActivity());
@@ -1002,11 +1002,11 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeWithPlannedActivities(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = new WeNetUserProfile();
+    final var target = new WeNetUserProfile();
     target.plannedActivities = new ArrayList<>();
     target.plannedActivities.add(new PlannedActivity());
     target.plannedActivities.get(0).id = "1";
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.plannedActivities = new ArrayList<>();
     source.plannedActivities.add(new PlannedActivity());
     source.plannedActivities.add(new PlannedActivity());
@@ -1034,7 +1034,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.relevantLocations = new ArrayList<>();
     source.relevantLocations.add(new RelevantLocation());
     source.relevantLocations.add(new RelevantLocation());
@@ -1055,14 +1055,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithADuplicatedRelevantLocationIds(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.relevantLocations = new ArrayList<>();
     source.relevantLocations.add(new RelevantLocation());
     source.relevantLocations.add(new RelevantLocation());
     source.relevantLocations.add(new RelevantLocation());
     source.relevantLocations.get(1).id = "1";
     source.relevantLocations.get(2).id = "1";
-    final WeNetUserProfile target = new WeNetUserProfile();
+    final var target = new WeNetUserProfile();
     target.relevantLocations = new ArrayList<>();
     target.relevantLocations.add(new RelevantLocation());
     target.relevantLocations.get(0).id = "1";
@@ -1081,7 +1081,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithDuplicatedRelevantLocationId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.relevantLocations = new ArrayList<>();
     source.relevantLocations.add(new RelevantLocation());
     source.relevantLocations.add(new RelevantLocation());
@@ -1103,11 +1103,11 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeWithRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = new WeNetUserProfile();
+    final var target = new WeNetUserProfile();
     target.relevantLocations = new ArrayList<>();
     target.relevantLocations.add(new RelevantLocation());
     target.relevantLocations.get(0).id = "1";
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.relevantLocations = new ArrayList<>();
     source.relevantLocations.add(new RelevantLocation());
     source.relevantLocations.add(new RelevantLocation());
@@ -1135,7 +1135,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadRelationships(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.relationships = new ArrayList<>();
     source.relationships.add(new SocialNetworkRelationship());
     assertCannotMerge(new WeNetUserProfile(), source, "relationships[0].type", vertx, testContext);
@@ -1155,7 +1155,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
     StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(stored -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.relationships = new ArrayList<>();
       source.relationships.add(new SocialNetworkRelationship());
       source.relationships.add(new SocialNetworkRelationship());
@@ -1182,13 +1182,13 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
     StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(stored -> {
 
-      final WeNetUserProfile target = new WeNetUserProfile();
+      final var target = new WeNetUserProfile();
       target.relationships = new ArrayList<>();
       target.relationships.add(new SocialNetworkRelationship());
       target.relationships.get(0).userId = stored.id;
       target.relationships.get(0).type = SocialNetworkRelationshipType.friend;
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.relationships = new ArrayList<>();
       source.relationships.add(new SocialNetworkRelationship());
       source.relationships.add(new SocialNetworkRelationship());
@@ -1217,7 +1217,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadPersonalBehaviors(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.personalBehaviors = new ArrayList<>();
     source.personalBehaviors.add(new Routine());
     assertCannotMerge(new WeNetUserProfile(), source, "personalBehaviors[0].user_id", vertx, testContext);
@@ -1235,8 +1235,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeEmptyModels(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = new WeNetUserProfile();
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var target = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
       assertThat(merged).isEqualTo(target);
@@ -1256,11 +1256,11 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeBasicModels(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = new WeNetUserProfile();
+    final var target = new WeNetUserProfile();
     target.id = "1";
     target._creationTs = 2;
     target._lastUpdateTs = 3;
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.id = "4";
     source._creationTs = 5;
     source._lastUpdateTs = 6;
@@ -1283,9 +1283,9 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeExampleModels(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "1";
-    final WeNetUserProfile source = this.createModelExample(2);
+    final var source = this.createModelExample(2);
     source.id = "2";
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -1344,10 +1344,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeOnlyUserName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createBasicExample(1);
+    final var target = this.createBasicExample(1);
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.name = new UserName();
       source.name.middle = "NEW MIDDLE NAME";
       assertCanMerge(target, source, vertx, testContext, merged -> {
@@ -1373,9 +1373,9 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeAddUserName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = new WeNetUserProfile();
+    final var target = new WeNetUserProfile();
     target.id = "1";
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.name = new UserName();
     source.name.middle = "NEW MIDDLE NAME";
     assertCanMerge(target, source, vertx, testContext, merged -> {
@@ -1400,10 +1400,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeOnlyBirthDate(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createBasicExample(1);
+    final var target = this.createBasicExample(1);
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.dateOfBirth = new AliveBirthDate();
       source.dateOfBirth.year = 1923;
       assertCanMerge(target, source, vertx, testContext, merged -> {
@@ -1429,9 +1429,9 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeAddBirthDate(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = new WeNetUserProfile();
+    final var target = new WeNetUserProfile();
     target.id = "1";
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.dateOfBirth = new AliveBirthDateTest().createModelExample(1);
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -1454,10 +1454,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeOnlyGender(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createBasicExample(1);
+    final var target = this.createBasicExample(1);
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.gender = Gender.M;
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -1482,10 +1482,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeOnlyEmail(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createBasicExample(1);
+    final var target = this.createBasicExample(1);
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.email = "new@email.com";
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -1510,10 +1510,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeOnlyLocale(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createBasicExample(1);
+    final var target = this.createBasicExample(1);
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.locale = "en_NZ";
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -1538,10 +1538,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeOnlyPhoneNumber(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createBasicExample(1);
+    final var target = this.createBasicExample(1);
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.phoneNumber = "+1 412 535 2223";
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -1566,10 +1566,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeOnlyAvatar(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createBasicExample(1);
+    final var target = this.createBasicExample(1);
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.avatar = "http://new-avatar.com";
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -1594,10 +1594,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeOnlyNationality(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createBasicExample(1);
+    final var target = this.createBasicExample(1);
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.nationality = "Canadian";
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -1622,10 +1622,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeOnlyOccupation(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createBasicExample(1);
+    final var target = this.createBasicExample(1);
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.occupation = "Bus driver";
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -1656,7 +1656,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
         StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
 
-          final WeNetUserProfile source = new WeNetUserProfile();
+          final var source = new WeNetUserProfile();
           source.plannedActivities = new ArrayList<>();
           assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -1691,7 +1691,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
         StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
 
-          final WeNetUserProfile source = new WeNetUserProfile();
+          final var source = new WeNetUserProfile();
           source.plannedActivities = new ArrayList<>();
           source.plannedActivities.add(new PlannedActivity());
           source.plannedActivities.get(0).id = target.plannedActivities.get(0).id;
@@ -1723,7 +1723,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
         StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
 
-          final WeNetUserProfile source = new WeNetUserProfile();
+          final var source = new WeNetUserProfile();
           source.plannedActivities = new ArrayList<>();
           source.plannedActivities.add(new PlannedActivity());
           source.plannedActivities.get(0).description = ValidationsTest.STRING_256;
@@ -1753,7 +1753,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
         StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
 
-          final WeNetUserProfile source = new WeNetUserProfile();
+          final var source = new WeNetUserProfile();
           source.plannedActivities = new ArrayList<>();
           source.plannedActivities.add(new PlannedActivity());
           source.plannedActivities.add(new PlannedActivity());
@@ -1793,7 +1793,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
         StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
 
-          final WeNetUserProfile source = new WeNetUserProfile();
+          final var source = new WeNetUserProfile();
           source.relevantLocations = new ArrayList<>();
           assertCanMerge(target, source, vertx, testContext, merged -> {
             assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -1822,7 +1822,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
         StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
 
-          final WeNetUserProfile source = new WeNetUserProfile();
+          final var source = new WeNetUserProfile();
           source.relevantLocations = new ArrayList<>();
           source.relevantLocations.add(new RelevantLocation());
           source.relevantLocations.get(0).id = target.relevantLocations.get(0).id;
@@ -1849,7 +1849,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
         StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
 
-          final WeNetUserProfile source = new WeNetUserProfile();
+          final var source = new WeNetUserProfile();
           source.relevantLocations = new ArrayList<>();
           source.relevantLocations.add(new RelevantLocation());
           source.relevantLocations.get(0).label = ValidationsTest.STRING_256;
@@ -1877,7 +1877,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
         StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
 
-          final WeNetUserProfile source = new WeNetUserProfile();
+          final var source = new WeNetUserProfile();
           source.relevantLocations = new ArrayList<>();
           source.relevantLocations.add(new RelevantLocation());
           source.relevantLocations.add(new RelevantLocationTest().createModelExample(1));
@@ -1914,7 +1914,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
         StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
 
-          final WeNetUserProfile source = new WeNetUserProfile();
+          final var source = new WeNetUserProfile();
           source.personalBehaviors = new ArrayList<>();
           assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -1945,7 +1945,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
         StoreServices.storeProfile(created, vertx, testContext, testContext.succeeding(target -> {
 
-          final WeNetUserProfile source = new WeNetUserProfile();
+          final var source = new WeNetUserProfile();
           source.personalBehaviors = new ArrayList<>();
           source.personalBehaviors.add(new Routine());
           assertCannotMerge(target, source, "personalBehaviors[0].user_id", vertx, testContext);
@@ -1973,7 +1973,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
           new RoutineTest().createModelExample(1, vertx, testContext, testContext.succeeding(createdRoutine -> {
 
-            final WeNetUserProfile source = new WeNetUserProfile();
+            final var source = new WeNetUserProfile();
             source.personalBehaviors = new ArrayList<>();
             source.personalBehaviors.add(createdRoutine);
             source.personalBehaviors.addAll(created.personalBehaviors);
@@ -2002,7 +2002,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadMaterials(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.materials = new ArrayList<>();
     source.materials.add(new MaterialTest().createModelExample(1));
     source.materials.add(new MaterialTest().createModelExample(2));
@@ -2023,10 +2023,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeRemoveMaterials(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.materials = new ArrayList<>();
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -2051,12 +2051,12 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeAddAndModifyMaterials(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.materials.add(new MaterialTest().createModelExample(2));
     target.materials.add(new MaterialTest().createModelExample(3));
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.materials = new ArrayList<>();
       source.materials.add(new MaterialTest().createModelExample(2));
       source.materials.add(new MaterialTest().createModelExample(4));
@@ -2094,7 +2094,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadCompetences(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.competences = new ArrayList<>();
     source.competences.add(new CompetenceTest().createModelExample(1));
     source.competences.add(new CompetenceTest().createModelExample(2));
@@ -2115,10 +2115,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeRemoveCompetences(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.competences = new ArrayList<>();
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -2144,12 +2144,12 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeAddAndModifyCompetences(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.competences.add(new CompetenceTest().createModelExample(2));
     target.competences.add(new CompetenceTest().createModelExample(3));
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.competences = new ArrayList<>();
       source.competences.add(new CompetenceTest().createModelExample(2));
       source.competences.add(new CompetenceTest().createModelExample(4));
@@ -2187,7 +2187,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotMergeWithABadMeanings(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile source = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
     source.meanings = new ArrayList<>();
     source.meanings.add(new MeaningTest().createModelExample(1));
     source.meanings.add(new MeaningTest().createModelExample(2));
@@ -2208,10 +2208,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeRemoveMeanings(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.meanings = new ArrayList<>();
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -2236,12 +2236,12 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldMergeAddAndModifyMeanings(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.meanings.add(new MeaningTest().createModelExample(2));
     target.meanings.add(new MeaningTest().createModelExample(3));
     assertIsValid(target, vertx, testContext, () -> {
 
-      final WeNetUserProfile source = new WeNetUserProfile();
+      final var source = new WeNetUserProfile();
       source.meanings = new ArrayList<>();
       source.meanings.add(new MeaningTest().createModelExample(2));
       source.meanings.add(new MeaningTest().createModelExample(4));
@@ -2299,7 +2299,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotValidWithDuplicatedNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.norms = new ArrayList<>();
     for (var i = 0; i < 2; i++) {
 
@@ -2321,7 +2321,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotValidWithDuplicatedRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetUserProfile model = new WeNetUserProfile();
+    final var model = new WeNetUserProfile();
     model.relevantLocations = new ArrayList<>();
     for (var i = 0; i < 2; i++) {
 
@@ -2345,7 +2345,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
     new RoutineTest().createModelExample(1, vertx, testContext, testContext.succeeding(routine -> {
 
-      final WeNetUserProfile model = new WeNetUserProfile();
+      final var model = new WeNetUserProfile();
       model.personalBehaviors = new ArrayList<>();
       model.personalBehaviors.add(routine);
       model.personalBehaviors.add(Model.fromJsonObject(routine.toJsonObject(), Routine.class));

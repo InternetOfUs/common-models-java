@@ -37,25 +37,25 @@ import org.junit.jupiter.api.Test;
  */
 public class TextualMessageTest extends MessageTestCase<TextualMessage> {
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see TextualMessage#TextualMessage()
-	 */
-	@Override
-	public TextualMessage createEmptyMessage() {
+  /**
+   * {@inheritDoc}
+   *
+   * @see TextualMessage#TextualMessage()
+   */
+  @Override
+  public TextualMessage createEmptyMessage() {
 
-		return new TextualMessage();
-	}
+    return new TextualMessage();
+  }
 
-	/**
-	 * Verify that the type is a textual message.
-	 */
-	@Test
-	public void shouldTypeByTextualMessage() {
+  /**
+   * Verify that the type is a textual message.
+   */
+  @Test
+  public void shouldTypeByTextualMessage() {
 
-		final TextualMessage model = this.createEmptyMessage();
-		assertThat(model.type).isEqualTo(BaseMessage.Type.textualMessage);
-	}
+    final var model = this.createEmptyMessage();
+    assertThat(model.type).isEqualTo(BaseMessage.Type.textualMessage);
+  }
 
 }

@@ -56,7 +56,7 @@ public class TaskSelectionNotificationTest extends TaskNotificationTestCase<Task
   @Test
   public void shouldNotificationTypeByTaskVolunteer() {
 
-    final TaskSelectionNotification model = this.createEmptyMessage();
+    final var model = this.createEmptyMessage();
     assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.selectionVolunteer);
   }
 
@@ -66,7 +66,7 @@ public class TaskSelectionNotificationTest extends TaskNotificationTestCase<Task
   @Override
   public TaskSelectionNotification createModelExample(final int index) {
 
-    final TaskSelectionNotification model = super.createModelExample(index);
+    final var model = super.createModelExample(index);
     model.outcome = TaskSelectionNotification.Outcome.values()[index % TaskSelectionNotification.Outcome.values().length];
     return model;
   }

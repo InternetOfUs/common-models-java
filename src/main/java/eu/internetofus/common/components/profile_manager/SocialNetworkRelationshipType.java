@@ -33,24 +33,24 @@ package eu.internetofus.common.components.profile_manager;
  */
 public enum SocialNetworkRelationshipType {
 
-	/**
-	 * A friend relation.
-	 */
-	friend,
-	/**
-	 * A colleague relation.
-	 */
-	colleague,
-	/**
-	 * A follower relation.
-	 */
-	follower,
-	/**
-	 * A family relation.
-	 */
-	family,
-	/**
-	 * An acquaintance relation.
-	 */
-	acquaintance;
+  /**
+   * A friend relation.
+   */
+  friend,
+  /**
+   * A colleague relation.
+   */
+  colleague,
+  /**
+   * A follower relation.
+   */
+  follower,
+  /**
+   * A family relation.
+   */
+  family,
+  /**
+   * An acquaintance relation.
+   */
+  acquaintance;
 }

@@ -29,6 +29,7 @@ package eu.internetofus.common.components.profile_manager;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -43,7 +44,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "A social relationship with another WeNet user.")
-public class SocialNetworkRelationship extends Model implements Validable, Mergeable<SocialNetworkRelationship> {
+public class SocialNetworkRelationship extends ReflectionModel implements Model, Validable, Mergeable<SocialNetworkRelationship> {
 
   /**
    * The identifier of the WeNet user the relationship is related to.
@@ -91,7 +92,7 @@ public class SocialNetworkRelationship extends Model implements Validable, Merge
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    Future<Void> future = promise.future();
+    var future = promise.future();
     try {
 
       if (this.type == null) {
@@ -144,10 +145,10 @@ public class SocialNetworkRelationship extends Model implements Validable, Merge
   public Future<SocialNetworkRelationship> merge(final SocialNetworkRelationship source, final String codePrefix, final Vertx vertx) {
 
     final Promise<SocialNetworkRelationship> promise = Promise.promise();
-    Future<SocialNetworkRelationship> future = promise.future();
+    var future = promise.future();
     if (source != null) {
 
-      final SocialNetworkRelationship merged = new SocialNetworkRelationship();
+      final var merged = new SocialNetworkRelationship();
       merged.userId = source.userId;
       if (merged.userId == null) {
 

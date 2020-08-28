@@ -32,7 +32,6 @@ import javax.ws.rs.core.Response.Status;
 import eu.internetofus.common.components.ErrorMessage;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -42,34 +41,34 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class BadRequestHandler implements Handler<RoutingContext> {
 
-	/**
-	 * Create the handler for the not found.
-	 *
-	 * @return a new instance of the handler for the not found.
-	 */
-	public static Handler<RoutingContext> build() {
+  /**
+   * Create the handler for the not found.
+   *
+   * @return a new instance of the handler for the not found.
+   */
+  public static Handler<RoutingContext> build() {
 
-		return new BadRequestHandler();
-	}
+    return new BadRequestHandler();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void handle(RoutingContext event) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void handle(final RoutingContext event) {
 
-		final HttpServerResponse response = event.response();
-		response.setStatusCode(Status.BAD_REQUEST.getStatusCode());
-		response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-		final Throwable failure = event.failure();
-		String message = "Bad request";
-		if (failure != null) {
+    final var response = event.response();
+    response.setStatusCode(Status.BAD_REQUEST.getStatusCode());
+    response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+    final Throwable failure = event.failure();
+    var message = "Bad request";
+    if (failure != null) {
 
-			message = failure.getMessage();
-		}
-		final ErrorMessage error = new ErrorMessage("bad_api_request", message);
-		response.end(error.toJsonString());
+      message = failure.getMessage();
+    }
+    final var error = new ErrorMessage("bad_api_request", message);
+    response.end(error.toJsonString());
 
-	}
+  }
 
 }

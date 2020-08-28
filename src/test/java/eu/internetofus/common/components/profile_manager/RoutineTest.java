@@ -82,8 +82,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject conf = mocker.getComponentConfiguration();
+    final var client = WebClient.create(vertx);
+    final var conf = mocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, conf);
 
   }
@@ -94,7 +94,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Override
   public Routine createModelExample(final int index) {
 
-    final Routine model = new Routine();
+    final var model = new Routine();
     model.user_id = "user_id_" + index;
     model.weekday = "weekday_" + index;
     model.label_distribution = new JsonObject();
@@ -117,7 +117,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldExampleNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Routine model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     assertIsNotValid(model, "user_id", vertx, testContext);
   }
 
@@ -133,7 +133,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
     StoreServices.storeProfileExample(index, vertx, testContext, testContext.succeeding(profile -> {
 
-      final Routine model = this.createModelExample(index);
+      final var model = this.createModelExample(index);
       model.user_id = profile.id;
       handler.handle(Future.succeededFuture(model));
     }));
@@ -349,7 +349,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Routine target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
   }
 
@@ -383,7 +383,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       StoreServices.storeProfileExample(43, vertx, testContext, testContext.succeeding(profile -> {
 
-        final Routine source = new Routine();
+        final var source = new Routine();
         source.user_id = profile.id;
         assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -411,7 +411,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final Routine source = new Routine();
+      final var source = new Routine();
       source.user_id = "undefined user indentifier";
       assertCannotMerge(target, source, "user_id", vertx, testContext);
 
@@ -431,7 +431,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final Routine source = new Routine();
+      final var source = new Routine();
       source.weekday = "DV";
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -457,7 +457,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final Routine source = new Routine();
+      final var source = new Routine();
       source.weekday = ValidationsTest.STRING_256;
       assertCannotMerge(target, source, "weekday", vertx, testContext);
 
@@ -477,7 +477,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final Routine source = new Routine();
+      final var source = new Routine();
       source.confidence = 43d;
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -503,7 +503,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final Routine source = new Routine();
+      final var source = new Routine();
       source.label_distribution = new JsonObject();
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -529,7 +529,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final Routine source = new Routine();
+      final var source = new Routine();
       source.label_distribution = new JsonObject().put("bad_field", new JsonObject());
       assertCannotMerge(target, source, "label_distribution.bad_field", vertx, testContext);
 
@@ -549,7 +549,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final Routine source = new Routine();
+      final var source = new Routine();
       source.label_distribution = new JsonObject().put("bad_array", new JsonArray().add(new JsonArray()));
       assertCannotMerge(target, source, "label_distribution.bad_array", vertx, testContext);
 
@@ -569,7 +569,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final Routine source = new Routine();
+      final var source = new Routine();
       source.label_distribution = new JsonObject().put("bad_scored_label", new JsonArray().add(new JsonObject()));
       assertCannotMerge(target, source, "label_distribution.bad_scored_label[0].label", vertx, testContext);
 
@@ -589,7 +589,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final Routine source = new Routine();
+      final var source = new Routine();
       source.label_distribution = new JsonObject(target.label_distribution.toBuffer());
       source.label_distribution.getJsonArray("additional_1").getJsonObject(0).clear().put("label", new JsonObject().put("name", "name_1").put("latitude", -43d)).put("score", 43d);
       assertCanMerge(target, source, vertx, testContext, merged -> {

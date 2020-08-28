@@ -51,7 +51,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -104,11 +103,11 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject profileConf = profileManagerMocker.getComponentConfiguration();
+    final var client = WebClient.create(vertx);
+    final var profileConf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, profileConf);
 
-    final JsonObject conf = serviceMocker.getComponentConfiguration();
+    final var conf = serviceMocker.getComponentConfiguration();
     WeNetService.register(vertx, client, conf);
     WeNetServiceSimulator.register(vertx, client, conf);
 
@@ -120,7 +119,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @Override
   public Incentive createModelExample(final int index) {
 
-    final Incentive model = new Incentive();
+    final var model = new Incentive();
     model.AppID = "AppID" + index;
     model.UserId = "UserId" + index;
     model.IncentiveType = "incentive type" + index;
@@ -144,7 +143,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
 
       StoreServices.storeApp(new App(), vertx, testContext, testContext.succeeding(app -> {
 
-        final Incentive model = this.createModelExample(index);
+        final var model = this.createModelExample(index);
         model.UserId = profile.id;
         model.AppID = app.appId;
         createHandler.handle(Future.succeededFuture(model));
@@ -167,7 +166,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleNoBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Incentive model = this.createModelExample(index);
+    final var model = this.createModelExample(index);
     assertIsNotValid(model, vertx, testContext);
 
   }

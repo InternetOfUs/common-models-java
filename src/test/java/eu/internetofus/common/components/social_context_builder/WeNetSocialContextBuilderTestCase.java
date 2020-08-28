@@ -54,7 +54,7 @@ public abstract class WeNetSocialContextBuilderTestCase {
   @Test
   public void shouldRetrieveSocialRelations(final Vertx vertx, final VertxTestContext testContext) {
 
-    final String userId = UUID.randomUUID().toString();
+    final var userId = UUID.randomUUID().toString();
     WeNetSocialContextBuilder.createProxy(vertx).retrieveSocialRelations(userId, testContext.succeeding(relations -> testContext.verify(() -> {
 
       assertThat(relations).isNotNull();
@@ -73,9 +73,9 @@ public abstract class WeNetSocialContextBuilderTestCase {
   @Test
   public void shouldUpdatePreferencesForUserOnTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    final String userId = UUID.randomUUID().toString();
-    final String taskId = UUID.randomUUID().toString();
-    final JsonArray volunteers = new JsonArray();
+    final var userId = UUID.randomUUID().toString();
+    final var taskId = UUID.randomUUID().toString();
+    final var volunteers = new JsonArray();
     WeNetSocialContextBuilder.createProxy(vertx).updatePreferencesForUserOnTask(userId, taskId, volunteers, testContext.succeeding(updated -> testContext.verify(() -> {
 
       assertThat(updated).isNotNull();
@@ -94,8 +94,8 @@ public abstract class WeNetSocialContextBuilderTestCase {
   @Test
   public void shouldRetrievSocialRelations(final Vertx vertx, final VertxTestContext testContext) {
 
-    final String userId = UUID.randomUUID().toString();
-    final String taskId = UUID.randomUUID().toString();
+    final var userId = UUID.randomUUID().toString();
+    final var taskId = UUID.randomUUID().toString();
     WeNetSocialContextBuilder.createProxy(vertx).retrieveSocialExplanation(userId, taskId, testContext.succeeding(relations -> testContext.verify(() -> {
 
       assertThat(relations).isNotNull();

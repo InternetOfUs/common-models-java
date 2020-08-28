@@ -31,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import eu.internetofus.common.components.ModelTestCase;
-import eu.internetofus.common.components.profile_manager.SocialNetworkRelationship;
 import eu.internetofus.common.components.profile_manager.SocialNetworkRelationshipType;
 
 /**
@@ -47,7 +46,7 @@ public class UserRelationTest extends ModelTestCase<UserRelation> {
   @Override
   public UserRelation createModelExample(final int index) {
 
-    final UserRelation model = new UserRelation();
+    final var model = new UserRelation();
     model.UserID1 = "userId2_" + index;
     model.UserID2 = "userId1_" + index;
     model.RelationType = index;
@@ -63,8 +62,8 @@ public class UserRelationTest extends ModelTestCase<UserRelation> {
   @Test
   public void shouldConvertToSocialNetworkRelationship() {
 
-    final UserRelation model = this.createModelExample(1);
-    final SocialNetworkRelationship relation = model.toSocialNetworkRelationship();
+    final var model = this.createModelExample(1);
+    final var relation = model.toSocialNetworkRelationship();
     assertThat(relation).isNotNull();
     assertThat(relation.userId).isEqualTo(model.UserID2);
     assertThat(relation.type).isEqualTo(SocialNetworkRelationshipType.acquaintance);

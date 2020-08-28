@@ -60,7 +60,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   @Override
   public Meaning createModelExample(final int index) {
 
-    final Meaning model = new Meaning();
+    final var model = new Meaning();
     model.name = "name_" + index;
     model.category = "category_" + index;
     model.level = (double) index;
@@ -80,14 +80,14 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Meaning model = new Meaning();
+    final var model = new Meaning();
     model.name = "    name_" + index + "    ";
     model.category = "    category_" + index + "    ";
     model.level = (double) index;
 
     assertIsValid(model, vertx, testContext, () -> {
 
-      final Meaning expected = this.createModelExample(index);
+      final var expected = this.createModelExample(index);
       assertThat(model).isEqualTo(expected);
     });
 
@@ -107,7 +107,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   @ValueSource(strings = { ValidationsTest.STRING_256 })
   public void shouldNotBeValidWithABadName(final String name, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Meaning model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.name = name;
     assertIsNotValid(model, "name", vertx, testContext);
 
@@ -127,7 +127,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   @ValueSource(strings = { ValidationsTest.STRING_256 })
   public void shouldNotBeValidWithABadCategory(final String category, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Meaning model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.category = category;
     assertIsNotValid(model, "category", vertx, testContext);
 
@@ -144,7 +144,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   @Test
   public void shouldNotBeValidWithABadLevel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Meaning model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.level = null;
     assertIsNotValid(model, "level", vertx, testContext);
 
@@ -161,16 +161,16 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleCanMerged(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Meaning source = new Meaning();
+    final var source = new Meaning();
     source.name = "    name_" + index + "    ";
     source.category = "    category_" + index + "    ";
     source.level = (double) index;
 
-    final Meaning target = this.createModelExample(index - 1);
+    final var target = this.createModelExample(index - 1);
 
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
-      final Meaning expected = this.createModelExample(index);
+      final var expected = this.createModelExample(index);
       assertThat(merged).isEqualTo(expected);
     });
 
@@ -185,7 +185,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   @Test
   public void shouldMergeNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Meaning target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> {
 
       assertThat(merged).isSameAs(target);
@@ -204,9 +204,9 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   @Test
   public void shouldCannotMergeWithABadName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Meaning source = new Meaning();
+    final var source = new Meaning();
     source.name = ValidationsTest.STRING_256;
-    final Meaning target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "name", vertx, testContext);
 
   }
@@ -222,9 +222,9 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   @Test
   public void shouldCannotMergeWithABadCategory(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Meaning source = new Meaning();
+    final var source = new Meaning();
     source.category = ValidationsTest.STRING_256;
-    final Meaning target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "category", vertx, testContext);
 
   }

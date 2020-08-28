@@ -57,7 +57,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Override
   public RelevantLocation createModelExample(final int index) {
 
-    final RelevantLocation location = new RelevantLocation();
+    final var location = new RelevantLocation();
     location.id = null;
     location.label = "label_" + index;
     location.latitude = -1 - index % 179;
@@ -76,7 +76,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldExampleBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     assertIsValid(model, vertx, testContext);
 
   }
@@ -92,7 +92,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldFullModelBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation model = new RelevantLocation();
+    final var model = new RelevantLocation();
     model.id = "      ";
     model.label = "    label    ";
     model.longitude = 10;
@@ -100,7 +100,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
 
     assertIsValid(model, vertx, testContext, () -> {
 
-      final RelevantLocation expected = new RelevantLocation();
+      final var expected = new RelevantLocation();
       expected.id = model.id;
       expected.label = "label";
       expected.longitude = 10;
@@ -121,7 +121,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation model = new RelevantLocation();
+    final var model = new RelevantLocation();
     model.id = "has_id";
     assertIsValid(model, vertx, testContext);
 
@@ -138,7 +138,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldNotBeValidWithABadLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation model = new RelevantLocation();
+    final var model = new RelevantLocation();
     model.label = ValidationsTest.STRING_256;
     assertIsNotValid(model, "label", vertx, testContext);
 
@@ -155,7 +155,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldNotBeValidWithABadLongitudeLessThanMinimum(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation model = new RelevantLocation();
+    final var model = new RelevantLocation();
     model.longitude = -180.0001;
     assertIsNotValid(model, "longitude", vertx, testContext);
 
@@ -172,7 +172,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldNotBeValidWithABadLongitudeMoreThanMaximum(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation model = new RelevantLocation();
+    final var model = new RelevantLocation();
     model.longitude = 180.0001;
     assertIsNotValid(model, "longitude", vertx, testContext);
 
@@ -189,7 +189,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldNotBeValidWithABadLatitudeLessThanMinimum(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation model = new RelevantLocation();
+    final var model = new RelevantLocation();
     model.latitude = -90.0001;
     assertIsNotValid(model, "latitude", vertx, testContext);
 
@@ -206,7 +206,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldNotBeValidWithABadLatitudeMoreThanMaximum(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation model = new RelevantLocation();
+    final var model = new RelevantLocation();
     model.latitude = 90.0001;
     assertIsNotValid(model, "latitude", vertx, testContext);
 
@@ -223,8 +223,8 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldNotMergeWithABadLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation target = this.createModelExample(1);
-    final RelevantLocation source = new RelevantLocation();
+    final var target = this.createModelExample(1);
+    final var source = new RelevantLocation();
     source.label = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "label", vertx, testContext);
 
@@ -241,8 +241,8 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldNotMergeWithABadLongitudeLessThanMinimum(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation target = this.createModelExample(1);
-    final RelevantLocation source = new RelevantLocation();
+    final var target = this.createModelExample(1);
+    final var source = new RelevantLocation();
     source.longitude = -180.0001;
     assertCannotMerge(target, source, "longitude", vertx, testContext);
 
@@ -259,8 +259,8 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldNotMergeWithABadLongitudeMoreThanMaximum(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation target = this.createModelExample(1);
-    final RelevantLocation source = new RelevantLocation();
+    final var target = this.createModelExample(1);
+    final var source = new RelevantLocation();
     source.longitude = 180.0001;
     assertCannotMerge(target, source, "longitude", vertx, testContext);
 
@@ -277,8 +277,8 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldNotMergeWithABadLatitudeLessThanMinimum(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation target = this.createModelExample(1);
-    final RelevantLocation source = new RelevantLocation();
+    final var target = this.createModelExample(1);
+    final var source = new RelevantLocation();
     source.latitude = -90.0001;
     assertCannotMerge(target, source, "latitude", vertx, testContext);
 
@@ -295,8 +295,8 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldNotMergeWithABadLatitudeMoreThanMaximum(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation target = this.createModelExample(1);
-    final RelevantLocation source = new RelevantLocation();
+    final var target = this.createModelExample(1);
+    final var source = new RelevantLocation();
     source.latitude = 90.0001;
     assertCannotMerge(target, source, "latitude", vertx, testContext);
 
@@ -313,9 +313,9 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "1";
-    final RelevantLocation source = this.createModelExample(2);
+    final var source = this.createModelExample(2);
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       source.id = "1";
@@ -334,7 +334,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
   }
 
@@ -349,9 +349,9 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldMergeOnlyLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "1";
-    final RelevantLocation source = new RelevantLocation();
+    final var source = new RelevantLocation();
     source.label = "NEW LABEL";
     source.latitude = target.latitude;
     source.longitude = target.longitude;
@@ -373,9 +373,9 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldMergeLatitudeLongitude(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "1";
-    final RelevantLocation source = new RelevantLocation();
+    final var source = new RelevantLocation();
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.latitude = 0;
@@ -395,9 +395,9 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldMergeOnlyLongitude(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "1";
-    final RelevantLocation source = new RelevantLocation();
+    final var source = new RelevantLocation();
     source.latitude = target.latitude;
     source.longitude = 0;
     assertCanMerge(target, source, vertx, testContext, merged -> {
@@ -419,9 +419,9 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   @Test
   public void shouldMergeOnlyLatitude(final Vertx vertx, final VertxTestContext testContext) {
 
-    final RelevantLocation target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "1";
-    final RelevantLocation source = new RelevantLocation();
+    final var source = new RelevantLocation();
     source.longitude = target.longitude;
     source.latitude = 0;
     assertCanMerge(target, source, vertx, testContext, merged -> {

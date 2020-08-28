@@ -42,90 +42,87 @@ import io.vertx.junit5.VertxTestContext;
  */
 public class MergesTest {
 
-	/**
-	 * Assert that a model can not be merged
-	 *
-	 * @param target      model to merge.
-	 * @param source      model to merge.
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 * @param <T>         type of model to merge.
-	 */
-	public static <T> void assertCannotMerge(Mergeable<T> target, T source, Vertx vertx, VertxTestContext testContext) {
+  /**
+   * Assert that a model can not be merged
+   *
+   * @param target      model to merge.
+   * @param source      model to merge.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   * @param <T>         type of model to merge.
+   */
+  public static <T> void assertCannotMerge(final Mergeable<T> target, final T source, final Vertx vertx, final VertxTestContext testContext) {
 
-		assertCannotMerge(target, source, null, vertx, testContext);
+    assertCannotMerge(target, source, null, vertx, testContext);
 
-	}
+  }
 
-	/**
-	 * Assert that a model is not valid because a field is wrong.
-	 *
-	 * @param target      model to merge.
-	 * @param source      model to merge.
-	 * @param fieldName   name of the field that is not valid.
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 * @param <T>         type of model to merge.
-	 */
-	public static <T> void assertCannotMerge(Mergeable<T> target, T source, String fieldName, Vertx vertx,
-			VertxTestContext testContext) {
+  /**
+   * Assert that a model is not valid because a field is wrong.
+   *
+   * @param target      model to merge.
+   * @param source      model to merge.
+   * @param fieldName   name of the field that is not valid.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   * @param <T>         type of model to merge.
+   */
+  public static <T> void assertCannotMerge(final Mergeable<T> target, final T source, final String fieldName, final Vertx vertx, final VertxTestContext testContext) {
 
-		target.merge(source, "codePrefix", vertx).onComplete(testContext.failing(error -> testContext.verify(() -> {
+    target.merge(source, "codePrefix", vertx).onComplete(testContext.failing(error -> testContext.verify(() -> {
 
-			assertThat(error).isInstanceOf(ValidationErrorException.class);
-			String expectedCode = "codePrefix";
-			if (fieldName != null) {
+      assertThat(error).isInstanceOf(ValidationErrorException.class);
+      var expectedCode = "codePrefix";
+      if (fieldName != null) {
 
-				expectedCode += "." + fieldName;
+        expectedCode += "." + fieldName;
 
-			}
-			assertThat(((ValidationErrorException) error).getCode()).isEqualTo(expectedCode);
+      }
+      assertThat(((ValidationErrorException) error).getCode()).isEqualTo(expectedCode);
 
-			testContext.completeNow();
+      testContext.completeNow();
 
-		})));
+    })));
 
-	}
+  }
 
-	/**
-	 * Assert that a model has been merged.
-	 *
-	 * @param target      model to merge.
-	 * @param source      model to merge.
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 * @param <T>         model to test.
-	 */
-	public static <T extends Validable> void assertCanMerge(Mergeable<T> target, T source, Vertx vertx,
-			VertxTestContext testContext) {
+  /**
+   * Assert that a model has been merged.
+   *
+   * @param target      model to merge.
+   * @param source      model to merge.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   * @param <T>         model to test.
+   */
+  public static <T extends Validable> void assertCanMerge(final Mergeable<T> target, final T source, final Vertx vertx, final VertxTestContext testContext) {
 
-		assertCanMerge(target, source, vertx, testContext, null);
+    assertCanMerge(target, source, vertx, testContext, null);
 
-	}
+  }
 
-	/**
-	 * Assert that a model has been merged.
-	 *
-	 * @param target      model to merge.
-	 * @param source      model to merge.
-	 * @param vertx       event bus to use.
-	 * @param testContext test context to use.
-	 * @param expected    function to validate the merged value.
-	 * @param <T>         model to test.
-	 */
-	public static <T extends Validable> void assertCanMerge(Mergeable<T> target, T source, Vertx vertx,
-			VertxTestContext testContext, Consumer<T> expected) {
+  /**
+   * Assert that a model has been merged.
+   *
+   * @param target      model to merge.
+   * @param source      model to merge.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   * @param expected    function to validate the merged value.
+   * @param <T>         model to test.
+   */
+  public static <T extends Validable> void assertCanMerge(final Mergeable<T> target, final T source, final Vertx vertx, final VertxTestContext testContext, final Consumer<T> expected) {
 
-		target.merge(source, "codePrefix", vertx).onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
+    target.merge(source, "codePrefix", vertx).onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
 
-			if (expected != null) {
+      if (expected != null) {
 
-				expected.accept(merged);
-			}
+        expected.accept(merged);
+      }
 
-			testContext.completeNow();
+      testContext.completeNow();
 
-		})));
+    })));
 
-	}
+  }
 }

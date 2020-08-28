@@ -57,7 +57,7 @@ public class WeNetInteractionProtocolEngineMocker extends AbstractComponentMocke
    */
   public static WeNetInteractionProtocolEngineMocker start(final int port) {
 
-    final WeNetInteractionProtocolEngineMocker mocker = new WeNetInteractionProtocolEngineMocker();
+    final var mocker = new WeNetInteractionProtocolEngineMocker();
     mocker.start(port, null);
     return mocker;
   }

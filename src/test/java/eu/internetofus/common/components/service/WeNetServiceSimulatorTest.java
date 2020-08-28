@@ -32,7 +32,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 
@@ -79,8 +78,8 @@ public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
   @BeforeEach
   public void registerClient(final Vertx vertx) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject conf = serviceMocker.getComponentConfiguration();
+    final var client = WebClient.create(vertx);
+    final var conf = serviceMocker.getComponentConfiguration();
     WeNetService.register(vertx, client, conf);
     WeNetServiceSimulator.register(vertx, client, conf);
 

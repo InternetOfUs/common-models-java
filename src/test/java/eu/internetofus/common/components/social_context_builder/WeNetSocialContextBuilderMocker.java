@@ -57,7 +57,7 @@ public class WeNetSocialContextBuilderMocker extends AbstractComponentMocker {
    */
   public static WeNetSocialContextBuilderMocker start(final int port) {
 
-    final WeNetSocialContextBuilderMocker mocker = new WeNetSocialContextBuilderMocker();
+    final var mocker = new WeNetSocialContextBuilderMocker();
     mocker.start(port, null);
     return mocker;
   }

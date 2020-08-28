@@ -59,14 +59,14 @@ public interface OperationReponseHandlers {
    */
   static void responseFailedWith(final Handler<AsyncResult<OperationResponse>> resultHandler, final Status status, final Throwable throwable) {
 
-    String code = "undefined";
-    String message = "Unexpected failure";
+    var code = "undefined";
+    var message = "Unexpected failure";
     if (throwable instanceof ServiceException) {
 
-      final ServiceException exception = (ServiceException) throwable;
+      final var exception = (ServiceException) throwable;
       code = String.valueOf(exception.failureCode());
       message = exception.getMessage();
-      final ErrorMessage errorMessage = Model.fromJsonObject(exception.getDebugInfo(), ErrorMessage.class);
+      final var errorMessage = Model.fromJsonObject(exception.getDebugInfo(), ErrorMessage.class);
       if (errorMessage != null) {
 
         if (errorMessage.code != null) {
@@ -84,7 +84,7 @@ public interface OperationReponseHandlers {
 
     } else if (throwable instanceof ValidationErrorException) {
 
-      final ValidationErrorException validation = (ValidationErrorException) throwable;
+      final var validation = (ValidationErrorException) throwable;
       code = validation.getCode();
       message = validation.getMessage();
 

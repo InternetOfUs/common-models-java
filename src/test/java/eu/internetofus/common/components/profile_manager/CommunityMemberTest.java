@@ -51,7 +51,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -88,8 +87,8 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject profileManagerConf = profileManagerMocker.getComponentConfiguration();
+    final var client = WebClient.create(vertx);
+    final var profileManagerConf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, profileManagerConf);
 
   }
@@ -109,7 +108,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Override
   public CommunityMember createModelExample(final int index) {
 
-    final CommunityMember model = new CommunityMember();
+    final var model = new CommunityMember();
     model.userId = "User_" + index;
     model.privileges = new ArrayList<>();
     model.privileges.add("privilege_" + index);
@@ -128,7 +127,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
 
     StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(stored -> {
 
-      final CommunityMember model = this.createModelExample(index);
+      final var model = this.createModelExample(index);
       model.userId = stored.id;
       createHandler.handle(Future.succeededFuture(model));
 
@@ -147,7 +146,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Test
   public void shouldEmptyModelNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final CommunityMember model = new CommunityMember();
+    final var model = new CommunityMember();
     assertIsNotValid(model, "userId", vertx, testContext);
 
   }
@@ -165,7 +164,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldBasicExampleNotBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final CommunityMember model = this.createModelExample(index);
+    final var model = this.createModelExample(index);
     assertIsNotValid(model, "userId", vertx, testContext);
 
   }
@@ -202,7 +201,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Test
   public void shouldNotBeValidWithANullUserId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final CommunityMember model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.userId = null;
     assertIsNotValid(model, "userId", vertx, testContext);
   }
@@ -218,7 +217,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Test
   public void shouldNotBeValidWithAnUdefinedUserId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final CommunityMember model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.userId = UUID.randomUUID().toString();
     assertIsNotValid(model, "userId", vertx, testContext);
 
@@ -304,7 +303,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final CommunityMember source = new CommunityMember();
+      final var source = new CommunityMember();
       source.userId = "Undefined user identifier";
       assertCannotMerge(target, source, "userId", vertx, testContext);
     }));
@@ -324,7 +323,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final CommunityMember source = new CommunityMember();
+      final var source = new CommunityMember();
       source.privileges = new ArrayList<>(target.privileges);
       source.privileges.add(ValidationsTest.STRING_256);
       assertCannotMerge(target, source, "privileges[1]", vertx, testContext);

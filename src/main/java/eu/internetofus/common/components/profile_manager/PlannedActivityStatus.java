@@ -33,16 +33,16 @@ package eu.internetofus.common.components.profile_manager;
  */
 public enum PlannedActivityStatus {
 
-	/**
-	 * If the activity is confirmed.
-	 */
-	confirmed,
-	/**
-	 * If the activity is in tentative to do.
-	 */
-	tentative,
-	/**
-	 * If the activity is cancelled.
-	 */
-	cancelled;
+  /**
+   * If the activity is confirmed.
+   */
+  confirmed,
+  /**
+   * If the activity is in tentative to do.
+   */
+  tentative,
+  /**
+   * If the activity is cancelled.
+   */
+  cancelled;
 }

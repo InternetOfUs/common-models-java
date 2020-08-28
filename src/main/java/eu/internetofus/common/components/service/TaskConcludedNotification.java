@@ -33,10 +33,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(
-    hidden = true,
-    name = "TaskConcludedNotification",
-    description = "This notification is used in order to notify task participants that a task has been completed.")
+@Schema(hidden = true, name = "TaskConcludedNotification", description = "This notification is used in order to notify task participants that a task has been completed.")
 public class TaskConcludedNotification extends TaskNotification {
 
   /**

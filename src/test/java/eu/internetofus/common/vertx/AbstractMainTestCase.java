@@ -34,7 +34,6 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.util.Locale;
 
-import org.apache.commons.cli.Options;
 import org.itsallcode.io.Capturable;
 import org.itsallcode.junit.sysextensions.SystemErrGuard;
 import org.itsallcode.junit.sysextensions.SystemOutGuard;
@@ -79,13 +78,13 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   @ValueSource(strings = { "en", "es", "ca" })
   public void shouldCreateOptionForLocale(final String lang) {
 
-    final Locale locale = Locale.getDefault();
+    final var locale = Locale.getDefault();
     try {
 
-      final Locale newLocale = new Locale(lang);
+      final var newLocale = new Locale(lang);
       Locale.setDefault(newLocale);
-      final T main = this.createMain();
-      final Options options = main.createOptions();
+      final var main = this.createMain();
+      final var options = main.createOptions();
       assertThat(options.hasOption(AbstractMain.HELP_OPTION)).isTrue();
       assertThat(options.hasOption(AbstractMain.VERSION_OPTION)).isTrue();
       assertThat(options.hasOption(AbstractMain.CONF_DIR_OPTION)).isTrue();
@@ -108,10 +107,10 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   public void shouldShowHelpMessage(final VertxTestContext testContext, final Capturable stream) {
 
     stream.capture();
-    final T main = this.createMain();
+    final var main = this.createMain();
     main.startWith("-" + AbstractMain.HELP_OPTION).onComplete(testContext.succeeding(context -> testContext.verify(() -> {
 
-      final String data = stream.getCapturedData();
+      final var data = stream.getCapturedData();
       assertThat(data).contains("-" + AbstractMain.HELP_OPTION, "-" + AbstractMain.VERSION_OPTION, "-" + AbstractMain.CONF_DIR_OPTION, "-" + AbstractMain.PROPERTY_OPTION);
       testContext.completeNow();
 
@@ -130,10 +129,10 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   public void shouldShowVersion(final VertxTestContext testContext, final Capturable stream) {
 
     stream.capture();
-    final T main = this.createMain();
+    final var main = this.createMain();
     main.startWith("-" + AbstractMain.VERSION_OPTION).onComplete(testContext.succeeding(context -> testContext.verify(() -> {
 
-      final String data = stream.getCapturedData();
+      final var data = stream.getCapturedData();
       assertThat(data).contains(Level.INFO.name());
       testContext.completeNow();
 
@@ -152,10 +151,10 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   public void shouldCaptureUndefinedArgument(final VertxTestContext testContext, final Capturable stream) {
 
     stream.capture();
-    final T main = this.createMain();
+    final var main = this.createMain();
     main.startWith("-undefined").onComplete(testContext.failing(error -> testContext.verify(() -> {
 
-      final String data = stream.getCapturedData();
+      final var data = stream.getCapturedData();
       assertThat(data).contains(Level.ERROR.name(), Level.INFO.name());
       testContext.completeNow();
 
@@ -174,10 +173,10 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   public void shouldCaptureBadPropertyArgument(final VertxTestContext testContext, final Capturable stream) {
 
     stream.capture();
-    final T main = this.createMain();
+    final var main = this.createMain();
     main.startWith("-" + AbstractMain.PROPERTY_OPTION, "propertyName").onComplete(testContext.failing(error -> testContext.verify(() -> {
 
-      final String data = stream.getCapturedData();
+      final var data = stream.getCapturedData();
       assertThat(data).contains(Level.ERROR.name(), Level.INFO.name());
       testContext.completeNow();
 
@@ -196,10 +195,10 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   public void shouldCaptureBadConfDirArgument(final VertxTestContext testContext, final Capturable stream) {
 
     stream.capture();
-    final T main = this.createMain();
+    final var main = this.createMain();
     main.startWith("-" + AbstractMain.CONF_DIR_OPTION).onComplete(testContext.failing(error -> testContext.verify(() -> {
 
-      final String data = stream.getCapturedData();
+      final var data = stream.getCapturedData();
       assertThat(data).contains(Level.ERROR.name(), Level.INFO.name());
       testContext.completeNow();
 
@@ -220,15 +219,15 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   @ExtendWith(SystemErrGuard.class)
   public void shouldNotStartServerBecausePortIsBidded(final VertxTestContext testContext, @TempDir final File tmpDir) throws Throwable {
 
-    final Socket socket = new Socket();
+    final var socket = new Socket();
     socket.bind(new InetSocketAddress("localhost", 0));
-    final int port = socket.getLocalPort();
+    final var port = socket.getLocalPort();
 
-    final File confDir = new File(tmpDir, "etc");
+    final var confDir = new File(tmpDir, "etc");
     confDir.mkdirs();
     Files.writeString(new File(confDir, "host.json").toPath(), "{\"api\":{\"host\":\"localhost\",\"port\":" + port + "}}");
 
-    final T main = this.createMain();
+    final var main = this.createMain();
     main.startWith("-" + AbstractMain.CONF_DIR_OPTION, confDir.getAbsolutePath()).onComplete(testContext.failing(error -> testContext.verify(() -> {
 
       socket.close();
@@ -247,7 +246,7 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
    */
   protected void assertNotStartWith(final VertxTestContext testContext, final String... args) {
 
-    final T main = this.createMain();
+    final var main = this.createMain();
     main.startWith(args).onComplete(testContext.failing(error -> testContext.verify(() -> {
 
       assertThat(error).isNotNull();
@@ -271,10 +270,10 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   @ExtendWith(SystemErrGuard.class)
   public void shouldNotStartServerBecauseConfigurationFilesAreWrong(final VertxTestContext testContext, final Capturable stream, @TempDir final File tmpDir) throws Throwable {
 
-    final File confDir = new File(tmpDir, "etc");
+    final var confDir = new File(tmpDir, "etc");
     confDir.mkdirs();
     new File(confDir, "Z").mkdirs();
-    final File unreadable = new File(confDir, "x.json");
+    final var unreadable = new File(confDir, "x.json");
     unreadable.createNewFile();
     unreadable.setReadable(false);
     Files.writeString(new File(confDir, "bad_yaml.yml").toPath(), "{\"api\":{\"port\":0}}");
@@ -296,7 +295,7 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
       "-" + AbstractMain.PROPERTY_OPTION + ",webClient.keepAlive=false,-" + AbstractMain.PROPERTY_OPTION + ", webClient.pipelining=true" })
   public void shouldNotStartWithBadBasicArguments(final String arguments, final VertxTestContext testContext) {
 
-    final String[] args = arguments.split(",");
+    final var args = arguments.split(",");
     this.assertNotStartWith(testContext, args);
 
   }
@@ -312,13 +311,13 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   @ExtendWith(VertxExtension.class)
   public void shouldLoadConfigurationProperties(final VertxTestContext testContext) throws Throwable {
 
-    final T main = this.createMain();
+    final var main = this.createMain();
     testContext.assertComplete(main.startWith("-" + AbstractMain.PROPERTY_OPTION + "api.host=\"HOST\"", "-" + AbstractMain.PROPERTY_OPTION + "api.port=80", "-" + AbstractMain.PROPERTY_OPTION, "persistence.db_name=profile-manager",
         "-" + AbstractMain.PROPERTY_OPTION, "persistence.username=db-user-name", "-" + AbstractMain.PROPERTY_OPTION + " persistence.host=phost", "-" + AbstractMain.PROPERTY_OPTION + "persistence.port=27", "-" + AbstractMain.PROPERTY_OPTION,
         "persistence.db_name=DB_NAME", "-" + AbstractMain.PROPERTY_OPTION + "persistence.username=USER_NAME", "-" + AbstractMain.PROPERTY_OPTION + " persistence.password=PASSWORD", "-" + AbstractMain.PROPERTY_OPTION,
         "webClient.keepAlive=false", "-" + AbstractMain.PROPERTY_OPTION, "webClient.pipelining=true", "-" + AbstractMain.VERSION_OPTION)).onComplete(handler -> {
 
-          final ConfigRetriever retriever = ConfigRetriever.create(Vertx.vertx(), main.retrieveOptions);
+          final var retriever = ConfigRetriever.create(Vertx.vertx(), main.retrieveOptions);
           retriever.getConfig(testContext.succeeding(conf -> testContext.verify(() -> {
 
             assertThat(conf.getJsonObject("api")).isNotNull();
@@ -355,27 +354,27 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   @ExtendWith(VertxExtension.class)
   public void shouldLoadConfigurationFromFiles(final VertxTestContext testContext, @TempDir final File tmpDir) throws Throwable {
 
-    final File etc = new File(tmpDir, "etc");
+    final var etc = new File(tmpDir, "etc");
     etc.mkdirs();
-    final JsonObject api = new JsonObject().put("host", "HOST").put("port", 80);
-    final File apiFile = new File(etc, "api.json");
+    final var api = new JsonObject().put("host", "HOST").put("port", 80);
+    final var apiFile = new File(etc, "api.json");
     apiFile.createNewFile();
     Files.writeString(apiFile.toPath(), new JsonObject().put("api", api).encodePrettily());
-    final StringBuilder persistence = new StringBuilder();
+    final var persistence = new StringBuilder();
     persistence.append("persistence:\n");
     persistence.append("  host: phost\n");
     persistence.append("  port: 27\n");
     persistence.append("  db_name: \"DB_NAME\"\n");
     persistence.append("  username: USER_NAME\n");
     persistence.append("  password: \"PASSWORD\"\n");
-    final File persistenceFile = new File(etc, "persistence.yml");
+    final var persistenceFile = new File(etc, "persistence.yml");
     persistenceFile.createNewFile();
     Files.writeString(persistenceFile.toPath(), persistence.toString());
 
-    final T main = this.createMain();
+    final var main = this.createMain();
     testContext.assertComplete(main.startWith("-" + AbstractMain.CONF_DIR_OPTION, etc.getAbsolutePath(), "-" + AbstractMain.VERSION_OPTION)).onComplete(handler -> {
 
-      final ConfigRetriever retriever = ConfigRetriever.create(Vertx.vertx(), main.retrieveOptions);
+      final var retriever = ConfigRetriever.create(Vertx.vertx(), main.retrieveOptions);
       retriever.getConfig(testContext.succeeding(conf -> testContext.verify(() -> {
 
         assertThat(conf.getJsonObject("api")).isNotNull();
@@ -407,28 +406,28 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   @ExtendWith(VertxExtension.class)
   public void shouldConfigureAndUsePropertiesBeforeFiles(final VertxTestContext testContext, @TempDir final File tmpDir) throws Throwable {
 
-    final File etc = new File(tmpDir, "etc");
+    final var etc = new File(tmpDir, "etc");
     etc.mkdirs();
-    final JsonObject api = new JsonObject().put("host", "HOST").put("port", 80);
-    final File apiFile = new File(etc, "api.json");
+    final var api = new JsonObject().put("host", "HOST").put("port", 80);
+    final var apiFile = new File(etc, "api.json");
     apiFile.createNewFile();
     Files.writeString(apiFile.toPath(), new JsonObject().put("api", api).encodePrettily());
-    final StringBuilder persistence = new StringBuilder();
+    final var persistence = new StringBuilder();
     persistence.append("persistence:\n");
     persistence.append("  host: phost\n");
     persistence.append("  port: 27\n");
     persistence.append("  db_name: \"DB_NAME\"\n");
     persistence.append("  username: USER_NAME\n");
     persistence.append("  password: \"PASSWORD\"\n");
-    final File persistenceFile = new File(etc, "persistence.yml");
+    final var persistenceFile = new File(etc, "persistence.yml");
     persistenceFile.createNewFile();
     Files.writeString(persistenceFile.toPath(), persistence.toString());
 
-    final T main = this.createMain();
+    final var main = this.createMain();
     testContext.assertComplete(main.startWith("-" + AbstractMain.CONF_DIR_OPTION + etc.getAbsolutePath(), "-" + AbstractMain.PROPERTY_OPTION + "api.port=8081", "-" + AbstractMain.PROPERTY_OPTION + " persistence.db_name=\"database name\"",
         "-" + AbstractMain.PROPERTY_OPTION, "persistence.password=PASSW0RD", "-" + AbstractMain.VERSION_OPTION)).onComplete(handler -> {
 
-          final ConfigRetriever retriever = ConfigRetriever.create(Vertx.vertx(), main.retrieveOptions);
+          final var retriever = ConfigRetriever.create(Vertx.vertx(), main.retrieveOptions);
           retriever.getConfig(testContext.succeeding(conf -> testContext.verify(() -> {
 
             assertThat(conf.getJsonObject("api")).isNotNull();

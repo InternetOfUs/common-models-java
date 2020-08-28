@@ -39,24 +39,23 @@ import org.junit.jupiter.api.Test;
  */
 public class DummyModelTest extends ModelTestCase<DummyModel> {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public DummyModel createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public DummyModel createModelExample(final int index) {
 
-		return new DummyModel(index);
-	}
+    return new DummyModel(index);
+  }
 
-	/**
-	 * Check can load from resource.
-	 */
-	@Test
-	public void shouldLoadFromResource() {
+  /**
+   * Check can load from resource.
+   */
+  @Test
+  public void shouldLoadFromResource() {
 
-		assertThat(Model.loadFromResource("eu/internetofus/common/components/DummyModel.100.json", DummyModel.class))
-				.isEqualTo(this.createModelExample(100));
+    assertThat(Model.loadFromResource("eu/internetofus/common/components/DummyModel.100.json", DummyModel.class)).isEqualTo(this.createModelExample(100));
 
-	}
+  }
 
 }

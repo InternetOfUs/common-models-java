@@ -51,7 +51,7 @@ public abstract class WeNetIncentiveServerTestCase {
   @Test
   public void shouldUpdateTaskStatus(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskStatus status = new TaskStatusTest().createModelExample(1);
+    final var status = new TaskStatusTest().createModelExample(1);
     WeNetIncentiveServer.createProxy(vertx).updateTaskStatus(status, testContext.succeeding(updated -> testContext.verify(() -> {
 
       assertThat(updated).isEqualTo(status);

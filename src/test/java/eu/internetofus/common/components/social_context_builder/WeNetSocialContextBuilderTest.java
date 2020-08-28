@@ -31,7 +31,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 
@@ -69,8 +68,8 @@ public class WeNetSocialContextBuilderTest extends WeNetSocialContextBuilderTest
   @BeforeEach
   public void registerClient(final Vertx vertx) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject conf = mocker.getComponentConfiguration();
+    final var client = WebClient.create(vertx);
+    final var conf = mocker.getComponentConfiguration();
     WeNetSocialContextBuilder.register(vertx, client, conf);
   }
 

@@ -57,7 +57,7 @@ public class WeNetTaskManagerMocker extends AbstractComponentMocker {
    */
   public static WeNetTaskManagerMocker start(final int port) {
 
-    final WeNetTaskManagerMocker mocker = new WeNetTaskManagerMocker();
+    final var mocker = new WeNetTaskManagerMocker();
     mocker.start(port, null);
     return mocker;
   }

@@ -57,7 +57,7 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
   @Override
   public ScoredLabel createModelExample(final int index) {
 
-    final ScoredLabel model = new ScoredLabel();
+    final var model = new ScoredLabel();
     model.label = new LabelTest().createModelExample(index);
     model.score = 1.0 / Math.max(1.0, index);
     return model;
@@ -74,7 +74,7 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
   @Test
   public void shouldExampleBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final ScoredLabel model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     assertIsValid(model, vertx, testContext);
 
   }
@@ -90,7 +90,7 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
   @Test
   public void shouldScoredLabelWithoutLabelNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final ScoredLabel model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.label = null;
     assertIsNotValid(model, "label", vertx, testContext);
 
@@ -107,7 +107,7 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
   @Test
   public void shouldLabelWithTooLargeNameNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final ScoredLabel model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.label.name = ValidationsTest.STRING_256;
     assertIsNotValid(model, "label.name", vertx, testContext);
 
@@ -124,7 +124,7 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
   @Test
   public void shouldScoredLabelWithoutScoreNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final ScoredLabel model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.score = null;
     assertIsNotValid(model, "score", vertx, testContext);
 
@@ -141,7 +141,7 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final ScoredLabel target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
   }
 
@@ -156,8 +156,8 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
   @Test
   public void shouldMergeTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
 
-    final ScoredLabel source = this.createModelExample(1);
-    final ScoredLabel target = this.createModelExample(2);
+    final var source = this.createModelExample(1);
+    final var target = this.createModelExample(2);
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source));
   }
 
@@ -172,10 +172,10 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
   @Test
   public void shouldMergeOnlyLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final ScoredLabel source = new ScoredLabel();
+    final var source = new ScoredLabel();
     source.label = new Label();
     source.label.name = "NEW NAME";
-    final ScoredLabel target = this.createModelExample(2);
+    final var target = this.createModelExample(2);
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
       target.label.name = source.label.name;
@@ -194,10 +194,10 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
   @Test
   public void shouldNotMergeBadLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final ScoredLabel source = new ScoredLabel();
+    final var source = new ScoredLabel();
     source.label = new Label();
     source.label.name = ValidationsTest.STRING_256;
-    final ScoredLabel target = this.createModelExample(2);
+    final var target = this.createModelExample(2);
     assertCannotMerge(target, source, "label.name", vertx, testContext);
   }
 
@@ -212,9 +212,9 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
   @Test
   public void shouldMergeOnlyScore(final Vertx vertx, final VertxTestContext testContext) {
 
-    final ScoredLabel source = new ScoredLabel();
+    final var source = new ScoredLabel();
     source.score = 10.0d;
-    final ScoredLabel target = this.createModelExample(2);
+    final var target = this.createModelExample(2);
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
       target.score = source.score;

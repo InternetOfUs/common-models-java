@@ -27,6 +27,7 @@
 package eu.internetofus.common.components.service;
 
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -35,38 +36,38 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "message", description = "The base message to send to any application.")
-public class BaseMessage extends Model {
+public class BaseMessage extends ReflectionModel implements Model {
 
-	/**
-	 * The possible message types.
-	 */
-	public enum Type {
-		/**
-		 * The message is a textual.
-		 */
-		textualMessage,
-		/**
-		 * The message is a notification.
-		 */
-		taskNotification,
-		/**
-		 * The message is an event.
-		 */
-		event;
+  /**
+   * The possible message types.
+   */
+  public enum Type {
+    /**
+     * The message is a textual.
+     */
+    textualMessage,
+    /**
+     * The message is a notification.
+     */
+    taskNotification,
+    /**
+     * The message is an event.
+     */
+    event;
 
-	}
+  }
 
-	/**
-	 * The type of the message.
-	 */
-	@Schema(description = "The type of the message.", example = "textualMessage")
-	public Type type;
+  /**
+   * The type of the message.
+   */
+  @Schema(description = "The type of the message.", example = "textualMessage")
+  public Type type;
 
-	/**
-	 * Create a message.
-	 */
-	protected BaseMessage() {
+  /**
+   * Create a message.
+   */
+  protected BaseMessage() {
 
-	}
+  }
 
 }

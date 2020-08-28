@@ -31,6 +31,7 @@ import java.util.List;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -46,92 +47,84 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "TaskTransactionType", description = "Describe a possible task transaction.")
-public class TaskTransactionType extends Model implements Validable, Mergeable<TaskTransactionType> {
+public class TaskTransactionType extends ReflectionModel implements Model, Validable, Mergeable<TaskTransactionType> {
 
-	/**
-	 * A label that identify the type.
-	 */
-	@Schema(description = "A label that identify the transaction.", example = "acceptVolunteer")
-	public String label;
+  /**
+   * A label that identify the type.
+   */
+  @Schema(description = "A label that identify the transaction.", example = "acceptVolunteer")
+  public String label;
 
-	/**
-	 * A name that identify the type.
-	 */
-	@Schema(
-			description = "A human readable description of the task transaction type.",
-			example = "Accept to be volunteer of a task")
-	public String description;
+  /**
+   * A name that identify the type.
+   */
+  @Schema(description = "A human readable description of the task transaction type.", example = "Accept to be volunteer of a task")
+  public String description;
 
-	/**
-	 * The attribute that has to be instantiated when create the task transaction of
-	 * this type.
-	 */
-	@ArraySchema(
-			schema = @Schema(implementation = TaskAttributeType.class),
-			arraySchema = @Schema(
-					description = "The attribute that has to be instantiated when create the task transaction of this type."))
-	public List<TaskAttributeType> attributes;
+  /**
+   * The attribute that has to be instantiated when create the task transaction of this type.
+   */
+  @ArraySchema(schema = @Schema(implementation = TaskAttributeType.class), arraySchema = @Schema(description = "The attribute that has to be instantiated when create the task transaction of this type."))
+  public List<TaskAttributeType> attributes;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<TaskTransactionType> merge(TaskTransactionType source, String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<TaskTransactionType> merge(final TaskTransactionType source, final String codePrefix, final Vertx vertx) {
 
-		final Promise<TaskTransactionType> promise = Promise.promise();
-		Future<TaskTransactionType> future = promise.future();
-		if (source != null) {
+    final Promise<TaskTransactionType> promise = Promise.promise();
+    var future = promise.future();
+    if (source != null) {
 
-			final TaskTransactionType merged = new TaskTransactionType();
-			merged.label = source.label;
-			if (merged.label == null) {
+      final var merged = new TaskTransactionType();
+      merged.label = source.label;
+      if (merged.label == null) {
 
-				merged.label = this.label;
-			}
-			merged.description = source.description;
-			if (merged.description == null) {
+        merged.label = this.label;
+      }
+      merged.description = source.description;
+      if (merged.description == null) {
 
-				merged.description = this.description;
-			}
+        merged.description = this.description;
+      }
 
-			future = future.compose(Merges.validateMerged(codePrefix, vertx));
-			future = future.compose(Merges.mergeTaskAttributeTypes(this.attributes, source.attributes,
-					codePrefix + ".attributes", vertx, (model, mergedAttributes) -> {
-						model.attributes = mergedAttributes;
-					}));
+      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.compose(Merges.mergeTaskAttributeTypes(this.attributes, source.attributes, codePrefix + ".attributes", vertx, (model, mergedAttributes) -> {
+        model.attributes = mergedAttributes;
+      }));
 
-			promise.complete(merged);
+      promise.complete(merged);
 
-		} else {
+    } else {
 
-			promise.complete(this);
-		}
-		return future;
-	}
+      promise.complete(this);
+    }
+    return future;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-		final Promise<Void> promise = Promise.promise();
-		Future<Void> future = promise.future();
-		try {
+    final Promise<Void> promise = Promise.promise();
+    var future = promise.future();
+    try {
 
-			this.label = Validations.validateStringField(codePrefix, "label", 255, this.label);
-			this.description = Validations.validateNullableStringField(codePrefix, "description", 1023, this.description);
-			future = future.compose(
-					Validations.validate(this.attributes, (a, b) -> a.name.equals(b.name), codePrefix + ".attributes", vertx));
+      this.label = Validations.validateStringField(codePrefix, "label", 255, this.label);
+      this.description = Validations.validateNullableStringField(codePrefix, "description", 1023, this.description);
+      future = future.compose(Validations.validate(this.attributes, (a, b) -> a.name.equals(b.name), codePrefix + ".attributes", vertx));
 
-			promise.complete();
+      promise.complete();
 
-		} catch (final ValidationErrorException validationError) {
+    } catch (final ValidationErrorException validationError) {
 
-			promise.fail(validationError);
-		}
+      promise.fail(validationError);
+    }
 
-		return future;
-	}
+    return future;
+  }
 
 }

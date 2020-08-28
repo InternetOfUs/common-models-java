@@ -59,7 +59,7 @@ public class LabelTest extends ModelTestCase<Label> {
   @Override
   public Label createModelExample(final int index) {
 
-    final Label model = new Label();
+    final var model = new Label();
     model.name = "name_" + index;
     model.semantic_class = (double) index;
     model.latitude = -1.0 - index % 179;
@@ -78,7 +78,7 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldExampleBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     assertIsValid(model, vertx, testContext);
 
   }
@@ -94,7 +94,7 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldLabelWithoutNameNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.name = null;
     assertIsNotValid(model, "name", vertx, testContext);
 
@@ -111,7 +111,7 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldLabelWithTooLargeNameNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.name = ValidationsTest.STRING_256;
     assertIsNotValid(model, "name", vertx, testContext);
 
@@ -128,7 +128,7 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldLabelWithoutSemanticClassNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.semantic_class = null;
     assertIsNotValid(model, "semantic_class", vertx, testContext);
 
@@ -145,7 +145,7 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldLabelWithoutLongitudeNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.longitude = null;
     assertIsNotValid(model, "longitude", vertx, testContext);
 
@@ -164,7 +164,7 @@ public class LabelTest extends ModelTestCase<Label> {
   @ValueSource(doubles = { -180.1, 180.1, -180.00001, 180.000001 })
   public void shouldLabelWitBadLongitudeNotBeValid(final double value, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.longitude = value;
     assertIsNotValid(model, "longitude", vertx, testContext);
 
@@ -181,7 +181,7 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldLabelWithoutLatitudeNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.latitude = null;
     assertIsNotValid(model, "latitude", vertx, testContext);
 
@@ -200,7 +200,7 @@ public class LabelTest extends ModelTestCase<Label> {
   @ValueSource(doubles = { -90.1, 90.1, -90.00001, 90.000001 })
   public void shouldLabelWitBadLatitudeNotBeValid(final double value, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.latitude = value;
     assertIsNotValid(model, "latitude", vertx, testContext);
 
@@ -217,7 +217,7 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
   }
 
@@ -232,8 +232,8 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldMergeTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label source = this.createModelExample(1);
-    final Label target = this.createModelExample(2);
+    final var source = this.createModelExample(1);
+    final var target = this.createModelExample(2);
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source));
   }
 
@@ -248,9 +248,9 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldMergeOnlyName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label source = new Label();
+    final var source = new Label();
     source.name = "NEW NAME";
-    final Label target = this.createModelExample(2);
+    final var target = this.createModelExample(2);
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
       target.name = source.name;
@@ -269,9 +269,9 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldNotMergeLargeName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label source = new Label();
+    final var source = new Label();
     source.name = ValidationsTest.STRING_256;
-    final Label target = this.createModelExample(2);
+    final var target = this.createModelExample(2);
     assertCannotMerge(target, source, "name", vertx, testContext);
   }
 
@@ -286,9 +286,9 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldMergeOnlySemantic_class(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label source = new Label();
+    final var source = new Label();
     source.semantic_class = -1.0;
-    final Label target = this.createModelExample(2);
+    final var target = this.createModelExample(2);
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
       target.semantic_class = source.semantic_class;
@@ -307,9 +307,9 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldMergeOnlyLatitude(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label source = new Label();
+    final var source = new Label();
     source.latitude = 43d;
-    final Label target = this.createModelExample(2);
+    final var target = this.createModelExample(2);
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
       target.latitude = source.latitude;
@@ -330,9 +330,9 @@ public class LabelTest extends ModelTestCase<Label> {
   @ValueSource(doubles = { -90.1, 90.1, -90.00001, 90.000001 })
   public void shouldNotMergeBadLatitude(final double value, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label source = new Label();
+    final var source = new Label();
     source.latitude = value;
-    final Label target = this.createModelExample(2);
+    final var target = this.createModelExample(2);
     assertCannotMerge(target, source, "latitude", vertx, testContext);
   }
 
@@ -347,9 +347,9 @@ public class LabelTest extends ModelTestCase<Label> {
   @Test
   public void shouldMergeOnlyLongitude(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label source = new Label();
+    final var source = new Label();
     source.longitude = 43d;
-    final Label target = this.createModelExample(2);
+    final var target = this.createModelExample(2);
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
       target.longitude = source.longitude;
@@ -370,9 +370,9 @@ public class LabelTest extends ModelTestCase<Label> {
   @ValueSource(doubles = { -180.1, 180.1, -180.00001, 180.000001 })
   public void shouldNotMergeBadLongitude(final double value, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Label source = new Label();
+    final var source = new Label();
     source.longitude = value;
-    final Label target = this.createModelExample(2);
+    final var target = this.createModelExample(2);
     assertCannotMerge(target, source, "longitude", vertx, testContext);
   }
 

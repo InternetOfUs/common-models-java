@@ -162,7 +162,7 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    Future<Void> future = promise.future();
+    var future = promise.future();
     try {
 
       this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
@@ -228,10 +228,10 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
   public Future<WeNetUserProfile> merge(final WeNetUserProfile source, final String codePrefix, final Vertx vertx) {
 
     final Promise<WeNetUserProfile> promise = Promise.promise();
-    Future<WeNetUserProfile> future = promise.future();
+    var future = promise.future();
     if (source != null) {
 
-      final WeNetUserProfile merged = new WeNetUserProfile();
+      final var merged = new WeNetUserProfile();
       merged.gender = source.gender;
       if (merged.gender == null) {
 

@@ -27,7 +27,6 @@
 package eu.internetofus.common.components;
 
 import java.net.InetAddress;
-import java.net.URL;
 import java.util.Map;
 
 import com.intuit.karate.Resource;
@@ -57,8 +56,8 @@ public abstract class AbstractComponentMocker {
    */
   protected Feature createComponentFeature() {
 
-    final URL url = this.getClass().getClassLoader().getResource(this.getClass().getName().replaceAll("\\.", "/") + ".feature");
-    final Resource resource = new Resource(url);
+    final var url = this.getClass().getClassLoader().getResource(this.getClass().getName().replaceAll("\\.", "/") + ".feature");
+    final var resource = new Resource(url);
     return FeatureParser.parse(resource);
 
   }
@@ -74,7 +73,7 @@ public abstract class AbstractComponentMocker {
   public void start(final int port, final Map<String, Object> variables) {
 
     this.stop();
-    final Feature feature = this.createComponentFeature();
+    final var feature = this.createComponentFeature();
     this.server = new FeatureServer(feature, port, false, variables);
   }
 
@@ -85,11 +84,11 @@ public abstract class AbstractComponentMocker {
    */
   public String getApiUrl() {
 
-    final StringBuilder builder = new StringBuilder();
+    final var builder = new StringBuilder();
     builder.append("http://");
     try {
 
-      final InetAddress IP = InetAddress.getLocalHost();
+      final var IP = InetAddress.getLocalHost();
       builder.append(IP.getHostAddress());
 
     } catch (final Throwable t) {
@@ -141,7 +140,7 @@ public abstract class AbstractComponentMocker {
    */
   public JsonObject getComponentConfiguration() {
 
-    final JsonObject conf = new JsonObject().put(this.getComponentConfigurationName(), "http://localhost:" + this.getPort());
+    final var conf = new JsonObject().put(this.getComponentConfigurationName(), "http://localhost:" + this.getPort());
     return conf;
   }
 

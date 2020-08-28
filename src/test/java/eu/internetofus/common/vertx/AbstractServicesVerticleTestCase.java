@@ -62,7 +62,7 @@ public abstract class AbstractServicesVerticleTestCase<T extends AbstractService
   @Test
   public void shouldNotStopIfServerNotStarted() {
 
-    final T service = this.createServicesVerticle();
+    final var service = this.createServicesVerticle();
     assertThatCode(() -> service.stop()).doesNotThrowAnyException();
 
   }
@@ -73,7 +73,7 @@ public abstract class AbstractServicesVerticleTestCase<T extends AbstractService
   @Test
   public void shouldStopIfServerStarted() {
 
-    final T service = this.createServicesVerticle();
+    final var service = this.createServicesVerticle();
     service.client = WebClient.create(Vertx.vertx(), new WebClientOptions(new JsonObject()));
     assertThatCode(() -> service.stop()).doesNotThrowAnyException();
     assertThat(service.client).isNull();
@@ -91,7 +91,7 @@ public abstract class AbstractServicesVerticleTestCase<T extends AbstractService
   @ExtendWith(VertxExtension.class)
   public void shouldNotStartUndeployedVerticle(final VertxTestContext testContext) throws Exception {
 
-    final T service = this.createServicesVerticle();
+    final var service = this.createServicesVerticle();
     final Promise<Void> startPromise = Promise.promise();
     service.start(startPromise);
     startPromise.future().onComplete(start -> {

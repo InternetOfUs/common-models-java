@@ -36,30 +36,28 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(hidden = true, name = "message", description = "A message that can be send into an application.")
 public class Message extends BaseMessage {
 
-	/**
-	 * The identifier of the user to send the message.
-	 */
-	@Schema(
-			description = "The WeNet identifier of the user the message is meant for",
-			example = "a6822c47-f1b8-4c21-80bd-1d025266c3c7")
-	public String recipientId;
+  /**
+   * The identifier of the user to send the message.
+   */
+  @Schema(description = "The WeNet identifier of the user the message is meant for", example = "a6822c47-f1b8-4c21-80bd-1d025266c3c7")
+  public String recipientId;
 
-	/**
-	 * The identifier of the user to send the message.
-	 */
-	@Schema(description = "The title of the message", example = "Help me!")
-	public String title;
+  /**
+   * The identifier of the user to send the message.
+   */
+  @Schema(description = "The title of the message", example = "Help me!")
+  public String title;
 
-	/**
-	 * The identifier of the user to send the message.
-	 */
-	@Schema(description = "The message for the user", example = "Can you help me with something?")
-	public String text;
+  /**
+   * The identifier of the user to send the message.
+   */
+  @Schema(description = "The message for the user", example = "Can you help me with something?")
+  public String text;
 
-	/**
-	 * Create a message.
-	 */
-	protected Message() {
+  /**
+   * Create a message.
+   */
+  protected Message() {
 
-	}
+  }
 }

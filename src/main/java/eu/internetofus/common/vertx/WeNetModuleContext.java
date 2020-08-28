@@ -36,28 +36,27 @@ import io.vertx.core.json.JsonObject;
  */
 public class WeNetModuleContext {
 
-	/**
-	 * The component that manage the started vertices.
-	 */
-	public Vertx vertx;
+  /**
+   * The component that manage the started vertices.
+   */
+  public Vertx vertx;
 
-	/**
-	 * The configuration that has been used to start the WeNet module.
-	 */
-	public JsonObject configuration;
+  /**
+   * The configuration that has been used to start the WeNet module.
+   */
+  public JsonObject configuration;
 
-	/**
-	 * Create a new context.
-	 *
-	 * @param vertx         that manage the vertices.
-	 * @param configuration the effective configuration used to start the WeNet
-	 *                      module.
-	 */
-	public WeNetModuleContext(Vertx vertx, JsonObject configuration) {
+  /**
+   * Create a new context.
+   *
+   * @param vertx         that manage the vertices.
+   * @param configuration the effective configuration used to start the WeNet module.
+   */
+  public WeNetModuleContext(final Vertx vertx, final JsonObject configuration) {
 
-		this.vertx = vertx;
-		this.configuration = configuration;
+    this.vertx = vertx;
+    this.configuration = configuration;
 
-	}
+  }
 
 }

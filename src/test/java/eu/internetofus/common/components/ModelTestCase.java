@@ -57,8 +57,8 @@ public abstract class ModelTestCase<T extends Model> {
   @Test
   public void shouldBeEquals() {
 
-    final T model1 = this.createModelExample(1);
-    final T model2 = this.createModelExample(1);
+    final var model1 = this.createModelExample(1);
+    final var model2 = this.createModelExample(1);
     assertThat(model1).isEqualTo(model2);
     assertThat(model1.hashCode()).isEqualTo(model2.hashCode());
     assertThat(model1.toString()).isEqualTo(model2.toString());
@@ -72,8 +72,8 @@ public abstract class ModelTestCase<T extends Model> {
   @Test
   public void shouldNotBeEquals() {
 
-    final T model1 = this.createModelExample(1);
-    final T model2 = this.createModelExample(2);
+    final var model1 = this.createModelExample(1);
+    final var model2 = this.createModelExample(2);
     assertThat(model1).isNotEqualTo(model2);
     assertThat(model1.hashCode()).isNotEqualTo(model2.hashCode());
     assertThat(model1.toString()).isNotEqualTo(model2.toString());
@@ -87,8 +87,8 @@ public abstract class ModelTestCase<T extends Model> {
   @Test
   public void shouldJSONManipulable() {
 
-    final T model = this.createModelExample(1);
-    final String value = model.toJsonString();
+    final var model = this.createModelExample(1);
+    final var value = model.toJsonString();
     assertThat(value).isNotEmpty();
     assertThat(Model.fromString(value, model.getClass())).isEqualTo(model);
 
@@ -100,8 +100,8 @@ public abstract class ModelTestCase<T extends Model> {
   @Test
   public void shouldJsonObjectManipulable() {
 
-    final T model = this.createModelExample(1);
-    final JsonObject value = model.toJsonObject();
+    final var model = this.createModelExample(1);
+    final var value = model.toJsonObject();
     assertThat(value).isNotEmpty();
     assertThat(Model.fromJsonObject(value, model.getClass())).isEqualTo(model);
 
@@ -113,8 +113,8 @@ public abstract class ModelTestCase<T extends Model> {
   @Test
   public void shouldBufferManipulable() {
 
-    final T model = this.createModelExample(1);
-    final Buffer value = model.toBuffer();
+    final var model = this.createModelExample(1);
+    final var value = model.toBuffer();
     assertThat(value).isNotNull();
     assertThat(Model.fromBuffer(value, model.getClass())).isEqualTo(model);
 
@@ -126,10 +126,9 @@ public abstract class ModelTestCase<T extends Model> {
   @Test
   public void shouldToJsonObjectWithEmptyValues() {
 
-    final T model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     @SuppressWarnings("unchecked")
-    final
-    T emptyModel = (T) Model.fromString("{}", model.getClass());
+    final var emptyModel = (T) Model.fromString("{}", model.getClass());
     assertThat(emptyModel.toJsonObjectWithEmptyValues()).isNotEqualTo(new JsonObject());
 
   }

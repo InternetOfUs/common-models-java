@@ -86,8 +86,8 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject conf = mocker.getComponentConfiguration();
+    final var client = WebClient.create(vertx);
+    final var conf = mocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, conf);
 
   }
@@ -100,9 +100,9 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
   @Test
   public void shouldCreateARelationship() {
 
-    final SocialNetworkRelationshipType type = SocialNetworkRelationshipType.colleague;
-    final String userId = UUID.randomUUID().toString();
-    final SocialNetworkRelationship model = new SocialNetworkRelationship(type, userId);
+    final var type = SocialNetworkRelationshipType.colleague;
+    final var userId = UUID.randomUUID().toString();
+    final var model = new SocialNetworkRelationship(type, userId);
     assertThat(model.type).isEqualTo(type);
     assertThat(model.userId).isEqualTo(userId);
 
@@ -114,7 +114,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
   @Override
   public SocialNetworkRelationship createModelExample(final int index) {
 
-    final SocialNetworkRelationship model = new SocialNetworkRelationship();
+    final var model = new SocialNetworkRelationship();
     model.userId = String.valueOf(index);
     model.type = SocialNetworkRelationshipType.values()[index % SocialNetworkRelationshipType.values().length];
     model.weight = index % 1000 / 1000.0;
@@ -138,7 +138,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
 
       } else {
 
-        final WeNetUserProfile profile = Model.fromJsonObject(creationResult.result(), WeNetUserProfile.class);
+        final var profile = Model.fromJsonObject(creationResult.result(), WeNetUserProfile.class);
         if (profile == null) {
 
           creation.handle(Future.failedFuture("Can not obtain a profile form the JSON result"));
@@ -164,7 +164,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
 
     this.createNewEmptyProfile(vertx, testContext.succeeding(profile -> {
 
-      final SocialNetworkRelationship relation = this.createModelExample(index);
+      final var relation = this.createModelExample(index);
       relation.userId = profile.id;
       creation.handle(Future.succeededFuture(relation));
 
@@ -187,7 +187,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
 
     this.createModelExample(index, vertx, testContext, testContext.succeeding(model -> {
 
-      final String originalUserId = model.userId;
+      final var originalUserId = model.userId;
       model.userId = "   " + originalUserId + "   ";
       assertIsValid(model, vertx, testContext, () -> {
 
@@ -211,7 +211,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
   @ValueSource(strings = { "undefined value ", "9bec40b8-8209-4e28-b64b-1de52595ca6d", ValidationsTest.STRING_256 })
   public void shouldNotBeValidWithBadUserIdentifier(final String userId, final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialNetworkRelationship model = new SocialNetworkRelationship();
+    final var model = new SocialNetworkRelationship();
     model.userId = userId;
     model.type = SocialNetworkRelationshipType.colleague;
     assertIsNotValid(model, "userId", vertx, testContext);
@@ -230,7 +230,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
   public void shouldNotBeValidModelWithoutType(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createNewEmptyProfile(vertx, testContext.succeeding(profile -> {
-      final SocialNetworkRelationship model = new SocialNetworkRelationship();
+      final var model = new SocialNetworkRelationship();
       model.type = null;
       model.userId = profile.id;
       assertIsNotValid(model, "type", vertx, testContext);
@@ -250,7 +250,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
   @Test
   public void shouldNotBeValidModelWithoutUserId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialNetworkRelationship model = new SocialNetworkRelationship();
+    final var model = new SocialNetworkRelationship();
     model.type = SocialNetworkRelationshipType.colleague;
     model.userId = null;
     assertIsNotValid(model, "userId", vertx, testContext);
@@ -293,7 +293,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
       this.createNewEmptyProfile(vertx, testContext.succeeding(profile -> {
-        final SocialNetworkRelationship source = new SocialNetworkRelationship();
+        final var source = new SocialNetworkRelationship();
         source.userId = profile.id;
         assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -319,7 +319,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final SocialNetworkRelationship source = new SocialNetworkRelationship();
+      final var source = new SocialNetworkRelationship();
       source.userId = "undefinedUserId";
       assertCannotMerge(target, source, "userId", vertx, testContext);
     }));
@@ -338,7 +338,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final SocialNetworkRelationship source = new SocialNetworkRelationship();
+      final var source = new SocialNetworkRelationship();
       source.type = SocialNetworkRelationshipType.follower;
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -363,8 +363,8 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final SocialNetworkRelationship source = new SocialNetworkRelationship();
-      double weight = 0;
+      final var source = new SocialNetworkRelationship();
+      var weight = 0D;
       do {
 
         weight = Math.random();
@@ -396,7 +396,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final SocialNetworkRelationship source = new SocialNetworkRelationship();
+      final var source = new SocialNetworkRelationship();
       source.weight = weight;
       assertCannotMerge(target, source, "weight", vertx, testContext);
 
@@ -429,7 +429,7 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialNetworkRelationship target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
   }
 }

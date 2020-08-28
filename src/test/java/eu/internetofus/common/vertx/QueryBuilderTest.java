@@ -66,7 +66,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateEmptyQueryWithNullPattern() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withRegex("fieldName", (String) null)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject());
 
@@ -80,7 +80,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateQueryWithRegexp() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withRegex("field", "pattern")).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("field", new JsonObject().put("$regex", "pattern")));
 
@@ -94,7 +94,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateEmptyQueryWithNullIterable() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withRegex("fieldName", (Iterable<String>) null)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject());
 
@@ -108,7 +108,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateEmptyQueryWithEmptyIterable() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withRegex("fieldName", new ArrayList<String>())).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject());
 
@@ -122,7 +122,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateQueryWithNull() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.with("field", null)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().putNull("field"));
 
@@ -136,7 +136,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateQueryWitValue() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.with("field", "value")).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("field", "value"));
 
@@ -150,7 +150,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateEmptyQueryWithNullRegexOrValue() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withEqOrRegex("fieldName", (String) null)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject());
 
@@ -164,7 +164,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateEmptyQueryWithNullIterableRegexOrValue() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withEqOrRegex("fieldName", (Iterable<String>) null)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject());
 
@@ -178,7 +178,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateEmptyQueryWithEmptyIterableRegexOrValue() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withEqOrRegex("fieldName", new ArrayList<String>())).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject());
 
@@ -192,7 +192,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateEmptyQueryWithEmptyRange() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withRange("fieldName", null, null)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject());
 
@@ -206,7 +206,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateQueryWithMinRange() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withRange("fieldName", 1, null)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$gte", 1)));
 
@@ -220,7 +220,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateQueryWithMaxRange() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withRange("fieldName", null, 2)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$lte", 2)));
 
@@ -234,7 +234,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateQueryWithRange() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withRange("fieldName", 1, 2)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$gte", 1).put("$lte", 2)));
 
@@ -248,7 +248,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateEmptyQueryWithNullExist() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withExist("fieldName", null)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject());
 
@@ -262,7 +262,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateQueryWithNoExist() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withExist("fieldName", false)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().putNull("fieldName"));
 
@@ -276,7 +276,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateQueryWithExist() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withExist("fieldName", true)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$exists", true).putNull("$ne")));
 
@@ -290,7 +290,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateQueryWithRegexIterable() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withRegex("fieldName", Arrays.asList("key1", "key2", "key3"))).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$all", new JsonArray().add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key1")))
         .add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key2"))).add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key3"))))));
@@ -309,7 +309,7 @@ public class QueryBuilderTest {
   @ValueSource(strings = { "/", "//8", "value", " /something/", "/something/ " })
   public void shouldCreateQueryWithEqValue(final String value) {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withEqOrRegex("fieldName", value)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", value));
 
@@ -326,7 +326,7 @@ public class QueryBuilderTest {
   @ValueSource(strings = { "/8/", "/value/", "//" })
   public void shouldCreateQueryWithRegexValue(final String value) {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withEqOrRegex("fieldName", value)).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$regex", builder.extractPattern(value))));
 
@@ -340,7 +340,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateEmptyQueryWithEmptyIterableRegexValue() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withEqOrRegex("fieldName", new ArrayList<>())).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject());
 
@@ -354,7 +354,7 @@ public class QueryBuilderTest {
   @Test
   public void shouldCreateQueryWithIterableRegexValue() {
 
-    final QueryBuilder builder = new QueryBuilder();
+    final var builder = new QueryBuilder();
     assertThat(builder.withEqOrRegex("fieldName", Arrays.asList("value", null, "/key.+/"))).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName",
         new JsonObject().put("$all", new JsonArray().add(new JsonObject().put("$elemMatch", new JsonObject().put("$eq", "value"))).add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key.+"))))));

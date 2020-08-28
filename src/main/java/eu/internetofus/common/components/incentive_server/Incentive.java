@@ -27,6 +27,7 @@
 package eu.internetofus.common.components.incentive_server;
 
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -43,7 +44,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Incentive", description = "An user incentive.")
-public class Incentive extends Model implements Validable {
+public class Incentive extends ReflectionModel implements Model, Validable {
 
   /**
    * Identifier of the application.
@@ -88,7 +89,7 @@ public class Incentive extends Model implements Validable {
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    Future<Void> future = promise.future();
+    var future = promise.future();
     try {
 
       this.AppID = Validations.validateNullableStringField(codePrefix, "AppID", 255, this.AppID);

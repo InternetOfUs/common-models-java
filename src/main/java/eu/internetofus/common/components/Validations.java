@@ -28,11 +28,9 @@ package eu.internetofus.common.components;
 
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
@@ -43,7 +41,6 @@ import org.apache.commons.validator.routines.EmailValidator;
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -76,7 +73,7 @@ public interface Validations {
 
     if (value != null) {
 
-      final String trimmedValue = value.trim();
+      final var trimmedValue = value.trim();
       if (trimmedValue.length() == 0) {
 
         return null;
@@ -117,10 +114,10 @@ public interface Validations {
     } else {
 
       final List<String> validValues = new ArrayList<>();
-      final int max = values.size();
-      for (int index = 0; index < max; index++) {
+      final var max = values.size();
+      for (var index = 0; index < max; index++) {
 
-        final String value = Validations.validateNullableStringField(codePrefix, fieldName + "[" + index + "]", maxSize, values.get(index));
+        final var value = Validations.validateNullableStringField(codePrefix, fieldName + "[" + index + "]", maxSize, values.get(index));
         if (value != null) {
 
           validValues.add(value);
@@ -147,7 +144,7 @@ public interface Validations {
    */
   static String validateStringField(final String codePrefix, final String fieldName, final int maxSize, final String value, final String... possibleValues) throws ValidationErrorException {
 
-    final String trimedValue = validateNullableStringField(codePrefix, fieldName, maxSize, value);
+    final var trimedValue = validateNullableStringField(codePrefix, fieldName, maxSize, value);
     if (trimedValue == null) {
 
       throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' can not be 'null' or contains an empty value.");
@@ -180,7 +177,7 @@ public interface Validations {
    */
   static String validateNullableEmailField(final String codePrefix, final String fieldName, final String value) throws ValidationErrorException {
 
-    final String trimmedValue = validateNullableStringField(codePrefix, fieldName, 255, value);
+    final var trimmedValue = validateNullableStringField(codePrefix, fieldName, 255, value);
     if (trimmedValue != null && !EmailValidator.getInstance().isValid(trimmedValue)) {
 
       throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + trimmedValue + "' is not a valid email address.");
@@ -204,7 +201,7 @@ public interface Validations {
    */
   static String validateNullableLocaleField(final String codePrefix, final String fieldName, final String value) throws ValidationErrorException {
 
-    final String validStringValue = validateNullableStringField(codePrefix, fieldName, 50, value);
+    final var validStringValue = validateNullableStringField(codePrefix, fieldName, 50, value);
     if (validStringValue != null) {
 
       try {
@@ -237,19 +234,19 @@ public interface Validations {
    */
   static String validateNullableTelephoneField(final String codePrefix, final String fieldName, final String locale, final String value) throws ValidationErrorException {
 
-    final String validStringValue = validateNullableStringField(codePrefix, fieldName, 50, value);
+    final var validStringValue = validateNullableStringField(codePrefix, fieldName, 50, value);
     if (validStringValue != null) {
 
       try {
 
-        final PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
-        String defaultRegion = Locale.getDefault().getCountry();
+        final var phoneUtil = PhoneNumberUtil.getInstance();
+        var defaultRegion = Locale.getDefault().getCountry();
         if (locale != null) {
 
           defaultRegion = new Locale(locale).getCountry();
 
         }
-        final PhoneNumber number = phoneUtil.parse(validStringValue, defaultRegion);
+        final var number = phoneUtil.parse(validStringValue, defaultRegion);
         if (!phoneUtil.isValidNumber(number)) {
 
           throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + validStringValue + "' is not a valid telephone number");
@@ -286,12 +283,12 @@ public interface Validations {
    */
   static String validateNullableURLField(final String codePrefix, final String fieldName, final String value) throws ValidationErrorException {
 
-    String validStringValue = validateNullableStringField(codePrefix, fieldName, 255, value);
+    var validStringValue = validateNullableStringField(codePrefix, fieldName, 255, value);
     if (validStringValue != null) {
 
       try {
 
-        final URL url = new URL(value);
+        final var url = new URL(value);
         validStringValue = url.toString();
 
       } catch (final Throwable badURL) {
@@ -318,12 +315,12 @@ public interface Validations {
    */
   static String validateNullableStringDateField(final String codePrefix, final String fieldName, final DateTimeFormatter format, final String value) throws ValidationErrorException {
 
-    String validStringValue = validateNullableStringField(codePrefix, fieldName, 255, value);
+    var validStringValue = validateNullableStringField(codePrefix, fieldName, 255, value);
     if (validStringValue != null) {
 
       try {
 
-        final TemporalAccessor date = format.parse(validStringValue);
+        final var date = format.parse(validStringValue);
         validStringValue = format.format(date);
 
       } catch (final Throwable badDate) {
@@ -355,27 +352,27 @@ public interface Validations {
 
     return mapper -> {
       final Promise<Void> promise = Promise.promise();
-      Future<Void> future = promise.future();
+      var future = promise.future();
       if (models != null) {
 
-        final ListIterator<T> iterator = models.listIterator();
+        final var iterator = models.listIterator();
         while (iterator.hasNext()) {
 
-          final T model = iterator.next();
+          final var model = iterator.next();
           if (model == null) {
 
             iterator.remove();
 
           } else {
 
-            final int index = iterator.previousIndex();
-            final String modelPrefix = codePrefix + "[" + index + "]";
+            final var index = iterator.previousIndex();
+            final var modelPrefix = codePrefix + "[" + index + "]";
             future = future.compose(elementMapper -> model.validate(modelPrefix, vertx));
             future = future.compose(elementMapper -> {
 
-              for (int firstIndex = 0; firstIndex < index; firstIndex++) {
+              for (var firstIndex = 0; firstIndex < index; firstIndex++) {
 
-                final T element = models.get(firstIndex);
+                final var element = models.get(firstIndex);
                 if (predicate.test(element, model)) {
 
                   return Future.failedFuture(new ValidationErrorException(modelPrefix, "This model is already defined at '" + firstIndex + "'."));

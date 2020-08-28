@@ -60,7 +60,7 @@ public class MaterialTest extends ModelTestCase<Material> {
   @Override
   public Material createModelExample(final int index) {
 
-    final Material model = new Material();
+    final var model = new Material();
     model.name = "name_" + index;
     model.description = "description_" + index;
     model.classification = "classification_" + index;
@@ -79,7 +79,7 @@ public class MaterialTest extends ModelTestCase<Material> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material model = new Material();
+    final var model = new Material();
     model.name = "    name_" + index + "    ";
     model.description = "    description_" + index + "    ";
     model.classification = "    classification_" + index + "    ";
@@ -87,7 +87,7 @@ public class MaterialTest extends ModelTestCase<Material> {
 
     assertIsValid(model, vertx, testContext, () -> {
 
-      final Material expected = this.createModelExample(index);
+      final var expected = this.createModelExample(index);
       assertThat(model).isEqualTo(expected);
     });
 
@@ -105,7 +105,7 @@ public class MaterialTest extends ModelTestCase<Material> {
   @ValueSource(strings = { ValidationsTest.STRING_256 })
   public void shouldNotBeValidWithABadName(final String name, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.name = name;
     assertIsNotValid(model, "name", vertx, testContext);
 
@@ -120,7 +120,7 @@ public class MaterialTest extends ModelTestCase<Material> {
   @Test
   public void shouldNotBeValidWithABadDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.description = ValidationsTest.STRING_1024;
     assertIsNotValid(model, "description", vertx, testContext);
 
@@ -135,7 +135,7 @@ public class MaterialTest extends ModelTestCase<Material> {
   @Test
   public void shouldBeValidWithANullDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.description = null;
     assertIsValid(model, vertx, testContext);
 
@@ -153,7 +153,7 @@ public class MaterialTest extends ModelTestCase<Material> {
   @ValueSource(strings = { ValidationsTest.STRING_256 })
   public void shouldNotBeValidWithABadClassification(final String classification, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.classification = classification;
     assertIsNotValid(model, "classification", vertx, testContext);
 
@@ -171,7 +171,7 @@ public class MaterialTest extends ModelTestCase<Material> {
   @ValueSource(ints = { -1, 0 })
   public void shouldNotBeValidWithABadQuantity(final Integer quantity, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.quantity = quantity;
     assertIsNotValid(model, "quantity", vertx, testContext);
 
@@ -188,17 +188,17 @@ public class MaterialTest extends ModelTestCase<Material> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleCanMerged(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material source = new Material();
+    final var source = new Material();
     source.name = "    name_" + index + "    ";
     source.description = "    description_" + index + "    ";
     source.classification = "    classification_" + index + "    ";
     source.quantity = Math.max(1, index);
 
-    final Material target = this.createModelExample(index - 1);
+    final var target = this.createModelExample(index - 1);
 
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
-      final Material expected = this.createModelExample(index);
+      final var expected = this.createModelExample(index);
       assertThat(merged).isEqualTo(expected);
     });
 
@@ -213,9 +213,9 @@ public class MaterialTest extends ModelTestCase<Material> {
   @Test
   public void shouldCannotMergeWithABadName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material source = new Material();
+    final var source = new Material();
     source.name = ValidationsTest.STRING_256;
-    final Material target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "name", vertx, testContext);
 
   }
@@ -229,9 +229,9 @@ public class MaterialTest extends ModelTestCase<Material> {
   @Test
   public void shouldCannotMergeWithABadDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material source = new Material();
+    final var source = new Material();
     source.description = ValidationsTest.STRING_1024;
-    final Material target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "description", vertx, testContext);
 
   }
@@ -245,9 +245,9 @@ public class MaterialTest extends ModelTestCase<Material> {
   @Test
   public void shouldCannotMergeWithABadClassification(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material source = new Material();
+    final var source = new Material();
     source.classification = ValidationsTest.STRING_256;
-    final Material target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "classification", vertx, testContext);
 
   }
@@ -263,9 +263,9 @@ public class MaterialTest extends ModelTestCase<Material> {
   @ValueSource(ints = { -1, 0 })
   public void shouldCannotMergeWithABadQuantity(final Integer quantity, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Material source = new Material();
+    final var source = new Material();
     source.quantity = quantity;
-    final Material target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "quantity", vertx, testContext);
 
   }

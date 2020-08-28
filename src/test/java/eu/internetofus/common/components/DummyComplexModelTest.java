@@ -147,7 +147,7 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
   public void shoudNotMergeWithBadId(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    final DummyComplexModel source = new DummyComplexModel();
+    final var source = new DummyComplexModel();
     source.id = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "id", vertx, testContext);
 

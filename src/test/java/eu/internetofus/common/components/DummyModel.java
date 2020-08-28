@@ -31,7 +31,7 @@ package eu.internetofus.common.components;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class DummyModel extends Model {
+public class DummyModel extends ReflectionModel implements Model {
 
   /**
    * The index of the model.

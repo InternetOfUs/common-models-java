@@ -27,6 +27,7 @@
 package eu.internetofus.common.vertx;
 
 import eu.internetofus.common.components.Mergeable;
+import eu.internetofus.common.components.Model;
 
 /**
  * Function used to consumer the merge result.
@@ -36,7 +37,7 @@ import eu.internetofus.common.components.Mergeable;
  * @author UDT-IA, IIIA-CSIC
  */
 @FunctionalInterface
-public interface MergeConsumer<T extends Mergeable<T>> {
+public interface MergeConsumer<T extends Model & Mergeable<T>> {
 
   /**
    * Called when the merge was a success.

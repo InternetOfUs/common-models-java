@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -55,7 +56,7 @@ import io.vertx.core.json.JsonObject;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(name = "message", description = "A message that can be interchange in an interaction protocol.")
-public class Message extends Model implements Validable {
+public class Message extends ReflectionModel implements Model, Validable {
 
   /**
    * The identifier of the user that is sending the message.
@@ -129,7 +130,7 @@ public class Message extends Model implements Validable {
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    Future<Void> future = promise.future();
+    var future = promise.future();
     try {
 
       this.appId = Validations.validateNullableStringField(codePrefix, "appId", 255, this.appId);
@@ -217,7 +218,7 @@ public class Message extends Model implements Validable {
 
         switch (this.type) {
         case TASK_CREATED:
-          final Task task = Model.fromJsonObject((JsonObject) this.content, Task.class);
+          final var task = Model.fromJsonObject((JsonObject) this.content, Task.class);
           if (task == null) {
 
             promise.fail(new ValidationErrorException(codePrefix + ".content", "You must define the created task"));
@@ -253,7 +254,7 @@ public class Message extends Model implements Validable {
           break;
 
         case TASK_TRANSACTION:
-          final TaskTransaction transaction = Model.fromJsonObject((JsonObject) this.content, TaskTransaction.class);
+          final var transaction = Model.fromJsonObject((JsonObject) this.content, TaskTransaction.class);
           if (transaction == null) {
 
             promise.fail(new ValidationErrorException(codePrefix + ".content", "You must define a task transaction as content"));
@@ -268,7 +269,7 @@ public class Message extends Model implements Validable {
           }
           break;
         case INCENTIVE:
-          final Incentive incentive = Model.fromJsonObject((JsonObject) this.content, Incentive.class);
+          final var incentive = Model.fromJsonObject((JsonObject) this.content, Incentive.class);
           if (incentive == null) {
 
             promise.fail(new ValidationErrorException(codePrefix + ".content", "You must define an incentive as content"));

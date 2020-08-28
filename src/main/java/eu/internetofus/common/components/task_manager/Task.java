@@ -108,10 +108,9 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
   public Long deadlineTs;
 
   /**
-   * The difference, measured in seconds, between the time when the task is closed by and midnight, January 1,
-   * 1970 UTC.
+   * The difference, measured in seconds, between the time when the task is closed by and midnight, January 1, 1970 UTC.
    */
-  @Schema(description = "The UTC epoch timestamp representing the time the task is closed. It its not defined the task still open.", example = "1563930000",nullable = true)
+  @Schema(description = "The UTC epoch timestamp representing the time the task is closed. It its not defined the task still open.", example = "1563930000", nullable = true)
   public Long closeTs;
 
   /**
@@ -134,7 +133,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    Future<Void> future = promise.future();
+    var future = promise.future();
     try {
 
       this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
@@ -271,9 +270,9 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
   public Future<Task> merge(final Task source, final String codePrefix, final Vertx vertx) {
 
     final Promise<Task> promise = Promise.promise();
-    Future<Task> future = promise.future();
+    var future = promise.future();
 
-    final Task merged = new Task();
+    final var merged = new Task();
     merged.taskTypeId = source.taskTypeId;
     if (merged.taskTypeId == null) {
 

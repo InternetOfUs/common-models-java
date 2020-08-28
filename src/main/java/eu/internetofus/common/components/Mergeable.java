@@ -30,8 +30,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 
 /**
- * This is implemented by any model that can be merged with another model of the
- * same type.
+ * This is implemented by any model that can be merged with another model of the same type.
  *
  * @param <T> type of models that can be merged.
  *
@@ -39,19 +38,18 @@ import io.vertx.core.Vertx;
  */
 public interface Mergeable<T> {
 
-	/**
-	 * Merge the current model with a new one, and verify the result is valid.
-	 *
-	 * @param source     model to merge with the current one.
-	 * @param codePrefix the prefix of the code to use for the error message.
-	 * @param vertx      the event bus infrastructure to use.
-	 *
-	 * @return the future that provide the merged model that has to be valid. If it
-	 *         can not merge or the merged value is not valid the cause will be a
-	 *         {@link ValidationErrorException}.
-	 *
-	 * @see ValidationErrorException
-	 */
-	Future<T> merge(T source, String codePrefix, Vertx vertx);
+  /**
+   * Merge the current model with a new one, and verify the result is valid.
+   *
+   * @param source     model to merge with the current one.
+   * @param codePrefix the prefix of the code to use for the error message.
+   * @param vertx      the event bus infrastructure to use.
+   *
+   * @return the future that provide the merged model that has to be valid. If it can not merge or the merged value is not
+   *         valid the cause will be a {@link ValidationErrorException}.
+   *
+   * @see ValidationErrorException
+   */
+  Future<T> merge(T source, String codePrefix, Vertx vertx);
 
 }

@@ -29,6 +29,7 @@ package eu.internetofus.common.components.profile_manager;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -43,92 +44,92 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(name = "language", description = "The language that an user can understand.")
-public class Language extends Model implements Validable, Mergeable<Language> {
+public class Language extends ReflectionModel implements Model, Validable, Mergeable<Language> {
 
-	/**
-	 * The name of the language.
-	 */
-	@Schema(description = "The name of the language", example = "English")
-	public String name;
+  /**
+   * The name of the language.
+   */
+  @Schema(description = "The name of the language", example = "English")
+  public String name;
 
-	/**
-	 * The ISO 639-1 code that identify the language.
-	 */
-	@Schema(description = "The ISO 639-1 code that identify the language", example = "en")
-	public String code;
+  /**
+   * The ISO 639-1 code that identify the language.
+   */
+  @Schema(description = "The ISO 639-1 code that identify the language", example = "en")
+  public String code;
 
-	/**
-	 * The linguistic ability level of the person.
-	 */
-	@Schema(description = "The linguistic ability level of the person.", example = "B2")
-	public LanguageLevel level;
+  /**
+   * The linguistic ability level of the person.
+   */
+  @Schema(description = "The linguistic ability level of the person.", example = "B2")
+  public LanguageLevel level;
 
-	/**
-	 * Create an empty language.
-	 */
-	public Language() {
+  /**
+   * Create an empty language.
+   */
+  public Language() {
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-		final Promise<Void> promise = Promise.promise();
-		try {
+    final Promise<Void> promise = Promise.promise();
+    try {
 
-			this.name = Validations.validateNullableStringField(codePrefix, "name", 255, this.name);
-			this.code = Validations.validateNullableStringField(codePrefix, "code", 2, this.code);
-			promise.complete();
+      this.name = Validations.validateNullableStringField(codePrefix, "name", 255, this.name);
+      this.code = Validations.validateNullableStringField(codePrefix, "code", 2, this.code);
+      promise.complete();
 
-		} catch (final ValidationErrorException validationError) {
+    } catch (final ValidationErrorException validationError) {
 
-			promise.fail(validationError);
-		}
+      promise.fail(validationError);
+    }
 
-		return promise.future();
+    return promise.future();
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Language> merge(Language source, String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Language> merge(final Language source, final String codePrefix, final Vertx vertx) {
 
-		final Promise<Language> promise = Promise.promise();
-		Future<Language> future = promise.future();
-		if (source != null) {
+    final Promise<Language> promise = Promise.promise();
+    var future = promise.future();
+    if (source != null) {
 
-			final Language merged = new Language();
-			merged.name = source.name;
-			if (merged.name == null) {
+      final var merged = new Language();
+      merged.name = source.name;
+      if (merged.name == null) {
 
-				merged.name = this.name;
-			}
+        merged.name = this.name;
+      }
 
-			merged.code = source.code;
-			if (merged.code == null) {
+      merged.code = source.code;
+      if (merged.code == null) {
 
-				merged.code = this.code;
-			}
+        merged.code = this.code;
+      }
 
-			merged.level = source.level;
-			if (merged.level == null) {
+      merged.level = source.level;
+      if (merged.level == null) {
 
-				merged.level = this.level;
-			}
-			promise.complete(merged);
-			future = future.compose(Merges.validateMerged(codePrefix, vertx));
+        merged.level = this.level;
+      }
+      promise.complete(merged);
+      future = future.compose(Merges.validateMerged(codePrefix, vertx));
 
-		} else {
+    } else {
 
-			promise.complete(this);
-		}
-		return future;
+      promise.complete(this);
+    }
+    return future;
 
-	}
+  }
 
 }

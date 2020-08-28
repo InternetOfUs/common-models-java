@@ -100,10 +100,10 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldCreateRetrieveAndDeleteProfile(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetProfileManager service = WeNetProfileManager.createProxy(vertx);
+    final var service = WeNetProfileManager.createProxy(vertx);
     service.createProfile(new WeNetUserProfile(), testContext.succeeding(create -> {
 
-      final String id = create.id;
+      final var id = create.id;
       service.retrieveProfile(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
 
         assertThat(create).isEqualTo(retrieve);
@@ -181,10 +181,10 @@ public abstract class WeNetProfileManagerTestCase {
 
     new CommunityProfileTest().createModelExample(1, vertx, testContext, testContext.succeeding(community -> {
 
-      final WeNetProfileManager service = WeNetProfileManager.createProxy(vertx);
+      final var service = WeNetProfileManager.createProxy(vertx);
       service.createCommunity(community, testContext.succeeding(create -> {
 
-        final String id = create.id;
+        final var id = create.id;
         service.retrieveCommunity(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
 
           assertThat(create).isEqualTo(retrieve);

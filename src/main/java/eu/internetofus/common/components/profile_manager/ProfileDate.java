@@ -28,6 +28,7 @@ package eu.internetofus.common.components.profile_manager;
 
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -41,111 +42,111 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(name = "date", description = "The information of a date.")
-public class ProfileDate extends Model implements Validable, Mergeable<ProfileDate> {
+public class ProfileDate extends ReflectionModel implements Model, Validable, Mergeable<ProfileDate> {
 
-	/**
-	 * The year of the date.
-	 */
-	@Schema(description = "The year of the date.", example = "1976")
-	public Integer year;
+  /**
+   * The year of the date.
+   */
+  @Schema(description = "The year of the date.", example = "1976")
+  public Integer year;
 
-	/**
-	 * The year of the date.
-	 */
-	@Schema(description = "The month of the date,from 1 to 12 (1: Jan and 12: Dec).", example = "4")
-	public Byte month;
+  /**
+   * The year of the date.
+   */
+  @Schema(description = "The month of the date,from 1 to 12 (1: Jan and 12: Dec).", example = "4")
+  public Byte month;
 
-	/**
-	 * The day of the date.
-	 */
-	@Schema(description = "The day of the date.", example = "23")
-	public Byte day;
+  /**
+   * The day of the date.
+   */
+  @Schema(description = "The day of the date.", example = "23")
+  public Byte day;
 
-	/**
-	 * Create an empty date.
-	 */
-	public ProfileDate() {
+  /**
+   * Create an empty date.
+   */
+  public ProfileDate() {
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-		final Promise<Void> promise = Promise.promise();
-		if (this.month != null && (this.month < 1 || this.month > 12)) {
+    final Promise<Void> promise = Promise.promise();
+    if (this.month != null && (this.month < 1 || this.month > 12)) {
 
-			promise.fail(new ValidationErrorException(codePrefix + ".month", "The month has to be on the range [1,12]"));
+      promise.fail(new ValidationErrorException(codePrefix + ".month", "The month has to be on the range [1,12]"));
 
-		} else if (this.day != null && (this.day < 1 || this.day > 31)) {
+    } else if (this.day != null && (this.day < 1 || this.day > 31)) {
 
-			promise.fail(new ValidationErrorException(codePrefix + ".day", "The day has to be on the range [1,31]"));
+      promise.fail(new ValidationErrorException(codePrefix + ".day", "The day has to be on the range [1,31]"));
 
-		} else if (this.year != null && this.month != null && this.day != null) {
+    } else if (this.year != null && this.month != null && this.day != null) {
 
-			try {
+      try {
 
-				java.time.LocalDate.of(this.year, this.month, this.day);
-				promise.complete();
+        java.time.LocalDate.of(this.year, this.month, this.day);
+        promise.complete();
 
-			} catch (final Throwable exception) {
+      } catch (final Throwable exception) {
 
-				promise.fail(new ValidationErrorException(codePrefix, exception));
-			}
+        promise.fail(new ValidationErrorException(codePrefix, exception));
+      }
 
-		} else {
-			// not enough data to check the date
-			promise.complete();
-		}
+    } else {
+      // not enough data to check the date
+      promise.complete();
+    }
 
-		return promise.future();
+    return promise.future();
 
-	}
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<ProfileDate> merge(ProfileDate source, String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<ProfileDate> merge(final ProfileDate source, final String codePrefix, final Vertx vertx) {
 
-		if (source != null) {
+    if (source != null) {
 
-			final ProfileDate merged = new ProfileDate();
-			if (source.year != null) {
+      final var merged = new ProfileDate();
+      if (source.year != null) {
 
-				merged.year = source.year;
+        merged.year = source.year;
 
-			} else {
+      } else {
 
-				merged.year = this.year;
-			}
-			if (source.month != null) {
+        merged.year = this.year;
+      }
+      if (source.month != null) {
 
-				merged.month = source.month;
+        merged.month = source.month;
 
-			} else {
+      } else {
 
-				merged.month = this.month;
-			}
-			if (source.day != null) {
+        merged.month = this.month;
+      }
+      if (source.day != null) {
 
-				merged.day = source.day;
+        merged.day = source.day;
 
-			} else {
+      } else {
 
-				merged.day = this.day;
-			}
+        merged.day = this.day;
+      }
 
-			return merged.validate(codePrefix, vertx).map(empty -> merged);
+      return merged.validate(codePrefix, vertx).map(empty -> merged);
 
-		} else {
+    } else {
 
-			return Future.succeededFuture(this);
+      return Future.succeededFuture(this);
 
-		}
+    }
 
-	}
+  }
 
 }

@@ -27,6 +27,7 @@
 package eu.internetofus.common.components.incentive_server;
 
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -35,7 +36,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "TaskStatus", description = "The status of a task.")
-public class TaskStatus extends Model {
+public class TaskStatus extends ReflectionModel implements Model {
 
   /**
    * Identifier of the user.

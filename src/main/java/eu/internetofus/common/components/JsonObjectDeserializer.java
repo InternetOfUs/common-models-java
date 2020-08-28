@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -38,49 +37,48 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import io.vertx.core.json.JsonObject;
 
 /**
- * The component to deserialize a {@link JsonObject} to any of it possible sub
- * types.
+ * The component to deserialize a {@link JsonObject} to any of it possible sub types.
  *
  * @author UDT-IA, IIIA-CSIC
  */
 public class JsonObjectDeserializer extends StdDeserializer<JsonObject> {
 
-	/**
-	 * Serial version identifier.
-	 */
-	private static final long serialVersionUID = 1L;
+  /**
+   * Serial version identifier.
+   */
+  private static final long serialVersionUID = 1L;
 
-	/**
-	 * The type for the deserializer.
-	 */
-	private final TypeReference<Map<String, Object>> type = new TypeReference<Map<String, Object>>() {
-	};
+  /**
+   * The type for the deserializer.
+   */
+  private final TypeReference<Map<String, Object>> type = new TypeReference<Map<String, Object>>() {
+  };
 
-	/**
-	 * Create a new deserializer
-	 */
-	public JsonObjectDeserializer() {
+  /**
+   * Create a new deserializer
+   */
+  public JsonObjectDeserializer() {
 
-		this(null);
-	}
+    this(null);
+  }
 
-	/**
-	 * Create a new deserializer for a type.
-	 *
-	 * @param type for the deserializer
-	 */
-	public JsonObjectDeserializer(final Class<?> type) {
+  /**
+   * Create a new deserializer for a type.
+   *
+   * @param type for the deserializer
+   */
+  public JsonObjectDeserializer(final Class<?> type) {
 
-		super(type);
-	}
+    super(type);
+  }
 
-	@Override
-	public JsonObject deserialize(final JsonParser jsonParser, final DeserializationContext context) throws IOException {
+  @Override
+  public JsonObject deserialize(final JsonParser jsonParser, final DeserializationContext context) throws IOException {
 
-		final ObjectCodec objectCodec = jsonParser.getCodec();
-		final Map<String, Object> value = objectCodec.readValue(jsonParser, this.type);
+    final var objectCodec = jsonParser.getCodec();
+    final var value = objectCodec.readValue(jsonParser, this.type);
 
-		return new JsonObject(value);
-	}
+    return new JsonObject(value);
+  }
 
 }

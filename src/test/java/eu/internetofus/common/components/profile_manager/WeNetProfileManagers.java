@@ -56,8 +56,8 @@ public interface WeNetProfileManagers {
   static Future<List<WeNetUserProfile>> createUsers(final int maxUsers, final Vertx vertx, final VertxTestContext testContext) {
 
     final Promise<List<WeNetUserProfile>> promise = Promise.promise();
-    Future<List<WeNetUserProfile>> future = promise.future();
-    for (int i = 0; i < maxUsers; i++) {
+    var future = promise.future();
+    for (var i = 0; i < maxUsers; i++) {
 
       future = future.compose(users -> {
 

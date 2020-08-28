@@ -65,8 +65,8 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
   @Test
   public void shouldNotBeValidToBornOnTheFuture(final Vertx vertx, final VertxTestContext testContext) {
 
-    final AliveBirthDate model = this.createEmptyModel();
-    final LocalDate tomorrow = LocalDate.now().plusDays(1);
+    final var model = this.createEmptyModel();
+    final var tomorrow = LocalDate.now().plusDays(1);
     model.year = tomorrow.getYear();
     model.month = (byte) tomorrow.getMonthValue();
     model.day = (byte) tomorrow.getDayOfMonth();
@@ -85,7 +85,7 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
   @Test
   public void shouldNotBeValidToBornBeforeTheOldestPersonOnTheWorld(final Vertx vertx, final VertxTestContext testContext) {
 
-    final AliveBirthDate model = this.createEmptyModel();
+    final var model = this.createEmptyModel();
     model.year = 1903;
     model.month = 1;
     model.day = 1;
@@ -103,9 +103,9 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
   @Test
   public void shouldNotMergeToBornOnTheFuture(final Vertx vertx, final VertxTestContext testContext) {
 
-    final AliveBirthDate target = this.createEmptyModel();
-    final AliveBirthDate source = this.createEmptyModel();
-    final LocalDate tomorrow = LocalDate.now().plusDays(1);
+    final var target = this.createEmptyModel();
+    final var source = this.createEmptyModel();
+    final var tomorrow = LocalDate.now().plusDays(1);
     source.year = tomorrow.getYear();
     source.month = (byte) tomorrow.getMonthValue();
     source.day = (byte) tomorrow.getDayOfMonth();
@@ -124,8 +124,8 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
   @Test
   public void shouldNotMergeToBornBeforeTheOldestPersonOnTheWorld(final Vertx vertx, final VertxTestContext testContext) {
 
-    final AliveBirthDate target = this.createEmptyModel();
-    final AliveBirthDate source = this.createEmptyModel();
+    final var target = this.createEmptyModel();
+    final var source = this.createEmptyModel();
     source.year = 1903;
     source.month = 1;
     source.day = 1;

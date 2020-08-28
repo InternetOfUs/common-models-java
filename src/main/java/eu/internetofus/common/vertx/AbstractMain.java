@@ -26,7 +26,6 @@
 
 package eu.internetofus.common.vertx;
 
-import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +33,6 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -74,8 +72,7 @@ public abstract class AbstractMain {
   public static final String VERSION_OPTION = "v";
 
   /**
-   * The name of the option to define a directory where are the configuration
-   * files.
+   * The name of the option to define a directory where are the configuration files.
    */
   public static final String CONF_DIR_OPTION = "c";
 
@@ -90,14 +87,12 @@ public abstract class AbstractMain {
   protected ConfigRetrieverOptions retrieveOptions;
 
   /**
-   * The configuration property that define if has to store the effective
-   * configuration.
+   * The configuration property that define if has to store the effective configuration.
    */
   public static final String STORE_EFFECTIVE_CONFIGURATION = "store_effective_configuration";
 
   /**
-   * The configuration property that contains the path where the effective
-   * configuration has to be stored.
+   * The configuration property that contains the path where the effective configuration has to be stored.
    */
   public static final String EFFECTIVE_CONFIGURATION_PATH = "effective_configuration_path";
 
@@ -107,8 +102,7 @@ public abstract class AbstractMain {
   public static final String DEFAULT_EFFECTIVE_CONFIGURATION_PATH = "var/effective-conf.json";
 
   /**
-   * The maximum milliseconds that the system has to be open. If it is {0} or less
-   * the system is available for ever.
+   * The maximum milliseconds that the system has to be open. If it is {0} or less the system is available for ever.
    */
   protected long delay;
 
@@ -117,15 +111,14 @@ public abstract class AbstractMain {
    */
   public AbstractMain() {
 
-    this.retrieveOptions = new ConfigRetrieverOptions().addStore(new ConfigStoreOptions().setType("file")
-        .setFormat("json").setConfig(new JsonObject().put("path", this.getDefaultModuleConfigurationResurcePath())));
+    this.retrieveOptions = new ConfigRetrieverOptions().addStore(new ConfigStoreOptions().setType("file").setFormat("json").setConfig(new JsonObject().put("path", this.getDefaultModuleConfigurationResurcePath())));
     this.delay = -1l;
 
   }
 
   /**
-   * Return the resource path to the default configuration file of the module. It
-   * is calculated ad the module name plus ".configuration.json".
+   * Return the resource path to the default configuration file of the module. It is calculated ad the module name plus
+   * ".configuration.json".
    *
    * @return the resource path to the default configuration file.
    *
@@ -133,7 +126,7 @@ public abstract class AbstractMain {
    */
   protected String getDefaultModuleConfigurationResurcePath() {
 
-    final String moduleName = this.getModuleName();
+    final var moduleName = this.getModuleName();
     return moduleName + ".configuration.json";
 
   }
@@ -146,21 +139,20 @@ public abstract class AbstractMain {
   public Future<WeNetModuleContext> startVertx() {
 
     final Promise<WeNetModuleContext> promise = Promise.promise();
-    final Vertx vertx = Vertx.vertx();
-    final ConfigRetriever retriever = ConfigRetriever.create(vertx, this.retrieveOptions);
+    final var vertx = Vertx.vertx();
+    final var retriever = ConfigRetriever.create(vertx, this.retrieveOptions);
     retriever.getConfig(confResult -> {
 
       if (confResult.succeeded()) {
 
-        final JsonObject conf = confResult.result();
+        final var conf = confResult.result();
         vertx.close();
 
         Logger.info("Loaded configuration: {}", conf);
         if (conf.getBoolean(STORE_EFFECTIVE_CONFIGURATION, Boolean.TRUE)) {
           try {
 
-            final Path effectiveConf = FileSystems.getDefault()
-                .getPath(conf.getString(EFFECTIVE_CONFIGURATION_PATH, DEFAULT_EFFECTIVE_CONFIGURATION_PATH));
+            final var effectiveConf = FileSystems.getDefault().getPath(conf.getString(EFFECTIVE_CONFIGURATION_PATH, DEFAULT_EFFECTIVE_CONFIGURATION_PATH));
             Files.write(effectiveConf, conf.encodePrettily().getBytes());
             Logger.info("Stored effective configuration at '{}'", effectiveConf);
 
@@ -172,11 +164,11 @@ public abstract class AbstractMain {
         }
 
         // Create a new Vert.x instance using the retrieve configuration
-        final VertxOptions options = new VertxOptions(conf);
-        final Vertx newVertx = Vertx.vertx(options);
+        final var options = new VertxOptions(conf);
+        final var newVertx = Vertx.vertx(options);
 
-        // deploy the verticles
-        final DeploymentOptions deployOptions = new DeploymentOptions().setConfig(conf);
+        // Deploy the verticles
+        final var deployOptions = new DeploymentOptions().setConfig(conf);
         newVertx.deployVerticle(this.createMainVerticle(), deployOptions, deploy -> {
           if (deploy.succeeded()) {
 
@@ -199,8 +191,7 @@ public abstract class AbstractMain {
   }
 
   /**
-   * Create the main verticle that will start the WeNet module components to
-   * deploy.
+   * Create the main verticle that will start the WeNet module components to deploy.
    *
    * @return an instance of the main verticle to deploy.
    */
@@ -222,17 +213,12 @@ public abstract class AbstractMain {
    */
   protected Options createOptions() {
 
-    final ResourceBundle l10n = ResourceBundle.getBundle(AbstractMain.class.getName().replaceAll("\\.", "/"));
-    final Options options = new Options();
-    options.addOption(HELP_OPTION, l10n.getString(HELP_OPTION + "_large"), false,
-        l10n.getString(HELP_OPTION + "_description"));
-    options.addOption(VERSION_OPTION, l10n.getString(VERSION_OPTION + "_large"), false,
-        l10n.getString(VERSION_OPTION + "_description"));
-    options.addOption(Option.builder(CONF_DIR_OPTION).longOpt(l10n.getString(CONF_DIR_OPTION + "_large"))
-        .numberOfArgs(1).argName(l10n.getString(CONF_DIR_OPTION + "_argName"))
-        .desc(l10n.getString(CONF_DIR_OPTION + "_description")).build());
-    options.addOption(Option.builder(PROPERTY_OPTION).longOpt(l10n.getString(PROPERTY_OPTION + "_large"))
-        .numberOfArgs(2).argName(l10n.getString(PROPERTY_OPTION + "_argName")).valueSeparator()
+    final var l10n = ResourceBundle.getBundle(AbstractMain.class.getName().replaceAll("\\.", "/"));
+    final var options = new Options();
+    options.addOption(HELP_OPTION, l10n.getString(HELP_OPTION + "_large"), false, l10n.getString(HELP_OPTION + "_description"));
+    options.addOption(VERSION_OPTION, l10n.getString(VERSION_OPTION + "_large"), false, l10n.getString(VERSION_OPTION + "_description"));
+    options.addOption(Option.builder(CONF_DIR_OPTION).longOpt(l10n.getString(CONF_DIR_OPTION + "_large")).numberOfArgs(1).argName(l10n.getString(CONF_DIR_OPTION + "_argName")).desc(l10n.getString(CONF_DIR_OPTION + "_description")).build());
+    options.addOption(Option.builder(PROPERTY_OPTION).longOpt(l10n.getString(PROPERTY_OPTION + "_large")).numberOfArgs(2).argName(l10n.getString(PROPERTY_OPTION + "_argName")).valueSeparator()
         .desc(l10n.getString(CONF_DIR_OPTION + "_description")).build());
     return options;
 
@@ -245,7 +231,7 @@ public abstract class AbstractMain {
    */
   protected void printHelpMessage(final Options options) {
 
-    final HelpFormatter formatter = new HelpFormatter();
+    final var formatter = new HelpFormatter();
     formatter.printHelp(this.getModuleName(), options);
 
   }
@@ -262,10 +248,10 @@ public abstract class AbstractMain {
    */
   protected void printVersion() {
 
-    String version = "Unknown";
+    var version = "Unknown";
     try {
 
-      final Package currentPackage = this.getClass().getPackage();
+      final var currentPackage = this.getClass().getPackage();
       version = currentPackage.getImplementationVersion();
 
     } catch (final Throwable ignored) {
@@ -289,16 +275,16 @@ public abstract class AbstractMain {
 
       Logger.debug("Start Main with: {}", () -> Arrays.toString(args));
       final CommandLineParser parser = new DefaultParser();
-      final Options options = this.createOptions();
-      final CommandLine cmd = parser.parse(options, args);
+      final var options = this.createOptions();
+      final var cmd = parser.parse(options, args);
       if (cmd.hasOption(CONF_DIR_OPTION)) {
 
-        final String confDirValue = cmd.getOptionValue(CONF_DIR_OPTION);
+        final var confDirValue = cmd.getOptionValue(CONF_DIR_OPTION);
         this.configureWithFilesAt(confDirValue);
       }
       if (cmd.hasOption(PROPERTY_OPTION)) {
 
-        final Properties properties = cmd.getOptionProperties(PROPERTY_OPTION);
+        final var properties = cmd.getOptionProperties(PROPERTY_OPTION);
         this.configureWithPropetyValues(properties);
       }
 
@@ -336,22 +322,21 @@ public abstract class AbstractMain {
    */
   protected void configureWithFilesAt(final String confDirValue) throws Throwable {
 
-    final Path confPath = Path.of(confDirValue);
+    final var confPath = Path.of(confDirValue);
     Files.list(confPath).filter(confFilePath -> {
 
-      final File file = confFilePath.toFile();
+      final var file = confFilePath.toFile();
       return file.isFile() && file.canRead();
 
     }).sorted((a, b) -> b.getFileName().compareTo(a.getFileName())).forEach(confFilePath -> {
 
-      String format = "json";
-      final String fileName = confFilePath.getFileName().toString();
+      var format = "json";
+      final var fileName = confFilePath.getFileName().toString();
       if (fileName.endsWith("yml")) {
 
         format = "yaml";
       }
-      final ConfigStoreOptions confFileOptions = new ConfigStoreOptions().setType("file").setFormat(format)
-          .setConfig(new JsonObject().put("path", confFilePath.toFile().getAbsolutePath()));
+      final var confFileOptions = new ConfigStoreOptions().setType("file").setFormat(format).setConfig(new JsonObject().put("path", confFilePath.toFile().getAbsolutePath()));
       this.retrieveOptions = this.retrieveOptions.addStore(confFileOptions);
 
     });
@@ -365,21 +350,21 @@ public abstract class AbstractMain {
    */
   protected void configureWithPropetyValues(final Properties properties) {
 
-    final JsonObject userProperties = new JsonObject();
+    final var userProperties = new JsonObject();
     for (final String key : properties.stringPropertyNames()) {
 
-      JsonObject property = userProperties;
-      final String[] sections = key.split("\\.");
-      for (int i = 0; i < sections.length - 1; i++) {
+      var property = userProperties;
+      final var sections = key.split("\\.");
+      for (var i = 0; i < sections.length - 1; i++) {
 
-        final String section = sections[i].trim();
+        final var section = sections[i].trim();
         if (property.containsKey(section)) {
 
           property = property.getJsonObject(section);
 
         } else {
 
-          final JsonObject sectionProperty = new JsonObject();
+          final var sectionProperty = new JsonObject();
           property.put(section, sectionProperty);
           property = sectionProperty;
 
@@ -387,7 +372,7 @@ public abstract class AbstractMain {
 
       }
 
-      final String value = properties.getProperty(key).trim();
+      final var value = properties.getProperty(key).trim();
 
       if (value.startsWith("\"") && value.endsWith("\"")) {
 
@@ -412,7 +397,7 @@ public abstract class AbstractMain {
 
     }
 
-    final ConfigStoreOptions userPropertiesConf = new ConfigStoreOptions().setType("json").setConfig(userProperties);
+    final var userPropertiesConf = new ConfigStoreOptions().setType("json").setConfig(userProperties);
     this.retrieveOptions = this.retrieveOptions.addStore(userPropertiesConf);
 
   }

@@ -42,7 +42,7 @@ public class SocialExplanationTest extends ModelTestCase<SocialExplanation> {
   @Override
   public SocialExplanation createModelExample(final int index) {
 
-    final SocialExplanation model = new SocialExplanation();
+    final var model = new SocialExplanation();
     model.description = "description_" + index;
     model.Summary = new JsonObject();
     return model;

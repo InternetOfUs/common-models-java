@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.ValidationErrorException;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
@@ -51,158 +52,156 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith(VertxExtension.class)
 public class OperationReponseHandlersTest {
 
-	/**
-	 * Check the response with a {@link Model}.
-	 *
-	 * @param testContext context that executes the test.
-	 */
-	@Test
-	public void shouldRepondWithModel(VertxTestContext testContext) {
+  /**
+   * Check the response with a {@link Model}.
+   *
+   * @param testContext context that executes the test.
+   */
+  @Test
+  public void shouldRepondWithModel(final VertxTestContext testContext) {
 
-		OperationReponseHandlers.responseWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    OperationReponseHandlers.responseWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
-			assertThat(reponse.getStatusCode()).isEqualTo(Status.ACCEPTED.getStatusCode());
-			assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
-			assertThat(reponse.getPayload().toString()).isEqualTo("{}");
-			testContext.completeNow();
+      assertThat(reponse.getStatusCode()).isEqualTo(Status.ACCEPTED.getStatusCode());
+      assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      assertThat(reponse.getPayload().toString()).isEqualTo("{}");
+      testContext.completeNow();
 
-		})), Status.ACCEPTED, new Model());
+    })), Status.ACCEPTED, new ReflectionModel());
 
-	}
+  }
 
-	/**
-	 * Check the response with a JSON object.
-	 *
-	 * @param testContext context that executes the test.
-	 */
-	@Test
-	public void shouldRepondWithStringJsonObject(VertxTestContext testContext) {
+  /**
+   * Check the response with a JSON object.
+   *
+   * @param testContext context that executes the test.
+   */
+  @Test
+  public void shouldRepondWithStringJsonObject(final VertxTestContext testContext) {
 
-		OperationReponseHandlers.responseWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    OperationReponseHandlers.responseWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
-			assertThat(reponse.getStatusCode()).isEqualTo(Status.FOUND.getStatusCode());
-			assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
-			assertThat(reponse.getPayload().toString()).isEqualTo("{\"key\":\"value\"}");
-			testContext.completeNow();
+      assertThat(reponse.getStatusCode()).isEqualTo(Status.FOUND.getStatusCode());
+      assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      assertThat(reponse.getPayload().toString()).isEqualTo("{\"key\":\"value\"}");
+      testContext.completeNow();
 
-		})), Status.FOUND, new JsonObject().put("key", "value"));
+    })), Status.FOUND, new JsonObject().put("key", "value"));
 
-	}
+  }
 
-	/**
-	 * Check the response with a string value.
-	 *
-	 * @param testContext context that executes the test.
-	 */
-	@Test
-	public void shouldRepondWithString(VertxTestContext testContext) {
+  /**
+   * Check the response with a string value.
+   *
+   * @param testContext context that executes the test.
+   */
+  @Test
+  public void shouldRepondWithString(final VertxTestContext testContext) {
 
-		OperationReponseHandlers.responseWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    OperationReponseHandlers.responseWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
-			assertThat(reponse.getStatusCode()).isEqualTo(Status.CONFLICT.getStatusCode());
-			assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
-			assertThat(reponse.getPayload().toString()).isEqualTo("{\"name\":\"value\"}");
-			testContext.completeNow();
+      assertThat(reponse.getStatusCode()).isEqualTo(Status.CONFLICT.getStatusCode());
+      assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      assertThat(reponse.getPayload().toString()).isEqualTo("{\"name\":\"value\"}");
+      testContext.completeNow();
 
-		})), Status.CONFLICT, "{\"name\":\"value\"}");
+    })), Status.CONFLICT, "{\"name\":\"value\"}");
 
-	}
+  }
 
-	/**
-	 * Check the response Ok with content.
-	 *
-	 * @param testContext context that executes the test.
-	 */
-	@Test
-	public void shouldRepondWithOk(VertxTestContext testContext) {
+  /**
+   * Check the response Ok with content.
+   *
+   * @param testContext context that executes the test.
+   */
+  @Test
+  public void shouldRepondWithOk(final VertxTestContext testContext) {
 
-		OperationReponseHandlers.responseOk(testContext.succeeding(reponse -> testContext.verify(() -> {
+    OperationReponseHandlers.responseOk(testContext.succeeding(reponse -> testContext.verify(() -> {
 
-			assertThat(reponse.getStatusCode()).isEqualTo(Status.OK.getStatusCode());
-			assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
-			assertThat(reponse.getPayload().toString()).isEqualTo("{\"name\":\"value\"}");
-			testContext.completeNow();
+      assertThat(reponse.getStatusCode()).isEqualTo(Status.OK.getStatusCode());
+      assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      assertThat(reponse.getPayload().toString()).isEqualTo("{\"name\":\"value\"}");
+      testContext.completeNow();
 
-		})), "{\"name\":\"value\"}");
+    })), "{\"name\":\"value\"}");
 
-	}
+  }
 
-	/**
-	 * Check the response with an error message.
-	 *
-	 * @param testContext context that executes the test.
-	 */
-	@Test
-	public void shouldResponseWithErrorMessage(VertxTestContext testContext) {
+  /**
+   * Check the response with an error message.
+   *
+   * @param testContext context that executes the test.
+   */
+  @Test
+  public void shouldResponseWithErrorMessage(final VertxTestContext testContext) {
 
-		OperationReponseHandlers.responseWithErrorMessage(testContext.succeeding(reponse -> testContext.verify(() -> {
+    OperationReponseHandlers.responseWithErrorMessage(testContext.succeeding(reponse -> testContext.verify(() -> {
 
-			assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-			assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
-			assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"code\",\"message\":\"message\"}");
-			testContext.completeNow();
+      assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+      assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"code\",\"message\":\"message\"}");
+      testContext.completeNow();
 
-		})), Status.NOT_FOUND, "code", "message");
+    })), Status.NOT_FOUND, "code", "message");
 
-	}
+  }
 
-	/**
-	 * Check the response with an error message without an exception.
-	 *
-	 * @param testContext context that executes the test.
-	 */
-	@Test
-	public void shouldResponseFailedWithNullException(VertxTestContext testContext) {
+  /**
+   * Check the response with an error message without an exception.
+   *
+   * @param testContext context that executes the test.
+   */
+  @Test
+  public void shouldResponseFailedWithNullException(final VertxTestContext testContext) {
 
-		OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
-			assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-			assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
-			assertThat(reponse.getPayload().toString())
-					.isEqualTo("{\"code\":\"undefined\",\"message\":\"Unexpected failure\"}");
-			testContext.completeNow();
+      assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+      assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"undefined\",\"message\":\"Unexpected failure\"}");
+      testContext.completeNow();
 
-		})), Status.NOT_FOUND, null);
+    })), Status.NOT_FOUND, null);
 
-	}
+  }
 
-	/**
-	 * Check the response with an error message extracted form an exception.
-	 *
-	 * @param testContext context that executes the test.
-	 */
-	@Test
-	public void shouldResponseFailedWithException(VertxTestContext testContext) {
+  /**
+   * Check the response with an error message extracted form an exception.
+   *
+   * @param testContext context that executes the test.
+   */
+  @Test
+  public void shouldResponseFailedWithException(final VertxTestContext testContext) {
 
-		OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
-			assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_ACCEPTABLE.getStatusCode());
-			assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
-			assertThat(reponse.getPayload().toString())
-					.isEqualTo("{\"code\":\"NullPointerException\",\"message\":\"message\"}");
-			testContext.completeNow();
+      assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_ACCEPTABLE.getStatusCode());
+      assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"NullPointerException\",\"message\":\"message\"}");
+      testContext.completeNow();
 
-		})), Status.NOT_ACCEPTABLE, new NullPointerException("message"));
+    })), Status.NOT_ACCEPTABLE, new NullPointerException("message"));
 
-	}
+  }
 
-	/**
-	 * Check the response with an error message extracted form an exception.
-	 *
-	 * @param testContext context that executes the test.
-	 */
-	@Test
-	public void shouldResponseFailedWithValidationErrorException(VertxTestContext testContext) {
+  /**
+   * Check the response with an error message extracted form an exception.
+   *
+   * @param testContext context that executes the test.
+   */
+  @Test
+  public void shouldResponseFailedWithValidationErrorException(final VertxTestContext testContext) {
 
-		OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
-			assertThat(reponse.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-			assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
-			assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"code\",\"message\":\"message\"}");
-			testContext.completeNow();
+      assertThat(reponse.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+      assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"code\",\"message\":\"message\"}");
+      testContext.completeNow();
 
-		})), Status.BAD_REQUEST, new ValidationErrorException("code", "message"));
+    })), Status.BAD_REQUEST, new ValidationErrorException("code", "message"));
 
-	}
+  }
 
 }

@@ -27,6 +27,7 @@
 package eu.internetofus.common.components.incentive_server;
 
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -41,7 +42,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Badge", description = "The badge on an incentive.")
-public class Badge extends Model implements Validable {
+public class Badge extends ReflectionModel implements Model, Validable {
 
   /**
    * The badge class.

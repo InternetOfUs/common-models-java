@@ -33,39 +33,37 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(name = "ErrorMessage", description = "Inform of an error that happens when interacts with the API")
-public class ErrorMessage extends Model {
+public class ErrorMessage extends ReflectionModel implements Model {
 
-	/**
-	 * The code of the error.
-	 */
-	@Schema(description = "Contain code that identifies the error", example = "error_code")
-	public String code;
+  /**
+   * The code of the error.
+   */
+  @Schema(description = "Contain code that identifies the error", example = "error_code")
+  public String code;
 
-	/**
-	 * A brief description of the error to be read by a human.
-	 */
-	@Schema(
-			description = "Contain a brief description of the error to be read by a human",
-			example = "Error readable by a human")
-	public String message;
+  /**
+   * A brief description of the error to be read by a human.
+   */
+  @Schema(description = "Contain a brief description of the error to be read by a human", example = "Error readable by a human")
+  public String message;
 
-	/**
-	 * Create empty error message.
-	 */
-	public ErrorMessage() {
+  /**
+   * Create empty error message.
+   */
+  public ErrorMessage() {
 
-	}
+  }
 
-	/**
-	 * Create a new error message.
-	 *
-	 * @param code    for the error message.
-	 * @param message a brief description of the error to be read by a human.
-	 */
-	public ErrorMessage(String code, String message) {
+  /**
+   * Create a new error message.
+   *
+   * @param code    for the error message.
+   * @param message a brief description of the error to be read by a human.
+   */
+  public ErrorMessage(final String code, final String message) {
 
-		this.code = code;
-		this.message = message;
+    this.code = code;
+    this.message = message;
 
-	}
+  }
 }

@@ -73,9 +73,9 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
 
       try {
 
-        final Semaphore semaphore = new Semaphore(0);
-        final AbstractMain main = this.createMain();
-        final String[] startArguments = this.createMainStartArguments();
+        final var semaphore = new Semaphore(0);
+        final var main = this.createMain();
+        final var startArguments = this.createMainStartArguments();
         main.startWith(startArguments).onComplete(start -> {
 
           if (start.failed()) {
@@ -177,13 +177,13 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
   protected void closeClientsIn(final ExtensionContext context) {
 
     // close client and pool after the test context has been completed.
-    final WebClient client = context.getStore(ExtensionContext.Namespace.create(this.getClass().getName())).remove(WebClient.class.getName(), WebClient.class);
+    final var client = context.getStore(ExtensionContext.Namespace.create(this.getClass().getName())).remove(WebClient.class.getName(), WebClient.class);
     if (client != null) {
 
       client.close();
     }
 
-    final MongoClient pool = context.getStore(ExtensionContext.Namespace.create(this.getClass().getName())).remove(MongoClient.class.getName(), MongoClient.class);
+    final var pool = context.getStore(ExtensionContext.Namespace.create(this.getClass().getName())).remove(MongoClient.class.getName(), MongoClient.class);
     if (pool != null) {
 
       pool.close();
@@ -248,8 +248,8 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
 
       return extensionContext.getStore(ExtensionContext.Namespace.create(this.getClass().getName())).getOrComputeIfAbsent(WebClient.class.getName(), key -> {
 
-        final WeNetModuleContext context = this.getContext();
-        final WebClientOptions options = new WebClientOptions();
+        final var context = this.getContext();
+        final var options = new WebClientOptions();
         options.setDefaultHost(context.configuration.getJsonObject("api").getString("host"));
         options.setDefaultPort(context.configuration.getJsonObject("api").getInteger("port"));
         return WebClient.create(context.vertx, options);
@@ -257,7 +257,7 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
 
     } else if (type == MongoClient.class) {
 
-      final MongoClient pool = extensionContext.getStore(ExtensionContext.Namespace.create(this.getClass().getName())).getOrComputeIfAbsent(MongoClient.class.getName(), key -> {
+      final var pool = extensionContext.getStore(ExtensionContext.Namespace.create(this.getClass().getName())).getOrComputeIfAbsent(MongoClient.class.getName(), key -> {
 
         final WeNetModuleContext context = this.getContext();
         final JsonObject persitenceConf = context.configuration.getJsonObject("persistence", new JsonObject());

@@ -29,6 +29,7 @@ package eu.internetofus.common.components.profile_manager;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -43,7 +44,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Material", description = "It describes an object that is available to a user.")
-public class Material extends Model implements Validable, Mergeable<Material> {
+public class Material extends ReflectionModel implements Model, Validable, Mergeable<Material> {
 
   /**
    * The name of the material.
@@ -104,10 +105,10 @@ public class Material extends Model implements Validable, Mergeable<Material> {
   public Future<Material> merge(final Material source, final String codePrefix, final Vertx vertx) {
 
     final Promise<Material> promise = Promise.promise();
-    Future<Material> future = promise.future();
+    var future = promise.future();
     if (source != null) {
 
-      final Material merged = new Material();
+      final var merged = new Material();
       merged.name = source.name;
       if (merged.name == null) {
 

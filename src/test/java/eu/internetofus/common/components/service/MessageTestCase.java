@@ -43,7 +43,7 @@ public abstract class MessageTestCase<T extends Message> extends BaseMessageTest
   @Override
   public T createModelExample(final int index) {
 
-    final T model = this.createEmptyMessage();
+    final var model = this.createEmptyMessage();
     model.recipientId = "RecipientId_" + index;
     model.title = "Title_" + index;
     model.text = "Text_" + index;

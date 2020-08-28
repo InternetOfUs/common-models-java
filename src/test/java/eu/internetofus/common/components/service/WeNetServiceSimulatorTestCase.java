@@ -86,10 +86,10 @@ public abstract class WeNetServiceSimulatorTestCase {
   @Test
   public void shouldCreateRetrieveAndDeleteApp(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetServiceSimulator service = WeNetServiceSimulator.createProxy(vertx);
+    final var service = WeNetServiceSimulator.createProxy(vertx);
     service.createApp(new App(), testContext.succeeding(create -> {
 
-      final String id = create.appId;
+      final var id = create.appId;
       service.retrieveApp(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
 
         assertThat(create).isEqualTo(retrieve);
@@ -117,10 +117,10 @@ public abstract class WeNetServiceSimulatorTestCase {
   @Test
   public void shouldCreateRetrieveAndDeleteAppUsers(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetServiceSimulator service = WeNetServiceSimulator.createProxy(vertx);
+    final var service = WeNetServiceSimulator.createProxy(vertx);
     service.createApp(new App(), testContext.succeeding(created -> {
 
-      final JsonArray users = new JsonArray().add("1").add("43").add("23");
+      final var users = new JsonArray().add("1").add("43").add("23");
       service.addUsers(created.appId, users, testContext.succeeding(create -> {
 
         service.retrieveJsonArrayAppUserIds(created.appId, testContext.succeeding(retrieve -> testContext.verify(() -> {
@@ -152,13 +152,13 @@ public abstract class WeNetServiceSimulatorTestCase {
   @Test
   public void shouldCreateRetrieveAndDeleteAppCallbacks(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetServiceSimulator service = WeNetServiceSimulator.createProxy(vertx);
+    final var service = WeNetServiceSimulator.createProxy(vertx);
     service.createApp(new App(), testContext.succeeding(created -> {
 
-      final JsonObject message1 = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
+      final var message1 = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
       service.addJsonCallBack(created.appId, message1, testContext.succeeding(create1 -> {
 
-        final JsonObject message2 = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
+        final var message2 = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
         service.addJsonCallBack(created.appId, message2, testContext.succeeding(create2 -> {
 
           service.retrieveJsonCallbacks(created.appId, testContext.succeeding(retrieve -> testContext.verify(() -> {
@@ -224,11 +224,11 @@ public abstract class WeNetServiceSimulatorTestCase {
   @Test
   public void shouldPostMessagoToAppCallbacks(final Vertx vertx, final VertxTestContext testContext) {
 
-    final WeNetServiceSimulator service = WeNetServiceSimulator.createProxy(vertx);
+    final var service = WeNetServiceSimulator.createProxy(vertx);
     service.createApp(new App(), testContext.succeeding(created -> {
 
-      final JsonObject message = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
-      final WebClient client = WebClient.create(vertx);
+      final var message = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
+      final var client = WebClient.create(vertx);
       client.postAbs(created.messageCallbackUrl).sendJson(message, testContext.succeeding(create -> {
 
         service.retrieveJsonCallbacks(created.appId, testContext.succeeding(retrieve -> testContext.verify(() -> {

@@ -33,16 +33,15 @@ package eu.internetofus.common;
  */
 public interface TimeManager {
 
-	/**
-	 * Return the current time.
-	 *
-	 * @return the difference, measured in seconds, between now and midnight,
-	 *         January 1, 1970 UTC.
-	 */
-	static long now() {
+  /**
+   * Return the current time.
+   *
+   * @return the difference, measured in seconds, between now and midnight, January 1, 1970 UTC.
+   */
+  static long now() {
 
-		return Math.round(System.currentTimeMillis() / 1000d);
+    return Math.round(System.currentTimeMillis() / 1000d);
 
-	}
+  }
 
 }

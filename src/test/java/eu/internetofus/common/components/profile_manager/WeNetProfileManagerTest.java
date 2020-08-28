@@ -34,7 +34,6 @@ import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.service.WeNetServiceMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 
@@ -78,11 +77,11 @@ public class WeNetProfileManagerTest extends WeNetProfileManagerTestCase {
   @BeforeEach
   public void registerClient(final Vertx vertx) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject profileManagerConf = profileManagerMocker.getComponentConfiguration();
+    final var client = WebClient.create(vertx);
+    final var profileManagerConf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, profileManagerConf);
 
-    final JsonObject srviceConf = serviceMocker.getComponentConfiguration();
+    final var srviceConf = serviceMocker.getComponentConfiguration();
     WeNetServiceSimulator.register(vertx, client, srviceConf);
     WeNetService.register(vertx, client, srviceConf);
 

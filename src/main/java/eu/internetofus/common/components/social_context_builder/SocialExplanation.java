@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.json.JsonObject;
 
@@ -39,14 +40,13 @@ import io.vertx.core.json.JsonObject;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "social_explanation", description = "A social explanation.")
-public class SocialExplanation extends Model {
+public class SocialExplanation extends ReflectionModel implements Model {
 
   /**
    * The description of the social explanation.
    */
   @Schema(example = "Social explanation")
   public String description;
-
 
   /**
    * The description of the social explanation.

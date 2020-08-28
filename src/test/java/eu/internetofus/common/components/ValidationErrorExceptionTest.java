@@ -37,41 +37,41 @@ import org.junit.jupiter.api.Test;
  */
 public class ValidationErrorExceptionTest {
 
-	/**
-	 * Check that create with a code and message.
-	 */
-	@Test
-	public void shouldCreateWithCodeAndMessage() {
+  /**
+   * Check that create with a code and message.
+   */
+  @Test
+  public void shouldCreateWithCodeAndMessage() {
 
-		final ValidationErrorException error = new ValidationErrorException("code", "message");
-		assertThat(error.getCode()).isEqualTo("code");
-		assertThat(error.getMessage()).isEqualTo("message");
-	}
+    final var error = new ValidationErrorException("code", "message");
+    assertThat(error.getCode()).isEqualTo("code");
+    assertThat(error.getMessage()).isEqualTo("message");
+  }
 
-	/**
-	 * Check that create with a code and cause.
-	 */
-	@Test
-	public void shouldCreateWithCodeAndCause() {
+  /**
+   * Check that create with a code and cause.
+   */
+  @Test
+  public void shouldCreateWithCodeAndCause() {
 
-		final Throwable cause = new Throwable("cause");
-		final ValidationErrorException error = new ValidationErrorException("code", cause);
-		assertThat(error.getCode()).isEqualTo("code");
-		assertThat(error.getMessage()).isEqualTo(cause.toString());
-		assertThat(error.getCause()).isEqualTo(cause);
-	}
+    final var cause = new Throwable("cause");
+    final var error = new ValidationErrorException("code", cause);
+    assertThat(error.getCode()).isEqualTo("code");
+    assertThat(error.getMessage()).isEqualTo(cause.toString());
+    assertThat(error.getCause()).isEqualTo(cause);
+  }
 
-	/**
-	 * Check that create with a code, cause and message.
-	 */
-	@Test
-	public void shouldCreateWithCodeCauseAndMessage() {
+  /**
+   * Check that create with a code, cause and message.
+   */
+  @Test
+  public void shouldCreateWithCodeCauseAndMessage() {
 
-		final Throwable cause = new Throwable("cause");
-		final ValidationErrorException error = new ValidationErrorException("code", "message", cause);
-		assertThat(error.getCode()).isEqualTo("code");
-		assertThat(error.getMessage()).isEqualTo("message");
-		assertThat(error.getCause()).isEqualTo(cause);
-	}
+    final var cause = new Throwable("cause");
+    final var error = new ValidationErrorException("code", "message", cause);
+    assertThat(error.getCode()).isEqualTo("code");
+    assertThat(error.getMessage()).isEqualTo("message");
+    assertThat(error.getCause()).isEqualTo(cause);
+  }
 
 }

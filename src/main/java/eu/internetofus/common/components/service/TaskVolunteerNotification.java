@@ -33,10 +33,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(
-    hidden = true,
-    name = "TaskVolunteerNotification",
-    description = "This notification is used in order to notify the task creator that a new volunteer is proposing to participate to the task.")
+@Schema(hidden = true, name = "TaskVolunteerNotification", description = "This notification is used in order to notify the task creator that a new volunteer is proposing to participate to the task.")
 public class TaskVolunteerNotification extends TaskNotification {
 
   /**
@@ -48,9 +45,8 @@ public class TaskVolunteerNotification extends TaskNotification {
   /**
    * The explanation why the user has to be selected.
    */
-  @Schema(description = "The reason why the user was selected to be a possible volunteer.", nullable = true,example = "It is your friend")
+  @Schema(description = "The reason why the user was selected to be a possible volunteer.", nullable = true, example = "It is your friend")
   public String explanation;
-
 
   /**
    * Create a new task volunteer notification.

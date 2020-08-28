@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class UnconvertedToJsonModel extends Model {
+public class UnconvertedToJsonModel extends ReflectionModel implements Model {
 
   /**
    * The identifier of the class.

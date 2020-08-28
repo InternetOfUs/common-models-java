@@ -39,35 +39,35 @@ import org.junit.jupiter.api.Test;
  */
 public abstract class TaskNotificationTestCase<T extends TaskNotification> extends MessageTestCase<T> {
 
-	/**
-	 * Verify that is the the notification has a type.
-	 */
-	@Test
-	public void shouldHaveNotificationType() {
+  /**
+   * Verify that is the the notification has a type.
+   */
+  @Test
+  public void shouldHaveNotificationType() {
 
-		final T model = this.createEmptyMessage();
-		assertThat(model.notificationType).isNotNull();
-	}
+    final var model = this.createEmptyMessage();
+    assertThat(model.notificationType).isNotNull();
+  }
 
-	/**
-	 * Verify that the type is a task notification.
-	 */
-	@Test
-	public void shouldTypeByTaskNotification() {
+  /**
+   * Verify that the type is a task notification.
+   */
+  @Test
+  public void shouldTypeByTaskNotification() {
 
-		final T model = this.createEmptyMessage();
-		assertThat(model.type).isEqualTo(BaseMessage.Type.taskNotification);
-	}
+    final var model = this.createEmptyMessage();
+    assertThat(model.type).isEqualTo(BaseMessage.Type.taskNotification);
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public T createModelExample(int index) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public T createModelExample(final int index) {
 
-		final T model = super.createModelExample(index);
-		model.taskId = "TaskId_" + index;
-		return model;
-	}
+    final var model = super.createModelExample(index);
+    model.taskId = "TaskId_" + index;
+    return model;
+  }
 
 }

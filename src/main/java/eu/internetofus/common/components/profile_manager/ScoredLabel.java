@@ -29,6 +29,7 @@ package eu.internetofus.common.components.profile_manager;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -42,7 +43,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "ScoredLabel", description = "Label with score.")
-public class ScoredLabel extends Model implements Validable, Mergeable<ScoredLabel> {
+public class ScoredLabel extends ReflectionModel implements Model, Validable, Mergeable<ScoredLabel> {
 
   /**
    * The label.
@@ -63,7 +64,7 @@ public class ScoredLabel extends Model implements Validable, Mergeable<ScoredLab
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    Future<Void> future = promise.future();
+    var future = promise.future();
 
     if (this.label == null) {
 
@@ -93,10 +94,10 @@ public class ScoredLabel extends Model implements Validable, Mergeable<ScoredLab
   public Future<ScoredLabel> merge(final ScoredLabel source, final String codePrefix, final Vertx vertx) {
 
     final Promise<ScoredLabel> promise = Promise.promise();
-    Future<ScoredLabel> future = promise.future();
+    var future = promise.future();
     if (source != null) {
 
-      final ScoredLabel merged = new ScoredLabel();
+      final var merged = new ScoredLabel();
       merged.score = source.score;
       if (merged.score == null) {
 

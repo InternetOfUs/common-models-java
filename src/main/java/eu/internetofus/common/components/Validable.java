@@ -36,18 +36,18 @@ import io.vertx.core.Vertx;
  */
 public interface Validable {
 
-	/**
-	 * Check if the model is right.
-	 *
-	 * @param codePrefix the prefix of the code to use for the error message.
-	 * @param vertx      the event bus infrastructure to use.
-	 *
-	 *
-	 * @return the future that inform if the value is right. If it not right the
-	 *         cause will be a {@link ValidationErrorException}.
-	 *
-	 * @see ValidationErrorException
-	 */
-	Future<Void> validate(String codePrefix, Vertx vertx);
+  /**
+   * Check if the model is right.
+   *
+   * @param codePrefix the prefix of the code to use for the error message.
+   * @param vertx      the event bus infrastructure to use.
+   *
+   *
+   * @return the future that inform if the value is right. If it not right the cause will be a
+   *         {@link ValidationErrorException}.
+   *
+   * @see ValidationErrorException
+   */
+  Future<Void> validate(String codePrefix, Vertx vertx);
 
 }

@@ -60,7 +60,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
   @Override
   public T createModelExample(final int index) {
 
-    final T model = this.createEmptyModel();
+    final var model = this.createEmptyModel();
     model.year = 1910 + index % 100;
     model.month = (byte) (1 + index % 11);
     model.day = (byte) (1 + index % 27);

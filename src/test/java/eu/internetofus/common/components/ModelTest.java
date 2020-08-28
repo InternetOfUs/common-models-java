@@ -182,15 +182,15 @@ public class ModelTest {
   public void shoulConvertFromToArrayBeEquals() {
 
     final List<DummyModel> models = new ArrayList<>();
-    for (int i = 0; i < 10; i++) {
+    for (var i = 0; i < 10; i++) {
 
-      final DummyModel model = new DummyModelTest().createModelExample(i);
+      final var model = new DummyModelTest().createModelExample(i);
       models.add(model);
 
     }
-    final JsonArray array = Model.toJsonArray(models);
+    final var array = Model.toJsonArray(models);
     assertThat(array).isNotNull();
-    final List<DummyModel> result = Model.fromJsonArray(array, DummyModel.class);
+    final var result = Model.fromJsonArray(array, DummyModel.class);
     assertThat(result).isNotNull().isEqualTo(models);
 
   }

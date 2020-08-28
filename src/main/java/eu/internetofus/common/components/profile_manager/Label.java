@@ -29,6 +29,7 @@ package eu.internetofus.common.components.profile_manager;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -43,7 +44,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Label", description = "label")
-public class Label extends Model implements Validable, Mergeable<Label> {
+public class Label extends ReflectionModel implements Model, Validable, Mergeable<Label> {
 
   /**
    * The name of the label.
@@ -120,10 +121,10 @@ public class Label extends Model implements Validable, Mergeable<Label> {
   public Future<Label> merge(final Label source, final String codePrefix, final Vertx vertx) {
 
     final Promise<Label> promise = Promise.promise();
-    Future<Label> future = promise.future();
+    var future = promise.future();
     if (source != null) {
 
-      final Label merged = new Label();
+      final var merged = new Label();
       merged.name = source.name;
       if (merged.name == null) {
 

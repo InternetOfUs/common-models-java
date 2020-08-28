@@ -49,7 +49,7 @@ public abstract class AbstractAPIVerticleTestCase<T extends AbstractAPIVerticle>
   @Test
   public void shouldNotStopIfServerNotStarted() {
 
-    final T api = this.createAPIVerticle();
+    final var api = this.createAPIVerticle();
     assertThatCode(() -> api.stop()).doesNotThrowAnyException();
 
   }
@@ -67,8 +67,8 @@ public abstract class AbstractAPIVerticleTestCase<T extends AbstractAPIVerticle>
   @Test
   public void shouldStopIfServerStarted() {
 
-    final T api = this.createAPIVerticle();
-    final HttpServerOptions options = new HttpServerOptions();
+    final var api = this.createAPIVerticle();
+    final var options = new HttpServerOptions();
     options.setHost("localhost");
     options.setPort(0);
     api.server = Vertx.vertx().createHttpServer(options);

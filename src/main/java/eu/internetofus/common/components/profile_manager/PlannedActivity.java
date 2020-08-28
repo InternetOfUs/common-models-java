@@ -28,13 +28,13 @@ package eu.internetofus.common.components.profile_manager;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.UUID;
 import java.util.function.Function;
 
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -50,7 +50,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "An activity planned by an user.")
-public class PlannedActivity extends Model implements Validable, Mergeable<PlannedActivity> {
+public class PlannedActivity extends ReflectionModel implements Model, Validable, Mergeable<PlannedActivity> {
 
   /**
    * The identifier of the activity.
@@ -80,11 +80,7 @@ public class PlannedActivity extends Model implements Validable, Mergeable<Plann
   /**
    * The identifier of other WeNet user taking part to the activity.
    */
-  @ArraySchema(
-      schema = @Schema(implementation = String.class),
-      arraySchema = @Schema(
-          description = "The identifier of other wenet user taking part to the activity",
-          example = "[15d85f1d-b1ce-48de-b221-bec9ae954a88]"))
+  @ArraySchema(schema = @Schema(implementation = String.class), arraySchema = @Schema(description = "The identifier of other wenet user taking part to the activity", example = "[15d85f1d-b1ce-48de-b221-bec9ae954a88]"))
   public List<String> attendees;
 
   /**
@@ -107,7 +103,7 @@ public class PlannedActivity extends Model implements Validable, Mergeable<Plann
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    Future<Void> future = promise.future();
+    var future = promise.future();
     try {
 
       this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
@@ -115,28 +111,24 @@ public class PlannedActivity extends Model implements Validable, Mergeable<Plann
 
         this.id = UUID.randomUUID().toString();
       }
-      this.startTime = Validations.validateNullableStringDateField(codePrefix, "startTime",
-          DateTimeFormatter.ISO_INSTANT, this.startTime);
-      this.endTime = Validations.validateNullableStringDateField(codePrefix, "endTime", DateTimeFormatter.ISO_INSTANT,
-          this.endTime);
+      this.startTime = Validations.validateNullableStringDateField(codePrefix, "startTime", DateTimeFormatter.ISO_INSTANT, this.startTime);
+      this.endTime = Validations.validateNullableStringDateField(codePrefix, "endTime", DateTimeFormatter.ISO_INSTANT, this.endTime);
       this.description = Validations.validateNullableStringField(codePrefix, "description", 255, this.description);
       if (this.attendees != null && !this.attendees.isEmpty()) {
 
-        for (final ListIterator<String> ids = this.attendees.listIterator(); ids.hasNext();) {
+        for (final var ids = this.attendees.listIterator(); ids.hasNext();) {
 
-          final int index = ids.nextIndex();
-          final String id = Validations.validateNullableStringField(codePrefix, "attendees[" + index + "]", 255,
-              ids.next());
+          final var index = ids.nextIndex();
+          final var id = Validations.validateNullableStringField(codePrefix, "attendees[" + index + "]", 255, ids.next());
           ids.remove();
           if (id != null) {
 
             ids.add(id);
-            for (int j = 0; j < index; j++) {
+            for (var j = 0; j < index; j++) {
 
               if (id.equals(this.attendees.get(j))) {
 
-                return Future.failedFuture(new ValidationErrorException(codePrefix + ".attendees[" + index + "]",
-                    "Duplicated attendee. It is equals to the attendees[" + j + "]."));
+                return Future.failedFuture(new ValidationErrorException(codePrefix + ".attendees[" + index + "]", "Duplicated attendee. It is equals to the attendees[" + j + "]."));
 
               }
             }
@@ -152,8 +144,7 @@ public class PlannedActivity extends Model implements Validable, Mergeable<Plann
 
                 } else {
 
-                  searchPromise.fail(new ValidationErrorException(codePrefix + ".attendees[" + index + "]",
-                      "Does not exist an user with the identifier '" + id + "'."));
+                  searchPromise.fail(new ValidationErrorException(codePrefix + ".attendees[" + index + "]", "Does not exist an user with the identifier '" + id + "'."));
                 }
 
               });
@@ -183,11 +174,11 @@ public class PlannedActivity extends Model implements Validable, Mergeable<Plann
   public Future<PlannedActivity> merge(final PlannedActivity source, final String codePrefix, final Vertx vertx) {
 
     final Promise<PlannedActivity> promise = Promise.promise();
-    Future<PlannedActivity> future = promise.future();
+    var future = promise.future();
     if (source != null) {
 
       // merge the values
-      final PlannedActivity merged = new PlannedActivity();
+      final var merged = new PlannedActivity();
       merged.startTime = source.startTime;
       if (merged.startTime == null) {
 

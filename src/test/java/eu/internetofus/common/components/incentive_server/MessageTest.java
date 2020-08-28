@@ -58,7 +58,7 @@ public class MessageTest extends ModelTestCase<Message> {
   @Override
   public Message createModelExample(final int index) {
 
-    final Message model = new Message();
+    final var model = new Message();
     model.content = "content " + index;
     return model;
   }
@@ -74,7 +74,7 @@ public class MessageTest extends ModelTestCase<Message> {
   @Test
   public void shouldNotBeValidWithALargeContent(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Message model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.content = ValidationsTest.STRING_1024;
     assertIsNotValid(model, "content", vertx, testContext);
   }
@@ -90,7 +90,7 @@ public class MessageTest extends ModelTestCase<Message> {
   @Test
   public void shouldNotBeValidWithoutContent(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Message model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.content = null;
     assertIsNotValid(model, "content", vertx, testContext);
   }
@@ -108,8 +108,8 @@ public class MessageTest extends ModelTestCase<Message> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Message model = this.createModelExample(index);
-    final String expected = model.content;
+    final var model = this.createModelExample(index);
+    final var expected = model.content;
     model.content = "   \n  " + expected + "   \n";
     assertIsValid(model, vertx, testContext, () -> {
 

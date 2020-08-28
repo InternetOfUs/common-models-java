@@ -59,7 +59,7 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Override
   public TaskAttributeType createModelExample(final int index) {
 
-    final TaskAttributeType model = new TaskAttributeType();
+    final var model = new TaskAttributeType();
     model.name = "name_" + index;
     model.description = "description_" + index;
     model.type = TaskAttributeType.TYPE_NAMES[index % (TaskAttributeType.TYPE_NAMES.length - 1)];
@@ -81,7 +81,7 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType model = this.createModelExample(index);
+    final var model = this.createModelExample(index);
     assertIsValid(model, vertx, testContext);
 
   }
@@ -97,7 +97,7 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldNotBeValidWithALargeName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType model = new TaskAttributeType();
+    final var model = new TaskAttributeType();
     model.name = ValidationsTest.STRING_256;
     assertIsNotValid(model, "name", vertx, testContext);
 
@@ -114,7 +114,7 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldBeValidANameWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType model = new TaskAttributeType();
+    final var model = new TaskAttributeType();
     model.type = TaskAttributeType.BOOLEAN_TYPE_NAME;
     model.name = "   1234567890   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.name).isEqualTo("1234567890"));
@@ -132,7 +132,7 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldNotBeValidWithALargeDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType model = new TaskAttributeType();
+    final var model = new TaskAttributeType();
     model.name = "communityId";
     model.description = ValidationsTest.STRING_1024;
     model.type = TaskAttributeType.STRING_TYPE_NAME;
@@ -151,7 +151,7 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldBeValidADescriptionWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType model = new TaskAttributeType();
+    final var model = new TaskAttributeType();
     model.name = "communityId";
     model.description = "   " + ValidationsTest.STRING_256 + "   ";
     model.type = TaskAttributeType.STRING_TYPE_NAME;
@@ -170,7 +170,7 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldNotBeValidWithAnundefinedType(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType model = new TaskAttributeType();
+    final var model = new TaskAttributeType();
     model.name = "communityId";
     model.type = "undefined type name";
     assertIsNotValid(model, "type", vertx, testContext);
@@ -188,7 +188,7 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldBeValidATypeWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType model = new TaskAttributeType();
+    final var model = new TaskAttributeType();
     model.name = "communityId";
     model.type = "   " + TaskAttributeType.NUMBER_TYPE_NAME + "   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.type).isEqualTo(TaskAttributeType.NUMBER_TYPE_NAME));
@@ -206,8 +206,8 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldNotMergeWithALargeName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType target = new TaskAttributeType();
-    final TaskAttributeType source = new TaskAttributeType();
+    final var target = new TaskAttributeType();
+    final var source = new TaskAttributeType();
     source.name = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "name", vertx, testContext);
 
@@ -224,9 +224,9 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldMergeANameWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType target = new TaskAttributeType();
+    final var target = new TaskAttributeType();
     target.type = TaskAttributeType.BOOLEAN_TYPE_NAME;
-    final TaskAttributeType source = new TaskAttributeType();
+    final var source = new TaskAttributeType();
     source.name = "   1234567890   ";
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.name).isEqualTo("1234567890"));
 
@@ -243,10 +243,10 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldNotMergeWithALargeDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType target = new TaskAttributeType();
+    final var target = new TaskAttributeType();
     target.name = "name";
     target.type = TaskAttributeType.BOOLEAN_TYPE_NAME;
-    final TaskAttributeType source = new TaskAttributeType();
+    final var source = new TaskAttributeType();
     source.description = ValidationsTest.STRING_1024;
     assertCannotMerge(target, source, "description", vertx, testContext);
 
@@ -263,10 +263,10 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldMergeADescriptionWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType target = new TaskAttributeType();
+    final var target = new TaskAttributeType();
     target.name = "name";
     target.type = TaskAttributeType.BOOLEAN_TYPE_NAME;
-    final TaskAttributeType source = new TaskAttributeType();
+    final var source = new TaskAttributeType();
     source.description = "   " + ValidationsTest.STRING_256 + "   ";
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.description).isEqualTo(ValidationsTest.STRING_256));
 
@@ -283,9 +283,9 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldNotMergeWithALargeType(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType target = new TaskAttributeType();
+    final var target = new TaskAttributeType();
     target.name = "name";
-    final TaskAttributeType source = new TaskAttributeType();
+    final var source = new TaskAttributeType();
     source.type = "undefined type";
     assertCannotMerge(target, source, "type", vertx, testContext);
 
@@ -302,10 +302,10 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldMergeATypeWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType target = new TaskAttributeType();
+    final var target = new TaskAttributeType();
     target.name = "name";
     target.type = TaskAttributeType.BOOLEAN_TYPE_NAME;
-    final TaskAttributeType source = new TaskAttributeType();
+    final var source = new TaskAttributeType();
     source.type = "   " + TaskAttributeType.NUMBER_TYPE_NAME + "   ";
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.type).isEqualTo(TaskAttributeType.NUMBER_TYPE_NAME));
 
@@ -322,8 +322,8 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType target = this.createModelExample(1);
-    final TaskAttributeType source = this.createModelExample(23);
+    final var target = this.createModelExample(1);
+    final var source = this.createModelExample(23);
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
 
   }
@@ -339,7 +339,7 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
   }
@@ -355,8 +355,8 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldMergeOnlyName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType target = this.createModelExample(1);
-    final TaskAttributeType source = new TaskAttributeType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskAttributeType();
     source.name = "NEW NAME";
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -376,8 +376,8 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldMergeOnlyDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType target = this.createModelExample(1);
-    final TaskAttributeType source = new TaskAttributeType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskAttributeType();
     source.description = "NEW DESCRIPTION";
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -397,8 +397,8 @@ public class TaskAttributeTypeTest extends ModelTestCase<TaskAttributeType> {
   @Test
   public void shouldMergeOnlyType(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskAttributeType target = this.createModelExample(1);
-    final TaskAttributeType source = new TaskAttributeType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskAttributeType();
     source.type = TaskAttributeType.PROFILE_ID_TYPE_NAME;
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);

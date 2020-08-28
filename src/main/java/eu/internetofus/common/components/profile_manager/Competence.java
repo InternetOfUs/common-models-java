@@ -29,6 +29,7 @@ package eu.internetofus.common.components.profile_manager;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -43,7 +44,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Competence", description = "It describe a competence of a user.")
-public class Competence extends Model implements Validable, Mergeable<Competence> {
+public class Competence extends ReflectionModel implements Model, Validable, Mergeable<Competence> {
 
   /**
    * The name of the competence.
@@ -99,10 +100,10 @@ public class Competence extends Model implements Validable, Mergeable<Competence
   public Future<Competence> merge(final Competence source, final String codePrefix, final Vertx vertx) {
 
     final Promise<Competence> promise = Promise.promise();
-    Future<Competence> future = promise.future();
+    var future = promise.future();
     if (source != null) {
 
-      final Competence merged = new Competence();
+      final var merged = new Competence();
       merged.name = source.name;
       if (merged.name == null) {
 

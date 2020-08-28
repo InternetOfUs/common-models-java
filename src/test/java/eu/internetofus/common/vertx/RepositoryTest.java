@@ -95,13 +95,13 @@ public class RepositoryTest extends RepositoryTestCase<Repository> {
 
     assertThatCode(() -> {
 
-      final int endIndex = param.indexOf(';');
-      final String[] values = param.substring(0, endIndex).split(",");
-      final String expected = param.substring(endIndex + 1).trim();
-      final JsonObject sortExpected = (JsonObject) Json.decodeValue(expected);
+      final var endIndex = param.indexOf(';');
+      final var values = param.substring(0, endIndex).split(",");
+      final var expected = param.substring(endIndex + 1).trim();
+      final var sortExpected = (JsonObject) Json.decodeValue(expected);
       assertThat(Repository.queryParamToSort(Arrays.asList(values), "codePrefix", (value) -> {
 
-        final String key = value.toUpperCase();
+        final var key = value.toUpperCase();
         if (!key.startsWith("KEY")) {
 
           return null;
@@ -127,11 +127,11 @@ public class RepositoryTest extends RepositoryTestCase<Repository> {
   @ValueSource(strings = { ",key;[0]", "key,  ;[1]", "key1,-key2,+key3, ;[3]", "+key1,-key1;[1]", "+key1,-KeY1;[1]", "key1,key2,value3;[2]" })
   public void shouldSortThrowException(final String param) {
 
-    final int endIndex = param.indexOf(';');
-    final String[] values = param.substring(0, endIndex).split(",");
-    final String expected = param.substring(endIndex + 1).trim();
+    final var endIndex = param.indexOf(';');
+    final var values = param.substring(0, endIndex).split(",");
+    final var expected = param.substring(endIndex + 1).trim();
 
-    final ValidationErrorException error = catchThrowableOfType(() -> Repository.queryParamToSort(Arrays.asList(values), "codePrefix", (value) -> {
+    final var error = catchThrowableOfType(() -> Repository.queryParamToSort(Arrays.asList(values), "codePrefix", (value) -> {
 
       final String key = value.toLowerCase();
       if (!key.startsWith("key")) {
@@ -157,7 +157,7 @@ public class RepositoryTest extends RepositoryTestCase<Repository> {
   @Test
   public void shouldSortThrowExceptionWhenValueIsNull() {
 
-    final ValidationErrorException error = catchThrowableOfType(() -> Repository.queryParamToSort(Arrays.asList("key1", "-key2", null), "codePrefix", null), ValidationErrorException.class);
+    final var error = catchThrowableOfType(() -> Repository.queryParamToSort(Arrays.asList("key1", "-key2", null), "codePrefix", null), ValidationErrorException.class);
     assertThat(error).isNotNull();
     assertThat(error.getCode()).isEqualTo("codePrefix[2]");
 

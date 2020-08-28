@@ -36,7 +36,6 @@ import javax.ws.rs.core.MediaType;
 
 import org.junit.jupiter.api.Test;
 
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
@@ -50,50 +49,50 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class BadRequestHandlerTest {
 
-	/**
-	 * Verify that build handler.
-	 */
-	@Test
-	public void shouldBuildHandler() {
+  /**
+   * Verify that build handler.
+   */
+  @Test
+  public void shouldBuildHandler() {
 
-		final Handler<RoutingContext> handler = BadRequestHandler.build();
-		assertThat(handler).isNotNull();
+    final var handler = BadRequestHandler.build();
+    assertThat(handler).isNotNull();
 
-	}
+  }
 
-	/**
-	 * Verify that return a bar request error.
-	 */
-	@Test
-	public void shouldReturnBadRequestErrorMessage() {
+  /**
+   * Verify that return a bar request error.
+   */
+  @Test
+  public void shouldReturnBadRequestErrorMessage() {
 
-		final BadRequestHandler handler = new BadRequestHandler();
-		final RoutingContext event = mock(RoutingContext.class);
-		final HttpServerResponse response = mock(HttpServerResponse.class);
-		doReturn(response).when(event).response();
-		handler.handle(event);
-		verify(response, times(1)).setStatusCode(400);
-		verify(response, times(1)).putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-		verify(response, times(1)).end("{\"code\":\"bad_api_request\",\"message\":\"Bad request\"}");
+    final var handler = new BadRequestHandler();
+    final var event = mock(RoutingContext.class);
+    final var response = mock(HttpServerResponse.class);
+    doReturn(response).when(event).response();
+    handler.handle(event);
+    verify(response, times(1)).setStatusCode(400);
+    verify(response, times(1)).putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+    verify(response, times(1)).end("{\"code\":\"bad_api_request\",\"message\":\"Bad request\"}");
 
-	}
+  }
 
-	/**
-	 * Verify that return a bar request error.
-	 */
-	@Test
-	public void shouldReturnBadRequestErrorMessageWithFailedMessage() {
+  /**
+   * Verify that return a bar request error.
+   */
+  @Test
+  public void shouldReturnBadRequestErrorMessageWithFailedMessage() {
 
-		final BadRequestHandler handler = new BadRequestHandler();
-		final RoutingContext event = mock(RoutingContext.class);
-		final HttpServerResponse response = mock(HttpServerResponse.class);
-		doReturn(response).when(event).response();
-		doReturn(new Throwable("Error message")).when(event).failure();
-		handler.handle(event);
-		verify(response, times(1)).setStatusCode(400);
-		verify(response, times(1)).putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-		verify(response, times(1)).end("{\"code\":\"bad_api_request\",\"message\":\"Error message\"}");
+    final var handler = new BadRequestHandler();
+    final var event = mock(RoutingContext.class);
+    final var response = mock(HttpServerResponse.class);
+    doReturn(response).when(event).response();
+    doReturn(new Throwable("Error message")).when(event).failure();
+    handler.handle(event);
+    verify(response, times(1)).setStatusCode(400);
+    verify(response, times(1)).putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+    verify(response, times(1)).end("{\"code\":\"bad_api_request\",\"message\":\"Error message\"}");
 
-	}
+  }
 
 }

@@ -59,7 +59,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Override
   public UserName createModelExample(final int index) {
 
-    final UserName name = new UserName();
+    final var name = new UserName();
     name.prefix = "prefix_" + index;
     name.first = "first_" + index;
     name.middle = "middle_" + index;
@@ -82,7 +82,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName model = this.createModelExample(index);
+    final var model = this.createModelExample(index);
     assertIsValid(model, vertx, testContext);
 
   }
@@ -98,7 +98,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldNotBeValidWithALargePrefix(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName model = new UserName();
+    final var model = new UserName();
     model.prefix = "12345678901";
     assertIsNotValid(model, "prefix", vertx, testContext);
 
@@ -115,7 +115,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldBeValidAPrefixWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName model = new UserName();
+    final var model = new UserName();
     model.prefix = "   1234567890   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.prefix).isEqualTo("1234567890"));
 
@@ -132,7 +132,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldNotBeValidWithALargeFirst(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName model = new UserName();
+    final var model = new UserName();
     model.first = ValidationsTest.STRING_256;
     assertIsNotValid(model, "first", vertx, testContext);
 
@@ -149,7 +149,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldBeValidAFirstWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName model = new UserName();
+    final var model = new UserName();
     model.first = "   First name 1234567890   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.first).isEqualTo("First name 1234567890"));
 
@@ -166,7 +166,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldNotBeValidWithALargeMiddle(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName model = new UserName();
+    final var model = new UserName();
     model.middle = ValidationsTest.STRING_256;
     assertIsNotValid(model, "middle", vertx, testContext);
 
@@ -183,7 +183,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldBeValidAMiddleWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName model = new UserName();
+    final var model = new UserName();
     model.middle = "   Middle name 1234567890   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.middle).isEqualTo("Middle name 1234567890"));
 
@@ -200,7 +200,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldNotBeValidWithALargeLast(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName model = new UserName();
+    final var model = new UserName();
     model.last = ValidationsTest.STRING_256;
     assertIsNotValid(model, "last", vertx, testContext);
 
@@ -217,7 +217,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldBeValidALastWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName model = new UserName();
+    final var model = new UserName();
     model.last = "   Last name 1234567890   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.last).isEqualTo("Last name 1234567890"));
 
@@ -234,7 +234,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldNotBeValidWithALargeSuffix(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName model = new UserName();
+    final var model = new UserName();
     model.suffix = "12345678901";
     assertIsNotValid(model, "suffix", vertx, testContext);
 
@@ -251,7 +251,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldBeValidASuffixWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName model = new UserName();
+    final var model = new UserName();
     model.suffix = "   1234567890   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.suffix).isEqualTo("1234567890"));
 
@@ -268,8 +268,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldNotMergeWithALargePrefix(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = new UserName();
-    final UserName source = new UserName();
+    final var target = new UserName();
+    final var source = new UserName();
     source.prefix = "12345678901";
     assertCannotMerge(target, source, "prefix", vertx, testContext);
 
@@ -286,8 +286,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldMergeAPrefixWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = new UserName();
-    final UserName source = new UserName();
+    final var target = new UserName();
+    final var source = new UserName();
     source.prefix = "   1234567890   ";
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.prefix).isEqualTo("1234567890"));
 
@@ -304,8 +304,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldNotMergeWithALargeFirst(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = new UserName();
-    final UserName source = new UserName();
+    final var target = new UserName();
+    final var source = new UserName();
     source.first = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "first", vertx, testContext);
 
@@ -322,8 +322,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldMergeAFirstWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = new UserName();
-    final UserName source = new UserName();
+    final var target = new UserName();
+    final var source = new UserName();
     source.first = "   First name 1234567890   ";
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.first).isEqualTo("First name 1234567890"));
 
@@ -340,8 +340,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldNotMergeWithALargeMiddle(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = new UserName();
-    final UserName source = new UserName();
+    final var target = new UserName();
+    final var source = new UserName();
     source.middle = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "middle", vertx, testContext);
 
@@ -358,8 +358,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldMergeAMiddleWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = new UserName();
-    final UserName source = new UserName();
+    final var target = new UserName();
+    final var source = new UserName();
     source.middle = "   Middle name 1234567890   ";
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.middle).isEqualTo("Middle name 1234567890"));
 
@@ -376,8 +376,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldNotMergeWithALargeLast(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = new UserName();
-    final UserName source = new UserName();
+    final var target = new UserName();
+    final var source = new UserName();
     source.last = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "last", vertx, testContext);
 
@@ -394,8 +394,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldMergeALastWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = new UserName();
-    final UserName source = new UserName();
+    final var target = new UserName();
+    final var source = new UserName();
     source.last = "   Last name 1234567890   ";
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.last).isEqualTo("Last name 1234567890"));
 
@@ -412,8 +412,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldNotMergeWithALargeSuffix(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = new UserName();
-    final UserName source = new UserName();
+    final var target = new UserName();
+    final var source = new UserName();
     source.suffix = "12345678901";
     assertCannotMerge(target, source, "suffix", vertx, testContext);
 
@@ -430,8 +430,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldMergeASuffixWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = new UserName();
-    final UserName source = new UserName();
+    final var target = new UserName();
+    final var source = new UserName();
     source.suffix = "   1234567890   ";
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.suffix).isEqualTo("1234567890"));
 
@@ -448,8 +448,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = this.createModelExample(1);
-    final UserName source = this.createModelExample(23);
+    final var target = this.createModelExample(1);
+    final var source = this.createModelExample(23);
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
 
   }
@@ -465,7 +465,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
   }
@@ -481,8 +481,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldMergeOnlyPrefix(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = this.createModelExample(1);
-    final UserName source = new UserName();
+    final var target = this.createModelExample(1);
+    final var source = new UserName();
     source.prefix = "NEW VALUE";
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -502,8 +502,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldMergeOnlyFirst(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = this.createModelExample(1);
-    final UserName source = new UserName();
+    final var target = this.createModelExample(1);
+    final var source = new UserName();
     source.first = "NEW VALUE";
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -523,8 +523,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldMergeOnlyMiddle(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = this.createModelExample(1);
-    final UserName source = new UserName();
+    final var target = this.createModelExample(1);
+    final var source = new UserName();
     source.middle = "NEW VALUE";
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -544,8 +544,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldMergeOnlyLast(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = this.createModelExample(1);
-    final UserName source = new UserName();
+    final var target = this.createModelExample(1);
+    final var source = new UserName();
     source.last = "NEW VALUE";
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -565,8 +565,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
   @Test
   public void shouldMergeOnlySuffix(final Vertx vertx, final VertxTestContext testContext) {
 
-    final UserName target = this.createModelExample(1);
-    final UserName source = new UserName();
+    final var target = this.createModelExample(1);
+    final var source = new UserName();
     source.suffix = "NEW VALUE";
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);

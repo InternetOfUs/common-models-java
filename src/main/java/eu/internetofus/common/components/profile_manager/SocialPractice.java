@@ -32,6 +32,7 @@ import java.util.UUID;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -47,7 +48,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "A social practice of an user.")
-public class SocialPractice extends Model implements Validable, Mergeable<SocialPractice> {
+public class SocialPractice extends ReflectionModel implements Model, Validable, Mergeable<SocialPractice> {
 
   /**
    * The identifier of the social practice.
@@ -93,7 +94,7 @@ public class SocialPractice extends Model implements Validable, Mergeable<Social
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    Future<Void> future = promise.future();
+    var future = promise.future();
 
     try {
 
@@ -127,14 +128,14 @@ public class SocialPractice extends Model implements Validable, Mergeable<Social
 
     if (source != null) {
 
-      final SocialPractice merged = new SocialPractice();
+      final var merged = new SocialPractice();
       merged.label = source.label;
       if (merged.label == null) {
 
         merged.label = this.label;
       }
 
-      Future<SocialPractice> future = merged.validate(codePrefix, vertx).map(empty -> merged);
+      var future = merged.validate(codePrefix, vertx).map(empty -> merged);
 
       future = future.compose(Merges.mergeMaterials(this.materials, source.materials, codePrefix + ".materials", vertx, (model, mergedMaterials) -> {
         model.materials = mergedMaterials;

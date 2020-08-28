@@ -25,8 +25,7 @@
  */
 
 /**
- * Contains the common components that will be shared by all the WeNet
- * components.
+ * Contains the common components that will be shared by all the WeNet components.
  *
  * @author UDT-IA, IIIA-CSIC
  */

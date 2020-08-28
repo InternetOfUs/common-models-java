@@ -56,7 +56,7 @@ public class TaskConcludedNotificationTest extends TaskNotificationTestCase<Task
   @Test
   public void shouldNotificationTypeByTaskConcluded() {
 
-    final TaskConcludedNotification model = this.createEmptyMessage();
+    final var model = this.createEmptyMessage();
     assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.taskConcluded);
   }
 
@@ -66,7 +66,7 @@ public class TaskConcludedNotificationTest extends TaskNotificationTestCase<Task
   @Override
   public TaskConcludedNotification createModelExample(final int index) {
 
-    final TaskConcludedNotification model = super.createModelExample(index);
+    final var model = super.createModelExample(index);
     model.outcome = TaskConcludedNotification.Outcome.values()[index % TaskConcludedNotification.Outcome.values().length];
     return model;
   }

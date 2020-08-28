@@ -76,7 +76,7 @@ public interface Merges {
 
     return model -> {
       final Promise<List<T>> promise = Promise.promise();
-      Future<List<T>> future = promise.future();
+      var future = promise.future();
       if (source != null) {
 
         final List<T> targetWithIds = new ArrayList<>();
@@ -91,24 +91,24 @@ public interface Merges {
           }
 
         }
-        INDEX: for (int index = 0; index < source.size(); index++) {
+        INDEX: for (var index = 0; index < source.size(); index++) {
 
-          final String codeElement = codePrefix + "[" + index + "]";
-          final T sourceElement = source.get(index);
+          final var codeElement = codePrefix + "[" + index + "]";
+          final var sourceElement = source.get(index);
           // Search if it modify any original model
           if (hasIdentifier.test(sourceElement)) {
 
-            for (int j = 0; j < index; j++) {
+            for (var j = 0; j < index; j++) {
 
-              final T element = source.get(j);
+              final var element = source.get(j);
               if (hasIdentifier.test(element) && equalsIdentifier.test(element, sourceElement)) {
 
                 return Future.failedFuture(new ValidationErrorException(codeElement, "The identifier is already defined at " + j));
               }
             }
-            for (int j = 0; j < targetWithIds.size(); j++) {
+            for (var j = 0; j < targetWithIds.size(); j++) {
 
-              final T targetElement = targetWithIds.get(j);
+              final var targetElement = targetWithIds.get(j);
               if (equalsIdentifier.test(targetElement, sourceElement)) {
 
                 targetWithIds.remove(j);

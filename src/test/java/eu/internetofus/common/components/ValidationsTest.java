@@ -92,7 +92,7 @@ public class ValidationsTest {
     model.validate("codePrefix", vertx).onComplete(testContext.failing(error -> testContext.verify(() -> {
 
       assertThat(error).isInstanceOf(ValidationErrorException.class);
-      final String code = ((ValidationErrorException) error).getCode();
+      final var code = ((ValidationErrorException) error).getCode();
       if (fieldName != null) {
 
         assertThat(code).isEqualTo("codePrefix." + fieldName);
@@ -654,7 +654,7 @@ public class ValidationsTest {
   public void shouldNullListOfModelsBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final Promise<Void> promise = Promise.promise();
-    final Future<Void> future = promise.future();
+    final var future = promise.future();
     future.compose(Validations.validate(null, (a, b) -> a.equals(b), "codePrefix", vertx)).onComplete(testContext.succeeding(empty -> testContext.completeNow()));
     promise.complete();
   }
@@ -671,7 +671,7 @@ public class ValidationsTest {
   public void shouldEmptyListOfModelsBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final Promise<Void> promise = Promise.promise();
-    final Future<Void> future = promise.future();
+    final var future = promise.future();
     future.compose(Validations.validate(new ArrayList<>(), (a, b) -> a.equals(b), "codePrefix", vertx)).onComplete(testContext.succeeding(empty -> testContext.completeNow()));
     promise.complete();
   }
@@ -694,7 +694,7 @@ public class ValidationsTest {
     models.add(null);
     models.add(null);
     final Promise<Void> promise = Promise.promise();
-    final Future<Void> future = promise.future();
+    final var future = promise.future();
     future.compose(Validations.validate(models, (a, b) -> a.equals(b), "codePrefix", vertx)).onComplete(testContext.succeeding(empty -> testContext.verify(() -> {
       assertThat(models).isEmpty();
       testContext.completeNow();
@@ -736,7 +736,7 @@ public class ValidationsTest {
     models.add(null);
     models.add(model4);
     final Promise<Void> promise = Promise.promise();
-    final Future<Void> future = promise.future();
+    final var future = promise.future();
     future.compose(Validations.validate(models, (a, b) -> a.equals(b), "codePrefix", vertx)).onComplete(testContext.succeeding(empty -> testContext.verify(() -> {
       assertThat(models).hasSize(2).contains(model1, atIndex(0)).contains(model4, atIndex(1));
       testContext.completeNow();
@@ -755,7 +755,7 @@ public class ValidationsTest {
   @Test
   public void shouldListWithValidAndInvalidModelsBeNotValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final ValidationErrorException validationError = new ValidationErrorException("code_of_error", "model not valid");
+    final var validationError = new ValidationErrorException("code_of_error", "model not valid");
     final Validable model1 = new Validable() {
 
       @Override
@@ -780,7 +780,7 @@ public class ValidationsTest {
     models.add(null);
     models.add(model4);
     final Promise<Void> promise = Promise.promise();
-    final Future<Void> future = promise.future();
+    final var future = promise.future();
     future.compose(Validations.validate(models, (a, b) -> a.equals(b), "codePrefix", vertx)).onComplete(testContext.failing(error -> testContext.verify(() -> {
       assertThat(error).isEqualTo(validationError);
       assertThat(models).hasSize(2).contains(model1, atIndex(0)).contains(model4, atIndex(1));
@@ -843,7 +843,7 @@ public class ValidationsTest {
     models.add(null);
     models.add(model4);
     final Promise<Void> promise = Promise.promise();
-    final Future<Void> future = promise.future();
+    final var future = promise.future();
     future.compose(Validations.validate(models, (a, b) -> a.equals(b), "codePrefix", vertx)).onComplete(testContext.failing(error -> testContext.verify(() -> {
       assertThat(error).isInstanceOf(ValidationErrorException.class);
       assertThat(((ValidationErrorException) error).getCode()).isEqualTo("codePrefix[2]");
@@ -867,9 +867,9 @@ public class ValidationsTest {
   public void shouldNumberNotBeValid(final String val, final String min, final String max) {
 
     final Double value = Double.parseDouble(val);
-    final boolean nullable = false;
-    final Double minValue = this.extractDouble(min);
-    final Double maxValue = this.extractDouble(max);
+    final var nullable = false;
+    final var minValue = this.extractDouble(min);
+    final var maxValue = this.extractDouble(max);
     assertThat(assertThrows(ValidationErrorException.class, () -> Validations.validateNumberOnRange("codePrefix", "fieldName", value, nullable, minValue, maxValue)).getCode()).isEqualTo("codePrefix.fieldName");
 
   }
@@ -920,9 +920,9 @@ public class ValidationsTest {
   public void shouldNumberBeValid(final String val, final String min, final String max) {
 
     final Double value = Double.parseDouble(val);
-    final boolean nullable = false;
-    final Double minValue = this.extractDouble(min);
-    final Double maxValue = this.extractDouble(max);
+    final var nullable = false;
+    final var minValue = this.extractDouble(min);
+    final var maxValue = this.extractDouble(max);
     assertThatCode(() -> assertThat(Validations.validateNumberOnRange("codePrefix", "fieldName", value, nullable, minValue, maxValue)).isEqualTo(value)).doesNotThrowAnyException();
 
   }

@@ -35,7 +35,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Router;
 import io.vertx.ext.web.api.contract.openapi3.OpenAPI3RouterFactory;
 
 /**
@@ -61,17 +60,17 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
 
         try {
 
-          final OpenAPI3RouterFactory routerFactory = createRouterFactory.result();
+          final var routerFactory = createRouterFactory.result();
 
           this.mountServiceInterfaces(routerFactory);
 
           // bind the ERROR handlers
-          final Router router = routerFactory.getRouter();
+          final var router = routerFactory.getRouter();
           router.errorHandler(Status.NOT_FOUND.getStatusCode(), NotFoundHandler.build());
           router.errorHandler(Status.BAD_REQUEST.getStatusCode(), BadRequestHandler.build());
 
-          final JsonObject apiConf = this.config().getJsonObject("api", new JsonObject());
-          final HttpServerOptions httpServerOptions = new HttpServerOptions(apiConf);
+          final var apiConf = this.config().getJsonObject("api", new JsonObject());
+          final var httpServerOptions = new HttpServerOptions(apiConf);
           this.server = this.vertx.createHttpServer(httpServerOptions);
           this.server.requestHandler(router).listen(startServer -> {
             if (startServer.failed()) {
@@ -80,9 +79,9 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
 
             } else {
 
-              final HttpServer httpServer = startServer.result();
-              final String host = httpServerOptions.getHost();
-              final int actualPort = httpServer.actualPort();
+              final var httpServer = startServer.result();
+              final var host = httpServerOptions.getHost();
+              final var actualPort = httpServer.actualPort();
               apiConf.put("port", actualPort);
               Logger.info("The server is ready at http://{}:{}", host, actualPort);
               this.startedServerAt(host, actualPort);
@@ -120,8 +119,7 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
   protected abstract void mountServiceInterfaces(OpenAPI3RouterFactory routerFactory);
 
   /**
-   * Get the resource path to the file that contains the OpenAPI specification to
-   * load.
+   * Get the resource path to the file that contains the OpenAPI specification to load.
    *
    * @return the resource path to the OpenAPI specification.
    */

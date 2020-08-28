@@ -60,7 +60,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Override
   public SocialPractice createModelExample(final int index) {
 
-    final SocialPractice model = new SocialPractice();
+    final var model = new SocialPractice();
     model.id = null;
     model.label = "label_" + index;
     model.materials = new ArrayList<>();
@@ -90,7 +90,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldExampleBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     assertIsValid(model, vertx, testContext);
   }
 
@@ -105,7 +105,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldFullModelBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice model = new SocialPractice();
+    final var model = new SocialPractice();
     model.id = "      ";
     model.label = "    label    ";
     model.materials = new ArrayList<>();
@@ -116,7 +116,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     model.norms.add(new NormTest().createModelExample(1));
     assertIsValid(model, vertx, testContext, () -> {
 
-      final SocialPractice expected = new SocialPractice();
+      final var expected = new SocialPractice();
       expected.id = model.id;
       expected.label = "label";
       expected.materials = new ArrayList<>();
@@ -142,7 +142,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice model = new SocialPractice();
+    final var model = new SocialPractice();
     model.id = "has_id";
     assertIsValid(model, vertx, testContext);
 
@@ -159,7 +159,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldNotBeValidWithABadLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice model = new SocialPractice();
+    final var model = new SocialPractice();
     model.label = ValidationsTest.STRING_256;
     assertIsNotValid(model, "label", vertx, testContext);
 
@@ -176,7 +176,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldNotBeValidWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice model = new SocialPractice();
+    final var model = new SocialPractice();
     model.norms = new ArrayList<>();
     model.norms.add(new Norm());
     model.norms.add(new Norm());
@@ -197,7 +197,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldNotBeValidWithAMaterialWithSameNameAndClassification(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.materials.add(Model.fromJsonObject(model.materials.get(0).toJsonObject(), Material.class));
     model.materials.get(model.materials.size() - 1).description = "Other description";
     assertIsNotValid(model, "materials[3]", vertx, testContext);
@@ -215,7 +215,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldBeValidWithAMaterialWithTheSameNameButDiferentClassification(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.materials.add(Model.fromJsonObject(model.materials.get(0).toJsonObject(), Material.class));
     model.materials.get(model.materials.size() - 1).classification = "OtherClassification";
     assertIsValid(model, vertx, testContext);
@@ -233,7 +233,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldBeValidWithAMaterialWithTheSameClassificationButDiferentName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.materials.add(Model.fromJsonObject(model.materials.get(0).toJsonObject(), Material.class));
     model.materials.get(model.materials.size() - 1).name = "OtherName";
     assertIsValid(model, vertx, testContext);
@@ -251,7 +251,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldNotBeValidWithACompetenceWithSameNameAndOntology(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.competences.add(Model.fromJsonObject(model.competences.get(0).toJsonObject(), Competence.class));
     model.competences.get(model.competences.size() - 1).level = 0d;
     assertIsNotValid(model, "competences[3]", vertx, testContext);
@@ -269,7 +269,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldBeValidWithACompetenceWithTheSameNameButDiferentOntology(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.competences.add(Model.fromJsonObject(model.competences.get(0).toJsonObject(), Competence.class));
     model.competences.get(model.competences.size() - 1).ontology = "OtherOntology";
     assertIsValid(model, vertx, testContext);
@@ -287,7 +287,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldBeValidWithACompetenceWithTheSameOntologyButDiferentName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.competences.add(Model.fromJsonObject(model.competences.get(0).toJsonObject(), Competence.class));
     model.competences.get(model.competences.size() - 1).name = "OtherName";
     assertIsValid(model, vertx, testContext);
@@ -305,8 +305,8 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldNotMergeWithABadLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
-    final SocialPractice source = new SocialPractice();
+    final var target = this.createModelExample(1);
+    final var source = new SocialPractice();
     source.label = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "label", vertx, testContext);
 
@@ -323,8 +323,8 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldNotMergeWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
-    final SocialPractice source = new SocialPractice();
+    final var target = this.createModelExample(1);
+    final var source = new SocialPractice();
     source.norms = new ArrayList<>();
     source.norms.add(new Norm());
     source.norms.add(new Norm());
@@ -345,9 +345,9 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "Target_Id";
-    final SocialPractice source = this.createModelExample(2);
+    final var source = this.createModelExample(2);
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
@@ -367,7 +367,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
   }
@@ -383,10 +383,10 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldMergeOnlyLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "1";
     target.norms.get(0).id = "2";
-    final SocialPractice source = new SocialPractice();
+    final var source = new SocialPractice();
     source.label = "NEW LABEL";
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -406,9 +406,9 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldMergeRemoveNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "19";
-    final SocialPractice source = new SocialPractice();
+    final var source = new SocialPractice();
     source.norms = new ArrayList<>();
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -428,9 +428,9 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldMergeModifyANorm(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "9";
-    final SocialPractice source = new SocialPractice();
+    final var source = new SocialPractice();
     source.norms = new ArrayList<>();
     for (final var norm : target.norms) {
 
@@ -456,9 +456,9 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldMergeUptadingRemovingAndAddingNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "Id9";
-    final SocialPractice source = new SocialPractice();
+    final var source = new SocialPractice();
     source.norms = new ArrayList<>();
     source.norms.add(new NormTest().createModelExample(4));
     source.norms.add(new Norm());
@@ -487,9 +487,9 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldMergeRemoveMaterials(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "19";
-    final SocialPractice source = new SocialPractice();
+    final var source = new SocialPractice();
     source.materials = new ArrayList<>();
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -509,9 +509,9 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldMergeModifyAMaterial(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "9";
-    final SocialPractice source = new SocialPractice();
+    final var source = new SocialPractice();
     source.materials = new ArrayList<>();
     for (final var material : target.materials) {
 
@@ -537,9 +537,9 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldMergeUptadingRemovingAndAddingMaterials(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "Id9";
-    final SocialPractice source = new SocialPractice();
+    final var source = new SocialPractice();
     source.materials = new ArrayList<>();
     source.materials.add(new MaterialTest().createModelExample(4));
     source.materials.add(new Material());
@@ -569,9 +569,9 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldMergeRemoveCompetences(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "19";
-    final SocialPractice source = new SocialPractice();
+    final var source = new SocialPractice();
     source.competences = new ArrayList<>();
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -591,9 +591,9 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldMergeModifyACompetence(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "9";
-    final SocialPractice source = new SocialPractice();
+    final var source = new SocialPractice();
     source.competences = new ArrayList<>();
     for (final var competence : target.competences) {
 
@@ -619,9 +619,9 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
   @Test
   public void shouldMergeUptadingRemovingAndAddingCompetences(final Vertx vertx, final VertxTestContext testContext) {
 
-    final SocialPractice target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "Id9";
-    final SocialPractice source = new SocialPractice();
+    final var source = new SocialPractice();
     source.competences = new ArrayList<>();
     source.competences.add(new CompetenceTest().createModelExample(4));
     source.competences.add(new Competence());

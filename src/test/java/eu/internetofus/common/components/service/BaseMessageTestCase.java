@@ -54,7 +54,7 @@ public abstract class BaseMessageTestCase<T extends BaseMessage> extends ModelTe
   @Test
   public void shouldHaveType() {
 
-    final T model = this.createEmptyMessage();
+    final var model = this.createEmptyMessage();
     assertThat(model.type).isNotNull();
   }
 

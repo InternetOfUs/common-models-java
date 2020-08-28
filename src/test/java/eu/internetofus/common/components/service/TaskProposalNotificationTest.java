@@ -39,25 +39,25 @@ import org.junit.jupiter.api.Test;
  */
 public class TaskProposalNotificationTest extends TaskNotificationTestCase<TaskProposalNotification> {
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @see TaskProposalNotification#TaskProposalNotification()
-	 */
-	@Override
-	public TaskProposalNotification createEmptyMessage() {
+  /**
+   * {@inheritDoc}
+   *
+   * @see TaskProposalNotification#TaskProposalNotification()
+   */
+  @Override
+  public TaskProposalNotification createEmptyMessage() {
 
-		return new TaskProposalNotification();
-	}
+    return new TaskProposalNotification();
+  }
 
-	/**
-	 * Verify that the notification type is a task proposal.
-	 */
-	@Test
-	public void shouldNotificationTypeByTaskProposal() {
+  /**
+   * Verify that the notification type is a task proposal.
+   */
+  @Test
+  public void shouldNotificationTypeByTaskProposal() {
 
-		final TaskProposalNotification model = this.createEmptyMessage();
-		assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.taskProposal);
-	}
+    final var model = this.createEmptyMessage();
+    assertThat(model.notificationType).isEqualTo(TaskNotification.NotificationType.taskProposal);
+  }
 
 }

@@ -28,6 +28,7 @@ package eu.internetofus.common.components.profile_manager;
 
 import eu.internetofus.common.TimeManager;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -36,26 +37,26 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, description = "Generic model for the models that can be created and updated.")
-public class CreateUpdateTsDetails extends Model {
+public class CreateUpdateTsDetails extends ReflectionModel implements Model {
 
-	/**
-	 * The instant of the creation.
-	 */
-	@Schema(description = "The time stamp representing the account creation instant.", example = "1563871899")
-	public long _creationTs;
+  /**
+   * The instant of the creation.
+   */
+  @Schema(description = "The time stamp representing the account creation instant.", example = "1563871899")
+  public long _creationTs;
 
-	/**
-	 * The instant of the last update.
-	 */
-	@Schema(description = "The time stamp representing the last update instant.", example = "1563898764")
-	public long _lastUpdateTs;
+  /**
+   * The instant of the last update.
+   */
+  @Schema(description = "The time stamp representing the last update instant.", example = "1563898764")
+  public long _lastUpdateTs;
 
-	/**
-	 * Create a new model.
-	 */
-	public CreateUpdateTsDetails() {
+  /**
+   * Create a new model.
+   */
+  public CreateUpdateTsDetails() {
 
-		this._creationTs = this._lastUpdateTs = TimeManager.now();
+    this._creationTs = this._lastUpdateTs = TimeManager.now();
 
-	}
+  }
 }

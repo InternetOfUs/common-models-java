@@ -66,7 +66,7 @@ public class CommunityMember extends CreateUpdateTsDetails implements Validable,
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    Future<Void> future = promise.future();
+    var future = promise.future();
     try {
 
       this.userId = Validations.validateStringField(codePrefix, "userId", 255, this.userId);
@@ -90,10 +90,10 @@ public class CommunityMember extends CreateUpdateTsDetails implements Validable,
   public Future<CommunityMember> merge(final CommunityMember source, final String codePrefix, final Vertx vertx) {
 
     final Promise<CommunityMember> promise = Promise.promise();
-    Future<CommunityMember> future = promise.future();
+    var future = promise.future();
     if (source != null) {
 
-      final CommunityMember merged = new CommunityMember();
+      final var merged = new CommunityMember();
       merged.userId = source.userId;
       if (merged.userId == null) {
 

@@ -120,14 +120,14 @@ public class TaskTest extends ModelTestCase<Task> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject profileConf = profileManagerMocker.getComponentConfiguration();
+    final var client = WebClient.create(vertx);
+    final var profileConf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, profileConf);
 
-    final JsonObject taskConf = taskManagerMocker.getComponentConfiguration();
+    final var taskConf = taskManagerMocker.getComponentConfiguration();
     WeNetTaskManager.register(vertx, client, taskConf);
 
-    final JsonObject conf = serviceMocker.getComponentConfiguration();
+    final var conf = serviceMocker.getComponentConfiguration();
     WeNetService.register(vertx, client, conf);
     WeNetServiceSimulator.register(vertx, client, conf);
 
@@ -140,7 +140,7 @@ public class TaskTest extends ModelTestCase<Task> {
   public Task createModelExample(final int index) {
 
     assert index >= 0;
-    final Task model = new Task();
+    final var model = new Task();
     model.taskTypeId = "taskTypeId" + index;
     model.requesterId = "requesterId" + index;
     model.appId = "appId" + index;
@@ -223,7 +223,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         StoreServices.storeApp(new App(), vertx, testContext, testContext.succeeding(app -> {
 
-          final Task model = this.createModelExample(index);
+          final var model = this.createModelExample(index);
           model.requesterId = profile.id;
           model.taskTypeId = taskType.id;
           model.appId = app.appId;
@@ -657,7 +657,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         StoreServices.storeTaskType(new TaskType(), vertx, testContext, testContext.succeeding(taskType -> {
 
-          final Task source = new Task();
+          final var source = new Task();
           source.taskTypeId = taskType.id;
           assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -688,7 +688,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.taskTypeId = "undefined-task-type-identifier";
         assertCannotMerge(target, source, "taskTypeId", vertx, testContext);
       }));
@@ -714,7 +714,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(requester -> {
 
-          final Task source = new Task();
+          final var source = new Task();
           source.requesterId = requester.id;
           assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -745,7 +745,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.requesterId = "undefined-requester-identifier";
         assertCannotMerge(target, source, "requesterId", vertx, testContext);
       }));
@@ -771,7 +771,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         StoreServices.storeApp(new App(), vertx, testContext, testContext.succeeding(app -> {
 
-          final Task source = new Task();
+          final var source = new Task();
           source.appId = app.appId;
           assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -802,7 +802,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.appId = "undefined-application-identifier";
         assertCannotMerge(target, source, "appId", vertx, testContext);
       }));
@@ -826,7 +826,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.goal = new TaskGoalTest().createModelExample(2);
         assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -856,7 +856,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.goal = new TaskGoal();
         source.goal.name = ValidationsTest.STRING_256;
         assertCannotMerge(target, source, "goal.name", vertx, testContext);
@@ -881,7 +881,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.startTs = target.startTs + 1;
         assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -911,7 +911,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.startTs = -1l;
         assertCannotMerge(target, source, "startTs", vertx, testContext);
       }));
@@ -935,7 +935,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.endTs = target.endTs + 1;
         assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -965,7 +965,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.endTs = -1l;
         assertCannotMerge(target, source, "endTs", vertx, testContext);
       }));
@@ -989,7 +989,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.deadlineTs = target.deadlineTs + 1;
         assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -1019,7 +1019,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.deadlineTs = -1l;
         assertCannotMerge(target, source, "deadlineTs", vertx, testContext);
       }));
@@ -1043,7 +1043,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.norms = new ArrayList<>();
         source.norms.add(new NormTest().createModelExample(2));
         assertCanMerge(target, source, vertx, testContext, merged -> {
@@ -1076,7 +1076,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.norms = new ArrayList<>();
         source.norms.add(new NormTest().createModelExample(2));
         source.norms.addAll(target.norms);
@@ -1108,13 +1108,13 @@ public class TaskTest extends ModelTestCase<Task> {
     this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
 
       targetToStore.norms.get(0).id = UUID.randomUUID().toString();
-      final Norm normToMantain = new NormTest().createModelExample(2);
+      final var normToMantain = new NormTest().createModelExample(2);
       normToMantain.id = UUID.randomUUID().toString();
       targetToStore.norms.add(normToMantain);
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.norms = new ArrayList<>();
         source.norms.add(new Norm());
         source.norms.get(0).id = normToMantain.id;
@@ -1150,7 +1150,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
 
-        final Task source = new Task();
+        final var source = new Task();
         source.norms = new ArrayList<>();
         source.norms.add(new Norm());
         source.norms.get(0).attribute = ValidationsTest.STRING_256;
@@ -1174,7 +1174,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
     StoreServices.storeTaskExample(1, vertx, testContext, testContext.succeeding(target -> {
 
-      final Task source = new Task();
+      final var source = new Task();
       source.attributes = new JsonObject().put("index", 2);
       assertCanMerge(target, source, vertx, testContext, merged -> {
 

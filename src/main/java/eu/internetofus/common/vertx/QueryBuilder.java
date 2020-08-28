@@ -80,7 +80,7 @@ public class QueryBuilder {
 
     if (patterns != null) {
 
-      final JsonArray patternsMatch = new JsonArray();
+      final var patternsMatch = new JsonArray();
       for (final String pattern : patterns) {
 
         patternsMatch.add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", pattern)));
@@ -107,7 +107,7 @@ public class QueryBuilder {
 
     if (from != null || to != null) {
 
-      final JsonObject restriction = new JsonObject();
+      final var restriction = new JsonObject();
       if (from != null) {
 
         restriction.put("$gte", from);
@@ -141,7 +141,7 @@ public class QueryBuilder {
 
       if (hasToExist) {
 
-        final JsonObject restriction = new JsonObject();
+        final var restriction = new JsonObject();
         restriction.put("$exists", true);
         restriction.putNull("$ne");
         this.query.put(fieldName, restriction);
@@ -194,7 +194,7 @@ public class QueryBuilder {
 
       if (this.containsPattern(value)) {
 
-        final String pattern = this.extractPattern(value);
+        final var pattern = this.extractPattern(value);
         return this.withRegex(fieldName, pattern);
 
       } else {
@@ -245,15 +245,15 @@ public class QueryBuilder {
 
     if (values != null) {
 
-      final JsonArray patternsMatch = new JsonArray();
+      final var patternsMatch = new JsonArray();
       for (final String value : values) {
 
         if (value != null) {
 
-          final JsonObject elementMatch = new JsonObject();
+          final var elementMatch = new JsonObject();
           if (this.containsPattern(value)) {
 
-            final String pattern = this.extractPattern(value);
+            final var pattern = this.extractPattern(value);
             elementMatch.put("$regex", pattern);
 
           } else {

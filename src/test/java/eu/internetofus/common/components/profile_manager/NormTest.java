@@ -57,7 +57,7 @@ public class NormTest extends ModelTestCase<Norm> {
   @Override
   public Norm createModelExample(final int index) {
 
-    final Norm norm = new Norm();
+    final var norm = new Norm();
     norm.id = null;
     norm.attribute = "attribute_" + index;
     norm.operator = NormOperator.EQUALS;
@@ -77,7 +77,7 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldExample1BeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     assertIsValid(model, vertx, testContext);
 
   }
@@ -93,7 +93,7 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldFullModelBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm model = new Norm();
+    final var model = new Norm();
     model.id = "      ";
     model.attribute = "    attribute    ";
     model.operator = NormOperator.GREATER_THAN;
@@ -102,7 +102,7 @@ public class NormTest extends ModelTestCase<Norm> {
 
     assertIsValid(model, vertx, testContext, () -> {
 
-      final Norm expected = new Norm();
+      final var expected = new Norm();
       expected.id = model.id;
       expected.attribute = "attribute";
       expected.operator = NormOperator.GREATER_THAN;
@@ -125,7 +125,7 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm model = new Norm();
+    final var model = new Norm();
     model.id = "has_id";
     assertIsValid(model, vertx, testContext);
 
@@ -142,7 +142,7 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldNotBeValidWithABadAttribute(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm model = new Norm();
+    final var model = new Norm();
     model.attribute = ValidationsTest.STRING_256;
     assertIsNotValid(model, "attribute", vertx, testContext);
 
@@ -159,7 +159,7 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldNotBeValidWithABadComparison(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm model = new Norm();
+    final var model = new Norm();
     model.comparison = ValidationsTest.STRING_256;
     assertIsNotValid(model, "comparison", vertx, testContext);
 
@@ -176,8 +176,8 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldNotMergeWithABadAttribute(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm target = new Norm();
-    final Norm source = new Norm();
+    final var target = new Norm();
+    final var source = new Norm();
     source.attribute = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "attribute", vertx, testContext);
 
@@ -194,8 +194,8 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldNotMergeWithABadComparison(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm target = new Norm();
-    final Norm source = new Norm();
+    final var target = new Norm();
+    final var source = new Norm();
     source.comparison = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "comparison", vertx, testContext);
 
@@ -212,8 +212,8 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm target = this.createModelExample(1);
-    final Norm source = this.createModelExample(2);
+    final var target = this.createModelExample(1);
+    final var source = this.createModelExample(2);
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
 
   }
@@ -229,7 +229,7 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
   }
@@ -245,9 +245,9 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldMergeOnlyId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.id = "1";
-    final Norm source = new Norm();
+    final var source = new Norm();
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isEqualTo(target).isNotSameAs(target).isNotEqualTo(source));
 
   }
@@ -263,8 +263,8 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldMergeOnlyAttribute(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm target = this.createModelExample(1);
-    final Norm source = new Norm();
+    final var target = this.createModelExample(1);
+    final var source = new Norm();
     source.attribute = "NEW VALUE";
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -287,8 +287,8 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldMergeOnlyOperator(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm target = this.createModelExample(1);
-    final Norm source = new Norm();
+    final var target = this.createModelExample(1);
+    final var source = new Norm();
     source.operator = NormOperator.GREATER_THAN;
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -311,8 +311,8 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldMergeOnlyComparison(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm target = this.createModelExample(1);
-    final Norm source = new Norm();
+    final var target = this.createModelExample(1);
+    final var source = new Norm();
     source.comparison = "NEW VALUE";
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -335,8 +335,8 @@ public class NormTest extends ModelTestCase<Norm> {
   @Test
   public void shouldMergeOnlyNegation(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Norm target = this.createModelExample(1);
-    final Norm source = new Norm();
+    final var target = this.createModelExample(1);
+    final var source = new Norm();
     source.negation = false;
     assertCanMerge(target, source, vertx, testContext, merged -> {
 

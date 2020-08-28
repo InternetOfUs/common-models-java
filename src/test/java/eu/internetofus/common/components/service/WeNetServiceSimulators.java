@@ -60,7 +60,7 @@ public interface WeNetServiceSimulators {
     final Promise<App> promise = Promise.promise();
     StoreServices.storeApp(new App(), vertx, testContext, testContext.succeeding(app -> {
 
-      final JsonArray appUsers = new JsonArray();
+      final var appUsers = new JsonArray();
       for (final WeNetUserProfile profile : users) {
 
         appUsers.add(profile.id);

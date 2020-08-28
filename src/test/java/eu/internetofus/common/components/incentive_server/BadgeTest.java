@@ -59,7 +59,7 @@ public class BadgeTest extends ModelTestCase<Badge> {
   @Override
   public Badge createModelExample(final int index) {
 
-    final Badge model = new Badge();
+    final var model = new Badge();
     model.BadgeClass = "class " + index;
     model.ImgUrl = "http://3.126.161.118:8000/media/uploads/badges/assertion-OYmfmtDFSIKG-qeZfXz4QQ.png?index=" + index;
     model.Criteria = "criteria " + index;
@@ -80,8 +80,8 @@ public class BadgeTest extends ModelTestCase<Badge> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Badge model = this.createModelExample(index);
-    final Badge expected = Model.fromJsonObject(model.toJsonObject(), Badge.class);
+    final var model = this.createModelExample(index);
+    final var expected = Model.fromJsonObject(model.toJsonObject(), Badge.class);
     model.BadgeClass = "   \n  " + model.BadgeClass + "   \n";
     model.Criteria = "   \n  " + model.Criteria + "   \n";
     model.ImgUrl = "   \n  " + model.ImgUrl + "   \n";
@@ -104,7 +104,7 @@ public class BadgeTest extends ModelTestCase<Badge> {
   @Test
   public void shouldNotBeValidWithALargeClass(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Badge model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.BadgeClass = ValidationsTest.STRING_256;
     assertIsNotValid(model, "BadgeClass", vertx, testContext);
   }
@@ -120,7 +120,7 @@ public class BadgeTest extends ModelTestCase<Badge> {
   @Test
   public void shouldNotBeValidWithALargeCriteria(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Badge model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.Criteria = ValidationsTest.STRING_256;
     assertIsNotValid(model, "Criteria", vertx, testContext);
   }
@@ -136,7 +136,7 @@ public class BadgeTest extends ModelTestCase<Badge> {
   @Test
   public void shouldNotBeValidWithALargeMessage(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Badge model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.Message = ValidationsTest.STRING_1024;
     assertIsNotValid(model, "Message", vertx, testContext);
   }
@@ -152,7 +152,7 @@ public class BadgeTest extends ModelTestCase<Badge> {
   @Test
   public void shouldNotBeValidWithABadImgUrl(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Badge model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.ImgUrl = ValidationsTest.STRING_1024;
     assertIsNotValid(model, "ImgUrl", vertx, testContext);
   }

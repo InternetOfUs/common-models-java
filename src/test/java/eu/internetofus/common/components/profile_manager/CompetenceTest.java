@@ -60,7 +60,7 @@ public class CompetenceTest extends ModelTestCase<Competence> {
   @Override
   public Competence createModelExample(final int index) {
 
-    final Competence model = new Competence();
+    final var model = new Competence();
     model.name = "name_" + index;
     model.ontology = "ontology_" + index;
     model.level = 1.0 / Math.max(1, index);
@@ -78,14 +78,14 @@ public class CompetenceTest extends ModelTestCase<Competence> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence model = new Competence();
+    final var model = new Competence();
     model.name = "    name_" + index + "    ";
     model.ontology = "    ontology_" + index + "    ";
     model.level = 1.0 / Math.max(1, index);
 
     assertIsValid(model, vertx, testContext, () -> {
 
-      final Competence expected = this.createModelExample(index);
+      final var expected = this.createModelExample(index);
       assertThat(model).isEqualTo(expected);
     });
 
@@ -103,7 +103,7 @@ public class CompetenceTest extends ModelTestCase<Competence> {
   @ValueSource(strings = { ValidationsTest.STRING_256 })
   public void shouldNotBeValidWithABadName(final String name, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.name = name;
     assertIsNotValid(model, "name", vertx, testContext);
 
@@ -121,7 +121,7 @@ public class CompetenceTest extends ModelTestCase<Competence> {
   @ValueSource(strings = { ValidationsTest.STRING_256 })
   public void shouldNotBeValidWithABadOntology(final String ontology, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.ontology = ontology;
     assertIsNotValid(model, "ontology", vertx, testContext);
 
@@ -139,7 +139,7 @@ public class CompetenceTest extends ModelTestCase<Competence> {
   @ValueSource(doubles = { -1, -0.1, 1.1, 2 })
   public void shouldNotBeValidWithABadLevel(final Double level, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.level = level;
     assertIsNotValid(model, "level", vertx, testContext);
 
@@ -156,16 +156,16 @@ public class CompetenceTest extends ModelTestCase<Competence> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleCanMerged(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence source = new Competence();
+    final var source = new Competence();
     source.name = "    name_" + index + "    ";
     source.ontology = "    ontology_" + index + "    ";
     source.level = 1.0 / Math.max(1, index);
 
-    final Competence target = this.createModelExample(index - 1);
+    final var target = this.createModelExample(index - 1);
 
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
-      final Competence expected = this.createModelExample(index);
+      final var expected = this.createModelExample(index);
       assertThat(merged).isEqualTo(expected);
     });
 
@@ -180,9 +180,9 @@ public class CompetenceTest extends ModelTestCase<Competence> {
   @Test
   public void shouldCannotMergeWithABadName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence source = new Competence();
+    final var source = new Competence();
     source.name = ValidationsTest.STRING_256;
-    final Competence target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "name", vertx, testContext);
 
   }
@@ -196,9 +196,9 @@ public class CompetenceTest extends ModelTestCase<Competence> {
   @Test
   public void shouldCannotMergeWithABadOntology(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence source = new Competence();
+    final var source = new Competence();
     source.ontology = ValidationsTest.STRING_256;
-    final Competence target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "ontology", vertx, testContext);
 
   }
@@ -214,9 +214,9 @@ public class CompetenceTest extends ModelTestCase<Competence> {
   @ValueSource(doubles = { -1, -0.1, 1.1, 2 })
   public void shouldCannotMergeWithABadLevel(final Double level, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Competence source = new Competence();
+    final var source = new Competence();
     source.level = level;
-    final Competence target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "level", vertx, testContext);
 
   }

@@ -40,54 +40,53 @@ import io.vertx.core.Vertx;
  */
 public class AliveBirthDate extends ProfileDate {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<Void> validate(String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-		return super.validate(codePrefix, vertx).compose(mapper -> {
+    return super.validate(codePrefix, vertx).compose(mapper -> {
 
-			final Promise<Void> promise = Promise.promise();
-			if (this.year == null || this.month == null || this.day == null) {
+      final Promise<Void> promise = Promise.promise();
+      if (this.year == null || this.month == null || this.day == null) {
 
-				promise.complete();
+        promise.complete();
 
-			} else {
+      } else {
 
-				final LocalDate birthDate = LocalDate.of(this.year, this.month, this.day);
-				if (birthDate.isAfter(LocalDate.now())) {
+        final var birthDate = LocalDate.of(this.year, this.month, this.day);
+        if (birthDate.isAfter(LocalDate.now())) {
 
-					promise.fail(new ValidationErrorException(codePrefix, "The birth date can not be on the future"));
+          promise.fail(new ValidationErrorException(codePrefix, "The birth date can not be on the future"));
 
-				} else if (birthDate.isBefore(LocalDate.of(1903, 1, 2))) {
+        } else if (birthDate.isBefore(LocalDate.of(1903, 1, 2))) {
 
-					promise.fail(new ValidationErrorException(codePrefix,
-							"The user can not be born before Kane Tanake, the oldest living person on earth"));
+          promise.fail(new ValidationErrorException(codePrefix, "The user can not be born before Kane Tanake, the oldest living person on earth"));
 
-				} else {
+        } else {
 
-					promise.complete();
-				}
-			}
-			return promise.future();
+          promise.complete();
+        }
+      }
+      return promise.future();
 
-		});
-	}
+    });
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Future<ProfileDate> merge(ProfileDate source, String codePrefix, Vertx vertx) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<ProfileDate> merge(final ProfileDate source, final String codePrefix, final Vertx vertx) {
 
-		return super.merge(source, codePrefix, vertx).compose(model -> {
-			final AliveBirthDate date = new AliveBirthDate();
-			date.day = model.day;
-			date.month = model.month;
-			date.year = model.year;
-			return date.validate(codePrefix, vertx).map(empty -> date);
-		});
-	}
+    return super.merge(source, codePrefix, vertx).compose(model -> {
+      final var date = new AliveBirthDate();
+      date.day = model.day;
+      date.month = model.month;
+      date.year = model.year;
+      return date.validate(codePrefix, vertx).map(empty -> date);
+    });
+  }
 
 }

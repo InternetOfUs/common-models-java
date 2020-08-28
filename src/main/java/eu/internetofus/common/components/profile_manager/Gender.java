@@ -24,15 +24,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "Define the possible genders for an user.")
 public enum Gender {
 
-	/**
-	 * A person whose gender identity matches to female.
-	 */
-	@Schema(description = "A person whose gender identity matches to female.")
-	F,
+  /**
+   * A person whose gender identity matches to female.
+   */
+  @Schema(description = "A person whose gender identity matches to female.")
+  F,
 
-	/**
-	 * A person whose gender identity matches to male.
-	 */
-	@Schema(description = "A person whose gender identity matches to male.")
-	M;
+  /**
+   * A person whose gender identity matches to male.
+   */
+  @Schema(description = "A person whose gender identity matches to male.")
+  M;
 }

@@ -57,7 +57,7 @@ public class WeNetServiceMocker extends AbstractComponentMocker {
    */
   public static WeNetServiceMocker start(final int port) {
 
-    final WeNetServiceMocker mocker = new WeNetServiceMocker();
+    final var mocker = new WeNetServiceMocker();
     mocker.start(port, null);
     return mocker;
   }

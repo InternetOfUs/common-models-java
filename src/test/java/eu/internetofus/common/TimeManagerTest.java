@@ -39,15 +39,15 @@ import org.junit.jupiter.api.Test;
  */
 public class TimeManagerTest {
 
-	/**
-	 * Check can load from resource.
-	 */
-	@Test
-	public void shouldLoadFromResource() {
+  /**
+   * Check can load from resource.
+   */
+  @Test
+  public void shouldLoadFromResource() {
 
-		final long now = System.currentTimeMillis() / 1000;
-		assertThat(TimeManager.now()).isGreaterThanOrEqualTo(now);
+    final var now = System.currentTimeMillis() / 1000;
+    assertThat(TimeManager.now()).isGreaterThanOrEqualTo(now);
 
-	}
+  }
 
 }

@@ -36,12 +36,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(hidden = true, name = "message", description = "A textual message that can be send into an application.")
 public class TextualMessage extends Message {
 
-	/**
-	 * Create a new textual message.
-	 */
-	public TextualMessage() {
+  /**
+   * Create a new textual message.
+   */
+  public TextualMessage() {
 
-		this.type = Type.textualMessage;
-	}
+    this.type = Type.textualMessage;
+  }
 
 }

@@ -27,6 +27,7 @@
 package eu.internetofus.common.components.social_context_builder;
 
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.profile_manager.SocialNetworkRelationship;
 import eu.internetofus.common.components.profile_manager.SocialNetworkRelationshipType;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -36,8 +37,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "user_relation", description ="A User to User relation.")
-public class UserRelation extends Model {
+@Schema(hidden = true, name = "user_relation", description = "A User to User relation.")
+public class UserRelation extends ReflectionModel implements Model {
 
   /**
    * The first user identifier.
@@ -76,7 +77,7 @@ public class UserRelation extends Model {
    */
   public SocialNetworkRelationship toSocialNetworkRelationship() {
 
-    final SocialNetworkRelationship relationship = new SocialNetworkRelationship();
+    final var relationship = new SocialNetworkRelationship();
     relationship.userId = this.UserID2;
     relationship.type = SocialNetworkRelationshipType.acquaintance;
     return relationship;

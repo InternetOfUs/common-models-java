@@ -45,27 +45,27 @@ import io.vertx.ext.web.client.HttpResponse;
  */
 public interface HttpResponses {
 
-	/**
-	 * VErify that the body of the response is of the specified class type.
-	 *
-	 * @param <T>   type of the context,
-	 * @param clazz of the content.
-	 * @param res   response to get the body content.
-	 *
-	 * @return the content of the body.
-	 */
-	static <T> T assertThatBodyIs(Class<T> clazz, HttpResponse<Buffer> res) {
+  /**
+   * VErify that the body of the response is of the specified class type.
+   *
+   * @param <T>   type of the context,
+   * @param clazz of the content.
+   * @param res   response to get the body content.
+   *
+   * @return the content of the body.
+   */
+  static <T> T assertThatBodyIs(final Class<T> clazz, final HttpResponse<Buffer> res) {
 
-		try {
+    try {
 
-			assertThat(res.getHeader(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
-			return Json.decodeValue(res.body(), clazz);
+      assertThat(res.getHeader(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      return Json.decodeValue(res.body(), clazz);
 
-		} catch (final Throwable throwable) {
+    } catch (final Throwable throwable) {
 
-			fail(throwable);
-			return null;
-		}
+      fail(throwable);
+      return null;
+    }
 
-	}
+  }
 }

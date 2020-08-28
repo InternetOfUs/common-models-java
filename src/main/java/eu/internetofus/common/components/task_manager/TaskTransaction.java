@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -45,7 +46,7 @@ import io.vertx.core.json.JsonObject;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "TaskTransaction", description = "Describe a transition to do over a task.")
-public class TaskTransaction extends Model implements Validable {
+public class TaskTransaction extends ReflectionModel implements Model, Validable {
 
   /**
    * The identifier of the task that it refers.
@@ -73,7 +74,7 @@ public class TaskTransaction extends Model implements Validable {
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    Future<Void> future = promise.future();
+    var future = promise.future();
     try {
 
       this.taskId = Validations.validateStringField(codePrefix, "taskId", 255, this.taskId);

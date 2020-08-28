@@ -41,62 +41,59 @@ import io.vertx.core.Promise;
  */
 public abstract class AbstractMainVerticle extends AbstractVerticle {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void start(Promise<Void> startPromise) throws Exception {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void start(final Promise<Void> startPromise) throws Exception {
 
-		final List<Class<? extends AbstractVerticle>> verticlesToDeploy = new ArrayList<>(
-				Arrays.asList(this.getVerticleClassesToDeploy()));
+    final List<Class<? extends AbstractVerticle>> verticlesToDeploy = new ArrayList<>(Arrays.asList(this.getVerticleClassesToDeploy()));
 
-		this.deployNextVerticle(verticlesToDeploy, startPromise);
+    this.deployNextVerticle(verticlesToDeploy, startPromise);
 
-	}
+  }
 
-	/**
-	 * DEploy the next verticle.
-	 *
-	 * @param verticlesToDeploy the list of verticles to deploy.
-	 * @param startPromise      promise to inform when all the verticles has been
-	 *                          deployed.
-	 */
-	private void deployNextVerticle(List<Class<? extends AbstractVerticle>> verticlesToDeploy,
-			Promise<Void> startPromise) {
+  /**
+   * DEploy the next verticle.
+   *
+   * @param verticlesToDeploy the list of verticles to deploy.
+   * @param startPromise      promise to inform when all the verticles has been deployed.
+   */
+  private void deployNextVerticle(final List<Class<? extends AbstractVerticle>> verticlesToDeploy, final Promise<Void> startPromise) {
 
-		if (verticlesToDeploy.isEmpty()) {
+    if (verticlesToDeploy.isEmpty()) {
 
-			startPromise.complete();
+      startPromise.complete();
 
-		} else {
+    } else {
 
-			final Class<? extends AbstractVerticle> verticle = verticlesToDeploy.remove(0);
-			final DeploymentOptions options = new DeploymentOptions(this.config()).setConfig(this.config());
-			if (verticle.isAnnotationPresent(Worker.class)) {
+      final Class<? extends AbstractVerticle> verticle = verticlesToDeploy.remove(0);
+      final var options = new DeploymentOptions(this.config()).setConfig(this.config());
+      if (verticle.isAnnotationPresent(Worker.class)) {
 
-				options.setWorker(true);
-			}
-			this.vertx.deployVerticle(verticle, options, deploy -> {
+        options.setWorker(true);
+      }
+      this.vertx.deployVerticle(verticle, options, deploy -> {
 
-				if (deploy.failed()) {
+        if (deploy.failed()) {
 
-					startPromise.fail(deploy.cause());
+          startPromise.fail(deploy.cause());
 
-				} else {
+        } else {
 
-					this.deployNextVerticle(verticlesToDeploy, startPromise);
-				}
-			});
+          this.deployNextVerticle(verticlesToDeploy, startPromise);
+        }
+      });
 
-		}
+    }
 
-	}
+  }
 
-	/**
-	 * Return the verticle classes to deploy.
-	 *
-	 * @return the classes of the verticles to deploy.
-	 */
-	protected abstract Class<? extends AbstractVerticle>[] getVerticleClassesToDeploy();
+  /**
+   * Return the verticle classes to deploy.
+   *
+   * @return the classes of the verticles to deploy.
+   */
+  protected abstract Class<? extends AbstractVerticle>[] getVerticleClassesToDeploy();
 
 }

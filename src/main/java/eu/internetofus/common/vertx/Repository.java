@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.vertx;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -83,9 +81,9 @@ public class Repository {
 
       } else {
 
-        final long total = count.result().longValue();
-        final int offset = options.getSkip();
-        final JsonObject page = new JsonObject().put("offset", offset).put("total", total);
+        final var total = count.result().longValue();
+        final var offset = options.getSkip();
+        final var page = new JsonObject().put("offset", offset).put("total", total);
         if (total == 0 || offset >= total) {
 
           searchHandler.handle(Future.succeededFuture(page));
@@ -100,7 +98,7 @@ public class Repository {
 
             } else {
 
-              final List<JsonObject> objects = find.result();
+              final var objects = find.result();
               if (map != null) {
 
                 objects.stream().forEach(map);
@@ -160,11 +158,11 @@ public class Repository {
 
     } else {
 
-      final JsonObject setFields = new JsonObject();
-      final JsonObject unsetFields = new JsonObject();
+      final var setFields = new JsonObject();
+      final var unsetFields = new JsonObject();
       for (final String fieldName : updateModel.fieldNames()) {
 
-        final Object fieldValue = updateModel.getValue(fieldName);
+        final var fieldValue = updateModel.getValue(fieldName);
         if (fieldValue != null) {
 
           setFields.put(fieldName, fieldValue);
@@ -176,7 +174,7 @@ public class Repository {
 
       }
 
-      final JsonObject updateQuery = new JsonObject();
+      final var updateQuery = new JsonObject();
       if (!setFields.isEmpty()) {
 
         updateQuery.put("$set", setFields);
@@ -188,7 +186,7 @@ public class Repository {
 
       }
 
-      final UpdateOptions options = new UpdateOptions().setMulti(false);
+      final var options = new UpdateOptions().setMulti(false);
       this.pool.updateCollectionWithOptions(collectionName, query, updateQuery, options, update -> {
 
         if (update.failed()) {
@@ -231,7 +229,7 @@ public class Repository {
 
           try {
 
-            final JsonObject adaptedModel = map.apply(model);
+            final var adaptedModel = map.apply(model);
             storeHandler.handle(Future.succeededFuture(adaptedModel));
 
           } catch (final Throwable throwable) {
@@ -308,17 +306,17 @@ public class Repository {
 
     } else {
 
-      final Iterator<String> iter = values.iterator();
+      final var iter = values.iterator();
       if (!iter.hasNext()) {
 
         return null;
 
       } else {
 
-        JsonObject sort = new JsonObject();
-        for (int i = 0; iter.hasNext(); i++) {
+        var sort = new JsonObject();
+        for (var i = 0; iter.hasNext(); i++) {
 
-          String value = iter.next();
+          var value = iter.next();
           if (value == null) {
 
             throw new ValidationErrorException(codePrefix + "[" + i + "]", "An order item can not be 'null'.");
@@ -326,7 +324,7 @@ public class Repository {
           } else {
 
             value = value.trim();
-            int order = 1;
+            var order = 1;
             if (value.startsWith("+")) {
 
               value = value.substring(1);
@@ -343,7 +341,7 @@ public class Repository {
 
             } else {
 
-              String key = value;
+              var key = value;
               if (checkKey != null) {
 
                 key = checkKey.apply(value);

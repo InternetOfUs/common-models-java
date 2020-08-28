@@ -115,7 +115,7 @@ public abstract class WeNetTaskManagerTestCase {
   @Test
   public void shouldNotDoTranactionUpdateUndefinedTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransaction taskTransaction = new TaskTransaction();
+    final var taskTransaction = new TaskTransaction();
     WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction, testContext.failing(handler -> {
       testContext.completeNow();
 
@@ -134,14 +134,14 @@ public abstract class WeNetTaskManagerTestCase {
 
     new TaskTest().createModelExample(1, vertx, testContext, testContext.succeeding(task -> {
 
-      final WeNetTaskManager service = WeNetTaskManager.createProxy(vertx);
+      final var service = WeNetTaskManager.createProxy(vertx);
       service.createTask(task, testContext.succeeding(createdTask -> {
 
-        final String id = createdTask.id;
+        final var id = createdTask.id;
         service.retrieveTask(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
 
           assertThat(createdTask).isEqualTo(retrieve);
-          final Task taskToUpdate = Model.fromJsonObject(createdTask.toJsonObject(), Task.class);
+          final var taskToUpdate = Model.fromJsonObject(createdTask.toJsonObject(), Task.class);
           taskToUpdate.attributes = new JsonObject().put("newKey", "NEW VALUE");
           service.updateTask(id, taskToUpdate, testContext.succeeding(updatedTask -> testContext.verify(() -> {
 
@@ -223,11 +223,11 @@ public abstract class WeNetTaskManagerTestCase {
   @Test
   public void shouldCreateRetrieveAndDeleteTaskType(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType taskType = new TaskTypeTest().createModelExample(1);
-    final WeNetTaskManager service = WeNetTaskManager.createProxy(vertx);
+    final var taskType = new TaskTypeTest().createModelExample(1);
+    final var service = WeNetTaskManager.createProxy(vertx);
     service.createTaskType(taskType, testContext.succeeding(create -> {
 
-      final String id = create.id;
+      final var id = create.id;
       service.retrieveTaskType(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
 
         assertThat(create).isEqualTo(retrieve);

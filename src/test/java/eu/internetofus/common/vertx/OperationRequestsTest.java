@@ -50,79 +50,78 @@ import io.vertx.ext.web.api.OperationRequest;
  */
 public class OperationRequestsTest {
 
-	/**
-	 * Check return the default language.
-	 *
-	 * @param acceptLanguage header value.
-	 */
-	@ParameterizedTest(name = "Should return the default value for the Accept-Language= {0}")
-	@NullAndEmptySource
-	@ValueSource(strings = { "*", "es", "es-US,es;q=0.5" })
-	public void shouldAcceptLanguageByTheDefault(String acceptLanguage) {
+  /**
+   * Check return the default language.
+   *
+   * @param acceptLanguage header value.
+   */
+  @ParameterizedTest(name = "Should return the default value for the Accept-Language= {0}")
+  @NullAndEmptySource
+  @ValueSource(strings = { "*", "es", "es-US,es;q=0.5" })
+  public void shouldAcceptLanguageByTheDefault(final String acceptLanguage) {
 
-		final JsonObject headers = new JsonObject();
-		if (acceptLanguage != null) {
+    final var headers = new JsonObject();
+    if (acceptLanguage != null) {
 
-			headers.put(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage);
-		}
-		final OperationRequest request = new OperationRequest(new JsonObject().put("headers", headers));
-		assertThat(OperationRequests.acceptedLanguageIn(request, "en", "ca")).isEqualTo("en");
+      headers.put(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage);
+    }
+    final var request = new OperationRequest(new JsonObject().put("headers", headers));
+    assertThat(OperationRequests.acceptedLanguageIn(request, "en", "ca")).isEqualTo("en");
 
-	}
+  }
 
-	/**
-	 * Check accept a language defined on the requests.
-	 */
-	@Test
-	public void shouldAcceptLanguageInRequest() {
+  /**
+   * Check accept a language defined on the requests.
+   */
+  @Test
+  public void shouldAcceptLanguageInRequest() {
 
-		final JsonObject headers = new JsonObject();
-		headers.put(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, fr;q=0.9, en;q=0.8, ca;q=0.7, es;q=0.3,*;q=0.5");
-		final OperationRequest request = new OperationRequest(new JsonObject().put("headers", headers));
-		assertThat(OperationRequests.acceptedLanguageIn(request, "en", "ca", "es")).isEqualTo("ca");
+    final var headers = new JsonObject();
+    headers.put(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, fr;q=0.9, en;q=0.8, ca;q=0.7, es;q=0.3,*;q=0.5");
+    final var request = new OperationRequest(new JsonObject().put("headers", headers));
+    assertThat(OperationRequests.acceptedLanguageIn(request, "en", "ca", "es")).isEqualTo("ca");
 
-	}
+  }
 
-	/**
-	 * Check that convert a {@code null} array to a {@code null} list.
-	 */
-	@Test
-	public void shouldNullArrayBeNullListString() {
+  /**
+   * Check that convert a {@code null} array to a {@code null} list.
+   */
+  @Test
+  public void shouldNullArrayBeNullListString() {
 
-		assertThat(OperationRequests.toListString(null)).isNull();
+    assertThat(OperationRequests.toListString(null)).isNull();
 
-	}
+  }
 
-	/**
-	 * Check that convert an empty array to a {@code null} list.
-	 */
-	@Test
-	public void shouldEmptyArrayBeNullListString() {
+  /**
+   * Check that convert an empty array to a {@code null} list.
+   */
+  @Test
+  public void shouldEmptyArrayBeNullListString() {
 
-		assertThat(OperationRequests.toListString(new JsonArray())).isNull();
+    assertThat(OperationRequests.toListString(new JsonArray())).isNull();
 
-	}
+  }
 
-	/**
-	 * Check that convert an empty array to a string list.
-	 */
-	@Test
-	public void shouldArrayBeConvertedToListString() {
+  /**
+   * Check that convert an empty array to a string list.
+   */
+  @Test
+  public void shouldArrayBeConvertedToListString() {
 
-		assertThat(OperationRequests.toListString(new JsonArray().add("value").add("true").add("3")))
-				.isEqualTo(Arrays.asList("value", "true", "3"));
+    assertThat(OperationRequests.toListString(new JsonArray().add("value").add("true").add("3"))).isEqualTo(Arrays.asList("value", "true", "3"));
 
-	}
+  }
 
-	/**
-	 * Check that return an empty query object when it is not defiend.
-	 */
-	@Test
-	public void shouldEmptyQueryObjectWhenNotDefined() {
+  /**
+   * Check that return an empty query object when it is not defiend.
+   */
+  @Test
+  public void shouldEmptyQueryObjectWhenNotDefined() {
 
-		final OperationRequest context = new OperationRequest(new JsonObject());
-		assertThat(OperationRequests.getQueryParamters(context)).isEqualTo(new JsonObject());
+    final var context = new OperationRequest(new JsonObject());
+    assertThat(OperationRequests.getQueryParamters(context)).isEqualTo(new JsonObject());
 
-	}
+  }
 
 }

@@ -33,66 +33,65 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 
 /**
- * Abstract verticle to start the services to interact with the other WeNet
- * modules.
+ * Abstract verticle to start the services to interact with the other WeNet modules.
  *
  * @author UDT-IA, IIIA-CSIC
  */
 public abstract class AbstractServicesVerticle extends AbstractVerticle {
 
-	/**
-	 * The client to do the HTTP request to other components.
-	 */
-	protected WebClient client;
+  /**
+   * The client to do the HTTP request to other components.
+   */
+  protected WebClient client;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void start(Promise<Void> startPromise) throws Exception {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void start(final Promise<Void> startPromise) throws Exception {
 
-		try {
+    try {
 
-			// configure the web client
-			final JsonObject webClientConf = this.config().getJsonObject("webClient", new JsonObject());
-			final WebClientOptions options = new WebClientOptions(webClientConf);
-			this.client = WebClient.create(this.vertx, options);
+      // configure the web client
+      final var webClientConf = this.config().getJsonObject("webClient", new JsonObject());
+      final var options = new WebClientOptions(webClientConf);
+      this.client = WebClient.create(this.vertx, options);
 
-			final JsonObject serviceConf = this.config().getJsonObject("wenetComponents", new JsonObject());
-			this.registerServices(serviceConf);
+      final var serviceConf = this.config().getJsonObject("wenetComponents", new JsonObject());
+      this.registerServices(serviceConf);
 
-			startPromise.complete();
+      startPromise.complete();
 
-		} catch (final Throwable cause) {
+    } catch (final Throwable cause) {
 
-			startPromise.fail(cause);
-		}
-	}
+      startPromise.fail(cause);
+    }
+  }
 
-	/**
-	 * Called when has to register the services to the Vertx event bus.
-	 *
-	 * @param serviceConf configuration of the services.
-	 *
-	 * @throws Exception If can not register or create teh service to register.
-	 */
-	protected abstract void registerServices(JsonObject serviceConf) throws Exception;
+  /**
+   * Called when has to register the services to the Vertx event bus.
+   *
+   * @param serviceConf configuration of the services.
+   *
+   * @throws Exception If can not register or create teh service to register.
+   */
+  protected abstract void registerServices(JsonObject serviceConf) throws Exception;
 
-	/**
-	 * Close the web client.
-	 *
-	 * {@inheritDoc}
-	 *
-	 * @see #client
-	 */
-	@Override
-	public void stop() {
+  /**
+   * Close the web client.
+   *
+   * {@inheritDoc}
+   *
+   * @see #client
+   */
+  @Override
+  public void stop() {
 
-		if (this.client != null) {
+    if (this.client != null) {
 
-			this.client.close();
-			this.client = null;
-		}
-	}
+      this.client.close();
+      this.client = null;
+    }
+  }
 
 }

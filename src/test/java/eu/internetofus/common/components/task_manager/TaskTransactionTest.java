@@ -107,14 +107,14 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject profileConf = profileManagerMocker.getComponentConfiguration();
+    final var client = WebClient.create(vertx);
+    final var profileConf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, profileConf);
 
-    final JsonObject taskConf = taskManagerMocker.getComponentConfiguration();
+    final var taskConf = taskManagerMocker.getComponentConfiguration();
     WeNetTaskManager.register(vertx, client, taskConf);
 
-    final JsonObject conf = serviceMocker.getComponentConfiguration();
+    final var conf = serviceMocker.getComponentConfiguration();
     WeNetService.register(vertx, client, conf);
     WeNetServiceSimulator.register(vertx, client, conf);
 
@@ -127,7 +127,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   public TaskTransaction createModelExample(final int index) {
 
     assert index >= 0;
-    final TaskTransaction model = new TaskTransaction();
+    final var model = new TaskTransaction();
     model.taskId = "taskId" + index;
     model.label = "label" + index;
     model.attributes = new JsonObject().put("index", index);
@@ -150,12 +150,12 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
     final Promise<TaskTransaction> promise = Promise.promise();
     StoreServices.storeTaskExample(index, vertx, testContext, testContext.succeeding(task -> {
 
-      final TaskTransaction model = this.createModelExample(index);
+      final var model = this.createModelExample(index);
       model.taskId = task.id;
       promise.complete(model);
     }
 
-        ));
+    ));
 
     return promise.future();
 
@@ -174,7 +174,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleNotBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskTransaction model = this.createModelExample(index);
+    final var model = this.createModelExample(index);
     assertIsNotValid(model, "taskId", vertx, testContext);
 
   }

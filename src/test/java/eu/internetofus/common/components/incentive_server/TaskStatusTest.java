@@ -43,7 +43,7 @@ public class TaskStatusTest extends ModelTestCase<TaskStatus> {
    */
   @Override
   public TaskStatus createModelExample(final int index) {
-    final TaskStatus model = new TaskStatus();
+    final var model = new TaskStatus();
     model.user_id = "WeNet_user" + index;
     model.community_id = "WeNet_community_" + index;
     model.task_id = "WeNet_task" + index;

@@ -46,7 +46,7 @@ public class AppTest extends ModelTestCase<App> {
   @Override
   public App createModelExample(final int index) {
 
-    final App model = new App();
+    final var model = new App();
     model.appId = "appId_" + index;
     model.appToken = "token_" + index;
     model.messageCallbackUrl = "https://app.endpoint.com/messages/" + index;

@@ -57,7 +57,7 @@ public class WeNetIncentiveServerMocker extends AbstractComponentMocker {
    */
   public static WeNetIncentiveServerMocker start(final int port) {
 
-    final WeNetIncentiveServerMocker mocker = new WeNetIncentiveServerMocker();
+    final var mocker = new WeNetIncentiveServerMocker();
     mocker.start(port, null);
     return mocker;
   }

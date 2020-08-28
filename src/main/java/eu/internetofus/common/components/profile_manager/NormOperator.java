@@ -34,25 +34,25 @@ package eu.internetofus.common.components.profile_manager;
 // @Schema(description = "The possible norms operators")
 public enum NormOperator {
 
-	/**
-	 * Equals operator.
-	 */
-	EQUALS,
-	/**
-	 * Less than operator.
-	 */
-	LESS_THAN,
-	/**
-	 * Greater than operator.
-	 */
-	GREATER_THAN,
-	/**
-	 * Less or equals than operator.
-	 */
-	LESS_EQ_THAN,
-	/**
-	 * Greater or equals than operator.
-	 */
-	GREATER_EQ_THAN;
+  /**
+   * Equals operator.
+   */
+  EQUALS,
+  /**
+   * Less than operator.
+   */
+  LESS_THAN,
+  /**
+   * Greater than operator.
+   */
+  GREATER_THAN,
+  /**
+   * Less or equals than operator.
+   */
+  LESS_EQ_THAN,
+  /**
+   * Greater or equals than operator.
+   */
+  GREATER_EQ_THAN;
 
 }

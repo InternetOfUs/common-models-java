@@ -86,8 +86,8 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final WebClient client = WebClient.create(vertx);
-    final JsonObject taskConf = taskManagerMocker.getComponentConfiguration();
+    final var client = WebClient.create(vertx);
+    final var taskConf = taskManagerMocker.getComponentConfiguration();
     WeNetTaskManager.register(vertx, client, taskConf);
 
   }
@@ -98,7 +98,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Override
   public TaskType createModelExample(final int index) {
 
-    final TaskType model = new TaskType();
+    final var model = new TaskType();
     model.name = "name_" + index;
     model.description = "description_" + index;
     model.keywords = new ArrayList<>();
@@ -128,7 +128,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType model = this.createModelExample(index);
+    final var model = this.createModelExample(index);
     assertIsValid(model, vertx, testContext);
 
   }
@@ -146,7 +146,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
 
     WeNetTaskManager.createProxy(vertx).createTaskType(this.createModelExample(1), testContext.succeeding(created -> {
 
-      final TaskType model = this.createModelExample(1);
+      final var model = this.createModelExample(1);
       model.id = created.id;
       assertIsNotValid(model, "id", vertx, testContext);
 
@@ -165,7 +165,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldBeValidWithAnNotExistingId(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.id = UUID.randomUUID().toString();
     assertIsValid(model, vertx, testContext);
 
@@ -182,8 +182,8 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType target = this.createModelExample(1);
-    final TaskType source = this.createModelExample(23);
+    final var target = this.createModelExample(1);
+    final var source = this.createModelExample(23);
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
 
   }
@@ -199,7 +199,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
   }
@@ -215,7 +215,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotBeValidWithALargeName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.name = ValidationsTest.STRING_256;
     assertIsNotValid(model, "name", vertx, testContext);
 
@@ -232,7 +232,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldBeValidANameWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.name = "   1234567890   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.name).isEqualTo("1234567890"));
 
@@ -249,7 +249,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotBeValidWithALargeDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.description = ValidationsTest.STRING_1024;
     assertIsNotValid(model, "description", vertx, testContext);
 
@@ -266,7 +266,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldBeValidADescriptionWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.description = "   " + ValidationsTest.STRING_256 + "   ";
     assertIsValid(model, vertx, testContext, () -> assertThat(model.description).isEqualTo(ValidationsTest.STRING_256));
 
@@ -283,7 +283,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotBeValidWithALargeKeyword(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.keywords = new ArrayList<>();
     model.keywords.add("    ");
     model.keywords.add(ValidationsTest.STRING_256);
@@ -302,7 +302,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldBeValidAKeywordWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.keywords = new ArrayList<>();
     model.keywords.add(null);
     model.keywords.add("   1234567890   ");
@@ -324,7 +324,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotBeValidWithABadNorm(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.norms = new ArrayList<>();
     model.norms.add(new Norm());
     model.norms.add(new Norm());
@@ -345,7 +345,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotBeValidWithABadAttribute(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.attributes = new ArrayList<>();
     model.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
     model.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
@@ -365,7 +365,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotBeValidWithNullTransactions(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.transactions = null;
     assertIsNotValid(model, "transactions", vertx, testContext);
 
@@ -382,7 +382,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotBeValidWithEmptyTransactions(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType model = this.createModelExample(1);
+    final var model = this.createModelExample(1);
     model.transactions.clear();
     assertIsNotValid(model, "transactions", vertx, testContext);
 
@@ -399,8 +399,8 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotMergeWithALargeName(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType target = this.createModelExample(1);
-    final TaskType source = new TaskType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskType();
     source.name = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "name", vertx, testContext);
 
@@ -417,8 +417,8 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldMergeANameWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType target = this.createModelExample(1);
-    final TaskType source = new TaskType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskType();
     source.name = "   1234567890   ";
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.name).isEqualTo("1234567890"));
 
@@ -435,9 +435,9 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotMergeWithALargeDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.name = "name";
-    final TaskType source = new TaskType();
+    final var source = new TaskType();
     source.description = ValidationsTest.STRING_1024;
     assertCannotMerge(target, source, "description", vertx, testContext);
 
@@ -454,9 +454,9 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldMergeADescriptionWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.name = "name";
-    final TaskType source = new TaskType();
+    final var source = new TaskType();
     source.description = "   " + ValidationsTest.STRING_256 + "   ";
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.description).isEqualTo(ValidationsTest.STRING_256));
 
@@ -473,8 +473,8 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotMergeWithALargeKeyword(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType target = this.createModelExample(1);
-    final TaskType source = new TaskType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskType();
     source.keywords = new ArrayList<>();
     source.keywords.add(null);
     source.keywords.add("");
@@ -494,8 +494,8 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldMergeAKeywordWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType target = this.createModelExample(1);
-    final TaskType source = new TaskType();
+    final var target = this.createModelExample(1);
+    final var source = new TaskType();
     source.keywords = new ArrayList<>();
     source.keywords.add("");
     source.keywords.add("   1234567890   ");
@@ -518,13 +518,13 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotMergeWithABadNorm(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType source = new TaskType();
+    final var source = new TaskType();
     source.norms = new ArrayList<>();
     source.norms.add(new Norm());
     source.norms.add(new Norm());
     source.norms.add(new Norm());
     source.norms.get(1).attribute = ValidationsTest.STRING_256;
-    final TaskType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "norms[1].attribute", vertx, testContext);
 
   }
@@ -540,14 +540,14 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotMergeWithADuplicatedNormIds(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType source = new TaskType();
+    final var source = new TaskType();
     source.norms = new ArrayList<>();
     source.norms.add(new Norm());
     source.norms.add(new Norm());
     source.norms.add(new Norm());
     source.norms.get(1).id = "1";
     source.norms.get(2).id = "1";
-    final TaskType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.norms = new ArrayList<>();
     target.norms.add(new Norm());
     target.norms.get(0).id = "1";
@@ -566,11 +566,11 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldMergeWithNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.norms = new ArrayList<>();
     target.norms.add(new Norm());
     target.norms.get(0).id = "1";
-    final TaskType source = new TaskType();
+    final var source = new TaskType();
     source.norms = new ArrayList<>();
     source.norms.add(new Norm());
     source.norms.add(new Norm());
@@ -598,12 +598,12 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotMergeWithABadAttribute(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType source = new TaskType();
+    final var source = new TaskType();
     source.attributes = new ArrayList<>();
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
     source.attributes.add(new TaskAttributeType());
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
-    final TaskType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "attributes[1].name", vertx, testContext);
 
   }
@@ -619,10 +619,10 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldMergeWithAttributes(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     target.attributes = new ArrayList<>();
     target.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
-    final TaskType source = new TaskType();
+    final var source = new TaskType();
     source.attributes = new ArrayList<>();
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
     source.attributes.add(new TaskAttributeType());
@@ -650,13 +650,13 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotMergeWithDuplicatedAtttributes(final Vertx vertx, final VertxTestContext testContext) {
 
-    final TaskType source = new TaskType();
+    final var source = new TaskType();
     source.attributes = new ArrayList<>();
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
     source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
 
-    final TaskType target = this.createModelExample(1);
+    final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "attributes[2]", vertx, testContext);
 
   }

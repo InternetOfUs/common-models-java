@@ -57,7 +57,7 @@ public class WeNetProfileManagerMocker extends AbstractComponentMocker {
    */
   public static WeNetProfileManagerMocker start(final int port) {
 
-    final WeNetProfileManagerMocker mocker = new WeNetProfileManagerMocker();
+    final var mocker = new WeNetProfileManagerMocker();
     mocker.start(port, null);
     return mocker;
   }
