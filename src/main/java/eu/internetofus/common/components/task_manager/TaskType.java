@@ -203,7 +203,7 @@ public class TaskType extends ReflectionModel implements Model, Validable, Merge
         return model;
       });
 
-      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
       future = future.compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
         model.norms = mergedNorms;
       }));

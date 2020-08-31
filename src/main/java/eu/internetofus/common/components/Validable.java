@@ -43,7 +43,7 @@ public interface Validable {
    * @param vertx      the event bus infrastructure to use.
    *
    *
-   * @return the future that inform if the value is right. If it not right the cause will be a
+   * @return the future that inform if the value is right. If teh model is not valid the cause will be a
    *         {@link ValidationErrorException}.
    *
    * @see ValidationErrorException

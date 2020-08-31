@@ -307,24 +307,6 @@ public interface Merges {
   }
 
   /**
-   * Convert a validation action to a merge action.
-   *
-   * @param codePrefix the prefix of the code to use for the error message.
-   * @param vertx      the event bus infrastructure to use.
-   *
-   * @param <T>        type of {@link Validable} to convert to {@link Mergeable}.
-   *
-   * @return the mapper function that can validate a merged value.
-   *
-   * @see Future#compose(Function)
-   */
-  static <T extends Validable> Function<T, Future<T>> validateMerged(final String codePrefix, final Vertx vertx) {
-
-    return merged -> merged.validate(codePrefix, vertx).map(validation -> merged);
-
-  }
-
-  /**
    * Merge a field.
    *
    * @param target     field value to merge.

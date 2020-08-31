@@ -32,6 +32,7 @@ import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
+import eu.internetofus.common.components.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -109,7 +110,7 @@ public class ScoredLabel extends ReflectionModel implements Model, Validable, Me
       promise.complete(merged);
 
       // validate the merged value and set the id
-      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
 
     } else {
 

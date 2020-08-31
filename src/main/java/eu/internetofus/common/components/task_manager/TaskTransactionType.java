@@ -89,7 +89,7 @@ public class TaskTransactionType extends ReflectionModel implements Model, Valid
         merged.description = this.description;
       }
 
-      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
       future = future.compose(Merges.mergeTaskAttributeTypes(this.attributes, source.attributes, codePrefix + ".attributes", vertx, (model, mergedAttributes) -> {
         model.attributes = mergedAttributes;
       }));

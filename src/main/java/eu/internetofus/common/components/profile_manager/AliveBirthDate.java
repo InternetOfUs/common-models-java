@@ -76,17 +76,13 @@ public class AliveBirthDate extends ProfileDate {
 
   /**
    * {@inheritDoc}
+   *
+   * @see AliveBirthDate#AliveBirthDate
    */
   @Override
-  public Future<ProfileDate> merge(final ProfileDate source, final String codePrefix, final Vertx vertx) {
+  protected ProfileDate createProfileDate() {
 
-    return super.merge(source, codePrefix, vertx).compose(model -> {
-      final var date = new AliveBirthDate();
-      date.day = model.day;
-      date.month = model.month;
-      date.year = model.year;
-      return date.validate(codePrefix, vertx).map(empty -> date);
-    });
+    return new AliveBirthDate();
   }
 
 }

@@ -27,7 +27,6 @@
 package eu.internetofus.common.components.profile_manager;
 
 import eu.internetofus.common.components.Mergeable;
-import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
@@ -170,7 +169,7 @@ public class SocialNetworkRelationship extends ReflectionModel implements Model,
       promise.complete(merged);
 
       // validate the merged value and set the id
-      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
 
     } else {
 

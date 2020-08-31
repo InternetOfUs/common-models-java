@@ -32,7 +32,6 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import eu.internetofus.common.components.Mergeable;
-import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
@@ -207,7 +206,7 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
       promise.complete(merged);
 
       // validate the merged value and set the i<d
-      future = future.compose(Merges.validateMerged(codePrefix, vertx)).map(mergedValidatedModel -> {
+      future = future.compose(Validations.validateChain(codePrefix, vertx)).map(mergedValidatedModel -> {
 
         mergedValidatedModel.id = this.id;
         return mergedValidatedModel;

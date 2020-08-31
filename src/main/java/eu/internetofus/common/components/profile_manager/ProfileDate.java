@@ -113,7 +113,7 @@ public class ProfileDate extends ReflectionModel implements Model, Validable, Me
 
     if (source != null) {
 
-      final var merged = new ProfileDate();
+      final var merged = this.createProfileDate();
       if (source.year != null) {
 
         merged.year = source.year;
@@ -147,6 +147,16 @@ public class ProfileDate extends ReflectionModel implements Model, Validable, Me
 
     }
 
+  }
+
+  /**
+   * Create a new profile date to use when merge or update this model.
+   *
+   * @return a new profile date.
+   */
+  protected ProfileDate createProfileDate() {
+
+    return new ProfileDate();
   }
 
 }

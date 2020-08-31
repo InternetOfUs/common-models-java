@@ -27,7 +27,6 @@
 package eu.internetofus.common.components.profile_manager;
 
 import eu.internetofus.common.components.Mergeable;
-import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
@@ -122,7 +121,7 @@ public class Language extends ReflectionModel implements Model, Validable, Merge
         merged.level = this.level;
       }
       promise.complete(merged);
-      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
 
     } else {
 

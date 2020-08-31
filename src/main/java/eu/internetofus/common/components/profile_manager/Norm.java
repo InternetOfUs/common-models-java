@@ -29,7 +29,6 @@ package eu.internetofus.common.components.profile_manager;
 import java.util.UUID;
 
 import eu.internetofus.common.components.Mergeable;
-import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
@@ -147,7 +146,7 @@ public class Norm extends ReflectionModel implements Model, Validable, Mergeable
       promise.complete(merged);
 
       // validate the merged value and set the id
-      future = future.compose(Merges.validateMerged(codePrefix, vertx)).map(mergedValidatedModel -> {
+      future = future.compose(Validations.validateChain(codePrefix, vertx)).map(mergedValidatedModel -> {
 
         mergedValidatedModel.id = this.id;
         return mergedValidatedModel;

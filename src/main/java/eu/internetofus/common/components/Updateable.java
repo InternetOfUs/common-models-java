@@ -6,7 +6,7 @@
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * to use, copy, modify, update, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
@@ -30,26 +30,26 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 
 /**
- * This is implemented by any model that can be merged with another model to create a new model.
+ * This is implemented by any model that can be updated with another model to create a new model.
  *
- * @param <T> type of models that can be merged.
+ * @param <T> type of models that can be updated.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public interface Mergeable<T> {
+public interface Updateable<T> {
 
   /**
-   * Merge the current model with a new one creating a new one.
+   * Update the current model with a new one creating a new one.
    *
-   * @param source     model to merge with the current one.
+   * @param source     model to update with the current one.
    * @param codePrefix the prefix of the code to use for the error message.
    * @param vertx      the event bus infrastructure to use.
    *
-   * @return the future that provide the merged model that has to be valid. If it cannot merge to a new model the cause
+   * @return the future that provide the updated model that has to be valid. If it cannot update to a new model the cause
    *         will be a {@link ValidationErrorException}.
    *
    * @see ValidationErrorException
    */
-  Future<T> merge(T source, String codePrefix, Vertx vertx);
+  Future<T> update(T source, String codePrefix, Vertx vertx);
 
 }

@@ -27,7 +27,6 @@
 package eu.internetofus.common.components.task_manager;
 
 import eu.internetofus.common.components.Mergeable;
-import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
@@ -110,7 +109,7 @@ public class TaskGoal extends ReflectionModel implements Model, Validable, Merge
 
       promise.complete(merged);
 
-      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
 
     } else {
 

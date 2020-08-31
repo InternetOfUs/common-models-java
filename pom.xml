@@ -334,20 +334,9 @@
 			<plugin>
 				<artifactId>maven-pmd-plugin</artifactId>
 				<version>${maven-pmd-plugin-version}</version>
-				<executions>
-					<execution>
-						<id>named-logging-enforcement</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>check</goal>
-							<goal>cpd-check</goal>
-						</goals>
-						<configuration>
-							<verbose>true</verbose>
-						</configuration>
-					</execution>
-				</executions>
 				<configuration>
+					<failOnViolation>false</failOnViolation>
+					<printFailingErrors>true</printFailingErrors>
 					<linkXref>true</linkXref>
 					<sourceEncoding>utf-8</sourceEncoding>
 					<minimumTokens>100</minimumTokens>
@@ -361,6 +350,19 @@
 						<excludeRoot>target/generated-sources/annotations</excludeRoot>
 					</excludeRoots>
 				</configuration>
+				<executions>
+					<execution>
+						<id>pmd</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>check</goal>
+							<goal>cpd-check</goal>
+						</goals>
+						<configuration>
+							<verbose>true</verbose>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

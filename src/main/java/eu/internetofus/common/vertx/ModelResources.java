@@ -36,6 +36,7 @@ import org.tinylog.Logger;
 
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -171,21 +172,40 @@ public interface ModelResources {
 
     toModel(type, value, modelName, context, resultHandler, model -> {
 
-      final var codePrefix = "bad_" + modelName;
-      model.validate(codePrefix, vertx).onComplete(valid -> {
+      validate(vertx, model, modelName, context, resultHandler, success);
 
-        if (valid.failed()) {
+    });
 
-          final var cause = valid.cause();
-          Logger.trace(cause, "The {} is not a valid.\n{}", () -> model, () -> context.toJson().encodePrettily());
-          OperationReponseHandlers.responseFailedWith(resultHandler, Status.BAD_REQUEST, cause);
+  }
 
-        } else {
+  /**
+   * Validate a model.
+   *
+   * @param vertx         event bus to use.
+   * @param model         to verify.
+   * @param modelName     name of the type.
+   * @param context       of the request.
+   * @param resultHandler to inform of the response.
+   * @param success       component to call if the model is valid.
+   *
+   * @param <T>           type of model to validate.
+   */
+  static public <T extends Model & Validable> void validate(@NotNull final Vertx vertx, final T model, @NotNull final String modelName, @NotNull final OperationRequest context,
+      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
 
-          success.accept(model);
-        }
-      });
+    final var codePrefix = "bad_" + modelName;
+    model.validate(codePrefix, vertx).onComplete(valid -> {
 
+      if (valid.failed()) {
+
+        final var cause = valid.cause();
+        Logger.trace(cause, "The {} is not a valid.\n{}", () -> model, () -> context.toJson().encodePrettily());
+        OperationReponseHandlers.responseFailedWith(resultHandler, Status.BAD_REQUEST, cause);
+
+      } else {
+
+        success.accept(model);
+      }
     });
 
   }
@@ -266,7 +286,7 @@ public interface ModelResources {
   static public <T extends Model & Validable> void createModel(@NotNull final Vertx vertx, @NotNull final Class<T> type, final JsonObject value, @NotNull final String modelName, @NotNull final BiConsumer<T, Handler<AsyncResult<T>>> storer,
       @NotNull final OperationRequest context, final Handler<AsyncResult<OperationResponse>> resultHandler) {
 
-    createModel(vertx, type, value, modelName, storer, context, resultHandler, storedModel -> OperationReponseHandlers.responseWith(resultHandler, Status.CREATED, storedModel));
+    createModelChain(vertx, type, value, modelName, storer, context, resultHandler, storedModel -> OperationReponseHandlers.responseWith(resultHandler, Status.CREATED, storedModel));
 
   }
 
@@ -284,8 +304,8 @@ public interface ModelResources {
    *
    * @param <T>           type of model to create.
    */
-  static public <T extends Model & Validable> void createModel(@NotNull final Vertx vertx, @NotNull final Class<T> type, final JsonObject value, @NotNull final String modelName, @NotNull final BiConsumer<T, Handler<AsyncResult<T>>> storer,
-      @NotNull final OperationRequest context, final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
+  static public <T extends Model & Validable> void createModelChain(@NotNull final Vertx vertx, @NotNull final Class<T> type, final JsonObject value, @NotNull final String modelName,
+      @NotNull final BiConsumer<T, Handler<AsyncResult<T>>> storer, @NotNull final OperationRequest context, final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
 
     validate(vertx, type, value, modelName, context, resultHandler, validModel -> {
 
@@ -311,8 +331,7 @@ public interface ModelResources {
   static public <T extends Model & Mergeable<T>> void merge(@NotNull final T targetModel, final T sourceModel, @NotNull final Vertx vertx, @NotNull final String modelName, @NotNull final OperationRequest context,
       @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
 
-    final var codePrefix = "bad_" + modelName;
-    targetModel.merge(sourceModel, codePrefix, vertx).onComplete(merge -> {
+    targetModel.merge(sourceModel, "bad_" + modelName, vertx).onComplete(merge -> {
 
       if (merge.failed()) {
 
@@ -326,7 +345,7 @@ public interface ModelResources {
         if (targetModel.equals(mergedModel)) {
 
           Logger.trace("The merged model {} is equals to the original.\n{}", () -> mergedModel, () -> context.toJson().encodePrettily());
-          OperationReponseHandlers.responseWithErrorMessage(resultHandler, Status.BAD_REQUEST, codePrefix, "The merged '" + modelName + "' is equals to the current one.");
+          OperationReponseHandlers.responseWithErrorMessage(resultHandler, Status.BAD_REQUEST, modelName + "_to_merge_equal_to_original", "The merged '" + modelName + "' is equals to the current one.");
 
         } else {
 
@@ -356,7 +375,7 @@ public interface ModelResources {
       @NotNull final BiConsumer<String, Handler<AsyncResult<T>>> searcher, final JsonObject value, @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationRequest context,
       @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler) {
 
-    mergeModel(vertx, id, modelName, type, searcher, value, updater, context, resultHandler, (sourceModel, targetModel, mergedModel) -> OperationReponseHandlers.responseOk(resultHandler, mergedModel));
+    mergeModelChain(vertx, id, modelName, type, searcher, value, updater, context, resultHandler, (sourceModel, targetModel, mergedModel) -> OperationReponseHandlers.responseOk(resultHandler, mergedModel));
 
   }
 
@@ -376,7 +395,7 @@ public interface ModelResources {
    *
    * @param <T>           type of model to merge.
    */
-  static public <T extends Model & Mergeable<T>> void mergeModel(@NotNull final Vertx vertx, final String id, @NotNull final String modelName, @NotNull final Class<T> type,
+  static public <T extends Model & Mergeable<T>> void mergeModelChain(@NotNull final Vertx vertx, final String id, @NotNull final String modelName, @NotNull final Class<T> type,
       @NotNull final BiConsumer<String, Handler<AsyncResult<T>>> searcher, final JsonObject value, @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationRequest context,
       @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final MergeConsumer<T> success) {
 
@@ -423,6 +442,105 @@ public interface ModelResources {
         success.run();
       }
     };
+
+  }
+
+  /**
+   * Update a JSON model to the defined on the DB.
+   *
+   * @param vertx         event bus to use.
+   * @param id            identifier of the model.
+   * @param modelName     name of the model.
+   * @param type          of the model.
+   * @param value         of the model to update.
+   * @param searcher      the function used to obtain a model.
+   * @param updater       the function used to store a model.
+   * @param context       of the request.
+   * @param resultHandler to inform of the response.
+   * @param success       component to process the updated model.
+   *
+   * @param <T>           type of model to update.
+   */
+  static public <T extends Model & Updateable<T>> void updateModelChain(@NotNull final Vertx vertx, final String id, @NotNull final String modelName, @NotNull final Class<T> type, final JsonObject value,
+      @NotNull final BiConsumer<String, Handler<AsyncResult<T>>> searcher, @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationRequest context,
+      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final BiConsumer<T, T> success) {
+
+    toModel(type, value, modelName, context, resultHandler, sourceModel -> {
+
+      searcher.accept(id, retrieveModelHandler(id, modelName, context, resultHandler, targetModel -> {
+
+        update(targetModel, sourceModel, vertx, modelName, context, resultHandler, updatedModel -> {
+
+          updater.accept(updatedModel, updateModelHandler(updatedModel, context, resultHandler, () -> success.accept(targetModel, updatedModel)));
+
+        });
+
+      }));
+    });
+
+  }
+
+  /**
+   * Update a source model with the target one.
+   *
+   * @param targetModel   model with the default values.
+   * @param sourceModel   model to get the values.
+   * @param vertx         event bus to use.
+   * @param modelName     name of the type.
+   * @param context       of the request.
+   * @param resultHandler to inform of the response.
+   * @param success       component to call if the model is valid.
+   *
+   * @param <T>           type of model to update.
+   */
+  static public <T extends Model & Updateable<T>> void update(@NotNull final T targetModel, final T sourceModel, @NotNull final Vertx vertx, @NotNull final String modelName, @NotNull final OperationRequest context,
+      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
+
+    targetModel.update(sourceModel, "bad_" + modelName, vertx).onComplete(update -> {
+
+      if (update.failed()) {
+
+        final var cause = update.cause();
+        Logger.trace(cause, "The {} can not be updated with {}.\n{}", () -> sourceModel, () -> targetModel, () -> context.toJson().encodePrettily());
+        OperationReponseHandlers.responseFailedWith(resultHandler, Status.BAD_REQUEST, cause);
+
+      } else {
+
+        final var updatedModel = update.result();
+        if (targetModel.equals(updatedModel)) {
+
+          Logger.trace("The updated model {} is equals to the original.\n{}", () -> updatedModel, () -> context.toJson().encodePrettily());
+          OperationReponseHandlers.responseWithErrorMessage(resultHandler, Status.BAD_REQUEST, modelName + "_to_update_equal_to_original", "The updated '" + modelName + "' is equals to the current one.");
+
+        } else {
+
+          success.accept(updatedModel);
+        }
+      }
+    });
+
+  }
+
+  /**
+   * Update a JSON model to the defined on the DB and finish with an OK.
+   *
+   * @param vertx         event bus to use.
+   * @param id            identifier of the model.
+   * @param modelName     name of the model.
+   * @param type          of the model.
+   * @param value         of the model to update.
+   * @param searcher      the function used to obtain a model from an identifier.
+   * @param updater       the function used to store the updated model.
+   * @param context       of the request.
+   * @param resultHandler to inform of the response.
+   *
+   * @param <T>           type of model to update.
+   */
+  static public <T extends Model & Updateable<T>> void updateModel(@NotNull final Vertx vertx, final String id, @NotNull final String modelName, @NotNull final Class<T> type, final JsonObject value,
+      @NotNull final BiConsumer<String, Handler<AsyncResult<T>>> searcher, @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationRequest context,
+      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler) {
+
+    updateModelChain(vertx, id, modelName, type, value, searcher, updater, context, resultHandler, (targetModel, updatedModel) -> OperationReponseHandlers.responseOk(resultHandler, updatedModel));
 
   }
 

@@ -29,7 +29,6 @@ package eu.internetofus.common.components.profile_manager;
 import java.util.List;
 
 import eu.internetofus.common.components.Mergeable;
-import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -106,7 +105,7 @@ public class CommunityMember extends CreateUpdateTsDetails implements Validable,
         merged.privileges = this.privileges;
       }
 
-      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
       future = future.map(mergedValidatedModel -> {
 
         mergedValidatedModel._creationTs = this._creationTs;

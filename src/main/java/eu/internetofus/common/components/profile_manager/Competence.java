@@ -27,7 +27,6 @@
 package eu.internetofus.common.components.profile_manager;
 
 import eu.internetofus.common.components.Mergeable;
-import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
@@ -124,7 +123,7 @@ public class Competence extends ReflectionModel implements Model, Validable, Mer
       promise.complete(merged);
 
       // Validate the merged value
-      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
 
     } else {
 

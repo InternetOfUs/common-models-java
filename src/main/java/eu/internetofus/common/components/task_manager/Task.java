@@ -327,7 +327,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       model.norms = mergedNorms;
     }));
 
-    future = future.compose(Merges.validateMerged(codePrefix, vertx));
+    future = future.compose(Validations.validateChain(codePrefix, vertx));
 
     promise.complete(merged);
 

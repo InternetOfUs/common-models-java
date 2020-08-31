@@ -237,7 +237,7 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
       promise.complete(merged);
 
       // validate the merged value and set the id
-      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
 
     } else {
 

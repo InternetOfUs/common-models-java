@@ -510,4 +510,22 @@ public interface Validations {
 
     });
   }
+
+  /**
+   * VAlidate the model received from the chain of events.
+   *
+   * @param codePrefix the prefix of the code to use for the error message.
+   * @param vertx      the event bus infrastructure to use.
+   *
+   * @param <T>        type of {@link Validable} model to validate.
+   *
+   * @return the mapper function that can validate teh model received from the future chain.
+   *
+   * @see Future#compose(Function)
+   */
+  static <T extends Validable> Function<T, Future<T>> validateChain(final String codePrefix, final Vertx vertx) {
+
+    return model -> model.validate(codePrefix, vertx).map(validation -> model);
+
+  }
 }

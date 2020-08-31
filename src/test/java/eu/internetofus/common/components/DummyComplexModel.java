@@ -38,7 +38,7 @@ import io.vertx.core.Vertx;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class DummyComplexModel extends DummyModel implements Validable, Mergeable<DummyComplexModel> {
+public class DummyComplexModel extends DummyModel implements Validable, Mergeable<DummyComplexModel>, Updateable<DummyComplexModel> {
 
   /**
    * The index of the model.
@@ -72,7 +72,7 @@ public class DummyComplexModel extends DummyModel implements Validable, Mergeabl
       merged.siblings = source.siblings;
       future = future.compose(Merges.mergeFieldList(this.siblings, source.siblings, codePrefix + ".siblings", vertx, dummyComplexModel -> dummyComplexModel.id != null,
           (dummyCompleModel1, dummyComplexModel2) -> dummyCompleModel1.id.equals(dummyComplexModel2.id), (dummyComplexModel, siblings) -> dummyComplexModel.siblings = siblings));
-      future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
       future = future.map(mergedAndValidated -> {
 
         mergedAndValidated.id = this.id;
@@ -106,13 +106,42 @@ public class DummyComplexModel extends DummyModel implements Validable, Mergeabl
       }
       if (this.siblings != null) {
 
-        future = future.compose(Validations.validate(this.siblings, (d1, d2) -> d1.id.equals(d2.id), codePrefix, vertx));
+        future = future.compose(Validations.validate(this.siblings, (d1, d2) -> d1.id.equals(d2.id), codePrefix + ".siblings", vertx));
       }
       promise.complete();
 
     } catch (final ValidationErrorException validationError) {
 
       promise.fail(validationError);
+    }
+
+    return future;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<DummyComplexModel> update(final DummyComplexModel source, final String codePrefix, final Vertx vertx) {
+
+    final Promise<DummyComplexModel> promise = Promise.promise();
+    var future = promise.future();
+    if (source != null) {
+
+      final var updated = new DummyComplexModel();
+      updated.index = source.index;
+      updated.siblings = source.siblings;
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.map(updatedAndValidated -> {
+
+        updatedAndValidated.id = this.id;
+        return updatedAndValidated;
+      });
+      promise.complete(updated);
+
+    } else {
+
+      promise.complete(this);
     }
 
     return future;
