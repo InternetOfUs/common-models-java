@@ -26,6 +26,9 @@
 
 package eu.internetofus.common.components;
 
+import java.util.List;
+import java.util.UUID;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -41,6 +44,11 @@ public class DummyComplexModel extends DummyModel implements Validable, Mergeabl
    * The index of the model.
    */
   public String id;
+
+  /**
+   * The components that are siblings of the models.
+   */
+  public List<DummyComplexModel> siblings;
 
   /**
    * Create an empty model.
@@ -60,15 +68,16 @@ public class DummyComplexModel extends DummyModel implements Validable, Mergeabl
     if (source != null) {
 
       final var merged = new DummyComplexModel();
-      merged.id = source.id;
-      if (merged.id == null) {
-
-        merged.id = this.id;
-      }
-
       merged.index = source.index;
-
+      merged.siblings = source.siblings;
+      future = future.compose(Merges.mergeFieldList(this.siblings, source.siblings, codePrefix + ".siblings", vertx, dummyComplexModel -> dummyComplexModel.id != null,
+          (dummyCompleModel1, dummyComplexModel2) -> dummyCompleModel1.id.equals(dummyComplexModel2.id), (dummyComplexModel, siblings) -> dummyComplexModel.siblings = siblings));
       future = future.compose(Merges.validateMerged(codePrefix, vertx));
+      future = future.map(mergedAndValidated -> {
+
+        mergedAndValidated.id = this.id;
+        return mergedAndValidated;
+      });
       promise.complete(merged);
 
     } else {
@@ -87,10 +96,18 @@ public class DummyComplexModel extends DummyModel implements Validable, Mergeabl
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    final var future = promise.future();
+    var future = promise.future();
     try {
 
-      this.id = Validations.validateStringField(codePrefix, "id", 255, this.id);
+      this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
+      if (this.id == null) {
+
+        this.id = UUID.randomUUID().toString();
+      }
+      if (this.siblings != null) {
+
+        future = future.compose(Validations.validate(this.siblings, (d1, d2) -> d1.id.equals(d2.id), codePrefix, vertx));
+      }
       promise.complete();
 
     } catch (final ValidationErrorException validationError) {

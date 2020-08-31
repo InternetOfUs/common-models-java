@@ -34,8 +34,8 @@ import javax.ws.rs.core.Response.Status;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import eu.internetofus.common.components.DummyModel;
 import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.ValidationErrorException;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
@@ -64,10 +64,10 @@ public class OperationReponseHandlersTest {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.ACCEPTED.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
-      assertThat(reponse.getPayload().toString()).isEqualTo("{}");
+      assertThat(reponse.getPayload().toString()).isEqualTo("{\"index\":0}");
       testContext.completeNow();
 
-    })), Status.ACCEPTED, new ReflectionModel());
+    })), Status.ACCEPTED, new DummyModel());
 
   }
 

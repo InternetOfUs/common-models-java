@@ -31,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
+import java.util.ArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -272,7 +273,7 @@ public class ModelResourcesTest {
 
     final var context = new OperationRequest();
     final var vertx = Vertx.vertx();
-    ModelResources.validate(vertx, DummyComplexModel.class, new JsonObject(), "modelName", context, resultHandler, success);
+    ModelResources.validate(vertx, DummyComplexModel.class, new JsonObject().put("id", ValidationsTest.STRING_256), "modelName", context, resultHandler, success);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
@@ -283,8 +284,8 @@ public class ModelResourcesTest {
     assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
     final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
     assertThat(error).isNotNull();
-    assertThat(error.code).contains("modelName");
-    assertThat(error.message).contains("'id'");
+    assertThat(error.code).contains("modelName.id");
+    assertThat(error.message).contains("too large");
 
   }
 
@@ -320,7 +321,7 @@ public class ModelResourcesTest {
 
     final var context = new OperationRequest();
     final var vertx = Vertx.vertx();
-    ModelResources.createModel(vertx, DummyComplexModel.class, new JsonObject(), "modelName", storer, context, resultHandler);
+    ModelResources.createModel(vertx, DummyComplexModel.class, new JsonObject().put("id", ValidationsTest.STRING_256), "modelName", storer, context, resultHandler);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
@@ -332,7 +333,7 @@ public class ModelResourcesTest {
     final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
     assertThat(error).isNotNull();
     assertThat(error.code).contains("modelName");
-    assertThat(error.message).contains("'id'");
+    assertThat(error.message).contains("too large");
 
   }
 
@@ -433,7 +434,7 @@ public class ModelResourcesTest {
     final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
     assertThat(error).isNotNull();
     assertThat(error.code).contains("modelName");
-    assertThat(error.message).contains("'id'");
+    assertThat(error.message).contains("modelName");
 
   }
 
@@ -466,7 +467,7 @@ public class ModelResourcesTest {
     final var asyncResult = resultCaptor.getValue();
     assertThat(asyncResult.failed()).isFalse();
     final var result = asyncResult.result();
-    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+    assertThat(result.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
     final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
     assertThat(error).isNotNull();
     assertThat(error.code).contains("modelName");
@@ -491,7 +492,9 @@ public class ModelResourcesTest {
     final var context = new OperationRequest();
     final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(1);
-    source.id = ValidationsTest.STRING_256;
+    source.siblings = new ArrayList<>();
+    source.siblings.add(new DummyComplexModel());
+    source.siblings.get(0).id = ValidationsTest.STRING_256;
     ModelResources.mergeModel(vertx, "id", "modelName", DummyComplexModel.class, searcher, source.toJsonObject(), updater, context, resultHandler);
 
     @SuppressWarnings("unchecked")
@@ -509,8 +512,135 @@ public class ModelResourcesTest {
     assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
     final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
     assertThat(error).isNotNull();
-    assertThat(error.code).contains("modelName.id");
-    assertThat(error.message).contains("id");
+    assertThat(error.code).contains("modelName.siblings[0].id");
+    assertThat(error.message).contains("too large");
+
+  }
+
+  /**
+   * Should not merge a value because the merged value is equals to the original.
+   *
+   * @param resultHandler handler to manage the HTTP result.
+   * @param searcher      the function used to search a model.
+   * @param updater       the function used to update a model.
+   *
+   * @see ModelResources#mergeModel(Vertx, String, String, Class, BiConsumer, JsonObject, BiConsumer, OperationRequest,
+   *      Handler, MergeConsumer)
+   */
+  @Test
+  public void shouldNotMergeModelBecauseNoChanges(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
+      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> updater) {
+
+    final var context = new OperationRequest();
+    final var vertx = Vertx.vertx();
+    final var source = new DummyComplexModelTest().createModelExample(1);
+    ModelResources.mergeModel(vertx, "id", "modelName", DummyComplexModel.class, searcher, source.toJsonObject(), updater, context, resultHandler);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), storeCaptor.capture());
+    final var target = new DummyComplexModelTest().createModelExample(1);
+    storeCaptor.getValue().handle(Future.succeededFuture(target));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
+    assertThat(error).isNotNull();
+    assertThat(error.code).isEqualTo("bad_modelName");
+    assertThat(error.message).contains("modelName");
+
+  }
+
+  /**
+   * Should not merge a value because the update fails.
+   *
+   * @param resultHandler handler to manage the HTTP result.
+   * @param searcher      the function used to search a model.
+   * @param updater       the function used to update a model.
+   *
+   * @see ModelResources#mergeModel(Vertx, String, String, Class, BiConsumer, JsonObject, BiConsumer, OperationRequest,
+   *      Handler, MergeConsumer)
+   */
+  @Test
+  public void shouldNotMergeModelBecauseUpdateFails(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
+      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> updater) {
+
+    final var context = new OperationRequest();
+    final var vertx = Vertx.vertx();
+    final var source = new DummyComplexModelTest().createModelExample(2);
+    ModelResources.mergeModel(vertx, "id", "modelName", DummyComplexModel.class, searcher, source.toJsonObject(), updater, context, resultHandler);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), storeCaptor.capture());
+    final var target = new DummyComplexModelTest().createModelExample(1);
+    storeCaptor.getValue().handle(Future.succeededFuture(target));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<Void>>> updateCaptor = ArgumentCaptor.forClass(Handler.class);
+    verify(updater, timeout(30000).times(1)).accept(any(), updateCaptor.capture());
+    updateCaptor.getValue().handle(Future.failedFuture("Can not be updated"));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
+    assertThat(error).isNotNull();
+    assertThat(error.code).isNotEqualTo(error.message);
+
+  }
+
+  /**
+   * Should merge a model.
+   *
+   * @param resultHandler handler to manage the HTTP result.
+   * @param searcher      the function used to search a model.
+   * @param updater       the function used to update a model.
+   *
+   * @see ModelResources#mergeModel(Vertx, String, String, Class, BiConsumer, JsonObject, BiConsumer, OperationRequest,
+   *      Handler, MergeConsumer)
+   */
+  @Test
+  public void shouldMergeModel(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
+      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> updater) {
+
+    final var context = new OperationRequest();
+    final var vertx = Vertx.vertx();
+    final var source = new DummyComplexModelTest().createModelExample(2);
+    ModelResources.mergeModel(vertx, "id", "modelName", DummyComplexModel.class, searcher, source.toJsonObject(), updater, context, resultHandler);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), storeCaptor.capture());
+    final var target = new DummyComplexModelTest().createModelExample(1);
+    storeCaptor.getValue().handle(Future.succeededFuture(target));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<Void>>> updateCaptor = ArgumentCaptor.forClass(Handler.class);
+    verify(updater, timeout(30000).times(1)).accept(any(), updateCaptor.capture());
+    updateCaptor.getValue().handle(Future.succeededFuture());
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.OK.getStatusCode());
+    final var merged = Model.fromBuffer(result.getPayload(), DummyComplexModel.class);
+    assertThat(merged).isNotNull().isNotEqualTo(source).isNotEqualTo(target);
+    target.index = source.index;
+    target.siblings = source.siblings;
+    assertThat(merged).isEqualTo(target);
 
   }
 
