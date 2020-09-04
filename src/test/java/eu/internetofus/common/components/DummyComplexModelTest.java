@@ -28,6 +28,7 @@ package eu.internetofus.common.components;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -164,6 +165,26 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
     source.siblings.add(new DummyComplexModel());
     source.siblings.get(0).id = ValidationsTest.STRING_256;
     assertCannotMerge(target, source, "siblings[0].id", vertx, testContext);
+
+  }
+
+  /**
+   * Should not update with a bad sibling.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see DummyComplexModel#update(DummyComplexModel, String, Vertx)
+   */
+  @Test
+  public void shoudNotUpdateWithBadSibling(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new DummyComplexModel();
+    source.siblings = new ArrayList<>();
+    source.siblings.add(new DummyComplexModel());
+    source.siblings.get(0).id = ValidationsTest.STRING_256;
+    assertCannotUpdate(target, source, "siblings[0].id", vertx, testContext);
 
   }
 

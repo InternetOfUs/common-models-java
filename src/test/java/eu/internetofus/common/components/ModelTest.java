@@ -33,6 +33,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -141,12 +142,12 @@ public class ModelTest {
   @Test
   public void shouldNullArrayNotConvertToList() {
 
-    assertThat(Model.fromJsonArray(null, DummyModel.class)).isNull();
+    assertThat(Model.fromJsonArray((JsonArray) null, DummyModel.class)).isNull();
 
   }
 
   /**
-   * Check that convert an empty list to an empty array.
+   * Check that can not obtain list from a bad array.
    */
   @Test
   public void shoulBadValueOnArrayNotConvertedToList() {
@@ -156,7 +157,7 @@ public class ModelTest {
   }
 
   /**
-   * Check that convert an empty list to an empty array.
+   * Check that can not obtain list from a bad model on array.
    */
   @Test
   public void shoulBadModelOnArrayNotConvertedToList() {
@@ -191,6 +192,66 @@ public class ModelTest {
     final var array = Model.toJsonArray(models);
     assertThat(array).isNotNull();
     final var result = Model.fromJsonArray(array, DummyModel.class);
+    assertThat(result).isNotNull().isEqualTo(models);
+
+  }
+
+  /**
+   * Check that a {@code null} buffer return a null list.
+   */
+  @Test
+  public void shouldNullBufferNotConvertToList() {
+
+    assertThat(Model.fromJsonArray((Buffer) null, DummyModel.class)).isNull();
+
+  }
+
+  /**
+   * Check that can not obtain list from a bad array on buffer.
+   */
+  @Test
+  public void shoulBadValueOnBufferNotConvertedToList() {
+
+    assertThat(Model.fromJsonArray(Buffer.buffer("[1]"), DummyModel.class)).isNull();
+
+  }
+
+  /**
+   * Check that not convert a bad model.
+   */
+  @Test
+  public void shoulBadModelOnBufferNotConvertedToList() {
+
+    assertThat(Model.fromJsonArray(Buffer.buffer("[{\"undefined\":\"value\"}]"), DummyModel.class)).isNull();
+
+  }
+
+  /**
+   * Check that convert an empty list to an empty buffer.
+   */
+  @Test
+  public void shoulEmptyBufferConvertedToEmptyList() {
+
+    assertThat(Model.fromJsonArray(Buffer.buffer("[]"), DummyModel.class)).isEmpty();
+
+  }
+
+  /**
+   * Check that convert a list to models to buffer and vice verse.
+   */
+  @Test
+  public void shoulConvertFromToBufferBeEquals() {
+
+    final List<DummyModel> models = new ArrayList<>();
+    for (var i = 0; i < 10; i++) {
+
+      final var model = new DummyModelTest().createModelExample(i);
+      models.add(model);
+
+    }
+    final var array = Model.toJsonArray(models);
+    assertThat(array).isNotNull();
+    final var result = Model.fromJsonArray(array.toBuffer(), DummyModel.class);
     assertThat(result).isNotNull().isEqualTo(models);
 
   }

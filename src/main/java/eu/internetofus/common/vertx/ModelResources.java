@@ -26,8 +26,10 @@
 
 package eu.internetofus.common.vertx;
 
+import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Response.Status;
@@ -41,9 +43,8 @@ import eu.internetofus.common.components.Validable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.api.OperationRequest;
-import io.vertx.ext.web.api.OperationResponse;
 
 /**
  * Operations to apply to a model when is interact as web service.
@@ -58,153 +59,125 @@ public interface ModelResources {
   /**
    * Create the handler to manage the retrieve of a model.
    *
-   * @param id            identifier of the model.
-   * @param modelName     name of the model.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   * @param success       function to call if the model can be retrieved.
+   * @param model    context of the model to retrieve.
+   * @param searcher the function used to obtain the model.
+   * @param context  of the request.
+   * @param success  function to call if the model can be retrieved.
    *
-   * @param <T>           type of model to retrieve.
-   *
-   * @return the handler to manage the retrieved model.
+   * @param <T>      type of model to retrieve.
+   * @param <I>      type for the model identifier.
    */
-  static public <T extends Model> Handler<AsyncResult<T>> retrieveModelHandler(final String id, @NotNull final String modelName, @NotNull final OperationRequest context, @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler,
-      @NotNull final Consumer<T> success) {
-
-    return retrieve -> {
-
-      final var model = retrieve.result();
-      if (retrieve.failed() || model == null) {
-
-        final var cause = retrieve.cause();
-        Logger.trace(cause, "Not found {} associated to {}.\n{}", () -> modelName, () -> id, () -> context.toJson().encodePrettily());
-        OperationReponseHandlers.responseWithErrorMessage(resultHandler, Status.NOT_FOUND, "not_found_" + modelName, "Does not exist a '" + modelName + "' associated to '" + id + "'.");
-
-      } else {
-
-        Logger.trace("Found {}.\n{}", () -> model, () -> context.toJson().encodePrettily());
-        success.accept(model);
-      }
-    };
-
-  }
-
-  /**
-   * The method to call when is retrieving a model.
-   *
-   * @param searcher      the function used to obtain the model.
-   * @param id            identifier of the model.
-   * @param modelName     name of the model.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   *
-   * @param <T>           type of model to retrieve.
-   */
-  static public <T extends Model> void retrieveModel(@NotNull final BiConsumer<String, Handler<AsyncResult<T>>> searcher, final String id, @NotNull final String modelName, @NotNull final OperationRequest context,
-      final Handler<AsyncResult<OperationResponse>> resultHandler) {
-
-    searcher.accept(id, retrieveModelHandler(id, modelName, context, resultHandler, model -> OperationReponseHandlers.responseOk(resultHandler, model)));
-
-  }
-
-  /**
-   * Create the handler to manage the retrieve of a model.
-   *
-   * @param id            identifier of the model.
-   * @param modelName     name of the model.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   * @param success       function to call if the model can be retrieved.
-   *
-   * @return the handler to manage the retrieved model.
-   */
-  static public Handler<AsyncResult<Void>> deleteModelHandler(final String id, @NotNull final String modelName, @NotNull final OperationRequest context, @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler,
+  static public <T extends Model, I> void retrieveModelChain(@NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher, @NotNull final OperationContext context,
       @NotNull final Runnable success) {
 
-    return delete -> {
+    searcher.accept(model.id, retrieve -> {
 
-      if (delete.failed()) {
+      model.target = retrieve.result();
+      if (retrieve.failed() || model.target == null) {
 
-        final var cause = delete.cause();
-        Logger.trace(cause, "Cannot delete {} associated to {}.\n{}", () -> modelName, () -> id, () -> context.toJson().encodePrettily());
-        OperationReponseHandlers.responseWithErrorMessage(resultHandler, Status.NOT_FOUND, "not_found_" + modelName, "Does not exist a '" + modelName + "' associated to '" + id + "'.");
+        final var cause = retrieve.cause();
+        Logger.trace(cause, "Not found {}.\n{}", model, context);
+        OperationReponseHandlers.responseWithErrorMessage(context.resultHandler, Status.NOT_FOUND, "not_found_" + model.name, "Does not exist a '" + model.name + "' associated to '" + model.id + "'.");
 
       } else {
 
-        Logger.trace("Deleted {} associated to {}.\n{}", () -> modelName, () -> id, () -> context.toJson().encodePrettily());
+        Logger.trace("Found {}.\n{}", model, context);
         success.run();
       }
-    };
-
-  }
-
-  /**
-   * The method to call when is deleting a model.
-   *
-   * @param deleter       the function used to obtain the model.
-   * @param id            identifier of the model.
-   * @param modelName     name of the model.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   */
-  static public void deleteModel(@NotNull final BiConsumer<String, Handler<AsyncResult<Void>>> deleter, final String id, @NotNull final String modelName, @NotNull final OperationRequest context,
-      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler) {
-
-    deleter.accept(id, deleteModelHandler(id, modelName, context, resultHandler, () -> OperationReponseHandlers.responseOk(resultHandler)));
-
-  }
-
-  /**
-   * Validate a model.
-   *
-   * @param vertx         event bus to use.
-   * @param type          of model to validate.
-   * @param value         of the model to verify.
-   * @param modelName     name of the type.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   * @param success       component to call if the model is valid.
-   *
-   * @param <T>           type of model to validate.
-   */
-  static public <T extends Model & Validable> void validate(@NotNull final Vertx vertx, @NotNull final Class<T> type, final JsonObject value, @NotNull final String modelName, @NotNull final OperationRequest context,
-      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
-
-    toModel(type, value, modelName, context, resultHandler, model -> {
-
-      validate(vertx, model, modelName, context, resultHandler, success);
 
     });
 
   }
 
   /**
+   * The method to call when is retrieving a model.
+   *
+   * @param model    context of the model to retrieve.
+   * @param searcher the function used to obtain the model.
+   * @param context  of the request.
+   *
+   * @param <T>      type of model to retrieve.
+   * @param <I>      type for the model identifier.
+   */
+  static public <T extends Model, I> void retrieveModel(@NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher, @NotNull final OperationContext context) {
+
+    retrieveModelChain(model, searcher, context, () -> OperationReponseHandlers.responseOk(context.resultHandler, model.target));
+
+  }
+
+  /**
+   * Create the handler to manage the retrieve of a model.
+   *
+   * @param model   context of the model to delete.
+   * @param deleter the function used to obtain the model.
+   * @param context of the request.
+   * @param success function to call if the model can be retrieved.
+   *
+   * @param <T>     type of model to delete.
+   * @param <I>     type for the model identifier.
+   */
+  static public <T extends Model, I> void deleteModelChain(@NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<I, Handler<AsyncResult<Void>>> deleter, @NotNull final OperationContext context,
+      @NotNull final Runnable success) {
+
+    deleter.accept(model.id, delete -> {
+
+      if (delete.failed()) {
+
+        final var cause = delete.cause();
+        Logger.trace(cause, "Cannot delete {}.\n{}", model, context);
+        OperationReponseHandlers.responseWithErrorMessage(context.resultHandler, Status.NOT_FOUND, "not_found_" + model.name, "Does not exist a '" + model.name + "' associated to '" + model.id + "'.");
+
+      } else {
+
+        Logger.trace("Deleted {}.\n{}", model, context);
+        success.run();
+      }
+    });
+
+  }
+
+  /**
+   * The method to call when is deleting a model.
+   *
+   * @param model   context of the model to delete.
+   * @param deleter the function used to obtain the model.
+   * @param context of the request.
+   *
+   * @param <T>     type of model to delete.
+   * @param <I>     type for the model identifier.
+   */
+  static public <T extends Model, I> void deleteModel(@NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<I, Handler<AsyncResult<Void>>> deleter, @NotNull final OperationContext context) {
+
+    deleteModelChain(model, deleter, context, () -> OperationReponseHandlers.responseOk(context.resultHandler));
+
+  }
+
+  /**
    * Validate a model.
    *
-   * @param vertx         event bus to use.
-   * @param model         to verify.
-   * @param modelName     name of the type.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   * @param success       component to call if the model is valid.
+   * @param vertx   event bus to use.
+   * @param model   context of the model to validate.
+   * @param context of the request.
+   * @param success component to call if the model is valid.
    *
-   * @param <T>           type of model to validate.
+   * @param <T>     type of model to validate.
+   * @param <I>     type for the model identifier.
    */
-  static public <T extends Model & Validable> void validate(@NotNull final Vertx vertx, final T model, @NotNull final String modelName, @NotNull final OperationRequest context,
-      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
+  static public <T extends Model & Validable, I> void validate(@NotNull final Vertx vertx, @NotNull final ModelContext<T, I> model, @NotNull final OperationContext context, @NotNull final Runnable success) {
 
-    final var codePrefix = "bad_" + modelName;
-    model.validate(codePrefix, vertx).onComplete(valid -> {
+    final var codePrefix = "bad_" + model.name;
+    model.source.validate(codePrefix, vertx).onComplete(valid -> {
 
       if (valid.failed()) {
 
         final var cause = valid.cause();
-        Logger.trace(cause, "The {} is not a valid.\n{}", () -> model, () -> context.toJson().encodePrettily());
-        OperationReponseHandlers.responseFailedWith(resultHandler, Status.BAD_REQUEST, cause);
+        Logger.trace(cause, "The {} is not a valid.\n{}", model, context);
+        OperationReponseHandlers.responseFailedWith(context.resultHandler, Status.BAD_REQUEST, cause);
 
       } else {
 
-        success.accept(model);
+        model.value = model.source;
+        success.run();
       }
     });
 
@@ -213,104 +186,85 @@ public interface ModelResources {
   /**
    * Return the model described in a JSON.
    *
-   * @param type          of model to validate.
-   * @param value         of the model to verify.
-   * @param modelName     name of the type.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   * @param success       component to call if the model is valid.
+   * @param value   of the model to verify.
+   * @param model   context of the model to obtain.
+   * @param context of the request.
+   * @param success component to call when has obtained the model.
    *
-   * @param <T>           type of model to obtain form the JSON.
+   * @param <T>     type of model to obtain form the JSON.
+   * @param <I>     type for the model identifier.
    */
-  static public <T extends Model> void toModel(@NotNull final Class<T> type, final JsonObject value, @NotNull final String modelName, @NotNull final OperationRequest context,
-      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
+  static public <T extends Model, I> void toModel(final JsonObject value, @NotNull final ModelContext<T, I> model, @NotNull final OperationContext context, @NotNull final Runnable success) {
 
-    final var model = Model.fromJsonObject(value, type);
-    if (model == null) {
+    model.source = Model.fromJsonObject(value, model.type);
+    if (model.source == null) {
 
-      Logger.trace("The JSON does not represents a {}.\n{}\n{}", () -> type.getName(), () -> value.encodePrettily(), () -> context.toJson().encodePrettily());
-      OperationReponseHandlers.responseWithErrorMessage(resultHandler, Status.BAD_REQUEST, "bad_" + modelName, "The JSON does not represents a " + modelName + ".");
+      Logger.trace("The JSON does not represents a {}.\n{}\n{}", () -> model, () -> value.encodePrettily(), () -> context);
+      OperationReponseHandlers.responseWithErrorMessage(context.resultHandler, Status.BAD_REQUEST, "bad_" + model.name, "The JSON does not represents a " + model.name + ".");
 
     } else {
 
-      success.accept(model);
+      Logger.trace("Obtain model {}.\n{}", model, context);
+      success.run();
     }
 
   }
 
   /**
-   * Create the handler to manage the creation of a model.
+   * The method to call when is creating a model.
    *
-   * @param model         to store.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   * @param success       function to call if the model has been stored.
+   * @param vertx   event bus to use.
+   * @param value   of the model to verify.
+   * @param model   context of the model to create.
+   * @param storer  the function used to store the model.
+   * @param context of the request.
    *
-   * @param <T>           type of model to create.
-   *
-   * @return the handler to manage the created model.
+   * @param <T>     type of model to create.
+   * @param <I>     type of the model identifier.
    */
-  static public <T extends Model> Handler<AsyncResult<T>> createModelHandler(final T model, @NotNull final OperationRequest context, @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, final Consumer<T> success) {
+  static public <T extends Model & Validable, I> void createModel(@NotNull final Vertx vertx, final JsonObject value, @NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<T, Handler<AsyncResult<T>>> storer,
+      @NotNull final OperationContext context) {
 
-    return stored -> {
-
-      if (stored.failed()) {
-
-        final var cause = stored.cause();
-        Logger.trace(cause, "Cannot store {}.\n{}", () -> model, () -> context.toJson().encodePrettily());
-        OperationReponseHandlers.responseFailedWith(resultHandler, Status.BAD_REQUEST, cause);
-
-      } else {
-
-        final var storedModel = stored.result();
-        Logger.trace("Stored {}.\n{}", () -> storedModel, () -> context.toJson().encodePrettily());
-        success.accept(storedModel);
-      }
-    };
+    createModelChain(vertx, value, model, storer, context, () -> OperationReponseHandlers.responseWith(context.resultHandler, Status.CREATED, model.value));
 
   }
 
   /**
    * The method to call when is creating a model.
    *
-   * @param vertx         event bus to use.
-   * @param type          of model to validate.
-   * @param value         of the model to verify.
-   * @param modelName     name of the type.
-   * @param storer        the function used to store the model.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
+   * @param vertx   event bus to use.
+   * @param value   of the model to verify.
+   * @param model   to create.
+   * @param storer  the function used to store the model.
+   * @param context of the request.
+   * @param success component to manage the created model.
    *
-   * @param <T>           type of model to create.
+   * @param <T>     type of model to create.
+   * @param <I>     type of the model identifier.
    */
-  static public <T extends Model & Validable> void createModel(@NotNull final Vertx vertx, @NotNull final Class<T> type, final JsonObject value, @NotNull final String modelName, @NotNull final BiConsumer<T, Handler<AsyncResult<T>>> storer,
-      @NotNull final OperationRequest context, final Handler<AsyncResult<OperationResponse>> resultHandler) {
+  static public <T extends Model & Validable, I> void createModelChain(@NotNull final Vertx vertx, final JsonObject value, @NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<T, Handler<AsyncResult<T>>> storer,
+      @NotNull final OperationContext context, @NotNull final Runnable success) {
 
-    createModelChain(vertx, type, value, modelName, storer, context, resultHandler, storedModel -> OperationReponseHandlers.responseWith(resultHandler, Status.CREATED, storedModel));
+    toModel(value, model, context, () -> {
 
-  }
+      validate(vertx, model, context, () -> {
 
-  /**
-   * The method to call when is creating a model.
-   *
-   * @param vertx         event bus to use.
-   * @param type          of model to validate.
-   * @param value         of the model to verify.
-   * @param modelName     name of the type.
-   * @param storer        the function used to store the model.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   * @param success       component to manage the created model.
-   *
-   * @param <T>           type of model to create.
-   */
-  static public <T extends Model & Validable> void createModelChain(@NotNull final Vertx vertx, @NotNull final Class<T> type, final JsonObject value, @NotNull final String modelName,
-      @NotNull final BiConsumer<T, Handler<AsyncResult<T>>> storer, @NotNull final OperationRequest context, final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
+        storer.accept(model.value, stored -> {
 
-    validate(vertx, type, value, modelName, context, resultHandler, validModel -> {
+          if (stored.failed()) {
 
-      storer.accept(validModel, createModelHandler(validModel, context, resultHandler, storedModel -> OperationReponseHandlers.responseWith(resultHandler, Status.CREATED, storedModel)));
+            final var cause = stored.cause();
+            Logger.trace(cause, "Cannot store {}.\n{}", model, context);
+            OperationReponseHandlers.responseFailedWith(context.resultHandler, Status.BAD_REQUEST, cause);
 
+          } else {
+
+            model.value = stored.result();
+            Logger.trace("Stored {}.\n{}", model, context);
+            success.run();
+          }
+        });
+      });
     });
 
   }
@@ -318,38 +272,35 @@ public interface ModelResources {
   /**
    * Merge a source model with the target one.
    *
-   * @param targetModel   model with the default values.
-   * @param sourceModel   model to get the values.
-   * @param vertx         event bus to use.
-   * @param modelName     name of the type.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   * @param success       component to call if the model is valid.
+   * @param vertx   event bus to use.
+   * @param model   to merge.
+   * @param context of the request.
+   * @param success component to call if the model is valid.
    *
-   * @param <T>           type of model to merge.
+   * @param <T>     type of model to merge.
+   * @param <I>     type of the model identifier.
    */
-  static public <T extends Model & Mergeable<T>> void merge(@NotNull final T targetModel, final T sourceModel, @NotNull final Vertx vertx, @NotNull final String modelName, @NotNull final OperationRequest context,
-      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
+  static public <T extends Model & Mergeable<T>, I> void merge(@NotNull final Vertx vertx, @NotNull final ModelContext<T, I> model, @NotNull final OperationContext context, @NotNull final Runnable success) {
 
-    targetModel.merge(sourceModel, "bad_" + modelName, vertx).onComplete(merge -> {
+    model.target.merge(model.source, "bad_" + model.name, vertx).onComplete(merge -> {
 
       if (merge.failed()) {
 
         final var cause = merge.cause();
-        Logger.trace(cause, "The {} can not be merged with {}.\n{}", () -> sourceModel, () -> targetModel, () -> context.toJson().encodePrettily());
-        OperationReponseHandlers.responseFailedWith(resultHandler, Status.BAD_REQUEST, cause);
+        Logger.trace(cause, "The {} can not be merged with {}.\n{}", () -> model.source, () -> model.target, () -> context);
+        OperationReponseHandlers.responseFailedWith(context.resultHandler, Status.BAD_REQUEST, cause);
 
       } else {
 
-        final var mergedModel = merge.result();
-        if (targetModel.equals(mergedModel)) {
+        model.value = merge.result();
+        if (model.target.equals(model.value)) {
 
-          Logger.trace("The merged model {} is equals to the original.\n{}", () -> mergedModel, () -> context.toJson().encodePrettily());
-          OperationReponseHandlers.responseWithErrorMessage(resultHandler, Status.BAD_REQUEST, modelName + "_to_merge_equal_to_original", "The merged '" + modelName + "' is equals to the current one.");
+          Logger.trace("The merged model {} is equals to the original.\n{}", () -> model.value, () -> context);
+          OperationReponseHandlers.responseWithErrorMessage(context.resultHandler, Status.BAD_REQUEST, model.name + "_to_merge_equal_to_original", "The merged '" + model.name + "' is equals to the current one.");
 
         } else {
 
-          success.accept(mergedModel);
+          success.run();
         }
       }
     });
@@ -359,123 +310,107 @@ public interface ModelResources {
   /**
    * Merge a JSON model to the defined on the DB and finish with an OK.
    *
-   * @param vertx         event bus to use.
-   * @param id            identifier of the model.
-   * @param modelName     name of the model.
-   * @param type          of the model.
-   * @param value         of the model to merge.
-   * @param searcher      the function used to obtain a model.
-   * @param updater       the function used to update a model.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
+   * @param vertx    event bus to use.
+   * @param value    of the model to merge.
+   * @param model    context of the model to merge.
+   * @param searcher the function used to obtain a model.
+   * @param updater  the function used to update a model.
+   * @param context  of the request.
    *
-   * @param <T>           type of model to merge.
+   * @param <T>      type of model to merge.
+   * @param <I>      type of the model identifier.
    */
-  static public <T extends Model & Mergeable<T>> void mergeModel(@NotNull final Vertx vertx, final String id, @NotNull final String modelName, @NotNull final Class<T> type,
-      @NotNull final BiConsumer<String, Handler<AsyncResult<T>>> searcher, final JsonObject value, @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationRequest context,
-      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler) {
+  static public <T extends Model & Mergeable<T>, I> void mergeModel(@NotNull final Vertx vertx, final JsonObject value, @NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
+      @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationContext context) {
 
-    mergeModelChain(vertx, id, modelName, type, searcher, value, updater, context, resultHandler, (sourceModel, targetModel, mergedModel) -> OperationReponseHandlers.responseOk(resultHandler, mergedModel));
+    mergeModelChain(vertx, value, model, searcher, updater, context, () -> OperationReponseHandlers.responseOk(context.resultHandler, model.value));
 
   }
 
   /**
    * Merge a JSON model to the defined on the DB.
    *
-   * @param vertx         event bus to use.
-   * @param id            identifier of the model.
-   * @param modelName     name of the model.
-   * @param type          of the model.
-   * @param value         of the model to merge.
-   * @param searcher      the function used to obtain a model.
-   * @param updater       the function used to update a model.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   * @param success       component to process the merged model.
+   * @param vertx    event bus to use.
+   * @param value    of the model to merge.
+   * @param model    context of the model to merge.
+   * @param searcher the function used to obtain a model.
+   * @param updater  the function used to update a model.
+   * @param context  of the request.
+   * @param success  component to process the merged model.
    *
-   * @param <T>           type of model to merge.
+   * @param <T>      type of model to merge.
+   * @param <I>      type of the model identifier.
    */
-  static public <T extends Model & Mergeable<T>> void mergeModelChain(@NotNull final Vertx vertx, final String id, @NotNull final String modelName, @NotNull final Class<T> type,
-      @NotNull final BiConsumer<String, Handler<AsyncResult<T>>> searcher, final JsonObject value, @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationRequest context,
-      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final MergeConsumer<T> success) {
+  static public <T extends Model & Mergeable<T>, I> void mergeModelChain(@NotNull final Vertx vertx, final JsonObject value, @NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
+      @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationContext context, @NotNull final Runnable success) {
 
-    toModel(type, value, modelName, context, resultHandler, sourceModel -> {
+    toModel(value, model, context, () -> {
 
-      searcher.accept(id, retrieveModelHandler(id, modelName, context, resultHandler, targetModel -> {
+      retrieveModelChain(model, searcher, context, () -> {
 
-        merge(targetModel, sourceModel, vertx, modelName, context, resultHandler, mergedModel -> {
+        merge(vertx, model, context, () -> updateModelChain(model, updater, context, success));
 
-          updater.accept(mergedModel, updateModelHandler(mergedModel, context, resultHandler, () -> success.accept​(sourceModel, targetModel, mergedModel)));
-
-        });
-      }));
-
+      });
     });
-
-  }
-
-  /**
-   * Update the handler to manage the update of a model.
-   *
-   * @param model         to store.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   * @param success       function to call if the model has been stored.
-   *
-   * @param <T>           type of model to update.
-   *
-   * @return the handler to manage the updated model.
-   */
-  static public <T extends Model> Handler<AsyncResult<Void>> updateModelHandler(final T model, @NotNull final OperationRequest context, @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, final Runnable success) {
-
-    return stored -> {
-
-      if (stored.failed()) {
-
-        final var cause = stored.cause();
-        Logger.trace(cause, "Cannot update {}.\n{}", () -> model, () -> context.toJson().encodePrettily());
-        OperationReponseHandlers.responseFailedWith(resultHandler, Status.BAD_REQUEST, cause);
-
-      } else {
-
-        Logger.trace("Updated {}.\n{}", () -> model, () -> context.toJson().encodePrettily());
-        success.run();
-      }
-    };
 
   }
 
   /**
    * Update a JSON model to the defined on the DB.
    *
-   * @param vertx         event bus to use.
-   * @param id            identifier of the model.
-   * @param modelName     name of the model.
-   * @param type          of the model.
-   * @param value         of the model to update.
-   * @param searcher      the function used to obtain a model.
-   * @param updater       the function used to store a model.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   * @param success       component to process the updated model.
+   * @param vertx    event bus to use.
+   * @param value    of the model to update.
+   * @param model    context of the model to update.
+   * @param searcher the function used to obtain a model.
+   * @param updater  the function used to store a model.
+   * @param context  of the request.
+   * @param success  component to process the updated model.
    *
-   * @param <T>           type of model to update.
+   * @param <T>      type of model to update.
+   * @param <I>      type of the model identifier.
    */
-  static public <T extends Model & Updateable<T>> void updateModelChain(@NotNull final Vertx vertx, final String id, @NotNull final String modelName, @NotNull final Class<T> type, final JsonObject value,
-      @NotNull final BiConsumer<String, Handler<AsyncResult<T>>> searcher, @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationRequest context,
-      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final BiConsumer<T, T> success) {
+  static public <T extends Model & Updateable<T>, I> void updateModelChain(@NotNull final Vertx vertx, final JsonObject value, @NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
+      @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationContext context, @NotNull final Runnable success) {
 
-    toModel(type, value, modelName, context, resultHandler, sourceModel -> {
+    toModel(value, model, context, () -> {
 
-      searcher.accept(id, retrieveModelHandler(id, modelName, context, resultHandler, targetModel -> {
+      retrieveModelChain(model, searcher, context, () -> {
 
-        update(targetModel, sourceModel, vertx, modelName, context, resultHandler, updatedModel -> {
+        update(vertx, model, context, () -> updateModelChain(model, updater, context, success));
 
-          updater.accept(updatedModel, updateModelHandler(updatedModel, context, resultHandler, () -> success.accept(targetModel, updatedModel)));
+      });
+    });
 
-        });
+  }
 
-      }));
+  /**
+   * Update a model into the DB.
+   *
+   * @param model   context of the model to update.
+   * @param updater the function used to store a model.
+   * @param context of the request.
+   * @param success component to process the updated model.
+   *
+   * @param <T>     type of model to update.
+   * @param <I>     type of the model identifier.
+   */
+  static public <T extends Model, I> void updateModelChain(@NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationContext context,
+      @NotNull final Runnable success) {
+
+    updater.accept(model.value, stored -> {
+
+      if (stored.failed()) {
+
+        final var cause = stored.cause();
+        Logger.trace(cause, "Cannot update {}.\n{}", model, context);
+        OperationReponseHandlers.responseFailedWith(context.resultHandler, Status.BAD_REQUEST, cause);
+
+      } else {
+
+        Logger.trace("Updated {}.\n{}", model, context);
+        success.run();
+      }
+
     });
 
   }
@@ -483,38 +418,35 @@ public interface ModelResources {
   /**
    * Update a source model with the target one.
    *
-   * @param targetModel   model with the default values.
-   * @param sourceModel   model to get the values.
-   * @param vertx         event bus to use.
-   * @param modelName     name of the type.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
-   * @param success       component to call if the model is valid.
+   * @param vertx   event bus to use.
+   * @param model   context of the model to update.
+   * @param context of the request.
+   * @param success component to call if the model is valid.
    *
-   * @param <T>           type of model to update.
+   * @param <T>     type of model to update.
+   * @param <I>     type of the model identifier.
    */
-  static public <T extends Model & Updateable<T>> void update(@NotNull final T targetModel, final T sourceModel, @NotNull final Vertx vertx, @NotNull final String modelName, @NotNull final OperationRequest context,
-      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler, @NotNull final Consumer<T> success) {
+  static public <T extends Model & Updateable<T>, I> void update(@NotNull final Vertx vertx, @NotNull final ModelContext<T, I> model, @NotNull final OperationContext context, @NotNull final Runnable success) {
 
-    targetModel.update(sourceModel, "bad_" + modelName, vertx).onComplete(update -> {
+    model.target.update(model.source, "bad_" + model.name, vertx).onComplete(update -> {
 
       if (update.failed()) {
 
         final var cause = update.cause();
-        Logger.trace(cause, "The {} can not be updated with {}.\n{}", () -> sourceModel, () -> targetModel, () -> context.toJson().encodePrettily());
-        OperationReponseHandlers.responseFailedWith(resultHandler, Status.BAD_REQUEST, cause);
+        Logger.trace(cause, "The {} can not be updated with {}.\n{}", () -> model, () -> model.source, () -> context);
+        OperationReponseHandlers.responseFailedWith(context.resultHandler, Status.BAD_REQUEST, cause);
 
       } else {
 
-        final var updatedModel = update.result();
-        if (targetModel.equals(updatedModel)) {
+        model.value = update.result();
+        if (model.target.equals(model.value)) {
 
-          Logger.trace("The updated model {} is equals to the original.\n{}", () -> updatedModel, () -> context.toJson().encodePrettily());
-          OperationReponseHandlers.responseWithErrorMessage(resultHandler, Status.BAD_REQUEST, modelName + "_to_update_equal_to_original", "The updated '" + modelName + "' is equals to the current one.");
+          Logger.trace("The updated model {} is equals to the original.\n{}", model, context);
+          OperationReponseHandlers.responseWithErrorMessage(context.resultHandler, Status.BAD_REQUEST, model.name + "_to_update_equal_to_original", "The updated '" + model.name + "' is equals to the current one.");
 
         } else {
 
-          success.accept(updatedModel);
+          success.run();
         }
       }
     });
@@ -524,23 +456,305 @@ public interface ModelResources {
   /**
    * Update a JSON model to the defined on the DB and finish with an OK.
    *
-   * @param vertx         event bus to use.
-   * @param id            identifier of the model.
-   * @param modelName     name of the model.
-   * @param type          of the model.
-   * @param value         of the model to update.
-   * @param searcher      the function used to obtain a model from an identifier.
-   * @param updater       the function used to store the updated model.
-   * @param context       of the request.
-   * @param resultHandler to inform of the response.
+   * @param vertx    event bus to use.
+   * @param value    of the model to update.
+   * @param model    context of the model to update.
+   * @param searcher the function used to obtain a model from an identifier.
+   * @param updater  the function used to store the updated model.
+   * @param context  of the request.
    *
-   * @param <T>           type of model to update.
+   * @param <T>      type of model to update.
+   * @param <I>      type of the model identifier.
    */
-  static public <T extends Model & Updateable<T>> void updateModel(@NotNull final Vertx vertx, final String id, @NotNull final String modelName, @NotNull final Class<T> type, final JsonObject value,
-      @NotNull final BiConsumer<String, Handler<AsyncResult<T>>> searcher, @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationRequest context,
-      @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler) {
+  static public <T extends Model & Updateable<T>, I> void updateModel(@NotNull final Vertx vertx, final JsonObject value, @NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
+      @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationContext context) {
 
-    updateModelChain(vertx, id, modelName, type, value, searcher, updater, context, resultHandler, (targetModel, updatedModel) -> OperationReponseHandlers.responseOk(resultHandler, updatedModel));
+    updateModelChain(vertx, value, model, searcher, updater, context, () -> OperationReponseHandlers.responseOk(context.resultHandler, model.value));
+
+  }
+
+  /**
+   * Retrieve a field defined into a model.
+   *
+   * @param model    context of the model to retrieve.
+   * @param searcher the function used to obtain a model from an identifier.
+   * @param getField return the field value associated to a model.
+   * @param context  of the request.
+   *
+   * @param <T>      type of model that contains the fields.
+   * @param <E>      type of the field.
+   */
+  static public <T extends Model, E extends Model, I> void retrieveModelField(@NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
+      @NotNull final OperationContext context) {
+
+    retrieveModelChain(model, searcher, context, () -> {
+
+      final List<E> field = getField.apply(model.target);
+      JsonArray array = null;
+      if (field == null) {
+
+        array = new JsonArray();
+
+      } else {
+
+        array = Model.toJsonArray(field);
+      }
+
+      Logger.trace("For {} retrieve {}.\n{}", model, field, context);
+      OperationReponseHandlers.responseOk(context.resultHandler, array);
+
+    });
+
+  }
+
+  /**
+   * Retrieve an element of a field defined into a model and return the element.
+   *
+   * @param element       context of the field to retrieve.
+   * @param searcher      the function used to obtain a model from an identifier.
+   * @param getField      return the field value associated to a model.
+   * @param searchElement return the index of the element that has the specified identifier.
+   * @param context       of the request.
+   *
+   * @param <T>           type of model that contains the fields.
+   * @param <IT>          type of the model identifier.
+   * @param <E>           type of the field.
+   * @param <IE>          type of the field identifier.
+   */
+  static public <T extends Model, E extends Model, IT, IE> void retrieveModelFieldElement(@NotNull final ModelFieldContext<T, IT, E, IE> element, @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher,
+      @NotNull final Function<T, List<E>> getField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement, @NotNull final OperationContext context) {
+
+    retrieveModelFieldElementChain(element, searcher, getField, searchElement, context, () -> OperationReponseHandlers.responseOk(context.resultHandler, element.target));
+
+  }
+
+  /**
+   * Retrieve an element of a field defined into a model.
+   *
+   * @param element       context of the field to retrieve.
+   * @param searcher      the function used to obtain a model from an identifier.
+   * @param getField      return the field value associated to a model.
+   * @param searchElement return the index of the element that has the specified identifier.
+   * @param context       of the request.
+   * @param success       function to call if can retrieve the element.
+   *
+   * @param <T>           type of model that contains the fields.
+   * @param <IT>          type of the model identifier.
+   * @param <E>           type of the field.
+   * @param <IE>          type of the field identifier.
+   */
+  @SuppressWarnings("unchecked")
+  static public <T extends Model, E extends Model, IT, IE> void retrieveModelFieldElementChain(@NotNull final ModelFieldContext<T, IT, E, IE> element, @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher,
+      @NotNull final Function<T, List<E>> getField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement, @NotNull final OperationContext context, @NotNull final Runnable success) {
+
+    retrieveModelChain(element.model, searcher, context, () -> {
+
+      element.model.value = (T) Model.fromJsonObject(element.model.target.toJsonObject(), element.model.target.getClass());
+      element.field = getField.apply(element.model.value);
+      if (element.field != null) {
+
+        element.index = searchElement.apply(element.field, element.id);
+        if (element.index > -1) {
+
+          element.target = element.field.get(element.index);
+          Logger.trace("Retrieve {} from {}.\n{}", element, element.model, context);
+          success.run();
+          return;
+        }
+      }
+
+      Logger.trace("Not found {} in {}.\n{}", element, element.model, context);
+      OperationReponseHandlers.responseWithErrorMessage(context.resultHandler, Status.NOT_FOUND, "not_found_" + element.model.name + "_" + element.name, "On '" + element.model + "' does not found '" + element + "' .");
+
+    });
+
+  }
+
+  /**
+   * Merge an element of a field defined into a model.
+   *
+   * @param vertx            event bus to use.
+   * @param valueToMerge     to merge the model field element.
+   * @param element          to merge.
+   * @param searcher         the function used to obtain a model from an identifier.
+   * @param getField         return the field value associated to a model.
+   * @param searchElement    return the index of the element that has the specified identifier.
+   * @param storerMergeModel the function to merge the model.
+   * @param context          of the request.
+   *
+   * @param <T>              type of model that contains the fields.
+   * @param <IT>             type of the model identifier.
+   * @param <E>              type of the field.
+   * @param <IE>             type of the field identifier.
+   */
+  static public <T extends Model, IT, E extends Model & Mergeable<E>, IE> void mergeModelFieldElement(@NotNull final Vertx vertx, final JsonObject valueToMerge, @NotNull final ModelFieldContext<T, IT, E, IE> element,
+      @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
+      final BiConsumer<T, Handler<AsyncResult<Void>>> storerMergeModel, final OperationContext context) {
+
+    mergeModelFieldElementChain(vertx, valueToMerge, element, searcher, getField, searchElement, storerMergeModel, context, () -> OperationReponseHandlers.responseOk(context.resultHandler, element.value));
+
+  }
+
+  /**
+   * Merge an element of a field defined into a model.
+   *
+   * @param vertx             event bus to use.
+   * @param valueToMerge      to merge the model field element.
+   * @param element           to merge.
+   * @param searcher          the function used to obtain a model from an identifier.
+   * @param getField          return the field value associated to a model.
+   * @param searchElement     return the index of the element that has the specified identifier.
+   * @param storerMergedModel the function to store the updated model.
+   * @param context           of the request.
+   * @param success           to inform to the upgrade value
+   *
+   * @param <T>               type of model that contains the fields.
+   * @param <IT>              type of the model identifier.
+   * @param <E>               type of the field.
+   * @param <IE>              type of the field identifier.
+   */
+  static public <T extends Model, IT, E extends Model & Mergeable<E>, IE> void mergeModelFieldElementChain(@NotNull final Vertx vertx, final JsonObject valueToMerge, @NotNull final ModelFieldContext<T, IT, E, IE> element,
+      @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
+      final BiConsumer<T, Handler<AsyncResult<Void>>> storerMergedModel, final OperationContext context, @NotNull final Runnable success) {
+
+    changeModelFieldElementChain(valueToMerge, element, searcher, getField, searchElement, context, () -> {
+
+      merge(vertx, element, context, () -> updateModelChain(element.model, storerMergedModel, context, success));
+
+    });
+
+  }
+
+  /**
+   * Update an element of a field defined into a model.
+   *
+   * @param vertx             event bus to use.
+   * @param valueToUpdate     to update the model field element.
+   * @param element           to update.
+   * @param searcher          the function used to obtain a model from an identifier.
+   * @param getField          return the field value associated to a model.
+   * @param searchElement     return the index of the element that has the specified identifier.
+   * @param storerUpdateModel the function to update the model.
+   * @param context           of the request.
+   * @param success           to inform to the upgrade value
+   *
+   * @param <T>               type of model that contains the fields.
+   * @param <IT>              type of the model identifier.
+   * @param <E>               type of the field.
+   * @param <IE>              type of the field identifier.
+   */
+  static public <T extends Model, IT, E extends Model & Updateable<E>, IE> void updateModelFieldElementChain(@NotNull final Vertx vertx, final JsonObject valueToUpdate, @NotNull final ModelFieldContext<T, IT, E, IE> element,
+      @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
+      final BiConsumer<T, Handler<AsyncResult<Void>>> storerUpdateModel, final OperationContext context, @NotNull final Runnable success) {
+
+    changeModelFieldElementChain(valueToUpdate, element, searcher, getField, searchElement, context, () -> {
+
+      update(vertx, element, context, () -> updateModelChain(element.model, storerUpdateModel, context, success));
+
+    });
+
+  }
+
+  /**
+   * Update an element of a field defined into a model.
+   *
+   * @param vertx             event bus to use.
+   * @param valueToUpdate     to update the model field element.
+   * @param element           to update.
+   * @param searcher          the function used to obtain a model from an identifier.
+   * @param getField          return the field value associated to a model.
+   * @param searchElement     return the index of the element that has the specified identifier.
+   * @param storerUpdateModel the function to update the model.
+   * @param context           of the request.
+   *
+   * @param <T>               type of model that contains the fields.
+   * @param <IT>              type of the model identifier.
+   * @param <E>               type of the field.
+   * @param <IE>              type of the field identifier.
+   */
+  static public <T extends Model, IT, E extends Model & Updateable<E>, IE> void updateModelFieldElement(@NotNull final Vertx vertx, final JsonObject valueToUpdate, @NotNull final ModelFieldContext<T, IT, E, IE> element,
+      @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
+      final BiConsumer<T, Handler<AsyncResult<Void>>> storerUpdateModel, final OperationContext context) {
+
+    updateModelFieldElementChain(vertx, valueToUpdate, element, searcher, getField, searchElement, storerUpdateModel, context, () -> OperationReponseHandlers.responseOk(context.resultHandler, element.value));
+
+  }
+
+  /**
+   * Change an element of a field defined into a model.
+   *
+   * @param value         to merge the model field element.
+   * @param element       to merge.
+   * @param searcher      the function used to obtain a model from an identifier.
+   * @param getField      return the field value associated to a model.
+   * @param searchElement return the index of the element that has the specified identifier.
+   * @param context       of the request.
+   * @param success       to inform to the upgrade value
+   *
+   * @param <T>           type of model that contains the fields.
+   * @param <IT>          type of the model identifier.
+   * @param <E>           type of the field.
+   * @param <IE>          type of the field identifier.
+   */
+  static public <T extends Model, IT, E extends Model, IE> void changeModelFieldElementChain(final JsonObject value, @NotNull final ModelFieldContext<T, IT, E, IE> element, @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher,
+      @NotNull final Function<T, List<E>> getField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement, final OperationContext context, @NotNull final Runnable success) {
+
+    toModel(value, element, context, () -> {
+
+      retrieveModelFieldElementChain(element, searcher, getField, searchElement, context, success);
+
+    });
+
+  }
+
+  /**
+   * Delete an element of a field defined into a model.
+   *
+   * @param element            to delete.
+   * @param searcher           the function used to obtain a model from an identifier.
+   * @param getField           return the field value associated to a model.
+   * @param searchElement      return the index of the element that has the specified identifier.
+   * @param storerDeletedModel the function to store the deleted model.
+   * @param context            of the request.
+   * @param success            to inform to the upgrade value
+   *
+   * @param <T>                type of model that contains the fields.
+   * @param <IT>               type of the model identifier.
+   * @param <E>                type of the field.
+   * @param <IE>               type of the field identifier.
+   */
+  static public <T extends Model, IT, E extends Model, IE> void deleteModelFieldElementChain( @NotNull final ModelFieldContext<T, IT, E, IE> element,
+      @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
+      final BiConsumer<T, Handler<AsyncResult<Void>>> storerDeletedModel, final OperationContext context, @NotNull final Runnable success) {
+
+    retrieveModelFieldElementChain(element, searcher, getField, searchElement, context, () -> {
+
+      element.field.remove(element.index);
+      updateModelChain(element.model, storerDeletedModel, context, success);
+
+    });
+
+  }
+
+  /**
+   * Delete an element of a field defined into a model.
+   *
+   * @param element           to delete.
+   * @param searcher          the function used to obtain a model from an identifier.
+   * @param getField          return the field value associated to a model.
+   * @param searchElement     return the index of the element that has the specified identifier.
+   * @param storerDeleteModel the function to delete the model.
+   * @param context           of the request.
+   *
+   * @param <T>               type of model that contains the fields.
+   * @param <IT>              type of the model identifier.
+   * @param <E>               type of the field.
+   * @param <IE>              type of the field identifier.
+   */
+  static public <T extends Model, IT, E extends Model, IE> void deleteModelFieldElement( @NotNull final ModelFieldContext<T, IT, E, IE> element, @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher,
+      @NotNull final Function<T, List<E>> getField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement, final BiConsumer<T, Handler<AsyncResult<Void>>> storerDeleteModel, final OperationContext context) {
+
+    deleteModelFieldElementChain( element, searcher, getField, searchElement, storerDeleteModel, context, () -> OperationReponseHandlers.responseOk(context.resultHandler));
 
   }
 
