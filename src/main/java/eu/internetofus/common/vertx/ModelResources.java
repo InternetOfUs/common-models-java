@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import javax.validation.constraints.NotNull;
@@ -768,7 +769,6 @@ public interface ModelResources {
    * @param searcher          the function used to obtain a model from an identifier.
    * @param getField          return the field value associated to a model.
    * @param setField          change the value for the field.
-   * @param searchElement     return the index of the element that has the specified identifier.
    * @param storerCreateModel the function to create the model.
    * @param context           of the request.
    *
@@ -778,10 +778,10 @@ public interface ModelResources {
    * @param <IE>              type of the field identifier.
    */
   static public <T extends Model & Validable, IT, E extends Model & Validable, IE> void createModelFieldElement(@NotNull final Vertx vertx, final JsonObject valueToCreate, @NotNull final ModelFieldContext<T, IT, E, IE> element,
-      @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField, @NotNull final BiConsumer<T, List<E>> setField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
-      final BiConsumer<T, Handler<AsyncResult<Void>>> storerCreateModel, final OperationContext context) {
+      @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField, @NotNull final BiConsumer<T, List<E>> setField, final BiConsumer<T, Handler<AsyncResult<Void>>> storerCreateModel,
+      final OperationContext context) {
 
-    createModelFieldElementChain(vertx, valueToCreate, element, searcher, getField, setField, searchElement, storerCreateModel, context, () -> OperationReponseHandlers.responseOk(context.resultHandler, element.value));
+    createModelFieldElementChain(vertx, valueToCreate, element, searcher, getField, setField, storerCreateModel, context, () -> OperationReponseHandlers.responseOk(context.resultHandler, element.value));
 
   }
 
@@ -794,7 +794,6 @@ public interface ModelResources {
    * @param searcher           the function used to obtain a model from an identifier.
    * @param getField           return the field value associated to a model.
    * @param setField           change the value for the field.
-   * @param searchElement      return the index of the element that has the specified identifier.
    * @param storerCreatedModel the function to store the updated model.
    * @param context            of the request.
    * @param success            to inform to the upgrade value
@@ -806,8 +805,8 @@ public interface ModelResources {
    */
   @SuppressWarnings("unchecked")
   static public <T extends Model & Validable, IT, E extends Model & Validable, IE> void createModelFieldElementChain(@NotNull final Vertx vertx, final JsonObject valueToCreate, @NotNull final ModelFieldContext<T, IT, E, IE> element,
-      @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField, @NotNull final BiConsumer<T, List<E>> setField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
-      final BiConsumer<T, Handler<AsyncResult<Void>>> storerCreatedModel, final OperationContext context, @NotNull final Runnable success) {
+      @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField, @NotNull final BiConsumer<T, List<E>> setField, final BiConsumer<T, Handler<AsyncResult<Void>>> storerCreatedModel,
+      final OperationContext context, @NotNull final Runnable success) {
 
     toModel(valueToCreate, element, context, () -> {
 
@@ -830,6 +829,56 @@ public interface ModelResources {
         });
       });
     });
+
+  }
+
+  /**
+   * Return the function that can be used to search a value by its identifier.
+   *
+   * @param idComparator predicate to check if the specified model has the specified id.
+   *
+   * @return the index of the element on the list or {@code -1} if not found.
+   */
+  static public <E, I> BiFunction<List<E>, I, Integer> searchElementById(final BiPredicate<E, I> idComparator) {
+
+    return (models, id) -> {
+
+      if (models != null) {
+
+        final var max = models.size();
+        for (var i = 0; i < max; i++) {
+
+          final var model = models.get(i);
+          if (idComparator.test(model, id)) {
+
+            return i;
+          }
+        }
+      }
+
+      return -1;
+    };
+
+  }
+
+  /**
+   * Return the function that can be used to search a value by its index.
+   *
+   * @return the index of the element on the list or {@code -1} if not found.
+   */
+  static public <E> BiFunction<List<E>, Integer, Integer> searchElementByIndex() {
+
+    return (models, id) -> {
+
+      if (models != null && id != null && id > -1 && id < models.size()) {
+
+        return id;
+
+      } else {
+        // Out of range.
+        return -1;
+      }
+    };
 
   }
 
