@@ -31,6 +31,7 @@ import java.util.UUID;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -45,7 +46,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "A norm that has to be satisfied.")
-public class Norm extends ReflectionModel implements Model, Validable, Mergeable<Norm> {
+public class Norm extends ReflectionModel implements Model, Validable, Mergeable<Norm>, Updateable<Norm> {
 
   /**
    * The identifier of the norm.
@@ -141,6 +142,38 @@ public class Norm extends ReflectionModel implements Model, Validable, Mergeable
         merged.comparison = this.comparison;
       }
 
+      merged.negation = source.negation;
+
+      promise.complete(merged);
+
+      // validate the merged value and set the id
+      future = future.compose(Validations.validateChain(codePrefix, vertx)).map(mergedValidatedModel -> {
+
+        mergedValidatedModel.id = this.id;
+        return mergedValidatedModel;
+      });
+
+    } else {
+
+      promise.complete(this);
+    }
+    return future;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Norm> update(final Norm source, final String codePrefix, final Vertx vertx) {
+
+    final Promise<Norm> promise = Promise.promise();
+    var future = promise.future();
+    if (source != null) {
+
+      final var merged = new Norm();
+      merged.attribute = source.attribute;
+      merged.operator = source.operator;
+      merged.comparison = source.comparison;
       merged.negation = source.negation;
 
       promise.complete(merged);
