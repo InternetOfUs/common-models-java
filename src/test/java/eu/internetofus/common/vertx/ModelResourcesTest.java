@@ -90,10 +90,8 @@ public class ModelResourcesTest {
    */
   protected OperationContext createOperationContext(final Handler<AsyncResult<OperationResponse>> resultHandler) {
 
-    final var context = new OperationContext();
-    context.request = new OperationRequest();
-    context.resultHandler = resultHandler;
-    return context;
+    return new OperationContext(new OperationRequest(), resultHandler);
+
   }
 
   /**

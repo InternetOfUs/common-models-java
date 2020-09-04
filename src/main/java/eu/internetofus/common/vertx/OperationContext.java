@@ -41,7 +41,7 @@ import io.vertx.ext.web.api.OperationResponse;
 public class OperationContext {
 
   /**
-   * The context of the request.
+   * The information of the request operation.
    */
   @NotNull
   public OperationRequest request;
@@ -51,6 +51,19 @@ public class OperationContext {
    */
   @NotNull
   public Handler<AsyncResult<OperationResponse>> resultHandler;
+
+  /**
+   * Create a new context.
+   *
+   * @param request       information of the request operation.
+   * @param resultHandler handler to inform of the response.
+   */
+  public OperationContext(@NotNull final OperationRequest request, @NotNull final Handler<AsyncResult<OperationResponse>> resultHandler) {
+
+    this.request = request;
+    this.resultHandler = resultHandler;
+
+  }
 
   /**
    * {@inheritDoc}
