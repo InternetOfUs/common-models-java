@@ -1823,4 +1823,261 @@ public class ModelResourcesTest {
     assertThat(element.model.value.siblings).isNotEqualTo(target.siblings).hasSize(1).contains(target.siblings.get(1)).doesNotContain(target.siblings.get(0));
   }
 
+  /**
+   * Should not create the model field element because the value to create is not right.
+   *
+   * @param resultHandler     handler to manage the HTTP result.
+   * @param searcher          the function used to search a model.
+   * @param storerCreateModel the function to create the model.
+   *
+   * @see ModelResources#createModelFieldElement(Vertx, JsonObject, ModelFieldContext, BiConsumer,
+   *      java.util.function.Function, BiConsumer, java.util.function.BiFunction, BiConsumer, OperationContext)
+   */
+  @Test
+  public void shouldNotCreateModelFieldElementBecauseBadValue(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
+      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> storerCreateModel) {
+
+    final var element = this.createModelFieldContextById();
+    final var context = this.createOperationContext(resultHandler);
+    final var vertx = Vertx.vertx();
+    final var valueToCreate = new JsonObject().put("undefined", "value");
+    ModelResources.createModelFieldElement(vertx, valueToCreate, element, searcher, dummy -> dummy.siblings, (dummy, siblings) -> dummy.siblings = siblings, this::searchElementById, storerCreateModel, context);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
+    assertThat(error).isNotNull();
+    assertThat(error.code).contains("siblings");
+    assertThat(error.message).contains("siblings");
+  }
+
+  /**
+   * Should not create the model field element because it can not found the model.
+   *
+   * @param resultHandler     handler to manage the HTTP result.
+   * @param searcher          the function used to search a model.
+   * @param storerCreateModel the function to create the model.
+   *
+   * @see ModelResources#createModelFieldElement(Vertx, JsonObject, ModelFieldContext, BiConsumer,
+   *      java.util.function.Function, BiConsumer, java.util.function.BiFunction, BiConsumer, OperationContext)
+   */
+  @Test
+  public void shouldNotCreateModelFieldElementBecauseNotFoundModel(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
+      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> storerCreateModel) {
+
+    final var element = this.createModelFieldContextById();
+    final var context = this.createOperationContext(resultHandler);
+    final var vertx = Vertx.vertx();
+    final var source = new DummyComplexModelTest().createModelExample(1);
+    final var valueToCreate = source.toJsonObject();
+    ModelResources.createModelFieldElement(vertx, valueToCreate, element, searcher, dummy -> dummy.siblings, (dummy, siblings) -> dummy.siblings = siblings, this::searchElementById, storerCreateModel, context);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> searchHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
+    searchHandler.getValue().handle(Future.failedFuture("Not found"));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
+    assertThat(error).isNotNull();
+    assertThat(error.code).contains("modelName");
+    assertThat(error.message).contains("modelName", "id");
+  }
+
+  /**
+   * Should not create the model field element because the element to add is not valid.
+   *
+   * @param resultHandler     handler to manage the HTTP result.
+   * @param searcher          the function used to search a model.
+   * @param storerCreateModel the function to create the model.
+   *
+   * @see ModelResources#createModelFieldElement(Vertx, JsonObject, ModelFieldContext, BiConsumer,
+   *      java.util.function.Function, BiConsumer, java.util.function.BiFunction, BiConsumer, OperationContext)
+   */
+  @Test
+  public void shouldNotCreateModelFieldElementBecauseElementIsNotValid(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
+      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> storerCreateModel) {
+
+    final var element = this.createModelFieldContextById();
+    final var target = new DummyComplexModelTest().createModelExample(2);
+    element.model.id = target.id;
+    final var context = this.createOperationContext(resultHandler);
+    final var vertx = Vertx.vertx();
+    final var source = new DummyComplexModelTest().createModelExample(3);
+    source.id = ValidationsTest.STRING_256;
+    final var valueToCreate = source.toJsonObject();
+    ModelResources.createModelFieldElement(vertx, valueToCreate, element, searcher, dummy -> dummy.siblings, (dummy, siblings) -> dummy.siblings = siblings, this::searchElementById, storerCreateModel, context);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> searchHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
+    searchHandler.getValue().handle(Future.succeededFuture(target));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
+    assertThat(error).isNotNull();
+    assertThat(error.code).contains("siblings");
+    assertThat(error.message).contains("too large");
+  }
+
+  /**
+   * Should not create the model field element because it can not stored created model.
+   *
+   * @param resultHandler     handler to manage the HTTP result.
+   * @param searcher          the function used to search a model.
+   * @param storerCreateModel the function to create the model.
+   *
+   * @see ModelResources#createModelFieldElement(Vertx, JsonObject, ModelFieldContext, BiConsumer,
+   *      java.util.function.Function, BiConsumer, java.util.function.BiFunction, BiConsumer, OperationContext)
+   */
+  @Test
+  public void shouldNotCreateModelFieldElementBecauseCanNotStoreCreated(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
+      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> storerCreateModel) {
+
+    final var element = this.createModelFieldContextById();
+    final var target = new DummyComplexModelTest().createModelExample(2);
+    element.model.id = target.id;
+    final var context = this.createOperationContext(resultHandler);
+    final var vertx = Vertx.vertx();
+    final var source = new DummyComplexModel();
+    final var valueToCreate = source.toJsonObject();
+    ModelResources.createModelFieldElement(vertx, valueToCreate, element, searcher, dummy -> dummy.siblings, (dummy, siblings) -> dummy.siblings = siblings, this::searchElementById, storerCreateModel, context);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> searchHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
+    searchHandler.getValue().handle(Future.succeededFuture(target));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<Void>>> storerHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(storerCreateModel, timeout(30000).times(1)).accept(any(), storerHandler.capture());
+    storerHandler.getValue().handle(Future.failedFuture("Can not store"));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
+    assertThat(error).isNotNull();
+    assertThat(error.code).isNotEqualTo(error.message);
+    assertThat(error.message).isEqualTo("Can not store");
+  }
+
+  /**
+   * Should create model field element.
+   *
+   * @param resultHandler     handler to manage the HTTP result.
+   * @param searcher          the function used to search a model.
+   * @param storerCreateModel the function to create the model.
+   *
+   * @see ModelResources#createModelFieldElement(Vertx, JsonObject, ModelFieldContext, BiConsumer,
+   *      java.util.function.Function, BiConsumer, java.util.function.BiFunction, BiConsumer, OperationContext)
+   */
+  @Test
+  public void shouldCreateModelFieldElement(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
+      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> storerCreateModel) {
+
+    final var element = this.createModelFieldContextById();
+    final var target = new DummyComplexModelTest().createModelExample(2);
+    element.model.id = target.id;
+    final var context = this.createOperationContext(resultHandler);
+    final var vertx = Vertx.vertx();
+    final var source = new DummyComplexModel();
+    final var valueToCreate = source.toJsonObject();
+    ModelResources.createModelFieldElement(vertx, valueToCreate, element, searcher, dummy -> dummy.siblings, (dummy, siblings) -> dummy.siblings = siblings, this::searchElementById, storerCreateModel, context);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> searchHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
+    searchHandler.getValue().handle(Future.succeededFuture(target));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<Void>>> storerHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(storerCreateModel, timeout(30000).times(1)).accept(any(), storerHandler.capture());
+    storerHandler.getValue().handle(Future.succeededFuture());
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.OK.getStatusCode());
+    final var retrieveModel = Model.fromBuffer(result.getPayload(), DummyComplexModel.class);
+    assertThat(retrieveModel).isNotNull().isNotEqualTo(source).isNotEqualTo(target);
+    source.id = retrieveModel.id;
+    assertThat(retrieveModel).isEqualTo(source);
+    target.siblings.add(source);
+    assertThat(element.model.value).isEqualTo(target);
+  }
+
+  /**
+   * Should create model field element when field is {@code null}.
+   *
+   * @param resultHandler     handler to manage the HTTP result.
+   * @param searcher          the function used to search a model.
+   * @param storerCreateModel the function to create the model.
+   *
+   * @see ModelResources#createModelFieldElement(Vertx, JsonObject, ModelFieldContext, BiConsumer,
+   *      java.util.function.Function, BiConsumer, java.util.function.BiFunction, BiConsumer, OperationContext)
+   */
+  @Test
+  public void shouldCreateModelFieldElementWehnFieldIsNull(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
+      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> storerCreateModel) {
+
+    final var element = this.createModelFieldContextById();
+    final var target = new DummyComplexModelTest().createModelExample(1);
+    element.model.id = target.id;
+    final var context = this.createOperationContext(resultHandler);
+    final var vertx = Vertx.vertx();
+    final var source = new DummyComplexModel();
+    final var valueToCreate = source.toJsonObject();
+    ModelResources.createModelFieldElement(vertx, valueToCreate, element, searcher, dummy -> dummy.siblings, (dummy, siblings) -> dummy.siblings = siblings, this::searchElementById, storerCreateModel, context);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> searchHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
+    searchHandler.getValue().handle(Future.succeededFuture(target));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<Void>>> storerHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(storerCreateModel, timeout(30000).times(1)).accept(any(), storerHandler.capture());
+    storerHandler.getValue().handle(Future.succeededFuture());
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.OK.getStatusCode());
+    final var retrieveModel = Model.fromBuffer(result.getPayload(), DummyComplexModel.class);
+    assertThat(retrieveModel).isNotNull().isNotEqualTo(source);
+    source.id = retrieveModel.id;
+    assertThat(retrieveModel).isEqualTo(source);
+    target.siblings = new ArrayList<>();
+    target.siblings.add(source);
+    assertThat(element.model.value).isEqualTo(target);
+  }
+
 }

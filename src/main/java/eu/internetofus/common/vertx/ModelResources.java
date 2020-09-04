@@ -26,6 +26,7 @@
 
 package eu.internetofus.common.vertx;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -723,9 +724,9 @@ public interface ModelResources {
    * @param <E>                type of the field.
    * @param <IE>               type of the field identifier.
    */
-  static public <T extends Model, IT, E extends Model, IE> void deleteModelFieldElementChain( @NotNull final ModelFieldContext<T, IT, E, IE> element,
-      @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
-      final BiConsumer<T, Handler<AsyncResult<Void>>> storerDeletedModel, final OperationContext context, @NotNull final Runnable success) {
+  static public <T extends Model, IT, E extends Model, IE> void deleteModelFieldElementChain(@NotNull final ModelFieldContext<T, IT, E, IE> element, @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher,
+      @NotNull final Function<T, List<E>> getField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement, final BiConsumer<T, Handler<AsyncResult<Void>>> storerDeletedModel, final OperationContext context,
+      @NotNull final Runnable success) {
 
     retrieveModelFieldElementChain(element, searcher, getField, searchElement, context, () -> {
 
@@ -751,10 +752,84 @@ public interface ModelResources {
    * @param <E>               type of the field.
    * @param <IE>              type of the field identifier.
    */
-  static public <T extends Model, IT, E extends Model, IE> void deleteModelFieldElement( @NotNull final ModelFieldContext<T, IT, E, IE> element, @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher,
+  static public <T extends Model, IT, E extends Model, IE> void deleteModelFieldElement(@NotNull final ModelFieldContext<T, IT, E, IE> element, @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher,
       @NotNull final Function<T, List<E>> getField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement, final BiConsumer<T, Handler<AsyncResult<Void>>> storerDeleteModel, final OperationContext context) {
 
-    deleteModelFieldElementChain( element, searcher, getField, searchElement, storerDeleteModel, context, () -> OperationReponseHandlers.responseOk(context.resultHandler));
+    deleteModelFieldElementChain(element, searcher, getField, searchElement, storerDeleteModel, context, () -> OperationReponseHandlers.responseOk(context.resultHandler));
+
+  }
+
+  /**
+   * Create an element of a field defined into a model.
+   *
+   * @param vertx             event bus to use.
+   * @param valueToCreate     to create the model field element.
+   * @param element           to create.
+   * @param searcher          the function used to obtain a model from an identifier.
+   * @param getField          return the field value associated to a model.
+   * @param setField          change the value for the field.
+   * @param searchElement     return the index of the element that has the specified identifier.
+   * @param storerCreateModel the function to create the model.
+   * @param context           of the request.
+   *
+   * @param <T>               type of model that contains the fields.
+   * @param <IT>              type of the model identifier.
+   * @param <E>               type of the field.
+   * @param <IE>              type of the field identifier.
+   */
+  static public <T extends Model & Validable, IT, E extends Model & Validable, IE> void createModelFieldElement(@NotNull final Vertx vertx, final JsonObject valueToCreate, @NotNull final ModelFieldContext<T, IT, E, IE> element,
+      @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField, @NotNull final BiConsumer<T, List<E>> setField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
+      final BiConsumer<T, Handler<AsyncResult<Void>>> storerCreateModel, final OperationContext context) {
+
+    createModelFieldElementChain(vertx, valueToCreate, element, searcher, getField, setField, searchElement, storerCreateModel, context, () -> OperationReponseHandlers.responseOk(context.resultHandler, element.value));
+
+  }
+
+  /**
+   * Create an element of a field defined into a model.
+   *
+   * @param vertx              event bus to use.
+   * @param valueToCreate      to create the model field element.
+   * @param element            to create.
+   * @param searcher           the function used to obtain a model from an identifier.
+   * @param getField           return the field value associated to a model.
+   * @param setField           change the value for the field.
+   * @param searchElement      return the index of the element that has the specified identifier.
+   * @param storerCreatedModel the function to store the updated model.
+   * @param context            of the request.
+   * @param success            to inform to the upgrade value
+   *
+   * @param <T>                type of model that contains the fields.
+   * @param <IT>               type of the model identifier.
+   * @param <E>                type of the field.
+   * @param <IE>               type of the field identifier.
+   */
+  @SuppressWarnings("unchecked")
+  static public <T extends Model & Validable, IT, E extends Model & Validable, IE> void createModelFieldElementChain(@NotNull final Vertx vertx, final JsonObject valueToCreate, @NotNull final ModelFieldContext<T, IT, E, IE> element,
+      @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField, @NotNull final BiConsumer<T, List<E>> setField, @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
+      final BiConsumer<T, Handler<AsyncResult<Void>>> storerCreatedModel, final OperationContext context, @NotNull final Runnable success) {
+
+    toModel(valueToCreate, element, context, () -> {
+
+      retrieveModelChain(element.model, searcher, context, () -> {
+
+        element.model.source = (T) Model.fromJsonObject(element.model.target.toJsonObject(), element.model.target.getClass());
+        element.field = getField.apply(element.model.source);
+        if (element.field == null) {
+
+          element.field = new ArrayList<E>();
+          setField.accept(element.model.source, element.field);
+        }
+
+        element.field.add(element.source);
+        validate(vertx, element.model, context, () -> {
+
+          element.value = element.source;
+          updateModelChain(element.model, storerCreatedModel, context, success);
+
+        });
+      });
+    });
 
   }
 
