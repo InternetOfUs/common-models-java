@@ -28,6 +28,8 @@ package eu.internetofus.common.components.profile_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.UpdatesTest.assertCanUpdate;
+import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -431,5 +433,153 @@ public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkR
 
     final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+  }
+
+  /**
+   * Check that update only the user identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      this.createNewEmptyProfile(vertx, testContext.succeeding(profile -> {
+        final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
+        source.userId = profile.id;
+        assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+          assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
+
+        });
+      }));
+    }));
+  }
+
+  /**
+   * Check that not update undefined user identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateUndefinedUserId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
+      source.userId = "undefinedUserId";
+      assertCannotUpdate(target, source, "userId", vertx, testContext);
+    }));
+  }
+
+  /**
+   * Check that update only the type.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyType(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
+      source.type = SocialNetworkRelationshipType.follower;
+      assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+        assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
+
+      });
+    }));
+  }
+
+  /**
+   * Check that update only the weight.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyWeight(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
+      var weight = 0D;
+      do {
+
+        weight = Math.random();
+
+      } while (weight == target.weight);
+      source.weight = weight;
+      assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+        assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
+
+      });
+    }));
+  }
+
+  /**
+   * Check can not update without a bad weight.
+   *
+   * @param weight      that is not valid.
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see SocialNetworkRelationship#validate(String, Vertx)
+   */
+  @ParameterizedTest(name = "Should not update a social network relationship with a weight {0} ")
+  @ValueSource(doubles = { -0.00001d, 1.000001d, -23d, +23d })
+  public void shouldNotUpdateWithBadWeight(final double weight, final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
+      source.weight = weight;
+      assertCannotUpdate(target, source, "weight", vertx, testContext);
+
+    }));
+  }
+
+  /**
+   * Check that update two examples.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> this.createModelExample(2, vertx, testContext,
+        testContext.succeeding(source -> assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))))));
+  }
+
+  /**
+   * Check that update with {@code null}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialNetworkRelationship#update(SocialNetworkRelationship, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    assertCanUpdate(target, null, vertx, testContext, updated -> assertThat(updated).isSameAs(target));
   }
 }

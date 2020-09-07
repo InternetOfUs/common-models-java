@@ -28,6 +28,8 @@ package eu.internetofus.common.components.profile_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.UpdatesTest.assertCanUpdate;
+import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -2355,4 +2357,150 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
   }
 
+  /**
+   * Should update with {@code null}
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      assertCanUpdate(target, null, vertx, testContext, updated -> {
+        assertThat(updated).isSameAs(target);
+      });
+    }));
+
+  }
+
+  /**
+   * Check that not update profiles with bad personal behaviors.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadPersonalBehaviors(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var source = new WeNetUserProfile();
+    source.personalBehaviors = new ArrayList<>();
+    source.personalBehaviors.add(new Routine());
+    assertCannotUpdate(new WeNetUserProfile(), source, "personalBehaviors[0].user_id", vertx, testContext);
+
+  }
+
+  /**
+   * Check update empty profiles.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateEmptyModels(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = new WeNetUserProfile();
+    final var source = new WeNetUserProfile();
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+      assertThat(updated).isEqualTo(target);
+
+    });
+
+  }
+
+  /**
+   * Check update basic profiles.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateBasicModels(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = new WeNetUserProfile();
+    target.id = "1";
+    target._creationTs = 2;
+    target._lastUpdateTs = 3;
+    final var source = new WeNetUserProfile();
+    source.id = "4";
+    source._creationTs = 5;
+    source._lastUpdateTs = 6;
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+      assertThat(updated).isEqualTo(target).isNotEqualTo(source);
+
+    });
+
+  }
+
+  /**
+   * Check update example profiles.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateExampleModels(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "1";
+    final var source = this.createModelExample(2);
+    source.id = "2";
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+      source.id = target.id;
+      source._creationTs = target._creationTs;
+      source._lastUpdateTs = target._lastUpdateTs;
+      assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+
+    });
+
+  }
+
+  /**
+   * Check update stored profiles.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateStoredModels(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeProfile(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        this.createModelExample(2, vertx, testContext, testContext.succeeding(sourceToStore -> {
+
+          StoreServices.storeProfile(sourceToStore, vertx, testContext, testContext.succeeding(source -> {
+
+            assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+              source.id = target.id;
+              source._creationTs = target._creationTs;
+              source._lastUpdateTs = target._lastUpdateTs;
+              assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+
+            });
+          }));
+        }));
+
+      }));
+    }));
+
+  }
 }

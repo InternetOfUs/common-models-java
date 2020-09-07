@@ -137,12 +137,12 @@ public class Meaning extends ReflectionModel implements Model, Validable, Mergea
     var future = promise.future();
     if (source != null) {
 
-      final var merged = new Meaning();
-      merged.name = source.name;
-      merged.category = source.category;
-      merged.level = source.level;
+      final var updated = new Meaning();
+      updated.name = source.name;
+      updated.category = source.category;
+      updated.level = source.level;
 
-      promise.complete(merged);
+      promise.complete(updated);
 
       // Validate the updated value
       future = future.compose(Validations.validateChain(codePrefix, vertx));

@@ -233,13 +233,13 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
     if (source != null) {
 
       // merge the values
-      final var merged = new PlannedActivity();
-      merged.startTime = source.startTime;
-      merged.endTime = source.endTime;
-      merged.description = source.description;
-      merged.attendees = source.attendees;
-      merged.status = source.status;
-      promise.complete(merged);
+      final var updated = new PlannedActivity();
+      updated.startTime = source.startTime;
+      updated.endTime = source.endTime;
+      updated.description = source.description;
+      updated.attendees = source.attendees;
+      updated.status = source.status;
+      promise.complete(updated);
 
       // validate the merged value and set the i<d
       future = future.compose(Validations.validateChain(codePrefix, vertx)).map(mergedValidatedModel -> {

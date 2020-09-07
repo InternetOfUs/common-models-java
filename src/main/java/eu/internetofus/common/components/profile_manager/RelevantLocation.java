@@ -162,12 +162,12 @@ public class RelevantLocation extends ReflectionModel implements Model, Validabl
     var future = promise.future();
     if (source != null) {
 
-      final var merged = new RelevantLocation();
-      merged.label = source.label;
-      merged.latitude = source.latitude;
-      merged.longitude = source.longitude;
+      final var updated = new RelevantLocation();
+      updated.label = source.label;
+      updated.latitude = source.latitude;
+      updated.longitude = source.longitude;
 
-      promise.complete(merged);
+      promise.complete(updated);
 
       // validate the updated value and set the id
       future = future.compose(Validations.validateChain(codePrefix, vertx)).map(mergedValidatedModel -> {

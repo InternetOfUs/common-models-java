@@ -143,11 +143,11 @@ public class Competence extends ReflectionModel implements Model, Validable, Mer
     var future = promise.future();
     if (source != null) {
 
-      final var merged = new Competence();
-      merged.name = source.name;
-      merged.ontology = source.ontology;
-      merged.level = source.level;
-      promise.complete(merged);
+      final var updated = new Competence();
+      updated.name = source.name;
+      updated.ontology = source.ontology;
+      updated.level = source.level;
+      promise.complete(updated);
 
       // Validate the updated value
       future = future.compose(Validations.validateChain(codePrefix, vertx));

@@ -170,15 +170,15 @@ public class Norm extends ReflectionModel implements Model, Validable, Mergeable
     var future = promise.future();
     if (source != null) {
 
-      final var merged = new Norm();
-      merged.attribute = source.attribute;
-      merged.operator = source.operator;
-      merged.comparison = source.comparison;
-      merged.negation = source.negation;
+      final var updated = new Norm();
+      updated.attribute = source.attribute;
+      updated.operator = source.operator;
+      updated.comparison = source.comparison;
+      updated.negation = source.negation;
 
-      promise.complete(merged);
+      promise.complete(updated);
 
-      // validate the merged value and set the id
+      // validate the updated value and set the id
       future = future.compose(Validations.validateChain(codePrefix, vertx)).map(mergedValidatedModel -> {
 
         mergedValidatedModel.id = this.id;

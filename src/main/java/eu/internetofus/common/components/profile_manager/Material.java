@@ -155,13 +155,13 @@ public class Material extends ReflectionModel implements Model, Validable, Merge
     var future = promise.future();
     if (source != null) {
 
-      final var merged = new Material();
-      merged.name = source.name;
-      merged.description = source.description;
-      merged.quantity = source.quantity;
-      merged.classification = source.classification;
+      final var updated = new Material();
+      updated.name = source.name;
+      updated.description = source.description;
+      updated.quantity = source.quantity;
+      updated.classification = source.classification;
 
-      promise.complete(merged);
+      promise.complete(updated);
 
       // Validate the updated value
       future = future.compose(Validations.validateChain(codePrefix, vertx));

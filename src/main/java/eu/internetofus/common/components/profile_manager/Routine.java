@@ -258,13 +258,13 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
     var future = promise.future();
     if (source != null) {
 
-      final var merged = new Routine();
-      merged.user_id = source.user_id;
-      merged.weekday = source.weekday;
-      merged.confidence = source.confidence;
-      merged.label_distribution = source.label_distribution;
+      final var updated = new Routine();
+      updated.user_id = source.user_id;
+      updated.weekday = source.weekday;
+      updated.confidence = source.confidence;
+      updated.label_distribution = source.label_distribution;
 
-      promise.complete(merged);
+      promise.complete(updated);
 
       // validate the updated value
       future = future.compose(Validations.validateChain(codePrefix, vertx));

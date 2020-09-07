@@ -29,6 +29,7 @@ package eu.internetofus.common.components.profile_manager;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -43,7 +44,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "A social relationship with another WeNet user.")
-public class SocialNetworkRelationship extends ReflectionModel implements Model, Validable, Mergeable<SocialNetworkRelationship> {
+public class SocialNetworkRelationship extends ReflectionModel implements Model, Validable, Mergeable<SocialNetworkRelationship>, Updateable<SocialNetworkRelationship> {
 
   /**
    * The identifier of the WeNet user the relationship is related to.
@@ -168,7 +169,7 @@ public class SocialNetworkRelationship extends ReflectionModel implements Model,
 
       promise.complete(merged);
 
-      // validate the merged value and set the id
+      // validate the merged value
       future = future.compose(Validations.validateChain(codePrefix, vertx));
 
     } else {
@@ -178,5 +179,32 @@ public class SocialNetworkRelationship extends ReflectionModel implements Model,
     }
     return future;
 
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<SocialNetworkRelationship> update(final SocialNetworkRelationship source, final String codePrefix, final Vertx vertx) {
+    final Promise<SocialNetworkRelationship> promise = Promise.promise();
+    var future = promise.future();
+    if (source != null) {
+
+      final var updated = new SocialNetworkRelationship();
+      updated.userId = source.userId;
+      updated.type = source.type;
+      updated.weight = source.weight;
+
+      promise.complete(updated);
+
+      // validate the updated value
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
+
+    } else {
+
+      promise.complete(this);
+
+    }
+    return future;
   }
 }
