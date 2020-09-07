@@ -28,6 +28,8 @@ package eu.internetofus.common.components.profile_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.UpdatesTest.assertCanUpdate;
+import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -288,4 +290,117 @@ public class MaterialTest extends ModelTestCase<Material> {
 
   }
 
+  /**
+   * Check that two {@link #createModelExample(int)} can be updated.
+   *
+   * @param index       of the example to test.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @ParameterizedTest(name = "Should be valid the example {0}")
+  @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
+  public void shouldExampleCanUpdated(final int index, final Vertx vertx, final VertxTestContext testContext) {
+
+    final var source = new Material();
+    source.name = "    name_" + index + "    ";
+    source.description = "    description_" + index + "    ";
+    source.classification = "    classification_" + index + "    ";
+    source.quantity = Math.max(1, index);
+
+    final var target = this.createModelExample(index - 1);
+
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+      final var expected = this.createModelExample(index);
+      assertThat(updated).isEqualTo(expected);
+    });
+
+  }
+
+  /**
+   * Check that cannot update a material with a bad name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @Test
+  public void shouldCannotUpdateWithABadName(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var source = new Material();
+    source.name = ValidationsTest.STRING_256;
+    final var target = this.createModelExample(1);
+    assertCannotUpdate(target, source, "name", vertx, testContext);
+
+  }
+
+  /**
+   * Check that cannot update a material with a bad description.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @Test
+  public void shouldCannotUpdateWithABadDescription(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var source = new Material();
+    source.name = "name";
+    source.description = ValidationsTest.STRING_1024;
+    final var target = this.createModelExample(1);
+    assertCannotUpdate(target, source, "description", vertx, testContext);
+
+  }
+
+  /**
+   * Check that cannot update a material with a bad classification.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @Test
+  public void shouldCannotUpdateWithABadClassification(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var source = new Material();
+    source.name = "name";
+    source.quantity = 1;
+    source.classification = ValidationsTest.STRING_256;
+    final var target = this.createModelExample(1);
+    assertCannotUpdate(target, source, "classification", vertx, testContext);
+
+  }
+
+  /**
+   * Check that cannot update a material with a bad quantity.
+   *
+   * @param quantity    that is invalid.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @ParameterizedTest(name = "Should not be updated with the quantity {0}")
+  @ValueSource(ints = { -1, 0 })
+  public void shouldCannotUpdateWithABadQuantity(final Integer quantity, final Vertx vertx, final VertxTestContext testContext) {
+
+    final var source = this.createModelExample(0);
+    source.quantity = quantity;
+    final var target = this.createModelExample(1);
+    assertCannotUpdate(target, source, "quantity", vertx, testContext);
+
+  }
+
+  /**
+   * Should update with {@code null}
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    assertCanUpdate(target, null, vertx, testContext, updated -> {
+      assertThat(updated).isSameAs(target);
+    });
+
+  }
 }

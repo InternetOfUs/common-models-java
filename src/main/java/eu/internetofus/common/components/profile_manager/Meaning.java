@@ -29,6 +29,7 @@ package eu.internetofus.common.components.profile_manager;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -43,7 +44,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Meaning", description = "For defining more general purpose concepts.")
-public class Meaning extends ReflectionModel implements Model, Validable, Mergeable<Meaning> {
+public class Meaning extends ReflectionModel implements Model, Validable, Mergeable<Meaning>,Updateable<Meaning> {
 
   /**
    * The name of the meaning.
@@ -117,6 +118,33 @@ public class Meaning extends ReflectionModel implements Model, Validable, Mergea
       promise.complete(merged);
 
       // Validate the merged value
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
+
+    } else {
+
+      promise.complete(this);
+    }
+    return future;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Meaning> update(final Meaning source, final String codePrefix, final Vertx vertx) {
+
+    final Promise<Meaning> promise = Promise.promise();
+    var future = promise.future();
+    if (source != null) {
+
+      final var merged = new Meaning();
+      merged.name = source.name;
+      merged.category = source.category;
+      merged.level = source.level;
+
+      promise.complete(merged);
+
+      // Validate the updated value
       future = future.compose(Validations.validateChain(codePrefix, vertx));
 
     } else {

@@ -28,6 +28,8 @@ package eu.internetofus.common.components.profile_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.UpdatesTest.assertCanUpdate;
+import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +39,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
@@ -600,6 +603,236 @@ public class RoutineTest extends ModelTestCase<Routine> {
         assertThat(merged).isEqualTo(target);
 
       });
+
+    }));
+  }
+
+  /**
+   * Check that update with {@code null}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    assertCanUpdate(target, null, vertx, testContext, updated -> assertThat(updated).isSameAs(target));
+  }
+
+  /**
+   * Check that update two examples.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> this.createModelExample(2, vertx, testContext,
+        testContext.succeeding(source -> assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))))));
+  }
+
+  /**
+   * Check that update only the user identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      StoreServices.storeProfileExample(43, vertx, testContext, testContext.succeeding(profile -> {
+
+        final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
+        source.user_id = profile.id;
+        assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+          assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
+
+        });
+
+      }));
+
+    }));
+  }
+
+  /**
+   * Check that can not update with a bad user identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadUserId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
+      source.user_id = "undefined user indentifier";
+      assertCannotUpdate(target, source, "user_id", vertx, testContext);
+
+    }));
+  }
+
+  /**
+   * Check that update only the weekday.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyWeekday(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
+      source.weekday = "DV";
+      assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+        assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
+
+      });
+
+    }));
+  }
+
+  /**
+   * Check that can not update with a bad weekday.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadWeekday(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
+      source.weekday = ValidationsTest.STRING_256;
+      assertCannotUpdate(target, source, "weekday", vertx, testContext);
+
+    }));
+  }
+
+  /**
+   * Check that update only the confidence.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyConfidence(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
+      source.confidence = 43d;
+      assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+        assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
+
+      });
+
+    }));
+  }
+
+  /**
+   * Check that update only the label distribution.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyLabelDistribution(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
+      source.label_distribution = new JsonObject();
+      assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+        assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
+
+      });
+
+    }));
+  }
+
+  /**
+   * Check that can not update with a bad label distribution field.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadLabelDistibutionField(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
+      source.label_distribution = new JsonObject().put("bad_field", new JsonObject());
+      assertCannotUpdate(target, source, "label_distribution.bad_field", vertx, testContext);
+
+    }));
+  }
+
+  /**
+   * Check that can not update with a bad label distribution array.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadLabelDistibutionArray(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
+      source.label_distribution = new JsonObject().put("bad_array", new JsonArray().add(new JsonArray()));
+      assertCannotUpdate(target, source, "label_distribution.bad_array", vertx, testContext);
+
+    }));
+  }
+
+  /**
+   * Check that can not update with a bad label distribution scored label.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadLabelDistibutionScoredLabel(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
+      source.label_distribution = new JsonObject().put("bad_scored_label", new JsonArray().add(new JsonObject()));
+      assertCannotUpdate(target, source, "label_distribution.bad_scored_label[0].label", vertx, testContext);
 
     }));
   }

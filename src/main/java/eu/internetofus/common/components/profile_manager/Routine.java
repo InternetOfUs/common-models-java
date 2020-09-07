@@ -38,6 +38,7 @@ import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -53,7 +54,7 @@ import io.vertx.core.json.JsonObject;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Routine", description = "Labels distribution for a given user, time and weekday.")
-public class Routine extends ReflectionModel implements Model, Validable, Mergeable<Routine> {
+public class Routine extends ReflectionModel implements Model, Validable, Mergeable<Routine>, Updateable<Routine> {
 
   /**
    * The identifier of the user.
@@ -236,7 +237,7 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
 
       promise.complete(merged);
 
-      // validate the merged value and set the id
+      // validate the merged value
       future = future.compose(Validations.validateChain(codePrefix, vertx));
 
     } else {
@@ -246,6 +247,34 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
     }
     return future;
 
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Routine> update(final Routine source, final String codePrefix, final Vertx vertx) {
+    final Promise<Routine> promise = Promise.promise();
+    var future = promise.future();
+    if (source != null) {
+
+      final var merged = new Routine();
+      merged.user_id = source.user_id;
+      merged.weekday = source.weekday;
+      merged.confidence = source.confidence;
+      merged.label_distribution = source.label_distribution;
+
+      promise.complete(merged);
+
+      // validate the updated value
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
+
+    } else {
+
+      promise.complete(this);
+
+    }
+    return future;
   }
 
 }

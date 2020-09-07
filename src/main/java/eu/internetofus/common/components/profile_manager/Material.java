@@ -29,6 +29,7 @@ package eu.internetofus.common.components.profile_manager;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -43,7 +44,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Material", description = "It describes an object that is available to a user.")
-public class Material extends ReflectionModel implements Model, Validable, Mergeable<Material> {
+public class Material extends ReflectionModel implements Model, Validable, Mergeable<Material>, Updateable<Material> {
 
   /**
    * The name of the material.
@@ -142,6 +143,35 @@ public class Material extends ReflectionModel implements Model, Validable, Merge
       promise.complete(this);
     }
     return future;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Material> update(final Material source, final String codePrefix, final Vertx vertx) {
+
+    final Promise<Material> promise = Promise.promise();
+    var future = promise.future();
+    if (source != null) {
+
+      final var merged = new Material();
+      merged.name = source.name;
+      merged.description = source.description;
+      merged.quantity = source.quantity;
+      merged.classification = source.classification;
+
+      promise.complete(merged);
+
+      // Validate the updated value
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
+
+    } else {
+
+      promise.complete(this);
+    }
+    return future;
+
   }
 
 }

@@ -28,6 +28,8 @@ package eu.internetofus.common.components.profile_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.UpdatesTest.assertCanUpdate;
+import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -431,4 +433,221 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     });
   }
 
+  /**
+   * Check that not update model with bad label.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadLabel(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new RelevantLocation();
+    source.label = ValidationsTest.STRING_256;
+    assertCannotUpdate(target, source, "label", vertx, testContext);
+
+  }
+
+  /**
+   * Check that not update model with bad longitude.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadLongitudeLessThanMinimum(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new RelevantLocation();
+    source.longitude = -180.0001;
+    assertCannotUpdate(target, source, "longitude", vertx, testContext);
+
+  }
+
+  /**
+   * Check that not update model with bad longitude.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadLongitudeMoreThanMaximum(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new RelevantLocation();
+    source.longitude = 180.0001;
+    assertCannotUpdate(target, source, "longitude", vertx, testContext);
+
+  }
+
+  /**
+   * Check that not update model with bad latitude.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadLatitudeLessThanMinimum(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new RelevantLocation();
+    source.latitude = -90.0001;
+    assertCannotUpdate(target, source, "latitude", vertx, testContext);
+
+  }
+
+  /**
+   * Check that not update model with bad latitude.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadLatitudeMoreThanMaximum(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new RelevantLocation();
+    source.latitude = 90.0001;
+    assertCannotUpdate(target, source, "latitude", vertx, testContext);
+
+  }
+
+  /**
+   * Check that update.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdate(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "1";
+    final var source = this.createModelExample(2);
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = "1";
+      assertThat(updated).isEqualTo(source);
+    });
+  }
+
+  /**
+   * Check that update with {@code null}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    assertCanUpdate(target, null, vertx, testContext, updated -> assertThat(updated).isSameAs(target));
+  }
+
+  /**
+   * Check that update only label.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyLabel(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "1";
+    final var source = new RelevantLocation();
+    source.label = "NEW LABEL";
+    source.latitude = target.latitude;
+    source.longitude = target.longitude;
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+      target.label = "NEW LABEL";
+      assertThat(updated).isEqualTo(target);
+    });
+  }
+
+  /**
+   * Check that update the latitude and longitude.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateLatitudeLongitude(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "1";
+    final var source = new RelevantLocation();
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = target.id;
+      assertThat(updated).isEqualTo(source);
+    });
+  }
+
+  /**
+   * Check that update only longitude.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyLongitude(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "1";
+    final var source = new RelevantLocation();
+    source.latitude = target.latitude;
+    source.longitude = 0;
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = target.id;
+      assertThat(updated).isEqualTo(source);
+    });
+
+  }
+
+  /**
+   * Check that update only latitude.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyLatitude(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "1";
+    final var source = new RelevantLocation();
+    source.longitude = target.longitude;
+    source.latitude = 0;
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = target.id;
+      assertThat(updated).isEqualTo(source);
+    });
+  }
 }

@@ -28,6 +28,8 @@ package eu.internetofus.common.components.profile_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.UpdatesTest.assertCanUpdate;
+import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -797,6 +799,388 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
           target.attendees.add(0, stored.id);
           assertThat(merged).isEqualTo(target);
+          testContext.completeNow();
+        });
+      }));
+    }));
+  }
+
+  /**
+   * Check that not update planned activity with bad start time.
+   *
+   * @param badTime     a bad time value.
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @ParameterizedTest(name = "Should not be valid with startTime = {0}")
+  @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
+  public void shouldNotUpdateWithABadStartTime(final String badTime, final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new PlannedActivity();
+    source.startTime = badTime;
+    assertCannotUpdate(target, source, "startTime", vertx, testContext);
+
+  }
+
+  /**
+   * Check that not update planned activity with bad end time.
+   *
+   * @param badTime     a bad time value.
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @ParameterizedTest(name = "Should not be valid with endTime = {0}")
+  @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
+  public void shouldNotUpdateWithABadEndTime(final String badTime, final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new PlannedActivity();
+    source.endTime = badTime;
+    assertCannotUpdate(target, source, "endTime", vertx, testContext);
+
+  }
+
+  /**
+   * Check that not update planned activity with bad description.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadDescription(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new PlannedActivity();
+    source.description = ValidationsTest.STRING_256;
+    assertCannotUpdate(target, source, "description", vertx, testContext);
+
+  }
+
+  /**
+   * Check that not update planned activity with bad attender.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadAttender(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new PlannedActivity();
+    source.attendees = new ArrayList<>();
+    source.attendees.add("undefined attendee identifier");
+    assertCannotUpdate(target, source, "attendees[0]", vertx, testContext);
+
+  }
+
+  /**
+   * Check that update without attenders.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateEmptyAttender(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new PlannedActivity();
+    source.attendees = new ArrayList<>();
+    assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated.attendees).isEmpty());
+
+  }
+
+  /**
+   * Check update with some attenders.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateWithSomeAttenders(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createNewEmptyProfile(vertx, testContext.succeeding(stored -> {
+
+      this.createNewEmptyProfile(vertx, testContext.succeeding(stored2 -> {
+
+        final var target = this.createModelExample(1);
+        final var source = new PlannedActivity();
+        source.attendees = new ArrayList<>();
+        source.attendees.add(stored.id);
+        source.attendees.add(stored2.id);
+        assertCanUpdate(target, source, vertx, testContext);
+
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check is not valid is one attender is duplicated.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithDuplicatedAttenders(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createNewEmptyProfile(vertx, testContext.succeeding(stored -> {
+
+      this.createNewEmptyProfile(vertx, testContext.succeeding(stored2 -> {
+
+        final var target = this.createModelExample(1);
+        final var source = new PlannedActivity();
+        source.attendees = new ArrayList<>();
+        source.attendees.add(stored.id);
+        source.attendees.add(stored2.id);
+        source.attendees.add(stored.id);
+        assertCannotUpdate(target, source, "attendees[2]", vertx, testContext);
+
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that not accept planned activity with bad attender.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateEmptyAttenderWillRemoved(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new PlannedActivity();
+    source.attendees = new ArrayList<>();
+    source.attendees.add(null);
+    source.attendees.add("");
+    source.attendees.add("      ");
+    assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated.attendees).isNotNull().isEmpty());
+
+  }
+
+  /**
+   * Check that update two models.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldUpdate(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      this.createModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+
+        target.id = "1";
+        assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+          assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+          source.id = "1";
+          assertThat(updated).isEqualTo(source);
+
+        });
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that update with {@code null} source.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      assertCanUpdate(target, null, vertx, testContext, updated -> {
+
+        assertThat(updated).isSameAs(target);
+        testContext.completeNow();
+
+      });
+
+    }));
+
+  }
+
+  /**
+   * Check that update only start time.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyStartTime(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      target.id = "1";
+      final var source = new PlannedActivity();
+      source.startTime = "2000-02-19T16:18:00Z";
+      assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+        source.id = target.id;
+        assertThat(updated).isEqualTo(source);
+        testContext.completeNow();
+      });
+    }));
+
+  }
+
+  /**
+   * Check that update only end time.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyEndTime(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      target.id = "1";
+      final var source = new PlannedActivity();
+      source.endTime = "2020-02-19T16:18:00Z";
+      assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+        source.id = target.id;
+        assertThat(updated).isEqualTo(source);
+        testContext.completeNow();
+      });
+    }));
+
+  }
+
+  /**
+   * Check that update only start time.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyDescription(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      target.id = "1";
+      final var source = new PlannedActivity();
+      source.description = "New description";
+      assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+        source.id = target.id;
+        assertThat(updated).isEqualTo(source);
+        testContext.completeNow();
+      });
+    }));
+
+  }
+
+  /**
+   * Check that update only start time.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyStatus(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      target.id = "1";
+      final var source = new PlannedActivity();
+      source.status = PlannedActivityStatus.tentative;
+      assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+        source.id = target.id;
+        assertThat(updated).isEqualTo(source);
+        testContext.completeNow();
+      });
+    }));
+
+  }
+
+  /**
+   * Check that update only start time.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateRemoveAttenders(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      target.id = "1";
+      final var source = new PlannedActivity();
+      source.attendees = new ArrayList<>();
+      assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+        source.id = target.id;
+        assertThat(updated).isEqualTo(source);
+        testContext.completeNow();
+      });
+    }));
+
+  }
+
+  /**
+   * Check that update only start time.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateAddNewAttenders(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      target.id = "1";
+      this.createNewEmptyProfile(vertx, testContext.succeeding(stored -> {
+
+        final var source = new PlannedActivity();
+        source.attendees = new ArrayList<>();
+        source.attendees.add(stored.id);
+        source.attendees.addAll(target.attendees);
+        assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+          assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+          source.id = target.id;
+          assertThat(updated).isEqualTo(source);
           testContext.completeNow();
         });
       }));

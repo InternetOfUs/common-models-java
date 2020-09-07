@@ -34,6 +34,7 @@ import java.util.function.Function;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -49,7 +50,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "An activity planned by an user.")
-public class PlannedActivity extends ReflectionModel implements Model, Validable, Mergeable<PlannedActivity> {
+public class PlannedActivity extends ReflectionModel implements Model, Validable, Mergeable<PlannedActivity>, Updateable<PlannedActivity> {
 
   /**
    * The identifier of the activity.
@@ -219,6 +220,40 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
     }
     return future;
 
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<PlannedActivity> update(final PlannedActivity source, final String codePrefix, final Vertx vertx) {
+
+    final Promise<PlannedActivity> promise = Promise.promise();
+    var future = promise.future();
+    if (source != null) {
+
+      // merge the values
+      final var merged = new PlannedActivity();
+      merged.startTime = source.startTime;
+      merged.endTime = source.endTime;
+      merged.description = source.description;
+      merged.attendees = source.attendees;
+      merged.status = source.status;
+      promise.complete(merged);
+
+      // validate the merged value and set the i<d
+      future = future.compose(Validations.validateChain(codePrefix, vertx)).map(mergedValidatedModel -> {
+
+        mergedValidatedModel.id = this.id;
+        return mergedValidatedModel;
+      });
+
+    } else {
+
+      promise.complete(this);
+
+    }
+    return future;
   }
 
 }
