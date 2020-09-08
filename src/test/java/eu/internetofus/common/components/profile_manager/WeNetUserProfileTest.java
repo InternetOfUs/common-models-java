@@ -946,32 +946,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   }
 
   /**
-   * Check that not merge profiles with duplicated planned activity identifiers.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithADuplicatedPlannedActivityIds(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var source = new WeNetUserProfile();
-    source.plannedActivities = new ArrayList<>();
-    source.plannedActivities.add(new PlannedActivity());
-    source.plannedActivities.add(new PlannedActivity());
-    source.plannedActivities.add(new PlannedActivity());
-    source.plannedActivities.get(1).id = "1";
-    source.plannedActivities.get(2).id = "1";
-    final var target = new WeNetUserProfile();
-    target.plannedActivities = new ArrayList<>();
-    target.plannedActivities.add(new PlannedActivity());
-    target.plannedActivities.get(0).id = "1";
-    assertCannotMerge(target, source, "plannedActivities[2]", vertx, testContext);
-
-  }
-
-  /**
    * Check that not merge profiles with a duplicated planned activity id.
    *
    * @param vertx       event bus to use.
@@ -984,9 +958,9 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
     final var source = new WeNetUserProfile();
     source.plannedActivities = new ArrayList<>();
-    source.plannedActivities.add(new PlannedActivity());
-    source.plannedActivities.add(new PlannedActivity());
-    source.plannedActivities.add(new PlannedActivity());
+    source.plannedActivities.add(new PlannedActivityTest().createModelExample(1));
+    source.plannedActivities.add(new PlannedActivityTest().createModelExample(2));
+    source.plannedActivities.add(new PlannedActivityTest().createModelExample(3));
     source.plannedActivities.get(0).id = "1";
     source.plannedActivities.get(1).id = "1";
     assertCannotMerge(new WeNetUserProfile(), source, "plannedActivities[1]", vertx, testContext);
