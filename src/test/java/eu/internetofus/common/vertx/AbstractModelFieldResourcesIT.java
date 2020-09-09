@@ -518,11 +518,11 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
       final var checkpoint = testContext.checkpoint(2);
       final var field = this.fieldOf(model);
       final var elementId = this.idOfElementIn(model, field.get(0));
-      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + elementId).expect(resDelete -> {
+      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(resDelete -> {
 
         assertThat(resDelete.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
 
-        testRequest(client, HttpMethod.GET, this.modelPath() + "/" + modelId + this.fieldPath() + elementId).expect(res -> {
+        testRequest(client, HttpMethod.GET, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
 
           assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
           final var error = assertThatBodyIs(ErrorMessage.class, res);
@@ -554,13 +554,123 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
 
-      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + modelId + this.fieldPath() + elementId).expect(res -> {
+      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
 
         assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
         final var retrievedElement = assertThatBodyIs(this.fieldElementClass(), res);
         assertThat(retrievedElement).isNotNull().isEqualTo(element);
 
       }).send(testContext);
+
+    }));
+
+  }
+
+  /**
+   * Should not delete element over if the model is not defined.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotDeleteElementOverUndefinedModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    testRequest(client, HttpMethod.DELETE, this.modelPath() + this.undefinedModelIdPath() + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+
+      assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+      final var error = assertThatBodyIs(ErrorMessage.class, res);
+      assertThat(error.code).isNotEmpty();
+      assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+    }).send(testContext);
+
+  }
+
+  /**
+   * Should not delete element over if the element is not defined.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotDeleteElementOverUndefinedElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+
+      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+
+        assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+        final var error = assertThatBodyIs(ErrorMessage.class, res);
+        assertThat(error.code).isNotEmpty();
+        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+      }).send(testContext);
+
+    }));
+
+  }
+
+  /**
+   * Should not delete element over if the field is {@code null}.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotDeleteElementOverNullField(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithNullField(4, vertx, testContext, testContext.succeeding(model -> {
+
+      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+
+        assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+        final var error = assertThatBodyIs(ErrorMessage.class, res);
+        assertThat(error.code).isNotEmpty();
+        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+      }).send(testContext);
+
+    }));
+
+  }
+
+  /**
+   * Should delete element.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldDeleteElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+
+      final var modelId = this.idOfModel(model);
+      final var field = this.fieldOf(model);
+      final var element = field.get(field.size() - 1);
+      final var elementId = this.idOfElementIn(model, element);
+
+      final var checkpoint = testContext.checkpoint(2);
+      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+
+        assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
+        final var deletedElement = assertThatBodyIs(this.fieldElementClass(), res);
+        assertThat(deletedElement).isNotNull().isEqualTo(element);
+
+        testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res2 -> {
+
+          assertThat(res2.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+          final var error = assertThatBodyIs(ErrorMessage.class, res2);
+          assertThat(error.code).isNotEmpty();
+          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+        }).send(testContext, checkpoint);
+
+      }).send(testContext, checkpoint);
 
     }));
 
