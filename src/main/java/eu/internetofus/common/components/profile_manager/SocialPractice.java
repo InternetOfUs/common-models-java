@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,6 +33,7 @@ import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -48,7 +49,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "A social practice of an user.")
-public class SocialPractice extends ReflectionModel implements Model, Validable, Mergeable<SocialPractice> {
+public class SocialPractice extends ReflectionModel implements Model, Validable, Mergeable<SocialPractice>, Updateable<SocialPractice> {
 
   /**
    * The identifier of the social practice.
@@ -151,6 +152,38 @@ public class SocialPractice extends ReflectionModel implements Model, Validable,
 
         mergedValidatedModel.id = this.id;
         return mergedValidatedModel;
+      });
+
+      return future;
+
+    } else {
+
+      return Future.succeededFuture(this);
+    }
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<SocialPractice> update(final SocialPractice source, final String codePrefix, final Vertx vertx) {
+
+    if (source != null) {
+
+      final var merged = new SocialPractice();
+      merged.label = source.label;
+      merged.materials = source.materials;
+      merged.competences = source.competences;
+      merged.norms = source.norms;
+
+      var future = merged.validate(codePrefix, vertx).map(empty -> merged);
+
+      // When updated set the fixed field values
+      future = future.map(updatedValidatedModel -> {
+
+        updatedValidatedModel.id = this.id;
+        return updatedValidatedModel;
       });
 
       return future;

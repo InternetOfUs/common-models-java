@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -77,21 +77,34 @@ public interface Model {
    *
    * @param value object to obtain the model.
    * @param type  of model to obtain
+   *
    * @param <T>   to obtain
    *
    * @return the model defined on the object or {@code null} if can not obtain it.
    */
   public static <T extends Model> T fromJsonObject(final JsonObject value, final Class<T> type) {
 
-    try {
+    if (value == null) {
 
-      return Json.decodeValue(value.toBuffer(), type);
+      Logger.trace("CANNOT obtain model from a 'null' value.");
 
-    } catch (final Throwable throwable) {
+    } else if (type == null) {
 
-      Logger.trace(throwable);
-      return null;
+      Logger.trace("CANNOT obtain model from a 'null' type.");
+
+    } else {
+
+      try {
+
+        return Json.decodeValue(value.toBuffer(), type);
+
+      } catch (final Throwable throwable) {
+
+        Logger.trace(throwable);
+      }
     }
+    // No model found
+    return null;
   }
 
   /**

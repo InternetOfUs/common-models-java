@@ -657,9 +657,7 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
       final var checkpoint = testContext.checkpoint(2);
       testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
-        final var deletedElement = assertThatBodyIs(this.fieldElementClass(), res);
-        assertThat(deletedElement).isNotNull().isEqualTo(element);
+        assertThat(res.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
 
         testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res2 -> {
 
@@ -676,4 +674,443 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
   }
 
+  /**
+   * Should not update element over if the model is not defined.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotUpdateElementOverUndefinedModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.createValidModelFieldElementExample(4, vertx, testContext, testContext.succeeding(element -> {
+
+      testRequest(client, HttpMethod.PUT, this.modelPath() + this.undefinedModelIdPath() + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+
+        assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+        final var error = assertThatBodyIs(ErrorMessage.class, res);
+        assertThat(error.code).isNotEmpty();
+        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+      }).sendJson(element.toJsonObject(), testContext);
+
+    }));
+
+  }
+
+  /**
+   * Should not update element over if the element is not defined.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotUpdateElementOverUndefinedElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+
+      this.createValidModelFieldElementExample(4, vertx, testContext, testContext.succeeding(element -> {
+
+        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+
+          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+          final var error = assertThatBodyIs(ErrorMessage.class, res);
+          assertThat(error.code).isNotEmpty();
+          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+        }).sendJson(element.toJsonObject(), testContext);
+
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Should not update element over if the field is {@code null}.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotUpdateElementOverNullField(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithNullField(4, vertx, testContext, testContext.succeeding(model -> {
+
+      this.createValidModelFieldElementExample(4, vertx, testContext, testContext.succeeding(element -> {
+
+        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+
+          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+          final var error = assertThatBodyIs(ErrorMessage.class, res);
+          assertThat(error.code).isNotEmpty();
+          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+        }).sendJson(element.toJsonObject(), testContext);
+
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Should not update element if it is deleted.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotUpdateElementOverDeletedElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+
+      final var modelId = this.idOfModel(model);
+      final var checkpoint = testContext.checkpoint(2);
+      final var field = this.fieldOf(model);
+      final var element = field.get(0);
+      final var elementId = this.idOfElementIn(model, element);
+      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(resDelete -> {
+
+        assertThat(resDelete.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
+
+        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+
+          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+          final var error = assertThatBodyIs(ErrorMessage.class, res);
+          assertThat(error.code).isNotEmpty();
+          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+        }).sendJson(element.toJsonObject(), testContext, checkpoint);
+
+      }).send(testContext, checkpoint);
+
+    }));
+
+  }
+
+  /**
+   * Should not update with a bad JSON element.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotUpdateWithBadJsonElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+
+      final var modelId = this.idOfModel(model);
+      final var field = this.fieldOf(model);
+      final var element = field.get(field.size() - 1);
+      final var elementId = this.idOfElementIn(model, element);
+
+      testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+
+        assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+        final var error = assertThatBodyIs(ErrorMessage.class, res);
+        assertThat(error.code).isNotEmpty();
+        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+      }).sendJson(this.createBadJsonObjectModelFieldElement(), testContext);
+
+    }));
+
+  }
+
+  /**
+   * Should not update with an invalid element.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotUpdateWithInvalidElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+
+      final var modelId = this.idOfModel(model);
+      final var field = this.fieldOf(model);
+      final var element = field.get(field.size() - 1);
+      final var elementId = this.idOfElementIn(model, element);
+
+      testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+
+        assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+        final var error = assertThatBodyIs(ErrorMessage.class, res);
+        assertThat(error.code).isNotEmpty();
+        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+      }).sendJson(this.createInvalidModelFieldElement().toJsonObject(), testContext);
+
+    }));
+
+  }
+
+  /**
+   * Should update element.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldUpdateElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+
+      this.createValidModelFieldElementExample(11, vertx, testContext, testContext.succeeding(element -> {
+        final var modelId = this.idOfModel(model);
+        final var field = this.fieldOf(model);
+        final var elementId = this.idOfElementIn(model, field.get(field.size() - 1));
+        final var checkpoint = testContext.checkpoint(2);
+        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+
+          assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
+          @SuppressWarnings("unchecked")
+          final E updated = (E) assertThatBodyIs(element.getClass(), res);
+          this.assertEqualsAdded(element, updated);
+
+          testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model)).expect(resRetrieve -> {
+
+            assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
+            @SuppressWarnings("unchecked")
+            final T updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
+            final var updatedField = this.fieldOf(updatedModel);
+            assertThat(updatedField).isNotEmpty().contains(updated);
+
+          }).sendJson(element.toJsonObject(), testContext, checkpoint);
+
+        }).sendJson(element.toJsonObject(), testContext, checkpoint);
+
+      }));
+
+    }));
+  }
+
+  /**
+   * Should not merge element over if the model is not defined.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotMergeElementOverUndefinedModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.createValidModelFieldElementExample(4, vertx, testContext, testContext.succeeding(element -> {
+
+      testRequest(client, HttpMethod.PUT, this.modelPath() + this.undefinedModelIdPath() + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+
+        assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+        final var error = assertThatBodyIs(ErrorMessage.class, res);
+        assertThat(error.code).isNotEmpty();
+        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+      }).sendJson(element.toJsonObject(), testContext);
+
+    }));
+
+  }
+
+  /**
+   * Should not merge element over if the element is not defined.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotMergeElementOverUndefinedElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+
+      this.createValidModelFieldElementExample(4, vertx, testContext, testContext.succeeding(element -> {
+
+        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+
+          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+          final var error = assertThatBodyIs(ErrorMessage.class, res);
+          assertThat(error.code).isNotEmpty();
+          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+        }).sendJson(element.toJsonObject(), testContext);
+
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Should not merge element over if the field is {@code null}.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotMergeElementOverNullField(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithNullField(4, vertx, testContext, testContext.succeeding(model -> {
+
+      this.createValidModelFieldElementExample(4, vertx, testContext, testContext.succeeding(element -> {
+
+        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+
+          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+          final var error = assertThatBodyIs(ErrorMessage.class, res);
+          assertThat(error.code).isNotEmpty();
+          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+        }).sendJson(element.toJsonObject(), testContext);
+
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Should not merge element if it is deleted.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotMergeElementOverDeletedElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+
+      final var modelId = this.idOfModel(model);
+      final var checkpoint = testContext.checkpoint(2);
+      final var field = this.fieldOf(model);
+      final var element = field.get(0);
+      final var elementId = this.idOfElementIn(model, element);
+      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(resDelete -> {
+
+        assertThat(resDelete.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
+
+        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+
+          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+          final var error = assertThatBodyIs(ErrorMessage.class, res);
+          assertThat(error.code).isNotEmpty();
+          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+        }).sendJson(element.toJsonObject(), testContext, checkpoint);
+
+      }).send(testContext, checkpoint);
+
+    }));
+
+  }
+
+  /**
+   * Should not merge with a bad JSON element.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotMergeWithBadJsonElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+
+      final var modelId = this.idOfModel(model);
+      final var field = this.fieldOf(model);
+      final var element = field.get(field.size() - 1);
+      final var elementId = this.idOfElementIn(model, element);
+
+      testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+
+        assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+        final var error = assertThatBodyIs(ErrorMessage.class, res);
+        assertThat(error.code).isNotEmpty();
+        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+      }).sendJson(this.createBadJsonObjectModelFieldElement(), testContext);
+
+    }));
+
+  }
+
+  /**
+   * Should not merge with an invalid element.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldNotMergeWithInvalidElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+
+      final var modelId = this.idOfModel(model);
+      final var field = this.fieldOf(model);
+      final var element = field.get(field.size() - 1);
+      final var elementId = this.idOfElementIn(model, element);
+
+      testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+
+        assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+        final var error = assertThatBodyIs(ErrorMessage.class, res);
+        assertThat(error.code).isNotEmpty();
+        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+
+      }).sendJson(this.createInvalidModelFieldElement().toJsonObject(), testContext);
+
+    }));
+
+  }
+
+  /**
+   * Should merge element.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to connect to the server.
+   * @param testContext context to test.
+   */
+  @Test
+  public void shouldMergeElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+
+      this.createValidModelFieldElementExample(11, vertx, testContext, testContext.succeeding(element -> {
+        final var modelId = this.idOfModel(model);
+        final var field = this.fieldOf(model);
+        final var elementId = this.idOfElementIn(model, field.get(field.size() - 1));
+        final var checkpoint = testContext.checkpoint(2);
+        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+
+          assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
+          @SuppressWarnings("unchecked")
+          final E merged = (E) assertThatBodyIs(element.getClass(), res);
+          this.assertEqualsAdded(element, merged);
+
+          testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model)).expect(resRetrieve -> {
+
+            assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
+            @SuppressWarnings("unchecked")
+            final T mergedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
+            final var mergedField = this.fieldOf(mergedModel);
+            assertThat(mergedField).isNotEmpty().contains(merged);
+
+          }).sendJson(element.toJsonObject(), testContext, checkpoint);
+
+        }).sendJson(element.toJsonObject(), testContext, checkpoint);
+
+      }));
+
+    }));
+  }
 }

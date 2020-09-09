@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,6 +28,8 @@ package eu.internetofus.common.components.profile_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.UpdatesTest.assertCanUpdate;
+import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -637,6 +639,279 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
       target.competences.get(1).ontology = source.competences.get(1).ontology;
       target.competences.get(1).level = 0d;
       assertThat(merged).isEqualTo(target);
+    });
+  }
+
+  /**
+   * Check that not update social practices with bad label.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadLabel(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new SocialPractice();
+    source.label = ValidationsTest.STRING_256;
+    assertCannotUpdate(target, source, "label", vertx, testContext);
+
+  }
+
+  /**
+   * Check that not update model with bad norms.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new SocialPractice();
+    source.norms = new ArrayList<>();
+    source.norms.add(new Norm());
+    source.norms.add(new Norm());
+    source.norms.add(new Norm());
+    source.norms.get(1).attribute = ValidationsTest.STRING_256;
+    assertCannotUpdate(target, source, "norms[1].attribute", vertx, testContext);
+
+  }
+
+  /**
+   * Check that not update model with bad materials.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadMaterials(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new SocialPractice();
+    source.materials = new ArrayList<>();
+    source.materials.add(new MaterialTest().createModelExample(1));
+    source.materials.add(new MaterialTest().createModelExample(2));
+    source.materials.add(new MaterialTest().createModelExample(3));
+    source.materials.get(1).name = ValidationsTest.STRING_256;
+    assertCannotUpdate(target, source, "materials[1].name", vertx, testContext);
+
+  }
+
+  /**
+   * Check that not update model with bad competences.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadCompetences(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = new SocialPractice();
+    source.competences = new ArrayList<>();
+    source.competences.add(new CompetenceTest().createModelExample(1));
+    source.competences.add(new CompetenceTest().createModelExample(2));
+    source.competences.add(new CompetenceTest().createModelExample(3));
+    source.competences.get(1).name = ValidationsTest.STRING_256;
+    assertCannotUpdate(target, source, "competences[1].name", vertx, testContext);
+
+  }
+
+  /**
+   * Check that update.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   */
+  @Test
+  public void shouldUpdate(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "Target_Id";
+    final var source = this.createModelExample(2);
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = target.id;
+      source.norms.get(0).id = updated.norms.get(0).id;
+      assertThat(updated).isEqualTo(source);
+    });
+  }
+
+  /**
+   * Check that update with {@code null}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    assertCanUpdate(target, null, vertx, testContext, updated -> assertThat(updated).isSameAs(target));
+
+  }
+
+  /**
+   * Check that update only label.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateOnlyLabel(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "1";
+    target.norms.get(0).id = "2";
+    final var source = new SocialPractice();
+    source.label = "NEW LABEL";
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = target.id;
+      assertThat(updated).isEqualTo(source);
+    });
+  }
+
+  /**
+   * Check that update removing all norms.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateRemoveNorms(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "19";
+    final var source = new SocialPractice();
+    source.norms = new ArrayList<>();
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = target.id;
+      assertThat(updated).isEqualTo(source);
+    });
+  }
+
+  /**
+   * Check that update social practice norms.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateNorms(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "9";
+    final var source = new SocialPractice();
+    source.norms = new ArrayList<>();
+    for (final var norm : target.norms) {
+
+      source.norms.add(Model.fromJsonObject(norm.toJsonObject(), Norm.class));
+
+    }
+    source.norms.get(0).attribute = "New attribute";
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = target.id;
+      assertThat(updated).isEqualTo(source);
+    });
+  }
+
+  /**
+   * Check that update social practice materials.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateMaterials(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "9";
+    final var source = new SocialPractice();
+    source.materials = new ArrayList<>();
+    for (final var material : target.materials) {
+
+      source.materials.add(Model.fromJsonObject(material.toJsonObject(), Material.class));
+
+    }
+    source.materials.get(0).description = "New Description";
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = target.id;
+      assertThat(updated).isEqualTo(source);
+    });
+  }
+
+  /**
+   * Check that update removing all competences.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateRemoveCompetences(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "19";
+    final var source = new SocialPractice();
+    source.competences = new ArrayList<>();
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = target.id;
+      assertThat(updated).isEqualTo(source);
+    });
+  }
+
+  /**
+   * Check that update social practice competences.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateCompetences(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "9";
+    final var source = new SocialPractice();
+    source.competences = new ArrayList<>();
+    for (final var competence : target.competences) {
+
+      source.competences.add(Model.fromJsonObject(competence.toJsonObject(), Competence.class));
+
+    }
+    source.competences.get(0).level = 0d;
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+      source.id = target.id;
+      assertThat(updated).isEqualTo(source);
     });
   }
 

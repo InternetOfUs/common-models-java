@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,6 +28,7 @@ package eu.internetofus.common.vertx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
@@ -2156,4 +2157,33 @@ public class ModelResourcesTest {
 
   }
 
+  /**
+   * Should not convert a {@code null} JSON object to a model.
+   *
+   * @param resultHandler handler to manage the HTTP result.
+   * @param success       the function to call if the conversion was a success.
+   *
+   * @see ModelResources#toModel(JsonObject, ModelContext, OperationContext, Runnable)
+   */
+  @Test
+  public void shouldNotConvertANullJsonObject(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final Runnable success) {
+
+    final var model = this.createModelContext();
+    final var context = this.createOperationContext(resultHandler);
+    ModelResources.toModel(null, model, context, success);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
+    assertThat(error).isNotNull();
+    assertThat(error.code).contains(model.name);
+    assertThat(error.message).contains(model.name).isNotEqualTo(error.code);
+
+    verify(success, never()).run();
+  }
 }
