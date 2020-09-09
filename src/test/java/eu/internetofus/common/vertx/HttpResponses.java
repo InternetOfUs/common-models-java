@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,9 +29,12 @@ package eu.internetofus.common.vertx;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.util.List;
+
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import eu.internetofus.common.components.Model;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.client.HttpResponse;
@@ -46,7 +49,7 @@ import io.vertx.ext.web.client.HttpResponse;
 public interface HttpResponses {
 
   /**
-   * VErify that the body of the response is of the specified class type.
+   * Verify that the body of the response is of the specified class type.
    *
    * @param <T>   type of the context,
    * @param clazz of the content.
@@ -68,4 +71,22 @@ public interface HttpResponses {
     }
 
   }
+
+  /**
+   * Verify that the body of the response is an array of the specified class type.
+   *
+   * @param <T>   type of the elements on the array,
+   *
+   * @param clazz of the content.
+   * @param res   response to get the body content.
+   *
+   * @return the content of the body.
+   */
+  static <T extends Model> List<T> assertThatBodyIsArrayOf(final Class<T> clazz, final HttpResponse<Buffer> res) {
+
+    assertThat(res.getHeader(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+    return Model.fromJsonArray(res.body(), clazz);
+
+  }
+
 }
