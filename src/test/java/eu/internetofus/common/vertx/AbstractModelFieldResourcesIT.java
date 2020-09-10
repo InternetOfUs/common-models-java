@@ -517,7 +517,7 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
       final var modelId = this.idOfModel(model);
       final var checkpoint = testContext.checkpoint(2);
       final var field = this.fieldOf(model);
-      final var elementId = this.idOfElementIn(model, field.get(0));
+      final var elementId = this.idOfElementIn(model, field.get(field.size()-1));
       testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(resDelete -> {
 
         assertThat(resDelete.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
@@ -653,7 +653,6 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
       final var field = this.fieldOf(model);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
-
       final var checkpoint = testContext.checkpoint(2);
       testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
 
@@ -772,7 +771,7 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
       final var modelId = this.idOfModel(model);
       final var checkpoint = testContext.checkpoint(2);
       final var field = this.fieldOf(model);
-      final var element = field.get(0);
+      final var element = field.get(field.size()-1);
       final var elementId = this.idOfElementIn(model, element);
       testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(resDelete -> {
 
@@ -992,7 +991,7 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
       final var modelId = this.idOfModel(model);
       final var checkpoint = testContext.checkpoint(2);
       final var field = this.fieldOf(model);
-      final var element = field.get(0);
+      final var element = field.get(field.size()-1);
       final var elementId = this.idOfElementIn(model, element);
       testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(resDelete -> {
 

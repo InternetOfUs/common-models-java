@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -101,33 +101,26 @@ public class SocialNetworkRelationship extends ReflectionModel implements Model,
 
       } else {
 
-        this.userId = Validations.validateNullableStringField(codePrefix, "userId", 255, this.userId);
-        if (this.userId == null) {
+        this.userId = Validations.validateStringField(codePrefix, "userId", 255, this.userId);
+        future = future.compose(mapper -> {
 
-          promise.fail(new ValidationErrorException(codePrefix + ".userId", "It is not allowed a social relationship without an user identifier'."));
+          final Promise<Void> searchPromise = Promise.promise();
+          WeNetProfileManager.createProxy(vertx).retrieveProfile(this.userId, search -> {
 
-        } else {
+            if (search.result() != null) {
 
-          this.weight = Validations.validateNumberOnRange(codePrefix, "weight", this.weight, true, 0d, 1d);
-          future = future.compose(mapper -> {
+              searchPromise.complete();
 
-            final Promise<Void> searchPromise = Promise.promise();
-            WeNetProfileManager.createProxy(vertx).retrieveProfile(this.userId, search -> {
+            } else {
 
-              if (search.result() != null) {
+              searchPromise.fail(new ValidationErrorException(codePrefix + ".userId", "Does not exist any user identifier by '" + this.userId + "'."));
+            }
 
-                searchPromise.complete();
-
-              } else {
-
-                searchPromise.fail(new ValidationErrorException(codePrefix + ".userId", "Does not exist any user identifier by '" + this.userId + "'."));
-              }
-
-            });
-            return searchPromise.future();
           });
-          promise.complete();
-        }
+          return searchPromise.future();
+        });
+        this.weight = Validations.validateNumberOnRange(codePrefix, "weight", this.weight, true, 0d, 1d);
+        promise.complete();
       }
     } catch (final ValidationErrorException validationError) {
 
