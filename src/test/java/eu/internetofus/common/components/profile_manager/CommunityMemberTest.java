@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,6 +28,8 @@ package eu.internetofus.common.components.profile_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.UpdatesTest.assertCanUpdate;
+import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -281,31 +283,12 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
 
         assertCanMerge(target, source, vertx, testContext, merged -> {
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+          source.userId= target.userId;
           source._creationTs = target._creationTs;
           source._lastUpdateTs = target._lastUpdateTs;
           assertThat(merged).isEqualTo(source);
         });
       }));
-    }));
-
-  }
-
-  /**
-   * Should not merge with a bad user identifier.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see CommunityMember#merge(CommunityMember, String, Vertx)
-   */
-  @Test
-  public void shoudNotMergeWithBadUserId(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
-
-      final var source = new CommunityMember();
-      source.userId = "Undefined user identifier";
-      assertCannotMerge(target, source, "userId", vertx, testContext);
     }));
 
   }
@@ -327,6 +310,75 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
       source.privileges = new ArrayList<>(target.privileges);
       source.privileges.add(ValidationsTest.STRING_256);
       assertCannotMerge(target, source, "privileges[1]", vertx, testContext);
+    }));
+
+  }
+
+  /**
+   * Should update with {@code null}
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      assertCanUpdate(target, null, vertx, testContext, updated -> {
+        assertThat(updated).isSameAs(target);
+      });
+    }));
+
+  }
+
+  /**
+   * Should update two examples.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityMember#update(CommunityMember, String, Vertx)
+   */
+  @Test
+  public void shoudUpdateExamples(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      target._creationTs = 10000;
+      target._lastUpdateTs = TimeManager.now();
+      this.createModelExample(2, vertx, testContext, testContext.succeeding(source -> {
+
+        assertCanUpdate(target, source, vertx, testContext, updated -> {
+          assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+          source.userId= target.userId;
+          source._creationTs = target._creationTs;
+          source._lastUpdateTs = target._lastUpdateTs;
+          assertThat(updated).isEqualTo(source);
+        });
+      }));
+    }));
+
+  }
+
+  /**
+   * Should not update with a bad privilege.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityMember#update(CommunityMember, String, Vertx)
+   */
+  @Test
+  public void shoudNotUpdateWithBadPrivilege(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = new CommunityMember();
+      source.privileges = new ArrayList<>(target.privileges);
+      source.privileges.add(ValidationsTest.STRING_256);
+      assertCannotUpdate(target, source, "privileges[1]", vertx, testContext);
     }));
 
   }

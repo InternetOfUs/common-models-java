@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,6 +29,7 @@ package eu.internetofus.common.components.profile_manager;
 import java.util.List;
 
 import eu.internetofus.common.components.Mergeable;
+import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -44,7 +45,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "CommunityMember", description = "A member of a community.")
-public class CommunityMember extends CreateUpdateTsDetails implements Validable, Mergeable<CommunityMember> {
+public class CommunityMember extends CreateUpdateTsDetails implements Validable, Mergeable<CommunityMember>, Updateable<CommunityMember> {
 
   /**
    * Identifier of the user that is member of the community.
@@ -93,12 +94,7 @@ public class CommunityMember extends CreateUpdateTsDetails implements Validable,
     if (source != null) {
 
       final var merged = new CommunityMember();
-      merged.userId = source.userId;
-      if (merged.userId == null) {
-
-        merged.userId = this.userId;
-      }
-
+      merged.userId = this.userId;
       merged.privileges = source.privileges;
       if (merged.privileges == null) {
 
@@ -122,6 +118,38 @@ public class CommunityMember extends CreateUpdateTsDetails implements Validable,
 
     return future;
 
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<CommunityMember> update(final CommunityMember source, final String codePrefix, final Vertx vertx) {
+
+    final Promise<CommunityMember> promise = Promise.promise();
+    var future = promise.future();
+    if (source != null) {
+
+      final var updated = new CommunityMember();
+      updated.userId = this.userId;
+      updated.privileges = source.privileges;
+
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.map(updateddValidatedModel -> {
+
+        updateddValidatedModel._creationTs = this._creationTs;
+        updateddValidatedModel._lastUpdateTs = this._lastUpdateTs;
+        return updateddValidatedModel;
+      });
+
+      promise.complete(updated);
+
+    } else {
+
+      promise.complete(this);
+    }
+
+    return future;
   }
 
 }
