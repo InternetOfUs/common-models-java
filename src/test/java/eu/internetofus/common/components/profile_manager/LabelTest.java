@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -62,8 +62,8 @@ public class LabelTest extends ModelTestCase<Label> {
     final var model = new Label();
     model.name = "name_" + index;
     model.semantic_class = (double) index;
-    model.latitude = -1.0 - index % 179;
-    model.longitude = 1.0 + index % 89;
+    model.latitude = (double) index % 90;
+    model.longitude = (double) index % 180;
     return model;
   }
 

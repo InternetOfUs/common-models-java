@@ -172,9 +172,9 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
         activity.attendees.add(stored2.id);
         profile.plannedActivities.add(activity);
         profile.relationships = new ArrayList<>();
-        profile.relationships.add(new SocialNetworkRelantionshipTest().createModelExample(5));
+        profile.relationships.add(new SocialNetworkRelationshipTest().createModelExample(5));
         profile.relationships.get(0).userId = stored1.id;
-        profile.relationships.add(new SocialNetworkRelantionshipTest().createModelExample(6));
+        profile.relationships.add(new SocialNetworkRelationshipTest().createModelExample(6));
         profile.relationships.get(1).userId = stored2.id;
         profile.personalBehaviors = new ArrayList<>();
         profile.personalBehaviors.add(new RoutineTest().createModelExample(index));

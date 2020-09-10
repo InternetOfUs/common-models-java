@@ -64,7 +64,7 @@ import io.vertx.junit5.VertxTestContext;
  * @author UDT-IA, IIIA-CSIC
  */
 @ExtendWith(VertxExtension.class)
-public class SocialNetworkRelantionshipTest extends ModelTestCase<SocialNetworkRelationship> {
+public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRelationship> {
 
   /**
    * The profile manager mocked server.
