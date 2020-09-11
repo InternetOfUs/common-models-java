@@ -42,8 +42,10 @@ import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
+import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -905,6 +907,62 @@ public interface ModelResources {
         return -1;
       }
     };
+
+  }
+
+  /**
+   * Retrieve a page of models.
+   *
+   * @param offset   index of the first model to return.
+   * @param limit    number maximum of models to return.
+   * @param searcher function to obtain the page.
+   * @param context  of the request.
+   */
+  static public void retrieveModelsPage(final int offset, final int limit, @NotNull final BiConsumer<ModelsPageContext, Promise<JsonObject>> searcher, @NotNull final OperationContext context) {
+
+    retrieveModelsPageChain(offset, limit, searcher, context, found -> OperationReponseHandlers.responseOk(context.resultHandler, found));
+
+  }
+
+  /**
+   * Retrieve a page of models.
+   *
+   * @param offset   index of the first model to return.
+   * @param limit    number maximum of models to return.
+   * @param searcher function to obtain the page.
+   * @param context  of the request.
+   * @param success  to inform to the page.
+   */
+  static public void retrieveModelsPageChain(final int offset, final int limit, @NotNull final BiConsumer<ModelsPageContext, Promise<JsonObject>> searcher, @NotNull final OperationContext context, final Consumer<JsonObject> success) {
+
+    final var page = new ModelsPageContext();
+    page.offset = offset;
+    page.limit = limit;
+    final Promise<JsonObject> promise = Promise.promise();
+    try {
+
+      searcher.accept(page, promise);
+
+    } catch (final Throwable cause) {
+
+      promise.fail(cause);
+    }
+    promise.future().onComplete(search -> {
+
+      if (search.failed()) {
+
+        final var cause = search.cause();
+        Logger.trace(cause, "Cannot obtain the models.\n{}\n{}", page, context);
+        OperationReponseHandlers.responseFailedWith(context.resultHandler, Status.BAD_REQUEST, cause);
+
+      } else {
+
+        final var found = search.result();
+        success.accept(found);
+
+      }
+
+    });
 
   }
 

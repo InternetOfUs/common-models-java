@@ -28,6 +28,7 @@ package eu.internetofus.common.vertx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -53,7 +54,10 @@ import eu.internetofus.common.components.ValidationsTest;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.api.OperationRequest;
 import io.vertx.ext.web.api.OperationResponse;
@@ -2186,4 +2190,96 @@ public class ModelResourcesTest {
 
     verify(success, never()).run();
   }
+
+  /**
+   * Should not obtain page if search throws exception.
+   *
+   * @param resultHandler handler to manage the HTTP result.
+   * @param searcher      the function to obtain the page.
+   *
+   * @see ModelResources#toModel(JsonObject, ModelContext, OperationContext, Runnable)
+   */
+  @Test
+  public void shouldNotRetrieveModelsPageWhenSearchThrowsException(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final BiConsumer<ModelsPageContext, Promise<JsonObject>> searcher) {
+
+    doThrow(new RuntimeException("Error")).when(searcher).accept(any(), any());
+    final var context = this.createOperationContext(resultHandler);
+    ModelResources.retrieveModelsPage(0, 100, searcher, context);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
+    assertThat(error).isNotNull();
+    assertThat(error.code).isNotNull().isNotEqualTo(error.message);
+    assertThat(error.message).isNotNull();
+  }
+
+  /**
+   * Should not obtain page because the search has failed.
+   *
+   * @param resultHandler handler to manage the HTTP result.
+   * @param searcher      the function to obtain the page.
+   *
+   * @see ModelResources#toModel(JsonObject, ModelContext, OperationContext, Runnable)
+   */
+  @Test
+  public void shouldNotRetrieveModelsPageWhenSearchFailed(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final BiConsumer<ModelsPageContext, Promise<JsonObject>> searcher) {
+
+    final var context = this.createOperationContext(resultHandler);
+    ModelResources.retrieveModelsPage(0, 100, searcher, context);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Promise<JsonObject>> searchHandler = ArgumentCaptor.forClass(Promise.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
+    searchHandler.getValue().fail("Not found");
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
+    assertThat(error).isNotNull();
+    assertThat(error.code).isNotNull().isNotEqualTo(error.message);
+    assertThat(error.message).isNotNull();
+  }
+
+  /**
+   * Should obtain models page.
+   *
+   * @param resultHandler handler to manage the HTTP result.
+   * @param searcher      the function to obtain the page.
+   *
+   * @see ModelResources#toModel(JsonObject, ModelContext, OperationContext, Runnable)
+   */
+  @Test
+  public void shouldRetrieveModelsPage(@Mock final Handler<AsyncResult<OperationResponse>> resultHandler, @Mock final BiConsumer<ModelsPageContext, Promise<JsonObject>> searcher) {
+
+    final var context = this.createOperationContext(resultHandler);
+    ModelResources.retrieveModelsPage(0, 100, searcher, context);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Promise<JsonObject>> searchHandler = ArgumentCaptor.forClass(Promise.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
+    final JsonObject expectedPage = new JsonObject().put("models", new JsonArray()).put("offset", 0).put("limit", 100);
+    searchHandler.getValue().complete(expectedPage);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<OperationResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.OK.getStatusCode());
+    final var page = Json.decodeValue(result.getPayload());
+    assertThat(page).isNotNull().isEqualTo(expectedPage);
+  }
+
 }
