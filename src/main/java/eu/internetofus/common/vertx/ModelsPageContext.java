@@ -27,6 +27,7 @@
 package eu.internetofus.common.vertx;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.FindOptions;
 
 /**
  * Contains the information of a models page that is used on a operation.
@@ -84,6 +85,22 @@ public class ModelsPageContext {
     builder.append('\n');
 
     return builder.toString();
+  }
+
+  /**
+   * Convert the context to MongoDB find options.
+   *
+   * @return the find options defined by this context.
+   */
+  public FindOptions toFindOptions() {
+
+    final var options = new FindOptions();
+    if (this.sort != null) {
+      options.setSort(this.sort);
+    }
+    options.setSkip(this.offset);
+    options.setLimit(this.limit);
+    return options;
   }
 
 }
