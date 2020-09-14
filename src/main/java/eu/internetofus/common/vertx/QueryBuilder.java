@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -250,17 +250,7 @@ public class QueryBuilder {
 
         if (value != null) {
 
-          final var elementMatch = new JsonObject();
-          if (this.containsPattern(value)) {
-
-            final var pattern = this.extractPattern(value);
-            elementMatch.put("$regex", pattern);
-
-          } else {
-
-            elementMatch.put("$eq", value);
-          }
-
+          final var elementMatch = this.elementMatch(value);
           patternsMatch.add(new JsonObject().put("$elemMatch", elementMatch));
         }
 
@@ -275,6 +265,28 @@ public class QueryBuilder {
   }
 
   /**
+   * Return the query to match an element value.
+   *
+   * @param value to match an element.
+   *
+   * @return the matcher query.
+   */
+  protected JsonObject elementMatch(final String value) {
+
+    final var elementMatch = new JsonObject();
+    if (this.containsPattern(value)) {
+
+      final var pattern = this.extractPattern(value);
+      elementMatch.put("$regex", pattern);
+
+    } else {
+
+      elementMatch.put("$eq", value);
+    }
+    return elementMatch;
+  }
+
+  /**
    * Return the created query.
    *
    * @return the created query.
@@ -282,6 +294,39 @@ public class QueryBuilder {
   public JsonObject build() {
 
     return this.query;
+  }
+
+  /**
+   * Add a the restrictions to mark an array field that contains some elements where a filed matches a value or a regular expression.
+   * It it is a regular expression it has to be between {@code /}.
+   *
+   * @param fieldName    name of the field that contains an array.
+   * @param subFieldName name of the field for the element on the elements.
+   * @param values       or regular expression for the field. If it is {@code null} the field is ignored.
+   *
+   * @return the factory that is using.
+   */
+  public QueryBuilder withElementEqOrRegex(final String fieldName, final String subFieldName, final Iterable<String> values) {
+
+    if (values != null) {
+
+      final var patternsElementsMatch = new JsonArray();
+      for (final String value : values) {
+
+        if (value != null) {
+
+          final var elementMatch = this.elementMatch(value);
+          patternsElementsMatch.add(new JsonObject().put("$elemMatch", new JsonObject().put(subFieldName, elementMatch)));
+        }
+
+      }
+      if (patternsElementsMatch.size() != 0) {
+
+        this.query.put(fieldName, new JsonObject().put("$all", patternsElementsMatch));
+      }
+
+    }
+    return this;
   }
 
 }
