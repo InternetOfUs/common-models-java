@@ -32,36 +32,36 @@
 		<!-- Maven plugins versions -->
 		<maven-clean-plugin-version>3.1.0</maven-clean-plugin-version>
 		<maven-compiler-plugin-version>3.8.1</maven-compiler-plugin-version>
-		<maven-dependency-plugin-version>3.1.1</maven-dependency-plugin-version>
+		<maven-dependency-plugin-version>3.1.2</maven-dependency-plugin-version>
 		<maven-enforcer-plugin-version>3.0.0-M3</maven-enforcer-plugin-version>
-		<maven-failsafe-plugin-version>3.0.0-M4</maven-failsafe-plugin-version>
-		<maven-jar-plugin-version>3.1.2</maven-jar-plugin-version>
-		<maven-javadoc-plugin-version>3.1.1</maven-javadoc-plugin-version>
+		<maven-failsafe-plugin-version>3.0.0-M5</maven-failsafe-plugin-version>
+		<maven-jar-plugin-version>3.2.0</maven-jar-plugin-version>
+		<maven-javadoc-plugin-version>3.2.0</maven-javadoc-plugin-version>
 		<maven-jxr-plugin-version>3.0.0</maven-jxr-plugin-version>
-		<maven-pmd-plugin-version>3.12.0</maven-pmd-plugin-version>
-		<maven-project-info-reports-plugin-version>3.0.0</maven-project-info-reports-plugin-version>
-		<maven-resources-plugin-version>3.1.0</maven-resources-plugin-version>
-		<maven-surefire-plugin-version>3.0.0-M4</maven-surefire-plugin-version>
-		<maven-surefire-report-plugin-version>3.0.0-M3</maven-surefire-report-plugin-version>
+		<maven-pmd-plugin-version>3.13.0</maven-pmd-plugin-version>
+		<maven-project-info-reports-plugin-version>3.1.1</maven-project-info-reports-plugin-version>
+		<maven-resources-plugin-version>3.2.0</maven-resources-plugin-version>
+		<maven-surefire-plugin-version>3.0.0-M5</maven-surefire-plugin-version>
+		<maven-surefire-report-plugin-version>3.0.0-M5</maven-surefire-report-plugin-version>
 		<org.jacoco-version>0.8.5</org.jacoco-version>
-		<maven-site-plugin-version>3.8.2</maven-site-plugin-version>
-		<build-helper-maven-plugin-version>3.0.0</build-helper-maven-plugin-version>
+		<maven-site-plugin-version>3.9.1</maven-site-plugin-version>
+		<build-helper-maven-plugin-version>3.2.0</build-helper-maven-plugin-version>
 		<!-- Library versions -->
-		<io.vertx-version>3.9.1</io.vertx-version>
-		<io.swagger-version>2.1.1</io.swagger-version>
-		<commons-validator-version>1.6</commons-validator-version>
-		<com.googlecode.libphonenumber-version>8.11.3</com.googlecode.libphonenumber-version>
+		<io.vertx-version>3.9.2</io.vertx-version>
+		<io.swagger-version>2.1.4</io.swagger-version>
+		<commons-validator-version>1.7</commons-validator-version>
+		<com.googlecode.libphonenumber-version>8.12.9</com.googlecode.libphonenumber-version>
 		<jakarta.ws.rs-version>2.1.6</jakarta.ws.rs-version>
-		<org.apache.commons-lang3-version>3.9</org.apache.commons-lang3-version>
-		<org.tinylog-version>2.0.1</org.tinylog-version>
+		<org.apache.commons-lang3-version>3.11</org.apache.commons-lang3-version>
+		<org.tinylog-version>2.1.2</org.tinylog-version>
 		<commons-cli-version>1.4</commons-cli-version>
 		<!-- Test library versions -->
-		<org.junit.jupiter-version>5.6.0</org.junit.jupiter-version>
-		<org.assertj-version>3.15.0</org.assertj-version>
+		<org.junit.jupiter-version>5.7.0</org.junit.jupiter-version>
+		<org.assertj-version>3.17.0</org.assertj-version>
 		<org.itsallcode-junit5-system-extensions-version>1.1.0</org.itsallcode-junit5-system-extensions-version>
-		<org.mockito-version>3.2.4</org.mockito-version>
-		<org.testcontainers-version>1.12.5</org.testcontainers-version>
-		<com.intuit.karate-version>0.9.5</com.intuit.karate-version>
+		<org.mockito-version>3.5.10</org.mockito-version>
+		<org.testcontainers-version>1.14.3</org.testcontainers-version>
+		<com.intuit.karate-version>0.9.6</com.intuit.karate-version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
