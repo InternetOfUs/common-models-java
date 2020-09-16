@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,10 +29,20 @@ package eu.internetofus.common.vertx;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import javax.validation.constraints.NotNull;
+
+import org.tinylog.Logger;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ValidationErrorException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClient;
@@ -51,13 +61,20 @@ public class Repository {
   protected MongoClient pool;
 
   /**
+   * The version for the schemas.
+   */
+  protected String schemaVersion;
+
+  /**
    * Create a new service.
    *
-   * @param pool to create the connections.
+   * @param pool          to create the connections.
+   * @param schemaVersion version of the schemas stored by this repository.
    */
-  public Repository(final MongoClient pool) {
+  public Repository(final MongoClient pool, final String schemaVersion) {
 
     this.pool = pool;
+    this.schemaVersion = schemaVersion;
 
   }
 
@@ -90,6 +107,7 @@ public class Repository {
 
         } else {
 
+          options.getFields().put("schema_version", false);
           this.pool.findWithOptions(collectionName, query, options, find -> {
 
             if (find.failed()) {
@@ -150,7 +168,7 @@ public class Repository {
    * @param updateModel    the new values of the model.
    * @param updateHandler  handler to manage the update action.
    */
-  protected void updateOneDocument(final String collectionName, final JsonObject query, final JsonObject updateModel, final Handler<AsyncResult<Void>> updateHandler) {
+  protected void updateOneDocument(@NotNull final String collectionName, @NotNull final JsonObject query, final JsonObject updateModel, final Handler<AsyncResult<Void>> updateHandler) {
 
     if (updateModel == null) {
 
@@ -158,7 +176,9 @@ public class Repository {
 
     } else {
 
-      final var setFields = new JsonObject();
+      final var setFields = new JsonObject().put("schema_version", this.schemaVersion);
+      final var updateQuery = new JsonObject();
+      updateQuery.put("$set", setFields);
       final var unsetFields = new JsonObject();
       for (final String fieldName : updateModel.fieldNames()) {
 
@@ -174,12 +194,6 @@ public class Repository {
 
       }
 
-      final var updateQuery = new JsonObject();
-      if (!setFields.isEmpty()) {
-
-        updateQuery.put("$set", setFields);
-
-      }
       if (!unsetFields.isEmpty()) {
 
         updateQuery.put("$unset", unsetFields);
@@ -215,8 +229,9 @@ public class Repository {
    *
    * @param storeHandler   handler to manage the store action.
    */
-  protected void storeOneDocument(final String collectionName, final JsonObject model, final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> storeHandler) {
+  protected void storeOneDocument(@NotNull final String collectionName, @NotNull final JsonObject model, final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> storeHandler) {
 
+    model.put("schema_version", this.schemaVersion);
     this.pool.insert(collectionName, model, store -> {
 
       if (store.failed()) {
@@ -225,26 +240,39 @@ public class Repository {
 
       } else {
 
-        if (map != null) {
-
-          try {
-
-            final var adaptedModel = map.apply(model);
-            storeHandler.handle(Future.succeededFuture(adaptedModel));
-
-          } catch (final Throwable throwable) {
-
-            storeHandler.handle(Future.failedFuture(throwable));
-
-          }
-
-        } else {
-
-          storeHandler.handle(Future.succeededFuture(model));
-        }
+        this.applyMap(model, map, storeHandler);
       }
 
     });
+  }
+
+  /**
+   * Apply a map before return a model.
+   *
+   * @param model   to return.
+   * @param map     function to modify the model. If it is {@code null} no modification is applied.
+   * @param handler to manage the model to return.
+   *
+   */
+  protected void applyMap(final JsonObject model, final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> handler) {
+
+    if (map != null) {
+
+      try {
+
+        final var adaptedModel = map.apply(model);
+        handler.handle(Future.succeededFuture(adaptedModel));
+
+      } catch (final Throwable throwable) {
+
+        handler.handle(Future.failedFuture(throwable));
+
+      }
+
+    } else {
+
+      handler.handle(Future.succeededFuture(model));
+    }
   }
 
   /**
@@ -256,9 +284,19 @@ public class Repository {
    * @param map            function to modify the found document. If it is {@code null} no modification is applied.
    * @param searchHandler  handler to manage the find action.
    */
-  protected void findOneDocument(final String collectionName, final JsonObject query, final JsonObject fields, final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
+  protected void findOneDocument(@NotNull final String collectionName, final JsonObject query, final JsonObject fields, final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
 
-    this.pool.findOne(collectionName, query, fields, search -> {
+    JsonObject fieldWithoutSchema = null;
+    if (fields == null) {
+
+      fieldWithoutSchema = new JsonObject();
+
+    } else {
+
+      fieldWithoutSchema = fields;
+    }
+    fieldWithoutSchema.put("schema_version", false);
+    this.pool.findOne(collectionName, query, fieldWithoutSchema, search -> {
 
       if (search.failed()) {
 
@@ -266,18 +304,14 @@ public class Repository {
 
       } else {
 
-        JsonObject value = search.result();
+        final JsonObject value = search.result();
         if (value == null) {
 
           searchHandler.handle(Future.failedFuture("Does not exist a document that match '" + query + "'."));
 
         } else {
 
-          if (map != null) {
-
-            value = map.apply(value);
-          }
-          searchHandler.handle(Future.succeededFuture(value));
+          this.applyMap(value, map, searchHandler);
         }
       }
     });
@@ -354,7 +388,7 @@ public class Repository {
 
               if (sort.containsKey(key)) {
 
-                throw new ValidationErrorException(codePrefix + "[" + i + "]", "The '" + value + "' taht represents the fiels '" + key + "' is already defined.");
+                throw new ValidationErrorException(codePrefix + "[" + i + "]", "The '" + value + "' that represents the fields '" + key + "' is already defined.");
 
               } else {
 
@@ -368,6 +402,142 @@ public class Repository {
         return sort;
       }
     }
+  }
+
+  /**
+   * Create a query that return
+   *
+   * @return the query to return the models that has a different schema version.
+   *
+   * @see #schemaVersion
+   */
+  protected JsonObject createQueryToReturnDocumentsThatNotMatchSchemaVersion() {
+
+    final var notExists = new JsonObject().put("schema_version", new JsonObject().put("$exists", false));
+    final var notEq = new JsonObject().put("schema_version", new JsonObject().put("$not", new JsonObject().put("$eq", this.schemaVersion)));
+    return new JsonObject().put("$or", new JsonArray().add(notExists).add(notEq));
+
+  }
+
+  /**
+   * Migrate the documents of a collection to the current schema.
+   *
+   * @param collectionName name of the collection to migrate.
+   * @param type           of the documents on the collection. {@code null} use the found element.
+   *
+   * @param <T>            type of the documents.
+   *
+   * @return the future that will inform if has migrated or not the documents.
+   */
+  protected <T extends Model> Future<Void> migrateCollection(final String collectionName, final Class<T> type) {
+
+    final Promise<Void> promise = Promise.promise();
+    final JsonObject query = this.createQueryToReturnDocumentsThatNotMatchSchemaVersion();
+    this.pool.count(collectionName, query, count -> {
+
+      if (count.failed()) {
+
+        final var cause = count.cause();
+        Logger.error(cause, "Cannot obtain the number of document to migrate");
+        promise.fail(cause);
+
+      } else {
+
+        final long maxDocuments = count.result();
+        if (maxDocuments > 0) {
+
+          Logger.trace("Start to migrate {} documents", maxDocuments);
+          this.migrateOneDocument(collectionName, type, query, maxDocuments, promise);
+
+        } else {
+          // nothing to migrate
+          promise.complete();
+        }
+
+      }
+
+    });
+
+    return promise.future();
+
+  }
+
+  /**
+   * Called when want to migrate one document.
+   *
+   * @param collectionName name of the collection to migrate.
+   * @param type           of the documents on the collection.
+   * @param query          to obtain the documents to migrate.
+   * @param maxDocuments   number of document that has to migrate.
+   * @param promise        to inform of the migration process.
+   *
+   * @param <T>            type of the documents.
+   */
+  protected <T extends Model> void migrateOneDocument(final String collectionName, final Class<T> type, final JsonObject query, final long maxDocuments, final Promise<Void> promise) {
+
+    this.findOneDocument(collectionName, query, null, null, search -> {
+
+      if (search.failed()) {
+
+        final var cause = search.cause();
+        Logger.error(cause, "Cannot obtain a document to migrate");
+        promise.fail(cause);
+
+      } else {
+
+        final var result = search.result();
+        final var id = result.remove("_id");
+        try {
+
+          final var mapper = new ObjectMapper();
+          mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+          mapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
+          mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
+          mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+          final var reader = mapper.readerFor(type);
+          final T value = reader.readValue(result.encode());
+          final JsonObject updateQuery = new JsonObject().put("_id", id);
+          final JsonObject model = value.toJsonObject();
+          for (final var key : result.fieldNames()) {
+
+            if (!model.containsKey(key)) {
+
+              model.putNull(key);
+            }
+          }
+          this.updateOneDocument(collectionName, updateQuery, model, update -> {
+
+            if (update.failed()) {
+
+              final var cause = update.cause();
+              Logger.error(cause, "Cannot update a migrated document.\nCurrent:{}\nNew:{}\n", () -> result.encodePrettily(), () -> value);
+              promise.fail(cause);
+
+            } else if (maxDocuments == 1) {
+              // migrated all the documents
+              Logger.trace("Migrated all document");
+              promise.complete();
+
+            } else {
+
+              final var documentsToMigrate = maxDocuments - 1;
+              Logger.trace("Migrated a document. There are {} documents to migrate.", documentsToMigrate);
+              this.migrateOneDocument(collectionName, type, query, documentsToMigrate, promise);
+            }
+
+          });
+
+        } catch (final Throwable cause) {
+
+          Logger.error(cause, "Cannot migrate {}", () -> result.encodePrettily());
+          promise.fail(cause);
+
+        }
+
+      }
+
+    });
+
   }
 
 }

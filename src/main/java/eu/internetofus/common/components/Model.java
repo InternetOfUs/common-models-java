@@ -34,6 +34,7 @@ import org.tinylog.Logger;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
@@ -359,4 +360,33 @@ public interface Model {
     }
 
   }
+
+  /**
+   * Return the model defined on the object ignoring any unknown property.
+   *
+   * @param object to obtain the model.
+   * @param type   of model to obtain
+   * @param <T>    model type to obtain
+   *
+   * @return the model defined on the object, or {@code null} if it can not obtain the model.
+   */
+  public static <T extends Model> T fromJsonObjectIgnoringUnkown(final JsonObject object, final Class<T> type) {
+
+    try {
+
+      final var mapper = DatabindCodec.mapper();
+      mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+      mapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
+      mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
+      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+      return mapper.readerFor(type).readValue(object.encode());
+
+    } catch (final Throwable throwable) {
+
+      Logger.trace(throwable);
+      return null;
+    }
+
+  }
+
 }

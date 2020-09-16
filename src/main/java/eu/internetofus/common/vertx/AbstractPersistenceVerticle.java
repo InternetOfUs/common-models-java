@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,7 +26,10 @@
 
 package eu.internetofus.common.vertx;
 
+import org.tinylog.Logger;
+
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
@@ -54,27 +57,39 @@ public abstract class AbstractPersistenceVerticle extends AbstractVerticle {
   @Override
   public void start(final Promise<Void> startPromise) throws Exception {
 
-    try {
-      // create the pool
-      final var persitenceConf = this.config().getJsonObject("persistence", new JsonObject());
-      this.pool = MongoClient.createShared(this.vertx, persitenceConf, PERSISTENCE_POOL_NAME);
+    // Create the pool
+    final var persitenceConf = this.config().getJsonObject("persistence", new JsonObject());
+    this.pool = MongoClient.createShared(this.vertx, persitenceConf, PERSISTENCE_POOL_NAME);
 
-      this.registerRepositories();
+    // Register the repositories
+    final var schemaVersion = this.apiVersion();
+    final var register = this.registerRepositoriesFor(schemaVersion);
+    register.onComplete(registered -> {
 
-      startPromise.complete();
+      if (registered.failed()) {
+        // Cannot registered repositories
+        final var cause = registered.cause();
+        Logger.error(cause,"Cannot register the repositories");
+        startPromise.fail(cause);
 
-    } catch (final Throwable cause) {
+      } else {
 
-      startPromise.fail(cause);
-    }
+        Logger.trace("Registered repositories");
+        startPromise.complete();
+      }
+
+    });
+
   }
 
   /**
    * Register the repository services that will be provided.
    *
-   * @throws Exception If can not create or register the required persistence services.
+   * @param schemaVersion version of the models schema to store.
+   *
+   * @return the future that will inform if the repositories has been registered.
    */
-  protected abstract void registerRepositories() throws Exception;
+  protected abstract Future<Void> registerRepositoriesFor(String schemaVersion);
 
   /**
    * Close the connections pool.
@@ -89,6 +104,17 @@ public abstract class AbstractPersistenceVerticle extends AbstractVerticle {
       this.pool.close();
       this.pool = null;
     }
+
+  }
+
+  /**
+   * Return the API version defined on the configuration.
+   *
+   * @return the current API version.
+   */
+  protected String apiVersion() {
+
+    return this.config().getJsonObject("help", new JsonObject()).getJsonObject("info", new JsonObject()).getString("apiVersion", "Undefined");
 
   }
 
