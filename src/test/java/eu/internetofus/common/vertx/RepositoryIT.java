@@ -720,7 +720,7 @@ public class RepositoryIT {
    * @param testContext    context for the test.
    * @param success        to call when the model has been inserted.
    */
-  protected void createAndInsertDummyComplexModelsTo(final String collectionName, final int size, final VertxTestContext testContext, final Runnable success) {
+  protected void createAndInsertDummyComplexModelsWithExtraFieldsTo(final String collectionName, final int size, final VertxTestContext testContext, final Runnable success) {
 
     if (size <= 0) {
 
@@ -728,8 +728,18 @@ public class RepositoryIT {
 
     } else {
 
-      final var model = new DummyComplexModelTest().createModelExample(size).toJsonObject();
-      pool.insert(collectionName, model, testContext.succeeding(stored -> this.createAndInsertDummyComplexModelsTo(collectionName, size - 1, testContext, success)));
+      final var model = new DummyComplexModelTest().createModelExample(size);
+      model.id = null;
+      final var document = model.toJsonObject().put("extraValue", "value").put("extraObject", new JsonObject().put("key", "value")).put("extraArray", new JsonArray().add(1).add(new JsonObject().put("key", "value")));
+      if (model.siblings != null) {
+        final var siblings = document.getJsonArray("siblings");
+        for (var pos = 0; pos < siblings.size(); pos++) {
+
+          siblings.getJsonObject(pos).put("extra", "value").put("extraObject", new JsonObject().put("key", "value")).put("extraArray", new JsonArray().add(1).add(new JsonObject().put("key", "value")));
+
+        }
+      }
+      pool.insert(collectionName, document, testContext.succeeding(stored -> this.createAndInsertDummyComplexModelsWithExtraFieldsTo(collectionName, size - 1, testContext, success)));
     }
 
   }
@@ -745,7 +755,7 @@ public class RepositoryIT {
     final var collection = "_" + UUID.randomUUID().toString().replaceAll("-", "");
     pool.createCollection(collection, testContext.succeeding(createdCollections -> {
 
-      this.createAndInsertDummyComplexModelsTo(collection, 10, testContext, () -> {
+      this.createAndInsertDummyComplexModelsWithExtraFieldsTo(collection, 10, testContext, () -> {
 
         final var version = UUID.randomUUID().toString();
         final Repository repository = new Repository(pool, version);
@@ -756,10 +766,49 @@ public class RepositoryIT {
 
           assertThat(values).isNotEmpty().hasSize(10);
           final var expected = new JsonObject().put("schema_version", version);
-          for (var i = 1; i <= 10; i++) {
+          for (var i = 0; i < 10; i++) {
 
             final var value = values.get(i);
-            expected.put("index", i).put("_id", value.getString("_id"));
+            expected.put("index", i + 1).put("_id", value.getString("_id"));
+            assertThat(value).isEqualTo(expected);
+          }
+
+          testContext.completeNow();
+
+        })))));
+      });
+    }));
+
+  }
+
+  /**
+   * Should migrate collection.
+   *
+   * @param testContext context for the test.
+   */
+  @Test
+  public void shouldMigrateCollectionWithDummyComplexModels(final VertxTestContext testContext) {
+
+    final var collection = "_" + UUID.randomUUID().toString().replaceAll("-", "");
+    pool.createCollection(collection, testContext.succeeding(createdCollections -> {
+
+      this.createAndInsertDummyComplexModelsWithExtraFieldsTo(collection, 10, testContext, () -> {
+
+        final var version = UUID.randomUUID().toString();
+        final Repository repository = new Repository(pool, version);
+        final FindOptions options = new FindOptions();
+        options.setLimit(10000);
+        options.getSort().put("index", 1);
+        repository.migrateCollection(collection, DummyComplexModel.class).onComplete(testContext.succeeding(migrated -> pool.findWithOptions(collection, new JsonObject(), options, testContext.succeeding(values -> testContext.verify(() -> {
+
+          assertThat(values).isNotEmpty().hasSize(10);
+          for (var i = 0; i < 10; i++) {
+
+            final var value = values.get(i);
+            final var expected = new DummyComplexModelTest().createModelExample(i + 1).toJsonObject();
+            expected.remove("id");
+            expected.put("schema_version", version);
+            expected.put("_id", value.getString("_id"));
             assertThat(value).isEqualTo(expected);
           }
 
