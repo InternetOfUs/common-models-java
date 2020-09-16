@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -41,6 +41,7 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.serviceproxy.ServiceException;
 
 /**
  * Test the {@link OperationReponseHandlers}.
@@ -201,6 +202,82 @@ public class OperationReponseHandlersTest {
       testContext.completeNow();
 
     })), Status.BAD_REQUEST, new ValidationErrorException("code", "message"));
+
+  }
+
+  /**
+   * Check the response with an error message without a service exception.
+   *
+   * @param testContext context that executes the test.
+   */
+  @Test
+  public void shouldResponseFailedWithServiceException(final VertxTestContext testContext) {
+
+    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+
+      assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+      assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"0\",\"message\":\"Zero\"}");
+      testContext.completeNow();
+
+    })), Status.NOT_FOUND, new ServiceException(0, "Zero", null));
+
+  }
+
+  /**
+   * Check the response with an error message without a service exception.
+   *
+   * @param testContext context that executes the test.
+   */
+  @Test
+  public void shouldResponseFailedWithServiceExceptionWithDebugMessage(final VertxTestContext testContext) {
+
+    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+
+      assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+      assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"0\",\"message\":\"Error\"}");
+      testContext.completeNow();
+
+    })), Status.NOT_FOUND, new ServiceException(0, "Zero", new JsonObject().put("message", "Error")));
+
+  }
+
+  /**
+   * Check the response with an error message without a service exception.
+   *
+   * @param testContext context that executes the test.
+   */
+  @Test
+  public void shouldResponseFailedWithServiceExceptionWithDebugCode(final VertxTestContext testContext) {
+
+    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+
+      assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+      assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"ZERO\",\"message\":\"Zero\"}");
+      testContext.completeNow();
+
+    })), Status.NOT_FOUND, new ServiceException(0, "Zero", new JsonObject().put("code", "ZERO")));
+
+  }
+
+  /**
+   * Check the response with an error message without a service exception.
+   *
+   * @param testContext context that executes the test.
+   */
+  @Test
+  public void shouldResponseFailedWithServiceExceptionWithDebug(final VertxTestContext testContext) {
+
+    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+
+      assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+      assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
+      assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"Zero\",\"message\":\"Error\"}");
+      testContext.completeNow();
+
+    })), Status.NOT_FOUND, new ServiceException(0, "Zero", new JsonObject().put("code", "Zero").put("message", "Error")));
 
   }
 
