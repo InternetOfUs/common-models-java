@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -103,12 +103,20 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     model.description = "description_" + index;
     model.keywords = new ArrayList<>();
     model.keywords.add("keyword_" + index);
+    model.keywords.add("keyword_" + (index + 1));
+    model.keywords.add("keyword_" + (index + 2));
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(index));
+    model.norms.add(new NormTest().createModelExample(index + 1));
+    model.norms.add(new NormTest().createModelExample(index + 2));
     model.attributes = new ArrayList<>();
     model.attributes.add(new TaskAttributeTypeTest().createModelExample(index));
+    model.attributes.add(new TaskAttributeTypeTest().createModelExample(index + 1));
+    model.attributes.add(new TaskAttributeTypeTest().createModelExample(index + 2));
     model.transactions = new ArrayList<>();
     model.transactions.add(new TaskTransactionTypeTest().createModelExample(index));
+    model.transactions.add(new TaskTransactionTypeTest().createModelExample(index + 1));
+    model.transactions.add(new TaskTransactionTypeTest().createModelExample(index + 2));
     model.constants = new JsonObject().put("index", index);
     return model;
 

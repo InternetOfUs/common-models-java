@@ -283,7 +283,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
 
         assertCanMerge(target, source, vertx, testContext, merged -> {
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-          source.userId= target.userId;
+          source.userId = target.userId;
           source._creationTs = target._creationTs;
           source._lastUpdateTs = target._lastUpdateTs;
           assertThat(merged).isEqualTo(source);
@@ -310,6 +310,55 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
       source.privileges = new ArrayList<>(target.privileges);
       source.privileges.add(ValidationsTest.STRING_256);
       assertCannotMerge(target, source, "privileges[1]", vertx, testContext);
+    }));
+
+  }
+
+  /**
+   * Should not merge empty model.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityMember#merge(CommunityMember, String, Vertx)
+   */
+  @Test
+  public void shoudMergeEmptyModel(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = new CommunityMember();
+      assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertThat(merged).isEqualTo(target).isNotEqualTo(source);
+      });
+
+    }));
+
+  }
+
+  /**
+   * Should merge only privileges.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityMember#merge(CommunityMember, String, Vertx)
+   */
+  @Test
+  public void shoudNotMergePrivileges(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = new CommunityMember();
+      source.privileges = new ArrayList<>(target.privileges);
+      source.privileges.add("New privilege");
+      assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+        source.userId = target.userId;
+        source._creationTs = target._creationTs;
+        source._lastUpdateTs = target._lastUpdateTs;
+        assertThat(merged).isEqualTo(source);
+      });
     }));
 
   }
@@ -352,7 +401,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
 
         assertCanUpdate(target, source, vertx, testContext, updated -> {
           assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
-          source.userId= target.userId;
+          source.userId = target.userId;
           source._creationTs = target._creationTs;
           source._lastUpdateTs = target._lastUpdateTs;
           assertThat(updated).isEqualTo(source);

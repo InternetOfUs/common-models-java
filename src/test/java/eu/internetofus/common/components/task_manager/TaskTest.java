@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -190,7 +190,7 @@ public class TaskTest extends ModelTestCase<Task> {
   }
 
   /**
-   * Check that a task with only an identifier is valid.
+   * Check that a task without an identifier is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -202,6 +202,24 @@ public class TaskTest extends ModelTestCase<Task> {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
       model.id = null;
+      assertIsValid(model, vertx, testContext);
+    }));
+
+  }
+
+  /**
+   * Check that a task with an undefined identifier is valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(String, Vertx)
+   */
+  @Test
+  public void shouldTaskWitIdBeValid(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+      model.id = UUID.randomUUID().toString();
       assertIsValid(model, vertx, testContext);
     }));
 

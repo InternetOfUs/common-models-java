@@ -28,6 +28,8 @@ package eu.internetofus.common.components.profile_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.UpdatesTest.assertCanUpdate;
+import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +45,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import eu.internetofus.common.TimeManager;
+import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
@@ -675,4 +678,222 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
     }));
   }
 
+  /**
+   * Should update with {@code null}
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      assertCanUpdate(target, null, vertx, testContext, updated -> {
+        assertThat(updated).isSameAs(target);
+      });
+    }));
+
+  }
+
+  /**
+   * Should update two examples.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudUpdateExamples(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      target._creationTs = 10000;
+      target._lastUpdateTs = TimeManager.now();
+      this.createModelExample(2, vertx, testContext, testContext.succeeding(source -> {
+
+        assertCanUpdate(target, source, vertx, testContext, updated -> {
+          assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
+          source.id = target.id;
+          source._creationTs = target._creationTs;
+          source._lastUpdateTs = target._lastUpdateTs;
+          assertThat(updated).isEqualTo(source);
+        });
+      }));
+    }));
+
+  }
+
+  /**
+   * Should not update with a bad application identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudNotUpdateWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
+      source.appId = "Undefined application id";
+      assertCannotUpdate(target, source, "appId", vertx, testContext);
+    }));
+
+  }
+
+  /**
+   * Should not update with a bad name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudNotUpdateWithBadName(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
+      source.name = ValidationsTest.STRING_256;
+      assertCannotUpdate(target, source, "name", vertx, testContext);
+    }));
+
+  }
+
+  /**
+   * Should not update with a bad description.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudNotUpdateWithBadDescription(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
+      source.description = ValidationsTest.STRING_1024;
+      assertCannotUpdate(target, source, "description", vertx, testContext);
+    }));
+
+  }
+
+  /**
+   * Should not update with a bad keyword.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudNotUpdateWithBadKeywords(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
+      source.keywords = new ArrayList<>(target.keywords);
+      source.keywords.add(ValidationsTest.STRING_256);
+      assertCannotUpdate(target, source, "keywords[1]", vertx, testContext);
+    }));
+
+  }
+
+  /**
+   * Should not update with a bad social practice.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudNotUpdateWithBadSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
+      source.socialPractices = new ArrayList<>(target.socialPractices);
+      source.socialPractices.add(new SocialPracticeTest().createModelExample(2));
+      source.socialPractices.get(1).label = ValidationsTest.STRING_256;
+      assertCannotUpdate(target, source, "socialPractices[1].label", vertx, testContext);
+    }));
+
+  }
+
+  /**
+   * Should not update with a bad norm.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudNotUpdateWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
+      source.norms = new ArrayList<>(target.norms);
+      source.norms.add(new NormTest().createModelExample(2));
+      source.norms.get(1).attribute = ValidationsTest.STRING_256;
+      assertCannotUpdate(target, source, "norms[1].attribute", vertx, testContext);
+    }));
+
+  }
+
+  /**
+   * Should not update with a bad member.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudNotUpdateWithBadMembers(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
+      source.members = new ArrayList<>(target.members);
+      source.members.add(new CommunityMemberTest().createModelExample(2));
+      assertCannotUpdate(target, source, "members[1].userId", vertx, testContext);
+    }));
+
+  }
+
+  /**
+   * Check update social practices profiles.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateWithSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+      target.socialPractices = new ArrayList<>();
+      target.socialPractices.add(new SocialPractice());
+      target.socialPractices.get(0).id = "1";
+      final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
+      source.socialPractices = new ArrayList<>();
+      source.socialPractices.add(new SocialPractice());
+      source.socialPractices.add(new SocialPractice());
+      source.socialPractices.add(new SocialPractice());
+      source.socialPractices.get(1).id = "1";
+      assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+        assertThat(updated.socialPractices).isNotEqualTo(target.socialPractices).isEqualTo(source.socialPractices);
+        assertThat(updated.socialPractices.get(0).id).isNotEmpty();
+        assertThat(updated.socialPractices.get(1).id).isEqualTo("1");
+        assertThat(updated.socialPractices.get(2).id).isNotEmpty();
+
+      });
+    }));
+  }
 }
