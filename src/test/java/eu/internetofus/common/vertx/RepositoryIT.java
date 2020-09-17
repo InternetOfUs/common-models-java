@@ -29,6 +29,7 @@ package eu.internetofus.common.vertx;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -467,15 +468,16 @@ public class RepositoryIT {
     final Repository repository = new Repository(pool, version);
     repository.storeOneDocument(TEST_COLLECTION, document, model -> model.put("id", model.remove("_id")), testContext.succeeding(stored -> {
 
-      pool.find(TEST_COLLECTION, new JsonObject().put("schema_version", version), testContext.succeeding(value -> testContext.verify(() -> {
+      pool.find(TEST_COLLECTION, new JsonObject().put(Repository.SCHEMA_VERSION, version), testContext.succeeding(value -> testContext.verify(() -> {
 
         assertThat(value).isNotEmpty().hasSize(1);
         final var element = value.get(0);
         assertThat(element).isNotEqualTo(stored);
         element.put("id", element.remove("_id"));
+        assertThat(element).isNotEqualTo(stored);
+        element.remove(Repository.SCHEMA_VERSION);
         assertThat(element).isEqualTo(stored);
         document.put("id", element.getString("id"));
-        document.put("schema_version", version);
         assertThat(element).isEqualTo(document);
         testContext.completeNow();
 
@@ -498,14 +500,15 @@ public class RepositoryIT {
     final Repository repository = new Repository(pool, version);
     repository.storeOneDocument(TEST_COLLECTION, document, null, testContext.succeeding(stored -> {
 
-      pool.find(TEST_COLLECTION, new JsonObject().put("schema_version", version), testContext.succeeding(value -> testContext.verify(() -> {
+      pool.find(TEST_COLLECTION, new JsonObject().put(Repository.SCHEMA_VERSION, version), testContext.succeeding(value -> testContext.verify(() -> {
 
         assertThat(value).isNotEmpty().hasSize(1);
         final var element = value.get(0);
+        assertThat(element).isNotEqualTo(stored);
+        element.remove(Repository.SCHEMA_VERSION);
         assertThat(element).isEqualTo(stored);
         assertThat(element.getString("_id")).isNotNull();
         document.put("_id", element.getString("_id"));
-        document.put("schema_version", version);
         assertThat(element).isEqualTo(document);
         testContext.completeNow();
 
@@ -625,7 +628,7 @@ public class RepositoryIT {
       @Override
       protected JsonObject createQueryToReturnDocumentsThatNotMatchSchemaVersion() {
 
-        return new JsonObject().put("schema_version", new JsonObject().put("$undefinedOperator", "value"));
+        return new JsonObject().put(Repository.SCHEMA_VERSION, new JsonObject().put("$undefinedOperator", "value"));
       }
 
     };
@@ -642,7 +645,7 @@ public class RepositoryIT {
   public void shouldNotMigrateOneDocumentWithBadQuery(final VertxTestContext testContext) {
 
     final Repository repository = new Repository(pool, "schemaVersion");
-    final var query = new JsonObject().put("schema_version", new JsonObject().put("$undefinedOperator", "value"));
+    final var query = new JsonObject().put(Repository.SCHEMA_VERSION, new JsonObject().put("$undefinedOperator", "value"));
     final Promise<Void> promise = Promise.promise();
     final long maxDocuments = 10l;
     repository.migrateOneDocument(TEN_DUMMY_COLLECTION, DummyModel.class, query, maxDocuments, promise);
@@ -659,7 +662,7 @@ public class RepositoryIT {
   public void shouldNotMigrateOneDocumentWithEmptyCollection(final VertxTestContext testContext) {
 
     final Repository repository = new Repository(pool, "schemaVersion");
-    final var query = new JsonObject().put("schema_version", new JsonObject().put("$undefinedOperator", "value"));
+    final var query = new JsonObject().put(Repository.SCHEMA_VERSION, new JsonObject().put("$undefinedOperator", "value"));
     final Promise<Void> promise = Promise.promise();
     final long maxDocuments = 10l;
     repository.migrateOneDocument(EMPTY_COLLECTION, DummyModel.class, query, maxDocuments, promise);
@@ -702,7 +705,7 @@ public class RepositoryIT {
 
         assertThat(value).isNotEmpty().hasSize(1);
         final var element = value.get(0);
-        final var expected = new JsonObject().put("_id", id).put("schema_version", version).put("index", 0);
+        final var expected = new JsonObject().put("_id", id).put(Repository.SCHEMA_VERSION, version).put("index", 0);
         assertThat(element).isNotEqualTo(document).isEqualTo(expected);
         testContext.completeNow();
 
@@ -765,7 +768,7 @@ public class RepositoryIT {
         repository.migrateCollection(collection, DummyModel.class).onComplete(testContext.succeeding(migrated -> pool.findWithOptions(collection, new JsonObject(), options, testContext.succeeding(values -> testContext.verify(() -> {
 
           assertThat(values).isNotEmpty().hasSize(10);
-          final var expected = new JsonObject().put("schema_version", version);
+          final var expected = new JsonObject().put(Repository.SCHEMA_VERSION, version);
           for (var i = 0; i < 10; i++) {
 
             final var value = values.get(i);
@@ -807,7 +810,7 @@ public class RepositoryIT {
             final var value = values.get(i);
             final var expected = new DummyComplexModelTest().createModelExample(i + 1).toJsonObject();
             expected.remove("id");
-            expected.put("schema_version", version);
+            expected.put(Repository.SCHEMA_VERSION, version);
             expected.put("_id", value.getString("_id"));
             assertThat(value).isEqualTo(expected);
           }
@@ -920,7 +923,7 @@ public class RepositoryIT {
       @Override
       protected JsonObject createQueryToReturnDocumentsThatNotMatchSchemaVersion() {
 
-        return new JsonObject().put("schema_version", new JsonObject().put("$undefinedOperator", "value"));
+        return new JsonObject().put(Repository.SCHEMA_VERSION, new JsonObject().put("$undefinedOperator", "value"));
       }
 
     };
@@ -944,6 +947,57 @@ public class RepositoryIT {
       })));
 
     }));
+
+  }
+
+  /**
+   * Should store, find, update , find, delete and find a {@link DummyComplexModel}.
+   *
+   * @param testContext context for the test.
+   */
+  @Test
+  public void shouldStoreFindUpdateFindDeleteAndFindDummyComplexModel(final VertxTestContext testContext) {
+
+    final var version = UUID.randomUUID().toString();
+    final Repository repository = new Repository(pool, version);
+    final var targetModel = new DummyComplexModelTest().createModelExample(1);
+    targetModel.id = null;
+    final Function<JsonObject, JsonObject> objectIdToModel = model -> model.put("id", model.remove("_id"));
+    repository.storeOneDocument(TEST_COLLECTION, targetModel.toJsonObject(), objectIdToModel, testContext.succeeding(stored -> testContext.verify(() -> {
+
+      final var storedModel = Model.fromJsonObject(stored, DummyComplexModel.class);
+      assertThat(storedModel).isNotNull();
+      final var id = storedModel.id;
+      targetModel.id = id;
+      assertThat(storedModel).isEqualTo(targetModel);
+      final var byIdQuery = new JsonObject().put("_id", id);
+      repository.findOneDocument(TEST_COLLECTION, byIdQuery, null, objectIdToModel, testContext.succeeding(found -> testContext.verify(() -> {
+
+        final var foundModel = Model.fromJsonObject(found, DummyComplexModel.class);
+        assertThat(foundModel).isEqualTo(storedModel);
+        final var sourceModel = new DummyComplexModelTest().createModelExample(2);
+        sourceModel.id = null;
+        repository.updateOneDocument(TEST_COLLECTION, byIdQuery, sourceModel.toJsonObject(), testContext.succeeding(updated -> testContext.verify(() -> {
+
+          repository.findOneDocument(TEST_COLLECTION, byIdQuery, null, objectIdToModel, testContext.succeeding(found2 -> testContext.verify(() -> {
+
+            final var foundModel2 = Model.fromJsonObject(found2, DummyComplexModel.class);
+            sourceModel.id = id;
+            assertThat(foundModel2).isEqualTo(sourceModel);
+
+            repository.deleteOneDocument(TEST_COLLECTION, byIdQuery, testContext.succeeding(deleted -> {
+
+              repository.findOneDocument(TEST_COLLECTION, byIdQuery, null, objectIdToModel, testContext.failing(error -> testContext.completeNow()));
+
+            }));
+
+          })));
+
+        })));
+
+      })));
+
+    })));
 
   }
 

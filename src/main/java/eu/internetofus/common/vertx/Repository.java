@@ -239,6 +239,7 @@ public class Repository {
     model.put(SCHEMA_VERSION, this.schemaVersion);
     this.pool.insert(collectionName, model, store -> {
 
+      model.remove(SCHEMA_VERSION);
       if (store.failed()) {
 
         storeHandler.handle(Future.failedFuture(store.cause()));
