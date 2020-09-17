@@ -1,8 +1,8 @@
 db.createUser({
-	user : 'wenetProfileManager',
+	user : 'wenet',
 	pwd : 'password',
 	roles : [ {
 		role : 'readWrite',
-		db : 'wenetProfileManagerDB'
+		db : 'wenetDB'
 	} ]
 })

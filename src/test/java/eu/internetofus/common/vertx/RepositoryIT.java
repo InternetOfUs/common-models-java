@@ -34,8 +34,6 @@ import java.util.function.Function;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
 
 import eu.internetofus.common.Containers;
 import eu.internetofus.common.components.DummyComplexModel;
@@ -62,11 +60,6 @@ import io.vertx.junit5.VertxTestContext;
 public class RepositoryIT {
 
   /**
-   * Name of the dummy database.
-   */
-  private static final String DUMMY_DB = "dummyDB";
-
-  /**
    * Name of the collection without documents.
    */
   private static final String EMPTY_COLLECTION = "EMPTY_COLLECTION";
@@ -82,11 +75,6 @@ public class RepositoryIT {
   private static final String TEN_DUMMY_COLLECTION = "TEN_DUMMY_COLLECTION";
 
   /**
-   * The container that contains the database.
-   */
-  private static GenericContainer<?> persistenceContainer;
-
-  /**
    * The pool to use on the test.
    */
   protected static MongoClient pool;
@@ -100,13 +88,10 @@ public class RepositoryIT {
   @BeforeAll
   public static void startDatabaseContainer(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var network = Network.builder().id("repository_test").build();
-    persistenceContainer = Containers.createMongoContainerFor(DUMMY_DB, network);
-    persistenceContainer.start();
-
-    final var persitenceConf = new JsonObject().put("db_name", DUMMY_DB).put("host", persistenceContainer.getHost()).put("port", persistenceContainer.getMappedPort(Containers.EXPORT_MONGODB_PORT)).put("username", "dummy").put("password",
-        "password");
-    pool = MongoClient.createShared(vertx, persitenceConf, DUMMY_DB + "_poolName");
+    final var containers = Containers.status().startMongoContainer();
+    final var persitenceConf = new JsonObject().put("db_name", Containers.MONGODB_NAME).put("host", containers.getMongoDBHost()).put("port", containers.getMongoDBPort()).put("username", Containers.MONGODB_USER).put("password",
+        Containers.MONGODB_PASSWORD);
+    pool = MongoClient.createShared(vertx, persitenceConf, "repository_pool_name");
     pool.createCollection(EMPTY_COLLECTION, testContext.succeeding(empty -> {
 
       pool.createCollection(TEST_COLLECTION, testContext.succeeding(test -> {

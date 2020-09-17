@@ -29,12 +29,16 @@ package eu.internetofus.common;
 import java.net.ServerSocket;
 import java.nio.file.FileSystems;
 
+import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
 
+import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerMocker;
+import eu.internetofus.common.components.service.WeNetServiceMocker;
+import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderMocker;
 import eu.internetofus.common.vertx.AbstractMain;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -45,63 +49,141 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Utility classes to manage containers.
+ * Maintains the information of the started containers.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public interface Containers {
+public class Containers {
 
   /**
    * The name of the mongo docker container to use.
    */
-  String MONGO_DOCKER_NAME = "mongo:4.4.1";
+  public static final String MONGO_DOCKER_NAME = "mongo:4.4.1";
 
   /**
    * The port for the MongoDB that has to be exported.
    */
-  int EXPORT_MONGODB_PORT = 27017;
+  public static final int EXPORT_MONGODB_PORT = 27017;
+
+  /**
+   * The name of the database started on the container.
+   */
+  public static final String MONGODB_NAME = "wenetDB";
+
+  /**
+   * The name of the user to access the MongoDB on the container.
+   */
+  public static final String MONGODB_USER = "wenet";
+
+  /**
+   * The password of the user to access the MongoDB on the container.
+   */
+  public static final String MONGODB_PASSWORD = "password";
 
   /**
    * The port that listen for the API requests on a container to be exported.
    */
-  int EXPORT_API_PORT = 8080;
+  public static final int EXPORT_API_PORT = 8080;
 
   /**
    * The name of the WeNet profile manager docker container to use.
    */
-  String WENET_PROFILE_MANAGER_DOCKER_NAME = "wenet/profile-manager:0.15.0";
-
-  /**
-   * The name of the WeNet profile manager database.
-   */
-  String WENET_PROFILE_MANAGER_DB_NAME = "wenetProfileManagerDB";
+  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "wenet/profile-manager:0.15.0";
 
   /**
    * The name of the WeNet task manager docker container to use.
    */
-  String WENET_TASK_MANAGER_DOCKER_NAME = "wenet/task-manager:0.6.0";
-
-  /**
-   * The name of the WeNet task manager database.
-   */
-  String WENET_TASK_MANAGER_DB_NAME = "wenetTaskManagerDB";
+  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "wenet/task-manager:0.6.0";
 
   /**
    * The name of the WeNet interaction manager docker container to use.
    */
-  String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "wenet/interaction-protocol-engine:0.12.0";
+  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "wenet/interaction-protocol-engine:0.12.0";
 
   /**
-   * The name of the WeNet interaction manager database.
+   * The current implementation of the containers.
    */
-  String WENET_INTERACTION_PROTOCOL_ENGINE_DB_NAME = "wenetInteractionProtocolEngineDB";
+  private static final Containers INSTANCE = new Containers();
+
+  /**
+   * The network in witch all the containers are linked.
+   */
+  public Network network;
+
+  /**
+   * The container with a mongoDB.
+   */
+  public GenericContainer<?> mongoContainer;
+
+  /**
+   * The mocker of the service module.
+   */
+  public WeNetServiceMocker service;
+
+  /**
+   * The mocker of the social context builder module.
+   */
+  public WeNetSocialContextBuilderMocker socialContextBuilder;
+
+  /**
+   * The mocker of the incentive server module.
+   */
+  public WeNetIncentiveServerMocker incentiveServer;
+
+  /**
+   * The port where the profile manager is exposed.
+   */
+  public int profileManagerApiPort;
+
+  /**
+   * The port where the task manager is exposed.
+   */
+  public int taskManagerApiPort;
+
+  /**
+   * The port where the interaction protocol engine is exposed.
+   */
+  public int interactionProtocolEngineApiPort;
+
+  /**
+   * The container with a WeNet/ProfileManager.
+   */
+  public FixedHostPortGenericContainer<?> profileManagerContainer;
+
+  /**
+   * The container with a WeNet/TaskManager.
+   */
+  public FixedHostPortGenericContainer<?> taskManagerContainer;
+
+  /**
+   * The container with a WeNet/InteractionProtocolEngine.
+   */
+  public FixedHostPortGenericContainer<?> interactionProtocolEngineContainer;
+
+  /**
+   * Create a new instance of the containers.
+   */
+  protected Containers() {
+
+    this.network = Network.newNetwork();
+  }
+
+  /**
+   * Return current containers.
+   *
+   * @return the current instance of the containers.
+   */
+  public static Containers status() {
+
+    return INSTANCE;
+  }
 
   /**
    * Search for a free port.
    *
    * @return a free port.
    */
-  static int nextFreePort() {
+  public static int nextFreePort() {
 
     var port = 0;
     try {
@@ -115,19 +197,106 @@ public interface Containers {
   }
 
   /**
-   * Create a new mongo container.
+   * Start the MongoDB container if it is not started yet.
    *
-   * @param dbName  name of the database to start
-   * @param network that shared between containers.
-   *
-   ** @return the mongo container to the specified database.
+   * @return this containers instance.
    */
   @SuppressWarnings("resource")
-  static GenericContainer<?> createMongoContainerFor(final String dbName, final Network network) {
+  public Containers startMongoContainer() {
 
-    return new GenericContainer<>(MONGO_DOCKER_NAME).withStartupAttempts(1).withEnv("MONGO_INITDB_ROOT_USERNAME", "root").withEnv("MONGO_INITDB_ROOT_PASSWORD", "password").withEnv("MONGO_INITDB_DATABASE", dbName)
-        .withCopyFileToContainer(MountableFile.forClasspathResource(Containers.class.getPackageName().replaceAll("\\.", "/") + "/initialize-" + dbName + ".js"), "/docker-entrypoint-initdb.d/init-mongo.js")
-        .withExposedPorts(EXPORT_MONGODB_PORT).withNetwork(network).withNetworkAliases(dbName).waitingFor(Wait.forListeningPort());
+    if (this.mongoContainer == null) {
+
+      this.mongoContainer = new GenericContainer<>(MONGO_DOCKER_NAME).withStartupAttempts(1).withEnv("MONGO_INITDB_ROOT_USERNAME", "root").withEnv("MONGO_INITDB_ROOT_PASSWORD", "password").withEnv("MONGO_INITDB_DATABASE", MONGODB_NAME)
+          .withCopyFileToContainer(MountableFile.forClasspathResource(Containers.class.getPackageName().replaceAll("\\.", "/") + "/initialize-wenetDB.js"), "/docker-entrypoint-initdb.d/init-mongo.js").withExposedPorts(EXPORT_MONGODB_PORT)
+          .withNetwork(this.network).withNetworkAliases(MONGODB_NAME).waitingFor(Wait.forListeningPort());
+      this.mongoContainer.start();
+    }
+
+    return this;
+  }
+
+  /**
+   * Return the host where the MongoDB is listening.
+   *
+   * @return the host where is the MongoDB container.
+   */
+  public String getMongoDBHost() {
+
+    return this.mongoContainer.getHost();
+  }
+
+  /**
+   * Return the port where the MongoDB is listening.
+   *
+   * @return the port where is the MongoDB container.
+   */
+  public int getMongoDBPort() {
+
+    return this.mongoContainer.getMappedPort(Containers.EXPORT_MONGODB_PORT);
+
+  }
+
+  /**
+   * Start the service module if it is not started yet.
+   *
+   * @return this containers instance.
+   */
+  public Containers startService() {
+
+    if (this.service == null) {
+
+      this.service = WeNetServiceMocker.start();
+
+    }
+    return this;
+  }
+
+  /**
+   * Start the social context builder module if it is not started yet.
+   *
+   * @return this containers instance.
+   */
+  public Containers startSocialContextBuilder() {
+
+    if (this.socialContextBuilder == null) {
+
+      this.socialContextBuilder = WeNetSocialContextBuilderMocker.start();
+
+    }
+    return this;
+  }
+
+  /**
+   * Start the incentive server module if it is not started yet.
+   *
+   * @return this containers instance.
+   */
+  public Containers startIncentiveServer() {
+
+    if (this.incentiveServer == null) {
+
+      this.incentiveServer = WeNetIncentiveServerMocker.start();
+
+    }
+    return this;
+  }
+
+  /**
+   * Expose the ports of the module that can be started.
+   *
+   * @return this containers instance.
+   */
+  public Containers exposeModulePortsContainers() {
+
+    if (this.profileManagerApiPort == 0) {
+
+      this.profileManagerApiPort = Containers.nextFreePort();
+      this.taskManagerApiPort = Containers.nextFreePort();
+      this.interactionProtocolEngineApiPort = Containers.nextFreePort();
+      Testcontainers.exposeHostPorts(this.profileManagerApiPort, this.taskManagerApiPort, this.interactionProtocolEngineApiPort);
+    }
+
+    return this;
 
   }
 
@@ -148,77 +317,128 @@ public interface Containers {
   }
 
   /**
-   * Create and start the task manager container.
+   * Return the URL to access the module defined on a container.
    *
-   * @param port                         to bind the task manager API on the localhost.
-   * @param profileManagerApi            URL where the profile manager API.
-   * @param interactionProtocolEngineApi URL where the interaction protocol engine API.
-   * @param serviceApi                   URL where the service API.
-   * @param network                      that shared between containers.
+   * @param container where is started the module.
+   * @param port      where the API is bind.
    *
-   * @return the URL where the task manager is listening.
+   * @return the URL to the module API.
    */
-  @SuppressWarnings("resource")
-  static String createAndStartContainersForTaskManager(final int port, final String profileManagerApi, final String interactionProtocolEngineApi, final String serviceApi, final Network network) {
+  protected String createApiFor(final FixedHostPortGenericContainer<?> container, final int port) {
 
-    final GenericContainer<?> taskPersistenceContainer = createMongoContainerFor(WENET_TASK_MANAGER_DB_NAME, network);
-    taskPersistenceContainer.start();
-    final FixedHostPortGenericContainer<?> taskManagerContainer = new FixedHostPortGenericContainer<>(WENET_TASK_MANAGER_DOCKER_NAME).withStartupAttempts(1).withEnv("DB_HOST", WENET_TASK_MANAGER_DB_NAME)
-        .withEnv("WENET_PROFILE_MANAGER_API", profileManagerApi).withEnv("WENET_INTERACTION_PROTOCOL_ENGINE_API", interactionProtocolEngineApi).withEnv("WENET_SERVICE_API", serviceApi).withNetwork(network)
-        .withFixedExposedPort(port, EXPORT_API_PORT).waitingFor(Wait.forListeningPort());
-    taskManagerContainer.start();
-    return "http://" + taskManagerContainer.getContainerIpAddress() + ":" + port;
+    final StringBuilder builder = new StringBuilder();
+    builder.append("http://");
+    if (container != null) {
+
+      builder.append(container.getHost());
+
+    } else {
+
+      builder.append("host.testcontainers.internal");
+    }
+    builder.append(":");
+    builder.append(port);
+    return builder.toString();
+  }
+
+  /**
+   * Return the URL to the profile manager API.
+   *
+   * @return the profile manager API URL.
+   */
+  public String getProfileManagerApi() {
+
+    return this.createApiFor(this.profileManagerContainer, this.profileManagerApiPort);
 
   }
 
   /**
-   * Create and start the engine protocol engine container.
+   * Return the URL to the task manager API.
    *
-   * @param port                    to bind the task manager API on the localhost.
-   * @param profileManagerApi       URL where the profile manager API.
-   * @param taskManagerApi          URL where the task manager API.
-   * @param serviceApi              URL where the service API.
-   * @param socialContextBuilderApi URL where the social context builder API.
-   * @param incentiveServerApi      URL where the incentive server API.
-   * @param network                 that shared between containers.
-   *
-   * @return the URL where the interaction protocol engine is listening.
+   * @return the task manager API URL.
    */
-  @SuppressWarnings("resource")
-  static String createAndStartContainersForInteractionProtocolEngine(final int port, final String profileManagerApi, final String taskManagerApi, final String serviceApi, final String socialContextBuilderApi,
-      final String incentiveServerApi, final Network network) {
+  public String getTaskManagerApi() {
 
-    final GenericContainer<?> interactionProtocolEnginePersistenceContainer = createMongoContainerFor(WENET_INTERACTION_PROTOCOL_ENGINE_DB_NAME, network);
-    interactionProtocolEnginePersistenceContainer.start();
-    final FixedHostPortGenericContainer<?> interactionProtocolEngineContainer = new FixedHostPortGenericContainer<>(WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME).withStartupAttempts(1)
-        .withEnv("DB_HOST", WENET_INTERACTION_PROTOCOL_ENGINE_DB_NAME).withEnv("WENET_PROFILE_MANAGER_API", profileManagerApi).withEnv("WENET_TASK_MANAGER_API", taskManagerApi).withEnv("WENET_SERVICE_API", serviceApi)
-        .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", socialContextBuilderApi).withEnv("WENET_INCENTIVE_SERVER_API", incentiveServerApi).withNetwork(network).withFixedExposedPort(port, EXPORT_API_PORT).waitingFor(Wait.forListeningPort());
-    interactionProtocolEngineContainer.start();
-    return "http://" + interactionProtocolEngineContainer.getContainerIpAddress() + ":" + port;
+    return this.createApiFor(this.taskManagerContainer, this.taskManagerApiPort);
+
   }
 
   /**
-   * Create and start the profile manager container.
+   * Return the URL to the interaction protocol engine API.
    *
-   * @param port                    to bind the profile manager API on the localhost.
-   * @param taskManagerApi          URL where the task manager API.
-   * @param serviceApi              URL where the service API.
-   * @param socialContextBuilderApi URL where the social context builder API.
-   * @param network                 that shared between containers.
+   * @return the interaction protocol engine API URL.
+   */
+  public String getInteractionProtocolEngineApi() {
+
+    return this.createApiFor(this.interactionProtocolEngineContainer, this.interactionProtocolEngineApiPort);
+
+  }
+
+  /**
+   * Create a container for a module.
    *
-   * @return the URL where the profile manager is listening.
+   * @param name of the docker container.
+   * @param port exposed fixed port.
+   *
+   * @return the container
    */
   @SuppressWarnings("resource")
-  static String createAndStartContainersForProfileManager(final int port, final String taskManagerApi, final String serviceApi, final String socialContextBuilderApi, final Network network) {
+  protected FixedHostPortGenericContainer<?> createContainerFor(final String name, final int port) {
 
-    final GenericContainer<?> profilePersistenceContainer = createMongoContainerFor(WENET_PROFILE_MANAGER_DB_NAME, network);
-    profilePersistenceContainer.start();
-    final FixedHostPortGenericContainer<?> profileManagerContainer = new FixedHostPortGenericContainer<>(WENET_PROFILE_MANAGER_DOCKER_NAME).withStartupAttempts(1).withEnv("DB_HOST", WENET_PROFILE_MANAGER_DB_NAME)
-        .withEnv("WENET_TASK_MANAGER_API", taskManagerApi).withEnv("WENET_SERVICE_API", serviceApi).withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", socialContextBuilderApi).withNetwork(network).withFixedExposedPort(port, EXPORT_API_PORT)
-        .waitingFor(Wait.forListeningPort());
-    profileManagerContainer.start();
-    return "http://" + profilePersistenceContainer.getContainerIpAddress() + ":" + port;
+    return new FixedHostPortGenericContainer<>(name).withStartupAttempts(1).withEnv("DB_HOST", this.getMongoDBHost()).withEnv("DB_PORT", String.valueOf(this.getMongoDBPort())).withEnv("DB_NAME", MONGODB_NAME)
+        .withEnv("DB_USER_NAME", MONGODB_USER).withEnv("DB_USER_PASSWORD", MONGODB_PASSWORD).withNetwork(this.network).withFixedExposedPort(port, EXPORT_API_PORT);
+  }
 
+  /**
+   * Start the profile manager container if it is not started yet.
+   *
+   * @return this containers instance.
+   */
+  public Containers startProfileManagerContainer() {
+
+    if (this.profileManagerContainer == null) {
+
+      this.profileManagerContainer = this.createContainerFor(WENET_PROFILE_MANAGER_DOCKER_NAME, this.profileManagerApiPort).withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi()).withEnv("WENET_SERVICE_API", this.service.getApiUrl())
+          .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl()).waitingFor(Wait.forListeningPort());
+      this.profileManagerContainer.start();
+    }
+
+    return this;
+  }
+
+  /**
+   * Start the task manager container if it is not started yet.
+   *
+   * @return this containers instance.
+   */
+  public Containers startTaskManagerContainer() {
+
+    if (this.taskManagerContainer == null) {
+
+      this.taskManagerContainer = this.createContainerFor(WENET_TASK_MANAGER_DOCKER_NAME, this.taskManagerApiPort).withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
+          .withEnv("WENET_INTERACTION_PROTOCOL_ENGINE_API", this.getInteractionProtocolEngineApi()).withEnv("WENET_SERVICE_API", this.service.getApiUrl()).waitingFor(Wait.forListeningPort());
+      this.taskManagerContainer.start();
+    }
+
+    return this;
+  }
+
+  /**
+   * Start the interaction protocol engine container if it is not started yet.
+   *
+   * @return this containers instance.
+   */
+  public Containers startInteractionProtocolEngineContainer() {
+
+    if (this.interactionProtocolEngineContainer == null) {
+
+      this.interactionProtocolEngineContainer = this.createContainerFor(WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME, this.interactionProtocolEngineApiPort).withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
+          .withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi()).withEnv("WENET_SERVICE_API", this.service.getApiUrl()).withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl())
+          .withEnv("WENET_INCENTIVE_SERVER_API", this.incentiveServer.getApiUrl()).waitingFor(Wait.forListeningPort());
+      this.interactionProtocolEngineContainer.start();
+    }
+
+    return this;
   }
 
   /**
@@ -235,6 +455,26 @@ public interface Containers {
     final var options = new ConfigRetrieverOptions().addStore(effectiveConfigurationFile);
     ConfigRetriever.create(vertx, options).getConfig(configurationHandler);
 
+  }
+
+  /**
+   * Start the basic containers.
+   *
+   * @return this containers instance.
+   *
+   * @see #startService()
+   * @see #startSocialContextBuilder()
+   * @see #startIncentiveServer()
+   * @see #startMongoContainer()
+   * @see #exposeModulePortsContainers()
+   */
+  public Containers startBasic() {
+
+    this.startService();
+    this.startSocialContextBuilder();
+    this.startIncentiveServer();
+    this.startMongoContainer();
+    return this.exposeModulePortsContainers();
   }
 
 }
