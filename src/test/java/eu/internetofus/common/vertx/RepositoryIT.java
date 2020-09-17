@@ -820,4 +820,131 @@ public class RepositoryIT {
 
   }
 
+  /**
+   * Insert into a collection some {@link DummyModel} where add in some schema version values.
+   *
+   * @param collectionName name of the collection to add the models.
+   * @param size           the number of models to insert.
+   * @param testContext    context for the test.
+   * @param success        to call when the model has been inserted.
+   */
+  protected void createAndInsertDummyModelsWithSchemaVersionsTo(final String collectionName, final int size, final VertxTestContext testContext, final Runnable success) {
+
+    if (size <= 0) {
+
+      success.run();
+
+    } else {
+
+      final var model = new DummyModel();
+      model.index = size;
+      var document = model.toJsonObject();
+      if (size % 2 == 0) {
+
+        document = document.put(Repository.SCHEMA_VERSION, size);
+
+      } else if (size % 3 == 0) {
+
+        document = document.put(Repository.SCHEMA_VERSION, String.valueOf(size));
+
+      } else if (size % 5 == 0) {
+
+        document = document.put(Repository.SCHEMA_VERSION, new JsonArray().add(size).add("2"));
+
+      } else if (size % 7 == 0) {
+
+        document = document.put(Repository.SCHEMA_VERSION, new JsonObject().put("size", size));
+      }
+      pool.insert(collectionName, document, testContext.succeeding(stored -> this.createAndInsertDummyModelsWithSchemaVersionsTo(collectionName, size - 1, testContext, success)));
+    }
+
+  }
+
+  /**
+   * Should update the documents of a collection to the current schema version.
+   *
+   * @param testContext context for the test.
+   */
+  @Test
+  public void shouldUpdateSchemaVersionOnCollection(final VertxTestContext testContext) {
+
+    final var collection = "_" + UUID.randomUUID().toString().replaceAll("-", "");
+    pool.createCollection(collection, testContext.succeeding(createdCollections -> {
+
+      this.createAndInsertDummyModelsWithSchemaVersionsTo(collection, 100, testContext, () -> {
+
+        final var version = UUID.randomUUID().toString();
+        final Repository repository = new Repository(pool, version);
+        repository.updateSchemaVersionOnCollection(collection).onComplete(testContext.succeeding(empty -> {
+
+          final FindOptions options = new FindOptions();
+          options.setLimit(10000);
+          options.getSort().put("index", 1);
+          pool.findWithOptions(collection, new JsonObject(), options, testContext.succeeding(values -> testContext.verify(() -> {
+
+            assertThat(values).isNotEmpty().hasSize(100);
+            for (var i = 0; i < 100; i++) {
+
+              final var value = values.get(i);
+              final var expected = new JsonObject().put("_id", value.getString("_id")).put("index", i + 1).put(Repository.SCHEMA_VERSION, version);
+              assertThat(value).isEqualTo(expected);
+            }
+
+            testContext.completeNow();
+
+          })));
+
+        }));
+
+      });
+
+    }));
+
+  }
+
+  /**
+   * Should not update the documents of a collection to the current schema version.
+   *
+   * @param testContext context for the test.
+   */
+  @Test
+  public void shouldNotUpdateSchemaVersionOnCollection(final VertxTestContext testContext) {
+
+    final var version = UUID.randomUUID().toString();
+
+    final Repository repository = new Repository(pool, version) {
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      protected JsonObject createQueryToReturnDocumentsThatNotMatchSchemaVersion() {
+
+        return new JsonObject().put("schema_version", new JsonObject().put("$undefinedOperator", "value"));
+      }
+
+    };
+    repository.updateSchemaVersionOnCollection(TEN_DUMMY_COLLECTION).onComplete(testContext.failing(empty -> {
+
+      final FindOptions options = new FindOptions();
+      options.setLimit(10000);
+      options.getSort().put("index", 1);
+      pool.findWithOptions(TEN_DUMMY_COLLECTION, new JsonObject(), options, testContext.succeeding(values -> testContext.verify(() -> {
+
+        assertThat(values).isNotEmpty().hasSize(10);
+        for (var i = 0; i < 10; i++) {
+
+          final var value = values.get(i);
+          final var expected = new JsonObject().put("_id", value.getString("_id")).put("index", i);
+          assertThat(value).isEqualTo(expected);
+        }
+
+        testContext.completeNow();
+
+      })));
+
+    }));
+
+  }
+
 }

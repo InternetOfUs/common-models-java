@@ -56,6 +56,11 @@ import io.vertx.ext.mongo.UpdateOptions;
 public class Repository {
 
   /**
+   * Name of the filed to store the version of the schemas.
+   */
+  public static final String SCHEMA_VERSION = "schema_version";
+
+  /**
    * The pool of database connections.
    */
   protected MongoClient pool;
@@ -107,7 +112,7 @@ public class Repository {
 
         } else {
 
-          options.getFields().put("schema_version", false);
+          options.getFields().put(SCHEMA_VERSION, false);
           this.pool.findWithOptions(collectionName, query, options, find -> {
 
             if (find.failed()) {
@@ -176,7 +181,7 @@ public class Repository {
 
     } else {
 
-      final var setFields = new JsonObject().put("schema_version", this.schemaVersion);
+      final var setFields = new JsonObject().put(SCHEMA_VERSION, this.schemaVersion);
       final var updateQuery = new JsonObject();
       updateQuery.put("$set", setFields);
       final var unsetFields = new JsonObject();
@@ -231,7 +236,7 @@ public class Repository {
    */
   protected void storeOneDocument(@NotNull final String collectionName, @NotNull final JsonObject model, final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> storeHandler) {
 
-    model.put("schema_version", this.schemaVersion);
+    model.put(SCHEMA_VERSION, this.schemaVersion);
     this.pool.insert(collectionName, model, store -> {
 
       if (store.failed()) {
@@ -295,7 +300,7 @@ public class Repository {
 
       fieldWithoutSchema = fields;
     }
-    fieldWithoutSchema.put("schema_version", false);
+    fieldWithoutSchema.put(SCHEMA_VERSION, false);
     this.pool.findOne(collectionName, query, fieldWithoutSchema, search -> {
 
       if (search.failed()) {
@@ -413,8 +418,8 @@ public class Repository {
    */
   protected JsonObject createQueryToReturnDocumentsThatNotMatchSchemaVersion() {
 
-    final var notExists = new JsonObject().put("schema_version", new JsonObject().put("$exists", false));
-    final var notEq = new JsonObject().put("schema_version", new JsonObject().put("$not", new JsonObject().put("$eq", this.schemaVersion)));
+    final var notExists = new JsonObject().put(SCHEMA_VERSION, new JsonObject().put("$exists", false));
+    final var notEq = new JsonObject().put(SCHEMA_VERSION, new JsonObject().put("$not", new JsonObject().put("$eq", this.schemaVersion)));
     return new JsonObject().put("$or", new JsonArray().add(notExists).add(notEq));
 
   }
@@ -537,6 +542,41 @@ public class Repository {
       }
 
     });
+
+  }
+
+  /**
+   * Update all the document of a collection to have the current schema version.
+   *
+   * @param collectionName name of the collection to update.
+   *
+   * @return a future that inform if the documents of the collections are updated or not.
+   *
+   */
+  protected Future<Void> updateSchemaVersionOnCollection(final String collectionName) {
+
+    final Promise<Void> promise = Promise.promise();
+    final var query = this.createQueryToReturnDocumentsThatNotMatchSchemaVersion();
+    final var update = new JsonObject().put("$set", new JsonObject().put(SCHEMA_VERSION, this.schemaVersion));
+    final var options = new UpdateOptions();
+    options.setMulti(true);
+    this.pool.updateCollectionWithOptions(collectionName, query, update, options, updated -> {
+
+      if (updated.failed()) {
+
+        final var cause = updated.cause();
+        Logger.error(cause, "Cannot update the documents on '{}' to have the schema version '{}'.", collectionName, this.schemaVersion);
+        promise.fail(cause);
+
+      } else {
+
+        Logger.trace("Updated {} documents on '{}' to have the schema version '{}'.", () -> updated.result().getDocModified(), () -> collectionName, () -> this.schemaVersion);
+        promise.complete();
+      }
+
+    });
+
+    return promise.future();
 
   }
 
