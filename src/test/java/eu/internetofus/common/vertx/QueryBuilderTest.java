@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -358,6 +358,49 @@ public class QueryBuilderTest {
     assertThat(builder.withEqOrRegex("fieldName", Arrays.asList("value", null, "/key.+/"))).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName",
         new JsonObject().put("$all", new JsonArray().add(new JsonObject().put("$elemMatch", new JsonObject().put("$eq", "value"))).add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key.+"))))));
+
+  }
+
+  /**
+   * Should create query with element equals or with regexp with {@code null} values.
+   *
+   * @see QueryBuilder#withEqOrRegex(String, Iterable)
+   */
+  @Test
+  public void shouldCreateQueryWithElementEqOrRegexWithNullValues() {
+
+    final var builder = new QueryBuilder();
+    assertThat(builder.withElementEqOrRegex("fieldName", "subFieldName", null)).isSameAs(builder);
+    assertThat(builder.build()).isEqualTo(new JsonObject());
+
+  }
+
+  /**
+   * Should create query with element equals or with regexp with empty values.
+   *
+   * @see QueryBuilder#withEqOrRegex(String, Iterable)
+   */
+  @Test
+  public void shouldCreateQueryWithElementEqOrRegexWithEmptyValues() {
+
+    final var builder = new QueryBuilder();
+    assertThat(builder.withElementEqOrRegex("fieldName", "subFieldName", new ArrayList<>())).isSameAs(builder);
+    assertThat(builder.build()).isEqualTo(new JsonObject());
+
+  }
+
+  /**
+   * Should create query with element equals or with regexp.
+   *
+   * @see QueryBuilder#withEqOrRegex(String, Iterable)
+   */
+  @Test
+  public void shouldCreateQueryWithElementEqOrRegex() {
+
+    final var builder = new QueryBuilder();
+    assertThat(builder.withElementEqOrRegex("fieldName", "subFieldName", Arrays.asList("value", "/re.*xp/", null))).isSameAs(builder);
+    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$all", new JsonArray().add(new JsonObject().put("$elemMatch", new JsonObject().put("subFieldName", new JsonObject().put("$eq", "value"))))
+        .add(new JsonObject().put("$elemMatch", new JsonObject().put("subFieldName", new JsonObject().put("$regex", "re.*xp")))))));
 
   }
 
