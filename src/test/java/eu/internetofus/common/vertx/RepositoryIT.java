@@ -100,11 +100,12 @@ public class RepositoryIT {
   @BeforeAll
   public static void startDatabaseContainer(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var network = Network.newNetwork();
+    final var network = Network.builder().id("repository_test").build();
     persistenceContainer = Containers.createMongoContainerFor(DUMMY_DB, network);
     persistenceContainer.start();
 
-    final var persitenceConf = new JsonObject().put("db_name", DUMMY_DB).put("host", "localhost").put("port", persistenceContainer.getMappedPort(Containers.EXPORT_MONGODB_PORT)).put("username", "dummy").put("password", "password");
+    final var persitenceConf = new JsonObject().put("db_name", DUMMY_DB).put("host", persistenceContainer.getHost()).put("port", persistenceContainer.getMappedPort(Containers.EXPORT_MONGODB_PORT)).put("username", "dummy").put("password",
+        "password");
     pool = MongoClient.createShared(vertx, persitenceConf, DUMMY_DB + "_poolName");
     pool.createCollection(EMPTY_COLLECTION, testContext.succeeding(empty -> {
 
