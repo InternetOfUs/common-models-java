@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * 
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,47 +27,60 @@
 package eu.internetofus.common.vertx;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.io.FileReader;
 import java.nio.file.Files;
 import java.util.Locale;
 
+import org.apache.commons.io.IOUtils;
 import org.itsallcode.io.Capturable;
 import org.itsallcode.junit.sysextensions.SystemErrGuard;
 import org.itsallcode.junit.sysextensions.SystemOutGuard;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.tinylog.Level;
 
 import io.vertx.config.ConfigRetriever;
+import io.vertx.core.Promise;
+import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 /**
- * Tests over the classes that extends the {@link AbstractMain}
- *
- * @param <T> type of class to test.
- *
- * @see AbstractMain
+ * Test the {@link AbstractMain}.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
-public abstract class AbstractMainTestCase<T extends AbstractMain> {
+@ExtendWith({ VertxExtension.class, MockitoExtension.class })
+public class AbstractMainTest {
 
   /**
-   * Create an instance of the main class to test.
-   *
-   * @return an instance of the main class to use for testing.
+   * The Main class to test.
    */
-  protected abstract T createMain();
+  protected DummyMain main;
+
+  /**
+   * Mock the {@link AbstractMain} to use on the tests.
+   *
+   * @param verticle to use.
+   */
+  @BeforeEach
+  public void createMockMain(@Mock final Verticle verticle) {
+
+    this.main = new DummyMain(verticle);
+  }
 
   /**
    * Verify the options are localized.
@@ -83,8 +96,7 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
 
       final var newLocale = new Locale(lang);
       Locale.setDefault(newLocale);
-      final var main = this.createMain();
-      final var options = main.createOptions();
+      final var options = this.main.createOptions();
       assertThat(options.hasOption(AbstractMain.HELP_OPTION)).isTrue();
       assertThat(options.hasOption(AbstractMain.VERSION_OPTION)).isTrue();
       assertThat(options.hasOption(AbstractMain.CONF_DIR_OPTION)).isTrue();
@@ -94,28 +106,6 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
 
       Locale.setDefault(locale);
     }
-  }
-
-  /**
-   * Verify show help message.
-   *
-   * @param testContext test context over the event bus.
-   * @param stream      captured system output stream.
-   */
-  @ExtendWith(SystemOutGuard.class)
-  @Test
-  public void shouldShowHelpMessage(final VertxTestContext testContext, final Capturable stream) {
-
-    stream.capture();
-    final var main = this.createMain();
-    main.startWith("-" + AbstractMain.HELP_OPTION).onComplete(testContext.succeeding(context -> testContext.verify(() -> {
-
-      final var data = stream.getCapturedData();
-      assertThat(data).contains("-" + AbstractMain.HELP_OPTION, "-" + AbstractMain.VERSION_OPTION, "-" + AbstractMain.CONF_DIR_OPTION, "-" + AbstractMain.PROPERTY_OPTION);
-      testContext.completeNow();
-
-    })));
-
   }
 
   /**
@@ -129,11 +119,31 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   public void shouldShowVersion(final VertxTestContext testContext, final Capturable stream) {
 
     stream.capture();
-    final var main = this.createMain();
-    main.startWith("-" + AbstractMain.VERSION_OPTION).onComplete(testContext.succeeding(context -> testContext.verify(() -> {
+    this.main.startWith("-" + AbstractMain.VERSION_OPTION).onComplete(testContext.succeeding(context -> testContext.verify(() -> {
 
       final var data = stream.getCapturedData();
       assertThat(data).contains(Level.INFO.name());
+      testContext.completeNow();
+
+    })));
+
+  }
+
+  /**
+   * Verify show help message.
+   *
+   * @param testContext test context over the event bus.
+   * @param stream      captured system output stream.
+   */
+  @ExtendWith(SystemOutGuard.class)
+  @Test
+  public void shouldShowHelpMessage(final VertxTestContext testContext, final Capturable stream) {
+
+    stream.capture();
+    this.main.startWith("-" + AbstractMain.HELP_OPTION).onComplete(testContext.succeeding(context -> testContext.verify(() -> {
+
+      final var data = stream.getCapturedData();
+      assertThat(data).contains("-" + AbstractMain.HELP_OPTION, "-" + AbstractMain.VERSION_OPTION, "-" + AbstractMain.CONF_DIR_OPTION, "-" + AbstractMain.PROPERTY_OPTION);
       testContext.completeNow();
 
     })));
@@ -151,8 +161,7 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   public void shouldCaptureUndefinedArgument(final VertxTestContext testContext, final Capturable stream) {
 
     stream.capture();
-    final var main = this.createMain();
-    main.startWith("-undefined").onComplete(testContext.failing(error -> testContext.verify(() -> {
+    this.main.startWith("-undefined").onComplete(testContext.failing(error -> testContext.verify(() -> {
 
       final var data = stream.getCapturedData();
       assertThat(data).contains(Level.ERROR.name(), Level.INFO.name());
@@ -173,8 +182,7 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   public void shouldCaptureBadPropertyArgument(final VertxTestContext testContext, final Capturable stream) {
 
     stream.capture();
-    final var main = this.createMain();
-    main.startWith("-" + AbstractMain.PROPERTY_OPTION, "propertyName").onComplete(testContext.failing(error -> testContext.verify(() -> {
+    this.main.startWith("-" + AbstractMain.PROPERTY_OPTION, "propertyName").onComplete(testContext.failing(error -> testContext.verify(() -> {
 
       final var data = stream.getCapturedData();
       assertThat(data).contains(Level.ERROR.name(), Level.INFO.name());
@@ -195,43 +203,10 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   public void shouldCaptureBadConfDirArgument(final VertxTestContext testContext, final Capturable stream) {
 
     stream.capture();
-    final var main = this.createMain();
-    main.startWith("-" + AbstractMain.CONF_DIR_OPTION).onComplete(testContext.failing(error -> testContext.verify(() -> {
+    this.main.startWith("-" + AbstractMain.CONF_DIR_OPTION).onComplete(testContext.failing(error -> testContext.verify(() -> {
 
       final var data = stream.getCapturedData();
       assertThat(data).contains(Level.ERROR.name(), Level.INFO.name());
-      testContext.completeNow();
-
-    })));
-
-  }
-
-  /**
-   * Verify can not start server because the port is already binded.
-   *
-   * @param testContext test context over the event bus.
-   * @param tmpDir      temporal directory.
-   *
-   *
-   * @throws Throwable if can not bind a port.
-   */
-  @Test
-  @ExtendWith(SystemErrGuard.class)
-  public void shouldNotStartServerBecausePortIsBidded(final VertxTestContext testContext, @TempDir final File tmpDir) throws Throwable {
-
-    final var socket = new Socket();
-    socket.bind(new InetSocketAddress("localhost", 0));
-    final var port = socket.getLocalPort();
-
-    final var confDir = new File(tmpDir, "etc");
-    confDir.mkdirs();
-    Files.writeString(new File(confDir, "host.json").toPath(), "{\"api\":{\"host\":\"localhost\",\"port\":" + port + "}}");
-
-    final var main = this.createMain();
-    main.startWith("-" + AbstractMain.CONF_DIR_OPTION, confDir.getAbsolutePath()).onComplete(testContext.failing(error -> testContext.verify(() -> {
-
-      socket.close();
-      assertThat(error).isNotNull();
       testContext.completeNow();
 
     })));
@@ -246,8 +221,7 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
    */
   protected void assertNotStartWith(final VertxTestContext testContext, final String... args) {
 
-    final var main = this.createMain();
-    main.startWith(args).onComplete(testContext.failing(error -> testContext.verify(() -> {
+    this.main.startWith(args).onComplete(testContext.failing(error -> testContext.verify(() -> {
 
       assertThat(error).isNotNull();
       testContext.completeNow();
@@ -284,23 +258,6 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
   }
 
   /**
-   * Verify capture exception when configure the configuration directory.
-   *
-   * @param arguments   that can not be used to start the WeNet Module.
-   * @param testContext test context over the event bus.
-   */
-  @ParameterizedTest(name = "Should not start with the arguments: {0}")
-  @ValueSource(strings = { "-" + AbstractMain.PROPERTY_OPTION + "api.host=\"localhost\",-" + AbstractMain.PROPERTY_OPTION + "api.port=\"80\"", "-" + AbstractMain.CONF_DIR_OPTION + "undefined://bad/path/to/conf/dir",
-      "-" + AbstractMain.PROPERTY_OPTION + ",persistence.connection_string=\"undefined connection value\"",
-      "-" + AbstractMain.PROPERTY_OPTION + ",webClient.keepAlive=false,-" + AbstractMain.PROPERTY_OPTION + ", webClient.pipelining=true" })
-  public void shouldNotStartWithBadBasicArguments(final String arguments, final VertxTestContext testContext) {
-
-    final var args = arguments.split(",");
-    this.assertNotStartWith(testContext, args);
-
-  }
-
-  /**
    * Check configuration load from properties.
    *
    * @param testContext test context over the event bus.
@@ -308,16 +265,14 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
    * @throws Throwable if can not create the temporal files.
    */
   @Test
-  @ExtendWith(VertxExtension.class)
   public void shouldLoadConfigurationProperties(final VertxTestContext testContext) throws Throwable {
 
-    final var main = this.createMain();
-    testContext.assertComplete(main.startWith("-" + AbstractMain.PROPERTY_OPTION + "api.host=\"HOST\"", "-" + AbstractMain.PROPERTY_OPTION + "api.port=80", "-" + AbstractMain.PROPERTY_OPTION, "persistence.db_name=profile-manager",
+    testContext.assertComplete(this.main.startWith("-" + AbstractMain.PROPERTY_OPTION + "api.host=\"HOST\"", "-" + AbstractMain.PROPERTY_OPTION + "api.port=80", "-" + AbstractMain.PROPERTY_OPTION, "persistence.db_name=profile-manager",
         "-" + AbstractMain.PROPERTY_OPTION, "persistence.username=db-user-name", "-" + AbstractMain.PROPERTY_OPTION + " persistence.host=phost", "-" + AbstractMain.PROPERTY_OPTION + "persistence.port=27", "-" + AbstractMain.PROPERTY_OPTION,
         "persistence.db_name=DB_NAME", "-" + AbstractMain.PROPERTY_OPTION + "persistence.username=USER_NAME", "-" + AbstractMain.PROPERTY_OPTION + " persistence.password=PASSWORD", "-" + AbstractMain.PROPERTY_OPTION,
         "webClient.keepAlive=false", "-" + AbstractMain.PROPERTY_OPTION, "webClient.pipelining=true", "-" + AbstractMain.VERSION_OPTION)).onComplete(handler -> {
 
-          final var retriever = ConfigRetriever.create(Vertx.vertx(), main.retrieveOptions);
+          final var retriever = ConfigRetriever.create(Vertx.vertx(), this.main.retrieveOptions);
           retriever.getConfig(testContext.succeeding(conf -> testContext.verify(() -> {
 
             assertThat(conf.getJsonObject("api")).isNotNull();
@@ -329,7 +284,6 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
             assertThat(conf.getJsonObject("persistence").getString("db_name")).isEqualTo("DB_NAME");
             assertThat(conf.getJsonObject("persistence").getString("username")).isEqualTo("USER_NAME");
             assertThat(conf.getJsonObject("persistence").getString("password")).isEqualTo("PASSWORD");
-            assertThat(conf.getJsonObject("wenetComponents")).isNotNull();
             assertThat(conf.getJsonObject("webClient")).isNotNull();
             assertThat(conf.getJsonObject("webClient").getBoolean("keepAlive", true)).isFalse();
             assertThat(conf.getJsonObject("webClient").getBoolean("pipelining", false)).isTrue();
@@ -351,7 +305,6 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
    * @throws Throwable if can not create the temporal files.
    */
   @Test
-  @ExtendWith(VertxExtension.class)
   public void shouldLoadConfigurationFromFiles(final VertxTestContext testContext, @TempDir final File tmpDir) throws Throwable {
 
     final var etc = new File(tmpDir, "etc");
@@ -371,10 +324,9 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
     persistenceFile.createNewFile();
     Files.writeString(persistenceFile.toPath(), persistence.toString());
 
-    final var main = this.createMain();
-    testContext.assertComplete(main.startWith("-" + AbstractMain.CONF_DIR_OPTION, etc.getAbsolutePath(), "-" + AbstractMain.VERSION_OPTION)).onComplete(handler -> {
+    testContext.assertComplete(this.main.startWith("-" + AbstractMain.CONF_DIR_OPTION, etc.getAbsolutePath(), "-" + AbstractMain.VERSION_OPTION)).onComplete(handler -> {
 
-      final var retriever = ConfigRetriever.create(Vertx.vertx(), main.retrieveOptions);
+      final var retriever = ConfigRetriever.create(Vertx.vertx(), this.main.retrieveOptions);
       retriever.getConfig(testContext.succeeding(conf -> testContext.verify(() -> {
 
         assertThat(conf.getJsonObject("api")).isNotNull();
@@ -403,7 +355,6 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
    * @throws Throwable if can not create the temporal files.
    */
   @Test
-  @ExtendWith(VertxExtension.class)
   public void shouldConfigureAndUsePropertiesBeforeFiles(final VertxTestContext testContext, @TempDir final File tmpDir) throws Throwable {
 
     final var etc = new File(tmpDir, "etc");
@@ -423,11 +374,10 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
     persistenceFile.createNewFile();
     Files.writeString(persistenceFile.toPath(), persistence.toString());
 
-    final var main = this.createMain();
-    testContext.assertComplete(main.startWith("-" + AbstractMain.CONF_DIR_OPTION + etc.getAbsolutePath(), "-" + AbstractMain.PROPERTY_OPTION + "api.port=8081", "-" + AbstractMain.PROPERTY_OPTION + " persistence.db_name=\"database name\"",
-        "-" + AbstractMain.PROPERTY_OPTION, "persistence.password=PASSW0RD", "-" + AbstractMain.VERSION_OPTION)).onComplete(handler -> {
+    testContext.assertComplete(this.main.startWith("-" + AbstractMain.CONF_DIR_OPTION + etc.getAbsolutePath(), "-" + AbstractMain.PROPERTY_OPTION + "api.port=8081",
+        "-" + AbstractMain.PROPERTY_OPTION + " persistence.db_name=\"database name\"", "-" + AbstractMain.PROPERTY_OPTION, "persistence.password=PASSW0RD", "-" + AbstractMain.VERSION_OPTION)).onComplete(handler -> {
 
-          final var retriever = ConfigRetriever.create(Vertx.vertx(), main.retrieveOptions);
+          final var retriever = ConfigRetriever.create(Vertx.vertx(), this.main.retrieveOptions);
           retriever.getConfig(testContext.succeeding(conf -> testContext.verify(() -> {
 
             assertThat(conf.getJsonObject("api")).isNotNull();
@@ -444,6 +394,115 @@ public abstract class AbstractMainTestCase<T extends AbstractMain> {
           })));
 
         });
+
+  }
+
+  /**
+   * Should store effective configuration.
+   *
+   * @param testContext test context over the event bus.
+   * @param tmpDir      temporal directory.
+   *
+   * @throws Throwable if can not create the temporal files.
+   */
+  @Test
+  public void shouldStoreEffectiveConfiguration(final VertxTestContext testContext, @TempDir final File tmpDir) throws Throwable {
+
+    final var effectiveConf = new File(tmpDir, "conf.json");
+    this.main.startWith("-" + AbstractMain.PROPERTY_OPTION + AbstractMain.EFFECTIVE_CONFIGURATION_PATH + "=\"" + effectiveConf.getAbsolutePath() + "\"",
+        "-" + AbstractMain.PROPERTY_OPTION + AbstractMain.STORE_EFFECTIVE_CONFIGURATION + "=true", "-" + AbstractMain.PROPERTY_OPTION + "key1=123", "-" + AbstractMain.PROPERTY_OPTION + "key2=\"Two\"",
+        "-" + AbstractMain.PROPERTY_OPTION + " persistence.db_name=\"database name\"", "-" + AbstractMain.PROPERTY_OPTION + " api.port=8765", "-" + AbstractMain.PROPERTY_OPTION + "key3=false")
+    .onComplete(testContext.succeeding(handler -> testContext.verify(() -> {
+
+      JsonObject storedConf = null;
+      JsonObject defaultConf = null;
+      try {
+
+        var value = IOUtils.toString(new FileReader(effectiveConf));
+        storedConf = new JsonObject(value);
+
+        value = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(this.main.getDefaultModuleConfigurationResurcePath()));
+        defaultConf = new JsonObject(value);
+
+      } catch (final Throwable t) {
+
+        testContext.failNow(t);
+      }
+
+      assertThat(storedConf).isNotNull().isNotEqualTo(defaultConf);
+      defaultConf.put("key1", 123);
+      defaultConf.put("key2", "Two");
+      defaultConf.put("key3", false);
+      defaultConf.put(AbstractMain.EFFECTIVE_CONFIGURATION_PATH, effectiveConf.getAbsolutePath());
+      defaultConf.put(AbstractMain.STORE_EFFECTIVE_CONFIGURATION, true);
+      defaultConf.getJsonObject("api").put("port", 8765);
+      defaultConf.getJsonObject("persistence").put("db_name", "database name");
+      assertThat(storedConf).isEqualTo(defaultConf);
+      testContext.completeNow();
+
+    })));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Promise<Void>> startPromise = ArgumentCaptor.forClass(Promise.class);
+    verify(this.main.verticle, timeout(30000).times(1)).start(startPromise.capture());
+    startPromise.getValue().complete();
+
+  }
+
+  /**
+   * Should not store effective configuration.
+   *
+   * @param testContext test context over the event bus.
+   * @param tmpDir      temporal directory.
+   *
+   * @throws Throwable if can not create the temporal files.
+   */
+  @Test
+  public void shouldNotStoreEffectiveConfiguration(final VertxTestContext testContext, @TempDir final File tmpDir) throws Throwable {
+
+    final var effectiveConf = new File(tmpDir, "conf.json");
+    this.main.startWith("-" + AbstractMain.PROPERTY_OPTION + AbstractMain.EFFECTIVE_CONFIGURATION_PATH + "=\"" + effectiveConf.getAbsolutePath() + "\"",
+        "-" + AbstractMain.PROPERTY_OPTION + AbstractMain.STORE_EFFECTIVE_CONFIGURATION + "=false", "-" + AbstractMain.PROPERTY_OPTION + "key1=123", "-" + AbstractMain.PROPERTY_OPTION + "key2=\"Two\"",
+        "-" + AbstractMain.PROPERTY_OPTION + " persistence.db_name=\"database name\"", "-" + AbstractMain.PROPERTY_OPTION + " api.port=8765", "-" + AbstractMain.PROPERTY_OPTION + "key3=false")
+    .onComplete(testContext.succeeding(handler -> testContext.verify(() -> {
+
+      try {
+
+        final var value = IOUtils.toString(new FileReader(effectiveConf));
+        new JsonObject(value);
+        testContext.failNow(new Throwable("Stored effective configuration"));
+
+      } catch (final Throwable t) {
+
+        testContext.completeNow();
+      }
+
+    })));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Promise<Void>> startPromise = ArgumentCaptor.forClass(Promise.class);
+    verify(this.main.verticle, timeout(30000).times(1)).start(startPromise.capture());
+    startPromise.getValue().complete();
+
+  }
+
+  /**
+   * Should not start vertx.
+   *
+   * @param testContext test context over the event bus.
+   * @param tmpDir      temporal directory.
+   *
+   * @throws Throwable if can not start the vertx.
+   */
+  @Test
+  public void shouldNotStartVertx(final VertxTestContext testContext, @TempDir final File tmpDir) throws Throwable {
+
+    this.main.startWith("-" + AbstractMain.PROPERTY_OPTION + AbstractMain.EFFECTIVE_CONFIGURATION_PATH + "=\"" + tmpDir.getAbsolutePath() + "\"").onComplete(testContext.failing(error -> testContext.completeNow()));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Promise<Void>> startPromise = ArgumentCaptor.forClass(Promise.class);
+    verify(this.main.verticle, timeout(30000).times(1)).start(startPromise.capture());
+    startPromise.getValue().fail("No start vertx");
 
   }
 
