@@ -1,0 +1,25 @@
+{
+	"api": {
+		"host": "localhost",
+		"port": 8080
+	},
+	"persistence": {
+		"db_name": "wenet",
+		"host": "localhost",
+		"port": 27017,
+		"username": "wenet",
+		"password": "password"
+	},
+	"webClient": {
+		"defaultHost": "0.0.0.0",
+		"defaultPort": 80
+	},
+	"wenetComponents": {
+		"profileManager": "https://wenet.u-hopper.com/prod/profile_manager",
+		"taskManager": "https://wenet.u-hopper.com/prod/task_manager",
+		"interactionProtocolEngine": "https://wenet.u-hopper.com/prod/interaction_protocol_engine",
+		"socialContextBuilder": "https://wenet.u-hopper.com/prod/social_context_builder",
+		"service": "https://wenet.u-hopper.com/prod/service",
+		"incentiveServer": "https://wenet.u-hopper.com/prod/incentive_server"
+	}
+}

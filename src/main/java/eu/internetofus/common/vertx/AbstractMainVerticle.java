@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -54,7 +54,7 @@ public abstract class AbstractMainVerticle extends AbstractVerticle {
   }
 
   /**
-   * DEploy the next verticle.
+   * Deploy the next verticle.
    *
    * @param verticlesToDeploy the list of verticles to deploy.
    * @param startPromise      promise to inform when all the verticles has been deployed.
@@ -68,12 +68,13 @@ public abstract class AbstractMainVerticle extends AbstractVerticle {
     } else {
 
       final Class<? extends AbstractVerticle> verticle = verticlesToDeploy.remove(0);
-      final var options = new DeploymentOptions(this.config()).setConfig(this.config());
+      final var conf = this.config();
+      final var options = new DeploymentOptions(conf).setConfig(conf);
       if (verticle.isAnnotationPresent(Worker.class)) {
 
         options.setWorker(true);
       }
-      this.vertx.deployVerticle(verticle, options, deploy -> {
+      this.getVertx().deployVerticle(verticle, options, deploy -> {
 
         if (deploy.failed()) {
 

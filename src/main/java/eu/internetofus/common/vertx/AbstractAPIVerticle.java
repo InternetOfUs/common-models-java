@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -55,7 +55,7 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
   @Override
   public void start(final Promise<Void> startPromise) throws Exception {
 
-    OpenAPI3RouterFactory.create(this.vertx, this.getOpenAPIResourcePath(), createRouterFactory -> {
+    OpenAPI3RouterFactory.create(this.getVertx(), this.getOpenAPIResourcePath(), createRouterFactory -> {
       if (createRouterFactory.succeeded()) {
 
         try {
@@ -71,7 +71,7 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
 
           final var apiConf = this.config().getJsonObject("api", new JsonObject());
           final var httpServerOptions = new HttpServerOptions(apiConf);
-          this.server = this.vertx.createHttpServer(httpServerOptions);
+          this.server = this.getVertx().createHttpServer(httpServerOptions);
           this.server.requestHandler(router).listen(startServer -> {
             if (startServer.failed()) {
 

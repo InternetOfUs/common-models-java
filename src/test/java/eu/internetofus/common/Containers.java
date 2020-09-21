@@ -477,4 +477,14 @@ public class Containers {
     return this.exposeModulePortsContainers();
   }
 
+  /**
+   * Return the configuration to interact with the database.
+   *
+   * @return the configuration to interact with the MongoDB.
+   */
+  public JsonObject getMongoDBConfig() {
+
+    return new JsonObject().put("db_name", Containers.MONGODB_NAME).put("host", this.getMongoDBHost()).put("port", this.getMongoDBPort()).put("username", Containers.MONGODB_USER).put("password", Containers.MONGODB_PASSWORD);
+  }
+
 }

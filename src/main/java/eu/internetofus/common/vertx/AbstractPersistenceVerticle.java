@@ -59,7 +59,7 @@ public abstract class AbstractPersistenceVerticle extends AbstractVerticle {
 
     // Create the pool
     final var persitenceConf = this.config().getJsonObject("persistence", new JsonObject());
-    this.pool = MongoClient.createShared(this.vertx, persitenceConf, PERSISTENCE_POOL_NAME);
+    this.pool = MongoClient.createShared(this.getVertx(), persitenceConf, PERSISTENCE_POOL_NAME);
 
     // Register the repositories
     final var schemaVersion = this.apiVersion();

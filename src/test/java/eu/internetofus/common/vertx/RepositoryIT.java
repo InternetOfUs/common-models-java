@@ -88,9 +88,7 @@ public class RepositoryIT {
   @BeforeAll
   public static void startDatabaseContainer(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var containers = Containers.status().startMongoContainer();
-    final var persitenceConf = new JsonObject().put("db_name", Containers.MONGODB_NAME).put("host", containers.getMongoDBHost()).put("port", containers.getMongoDBPort()).put("username", Containers.MONGODB_USER).put("password",
-        Containers.MONGODB_PASSWORD);
+    final var persitenceConf = Containers.status().startMongoContainer().getMongoDBConfig();
     pool = MongoClient.createShared(vertx, persitenceConf, "repository_pool_name");
     pool.createCollection(EMPTY_COLLECTION, testContext.succeeding(empty -> {
 
