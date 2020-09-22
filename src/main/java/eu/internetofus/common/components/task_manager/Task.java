@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,6 +34,7 @@ import eu.internetofus.common.TimeManager;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
+import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -54,7 +55,7 @@ import io.vertx.core.json.JsonObject;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Task", description = "A WeNet task.")
-public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<Task> {
+public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<Task>, Updateable<Task> {
 
   /**
    * The identifier of the profile.
@@ -339,6 +340,43 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       mergedValidatedModel._lastUpdateTs = this._lastUpdateTs;
       return mergedValidatedModel;
     });
+
+    return future;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Task> update(final Task source, final String codePrefix, final Vertx vertx) {
+
+    final Promise<Task> promise = Promise.promise();
+    var future = promise.future();
+
+    final var updated = new Task();
+    updated.taskTypeId = source.taskTypeId;
+    updated.requesterId = source.requesterId;
+    updated.appId = source.appId;
+    updated.startTs = source.startTs;
+    updated.endTs = source.endTs;
+    updated.deadlineTs = source.deadlineTs;
+    updated.closeTs = source.closeTs;
+    updated.attributes = source.attributes;
+    updated.goal = source.goal;
+    updated.norms = source.norms;
+
+    future = future.compose(Validations.validateChain(codePrefix, vertx));
+
+    // When updated set the fixed field values
+    future = future.map(updatedValidatedModel -> {
+
+      updatedValidatedModel.id = this.id;
+      updatedValidatedModel._creationTs = this._creationTs;
+      updatedValidatedModel._lastUpdateTs = this._lastUpdateTs;
+      return updatedValidatedModel;
+    });
+
+    promise.complete(updated);
 
     return future;
   }

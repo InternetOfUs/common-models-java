@@ -28,6 +28,8 @@ package eu.internetofus.common.components.task_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.UpdatesTest.assertCanUpdate;
+import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +45,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.ValidationsTest;
 import eu.internetofus.common.components.profile_manager.Norm;
@@ -666,6 +669,278 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
 
     final var target = this.createModelExample(1);
     assertCannotMerge(target, source, "attributes[2]", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the model does not update if has a large name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithALargeName(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
+    source.name = ValidationsTest.STRING_256;
+    assertCannotUpdate(target, source, "name", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the model does not update if has a large name.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateANameWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
+    source.name = "   1234567890   ";
+    assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated.name).isEqualTo("1234567890"));
+
+  }
+
+  /**
+   * Check that the model does not update if has a large description.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithALargeDescription(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.name = "name";
+    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
+    source.description = ValidationsTest.STRING_1024;
+    assertCannotUpdate(target, source, "description", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the model does not update if has a large description.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateADescriptionWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.name = "name";
+    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
+    source.description = "   " + ValidationsTest.STRING_256 + "   ";
+    assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated.description).isEqualTo(ValidationsTest.STRING_256));
+
+  }
+
+  /**
+   * Check that the model does not update if has a large keyword.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithALargeKeyword(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
+    source.keywords = new ArrayList<>();
+    source.keywords.add(null);
+    source.keywords.add("");
+    source.keywords.add(ValidationsTest.STRING_256);
+    assertCannotUpdate(target, source, "keywords[2]", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the model does not update if has a large keyword.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateAKeywordWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
+    source.keywords = new ArrayList<>();
+    source.keywords.add("");
+    source.keywords.add("   1234567890   ");
+    source.keywords.add(null);
+    source.keywords.add("     ");
+    source.keywords.add("\n\t");
+
+    assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated.keywords).isNotEmpty().hasSize(1).contains("1234567890", atIndex(0)));
+
+  }
+
+  /**
+   * Check that the model does not with bad norm.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadNorm(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
+    source.norms = new ArrayList<>();
+    source.norms.add(new Norm());
+    source.norms.add(new Norm());
+    source.norms.add(new Norm());
+    source.norms.get(1).attribute = ValidationsTest.STRING_256;
+
+    assertCannotUpdate(target, source, "norms[1].attribute", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the model does not with duplicated norm.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithADuplicatedNormIds(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.norms = new ArrayList<>();
+    target.norms.add(new Norm());
+    target.norms.get(0).id = "1";
+    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
+    source.norms = new ArrayList<>();
+    source.norms.add(new Norm());
+    source.norms.add(new Norm());
+    source.norms.add(new Norm());
+    source.norms.get(1).id = "1";
+    source.norms.get(2).id = "1";
+
+    assertCannotUpdate(target, source, "norms[2]", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the model updates with norm.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateWithNorms(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.norms = new ArrayList<>();
+    target.norms.add(new Norm());
+    target.norms.get(0).id = "1";
+    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
+    source.norms = new ArrayList<>();
+    source.norms.add(new Norm());
+    source.norms.add(new Norm());
+    source.norms.add(new Norm());
+    source.norms.get(1).id = "1";
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+      assertThat(updated.norms).isNotEqualTo(target.norms).isEqualTo(source.norms);
+      assertThat(updated.norms.get(0).id).isNotEmpty();
+      assertThat(updated.norms.get(1).id).isEqualTo("1");
+      assertThat(updated.norms.get(2).id).isNotEmpty();
+
+    });
+
+  }
+
+  /**
+   * Check that the model does not update with bad attribute.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithABadAttribute(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
+    source.attributes = new ArrayList<>();
+    source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
+    source.attributes.add(new TaskAttributeType());
+    source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
+
+    assertCannotUpdate(target, source, "attributes[1].name", vertx, testContext);
+
+  }
+
+  /**
+   * Check that the model updates attributes.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateWithAttributes(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.attributes = new ArrayList<>();
+    target.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
+    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
+    source.attributes = new ArrayList<>();
+    source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
+    source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
+    source.attributes.add(new TaskAttributeTypeTest().createModelExample(3));
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+      assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+
+    });
+
+  }
+
+  /**
+   * Check that the model does not with duplicated attributes.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithDuplicatedAtttributes(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
+    source.attributes = new ArrayList<>();
+    source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
+    source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
+    source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
+
+    assertCannotUpdate(target, source, "attributes[2]", vertx, testContext);
 
   }
 }

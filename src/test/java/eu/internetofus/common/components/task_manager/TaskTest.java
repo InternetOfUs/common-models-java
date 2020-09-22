@@ -28,6 +28,8 @@ package eu.internetofus.common.components.task_manager;
 
 import static eu.internetofus.common.components.MergesTest.assertCanMerge;
 import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.UpdatesTest.assertCanUpdate;
+import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +46,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import eu.internetofus.common.TimeManager;
+import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
@@ -150,6 +153,7 @@ public class TaskTest extends ModelTestCase<Task> {
     model.endTs = model.startTs + 300000l + index;
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(index));
+    model.norms.get(0).id = "norm_id_" + index;
     model.attributes = new JsonObject().put("index", index);
     model._creationTs = 1234567891 + index;
     model._lastUpdateTs = 1234567991 + index * 2;
@@ -1244,4 +1248,537 @@ public class TaskTest extends ModelTestCase<Task> {
     }));
 
   }
+
+  /**
+   * Check update stored profiles.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateStoredModels(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        this.createModelExample(2, vertx, testContext, testContext.succeeding(sourceToStore -> {
+
+          StoreServices.storeTask(sourceToStore, vertx, testContext, testContext.succeeding(source -> {
+
+            assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+              source.id = target.id;
+              source._creationTs = target._creationTs;
+              source._lastUpdateTs = target._lastUpdateTs;
+              assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+
+            });
+          }));
+        }));
+
+      }));
+    }));
+
+  }
+
+  /**
+   * Check that update when only is modified the {@link Task#taskTypeId}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldOnlyUpdateTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        StoreServices.storeTaskType(new TaskType(), vertx, testContext, testContext.succeeding(taskType -> {
+
+          final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+          source.taskTypeId = taskType.id;
+          assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+            assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+            target.taskTypeId = taskType.id;
+            assertThat(updated).isEqualTo(target);
+          });
+
+        }));
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that can not update when the {@link Task#taskTypeId} has a bas value.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.taskTypeId = "undefined-task-type-identifier";
+        assertCannotUpdate(target, source, "taskTypeId", vertx, testContext);
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that update when only is modified the {@link Task#requesterId}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldOnlyUpdateRequesterId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(requester -> {
+
+          final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+          source.requesterId = requester.id;
+          assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+            assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+            target.requesterId = requester.id;
+            assertThat(updated).isEqualTo(target);
+          });
+
+        }));
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that can not update when the {@link Task#requesterId} has a bas value.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadRequesterId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.requesterId = "undefined-requester-identifier";
+        assertCannotUpdate(target, source, "requesterId", vertx, testContext);
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that update when only is modified the {@link Task#appId}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldOnlyUpdateAppId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        StoreServices.storeApp(new App(), vertx, testContext, testContext.succeeding(app -> {
+
+          final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+          source.appId = app.appId;
+          assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+            assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+            target.appId = app.appId;
+            assertThat(updated).isEqualTo(target);
+          });
+
+        }));
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that can not update when the {@link Task#appId} has a bas value.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.appId = "undefined-application-identifier";
+        assertCannotUpdate(target, source, "appId", vertx, testContext);
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that update when only is modified the {@link Task#goal}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldOnlyUpdateGoal(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.goal = new TaskGoalTest().createModelExample(2);
+        assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+          assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+          target.goal = new TaskGoalTest().createModelExample(2);
+          assertThat(updated).isEqualTo(target);
+        });
+
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that can not update when the {@link Task#goal} has a bas value.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadGoal(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.goal = new TaskGoal();
+        source.goal.name = ValidationsTest.STRING_256;
+        assertCannotUpdate(target, source, "goal.name", vertx, testContext);
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that update when only is modified the {@link Task#startTs}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldOnlyUpdateStartTs(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.startTs = target.startTs + 1;
+        assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+          assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+        });
+
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that can not update when the {@link Task#startTs} has a bas value.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadStartTs(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.startTs = -1l;
+        assertCannotUpdate(target, source, "startTs", vertx, testContext);
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that update when only is modified the {@link Task#endTs}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldOnlyUpdateEndTs(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.endTs = target.endTs + 1;
+        assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+          assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+          target.endTs++;
+          assertThat(updated).isEqualTo(target);
+        });
+
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that can not update when the {@link Task#endTs} has a bas value.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadEndTs(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.endTs = -1l;
+        assertCannotUpdate(target, source, "endTs", vertx, testContext);
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that update when only is modified the {@link Task#deadlineTs}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldOnlyUpdateDeadlineTs(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.deadlineTs = target.deadlineTs + 1;
+        assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+          assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+          target.deadlineTs++;
+          assertThat(updated).isEqualTo(target);
+        });
+
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that can not update when the {@link Task#deadlineTs} has a bas value.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadDeadlineTs(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.deadlineTs = -1l;
+        assertCannotUpdate(target, source, "deadlineTs", vertx, testContext);
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that update when only is modified the {@link Task#norms}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldOnlyUpdateNewNorms(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.norms = new ArrayList<>();
+        source.norms.add(new NormTest().createModelExample(2));
+        assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+          assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+        });
+
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that update when only is modified the {@link Task#norms}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldOnlyUpdateAddingNewNorm(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.norms = new ArrayList<>();
+        source.norms.add(new NormTest().createModelExample(2));
+        source.norms.addAll(target.norms);
+        assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+          assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+        });
+
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that can not update when the {@link Task#norms} has a bas value.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldNotUpdateWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+
+        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+        source.norms = new ArrayList<>();
+        source.norms.add(new Norm());
+        source.norms.get(0).attribute = ValidationsTest.STRING_256;
+        assertCannotUpdate(target, source, "norms[0].attribute", vertx, testContext);
+      }));
+
+    }));
+
+  }
+
+  /**
+   * Check that update when only is modified the {@link Task#attributes}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldOnlyUpdateNewAttributes(final Vertx vertx, final VertxTestContext testContext) {
+
+    StoreServices.storeTaskExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+      source.attributes = new JsonObject().put("index", 2);
+      assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+        assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+        target.attributes = new JsonObject().put("index", 2);
+        assertThat(updated).isEqualTo(target);
+      });
+
+    }));
+
+  }
+
 }

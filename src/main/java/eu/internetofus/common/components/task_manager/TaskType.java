@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,6 +35,7 @@ import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
@@ -52,7 +53,7 @@ import io.vertx.core.json.JsonObject;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "TaskType", description = "Describe a type of task that can be done by the users.")
-public class TaskType extends ReflectionModel implements Model, Validable, Mergeable<TaskType> {
+public class TaskType extends ReflectionModel implements Model, Validable, Mergeable<TaskType>, Updateable<TaskType> {
 
   /**
    * The identifier of the profile.
@@ -217,6 +218,41 @@ public class TaskType extends ReflectionModel implements Model, Validable, Merge
         mergedValidatedModel.id = this.id;
         return mergedValidatedModel;
       });
+
+    } else {
+
+      promise.complete(this);
+    }
+    return future;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<TaskType> update(final TaskType source, final String codePrefix, final Vertx vertx) {
+
+    final Promise<TaskType> promise = Promise.promise();
+    var future = promise.future();
+    if (source != null) {
+
+      final var updated = new TaskType();
+      updated.attributes = source.attributes;
+      updated.constants = source.constants;
+      updated.description = source.description;
+      updated.keywords = source.keywords;
+      updated.name = source.name;
+      updated.norms = source.norms;
+      updated.transactions = source.transactions;
+
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.map(updatedValidatedModel -> {
+
+        updatedValidatedModel.id = this.id;
+        return updatedValidatedModel;
+      });
+
+      promise.complete(updated);
 
     } else {
 
