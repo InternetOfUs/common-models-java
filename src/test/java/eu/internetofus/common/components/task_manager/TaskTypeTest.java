@@ -38,6 +38,7 @@ import static org.assertj.core.api.Assertions.atIndex;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,6 +80,15 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   public static void startMockers() {
 
     taskManagerMocker = WeNetTaskManagerMocker.start();
+  }
+
+  /**
+   * Stop the mocker server.
+   */
+  @AfterAll
+  public static void stopMockers() {
+
+    taskManagerMocker.stop();
   }
 
   /**

@@ -82,6 +82,15 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   }
 
   /**
+   * Stop the mocker server.
+   */
+  @AfterAll
+  public static void stopMockers() {
+
+    profileManagerMocker.stop();
+  }
+
+  /**
    * Register the necessary services before to test.
    *
    * @param vertx event bus to register the necessary services.
@@ -93,15 +102,6 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
     final var profileManagerConf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, profileManagerConf);
 
-  }
-
-  /**
-   * Stop the mocker server.
-   */
-  @AfterAll
-  public static void stopMockers() {
-
-    profileManagerMocker.stop();
   }
 
   /**

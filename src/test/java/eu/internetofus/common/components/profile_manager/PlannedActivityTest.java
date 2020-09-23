@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,7 +70,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   /**
    * The profile manager mocked server.
    */
-  protected static WeNetProfileManagerMocker mocker;
+  protected static WeNetProfileManagerMocker profileManagerMocker;
 
   /**
    * Start the mocker server.
@@ -77,7 +78,16 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @BeforeAll
   public static void startMocker() {
 
-    mocker = WeNetProfileManagerMocker.start();
+    profileManagerMocker = WeNetProfileManagerMocker.start();
+  }
+
+  /**
+   * Stop the mocker server.
+   */
+  @AfterAll
+  public static void stopMockers() {
+
+    profileManagerMocker.stop();
   }
 
   /**
@@ -89,7 +99,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   public void registerServices(final Vertx vertx) {
 
     final var client = WebClient.create(vertx);
-    final var conf = mocker.getComponentConfiguration();
+    final var conf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, conf);
 
   }
