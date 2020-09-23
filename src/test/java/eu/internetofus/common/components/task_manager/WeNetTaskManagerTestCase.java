@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -91,15 +91,15 @@ public abstract class WeNetTaskManagerTestCase {
   }
 
   /**
-   * Should not update undefined task.
+   * Should not merge undefined task.
    *
    * @param vertx       that contains the event bus to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldNotUpdateUndefinedTask(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeUndefinedTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetTaskManager.createProxy(vertx).updateTask("undefined-task-identifier", new Task(), testContext.failing(handler -> {
+    WeNetTaskManager.createProxy(vertx).mergeTask("undefined-task-identifier", new Task(), testContext.failing(handler -> {
       testContext.completeNow();
 
     }));
@@ -113,7 +113,7 @@ public abstract class WeNetTaskManagerTestCase {
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldNotDoTranactionUpdateUndefinedTask(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotDoTranactionMergeUndefinedTask(final Vertx vertx, final VertxTestContext testContext) {
 
     final var taskTransaction = new TaskTransaction();
     WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction, testContext.failing(handler -> {
@@ -130,7 +130,7 @@ public abstract class WeNetTaskManagerTestCase {
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldCreateRetrieveUpdateAndDeleteTask(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldCreateRetrieveMergeAndDeleteTask(final Vertx vertx, final VertxTestContext testContext) {
 
     new TaskTest().createModelExample(1, vertx, testContext, testContext.succeeding(task -> {
 
@@ -141,12 +141,12 @@ public abstract class WeNetTaskManagerTestCase {
         service.retrieveTask(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
 
           assertThat(createdTask).isEqualTo(retrieve);
-          final var taskToUpdate = Model.fromJsonObject(createdTask.toJsonObject(), Task.class);
-          taskToUpdate.attributes = new JsonObject().put("newKey", "NEW VALUE");
-          service.updateTask(id, taskToUpdate, testContext.succeeding(updatedTask -> testContext.verify(() -> {
+          final var taskToMerge = Model.fromJsonObject(createdTask.toJsonObject(), Task.class);
+          taskToMerge.attributes = new JsonObject().put("newKey", "NEW VALUE");
+          service.mergeTask(id, taskToMerge, testContext.succeeding(mergedTask -> testContext.verify(() -> {
 
             createdTask.attributes = new JsonObject().put("newKey", "NEW VALUE");
-            assertThat(updatedTask).isEqualTo(createdTask);
+            assertThat(mergedTask).isEqualTo(createdTask);
             service.deleteTask(id, testContext.succeeding(empty -> {
 
               service.retrieveTask(id, testContext.failing(handler -> {

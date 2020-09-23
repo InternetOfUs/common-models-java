@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -118,27 +118,27 @@ public interface WeNetTaskManager {
   }
 
   /**
-   * Update a task.
+   * Merge a task.
    *
    * @param id            identifier of the task to get.
    * @param task          the new values for the task.
-   * @param updateHandler handler to manage the update process.
+   * @param mergeHandler handler to manage the merge process.
    */
   @GenIgnore
-  default void updateTask(@NotNull final String id, @NotNull final Task task, @NotNull final Handler<AsyncResult<Task>> updateHandler) {
+  default void mergeTask(@NotNull final String id, @NotNull final Task task, @NotNull final Handler<AsyncResult<Task>> mergeHandler) {
 
-    this.updateJsonTask(id, task.toJsonObject(), ComponentClient.handlerForModel(Task.class, updateHandler));
+    this.mergeJsonTask(id, task.toJsonObject(), ComponentClient.handlerForModel(Task.class, mergeHandler));
 
   }
 
   /**
-   * Update a {@link Task} in Json format.
+   * Merge a {@link Task} in Json format.
    *
    * @param id            identifier of the task to get.
    * @param task          the new values for the task.
-   * @param updateHandler handler to manage the update process.
+   * @param mergeHandler handler to manage the merge process.
    */
-  void updateJsonTask(@NotNull String id, @NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> updateHandler);
+  void mergeJsonTask(@NotNull String id, @NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> mergeHandler);
 
   /**
    * Delete a task.

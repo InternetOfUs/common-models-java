@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -406,6 +406,57 @@ public class ComponentClient {
 
   }
 
+  /**
+   * Patch a model to a component.
+   *
+   * @param content    model to patch.
+   * @param patchHandler the handler to manager the patch resource.
+   * @param paths      to the component to patch.
+   *
+   * @param <T>        type of model to patch.
+   */
+  protected <T extends Model> void patch(@NotNull final T content, @NotNull final Handler<AsyncResult<T>> patchHandler, @NotNull final Object... paths) {
+
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
+    Logger.trace("[{}] PATCH {} to {}", actionId, content, url);
+    final var body = content.toJsonObject();
+    @SuppressWarnings("unchecked")
+    final var type = (Class<T>) content.getClass();
+    this.client.patchAbs(url).sendJsonObject(body, response -> this.successing(response, actionId, patchHandler, this.modelConsumer(type, actionId)));
+  }
+
+  /**
+   * Patch a {@link JsonArray} to a component.
+   *
+   * @param content    resource to patch.
+   * @param patchHandler the handler to manager the patch resource.
+   * @param paths      to the component to patch.
+   */
+  protected void patch(final JsonArray content, final Handler<AsyncResult<JsonArray>> patchHandler, final Object... paths) {
+
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
+    Logger.trace("[{}] PATCH {} to {}", actionId, content, url);
+    this.client.patchAbs(url).sendJson(content, response -> this.successing(response, actionId, patchHandler, this.jsonArrayConsumer(actionId)));
+
+  }
+
+  /**
+   * Patch a {@link JsonObject} to a component.
+   *
+   * @param content    resource to patch.
+   * @param patchHandler the handler to manager the patch resource.
+   * @param paths      to the component to patch.
+   */
+  protected void patch(final JsonObject content, final Handler<AsyncResult<JsonObject>> patchHandler, final Object... paths) {
+
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = UUID.randomUUID().toString();
+    Logger.trace("[{}] PATCH {} to {}", actionId, content, url);
+    this.client.patchAbs(url).sendJson(content, response -> this.successing(response, actionId, patchHandler, this.jsonObjectConsumer(actionId)));
+
+  }
   /**
    * Get a resource model.
    *

@@ -47,14 +47,14 @@ Scenario: pathMatches('/tasks/{taskId}') && methodIs('delete')
     * def responseStatus = 404
     * def response = {"code":"not_found","message":"No Task associated to the ID."}
 
-Scenario: pathMatches('/tasks/{taskId}') && methodIs('put') && tasks[pathParams.taskId] != null && toTask(karate.pretty(request)) != null
+Scenario: pathMatches('/tasks/{taskId}') && methodIs('patch') && tasks[pathParams.taskId] != null && toTask(karate.pretty(request)) != null
 	* def task = request
 	* task.id = pathParams.taskId
 	* tasks[task.id] = task;
     * def response = task
     * def responseStatus = 200
 
-Scenario: pathMatches('/tasks/{taskId}') && methodIs('put') 
+Scenario: pathMatches('/tasks/{taskId}') && methodIs('patch') 
     * def responseStatus = 404
     * def response = {"code":"not_found","message":"No Task associated to the ID."}
 

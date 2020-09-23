@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -341,7 +341,7 @@ public class ComponentClientTest {
    */
   @ParameterizedTest(name = "Should the absolute URL for component {0} with parameters {1} be equals to {2}")
   @CsvSource({ "https://localhost:8080,     ,https://localhost:8080", "https://localhost:8080,a:b:c,https://localhost:8080/a/b/c", "https://localhost:8080,   a  :  b  : c  ,https://localhost:8080/a/b/c",
-      "https://localhost:8080/,/a/:/b:c/,https://localhost:8080/a/b/c/", "https://localhost:8080/,  /a/  :  b/  :  /c  ,https://localhost:8080/a/b/c", "https://localhost:8080/,  a/  :  /b/  :  /c  ,https://localhost:8080/a/b/c" })
+    "https://localhost:8080/,/a/:/b:c/,https://localhost:8080/a/b/c/", "https://localhost:8080/,  /a/  :  b/  :  /c  ,https://localhost:8080/a/b/c", "https://localhost:8080/,  a/  :  /b/  :  /c  ,https://localhost:8080/a/b/c" })
   public void shouldCreateAbsoluteUrlWith(final String componentURL, final String values, final String expectedURL, final WebClient client, final VertxTestContext testContext) {
 
     final var componentClient = new ComponentClient(client, componentURL);
@@ -675,6 +675,48 @@ public class ComponentClientTest {
       testContext.completeNow();
 
     }))).handle(Future.succeededFuture(source));
+  }
+
+  /**
+   * Verify that can not patch a {@link Model} over an undefined service.
+   *
+   * @param client      to use.
+   * @param testContext context that manage the test.
+   */
+  @Test
+  public void shouldNotPatchModelOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+
+    final var service = new ComponentClient(client, "http://undefined/");
+    service.patch(new DummyModel(), testContext.failing(ignored -> testContext.completeNow()), "path");
+
+  }
+
+  /**
+   * Verify that can not patch a {@link JsonArray} over an undefined service.
+   *
+   * @param client      to use.
+   * @param testContext context that manage the test.
+   */
+  @Test
+  public void shouldNotPatchJsonArrayOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+
+    final var service = new ComponentClient(client, "http://undefined/");
+    service.patch(new JsonArray(), testContext.failing(ignored -> testContext.completeNow()), "path");
+
+  }
+
+  /**
+   * Verify that can not patch a {@link JsonObject} over an undefined service.
+   *
+   * @param client      to use.
+   * @param testContext context that manage the test.
+   */
+  @Test
+  public void shouldNotPatchJsonObjectOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+
+    final var service = new ComponentClient(client, "http://undefined/");
+    service.patch(new JsonObject(), testContext.failing(ignored -> testContext.completeNow()), "path");
+
   }
 
 }
