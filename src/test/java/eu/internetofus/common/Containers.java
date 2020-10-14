@@ -34,7 +34,9 @@ import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+import org.tinylog.Logger;
 
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerMocker;
 import eu.internetofus.common.components.service.WeNetServiceMocker;
@@ -206,10 +208,13 @@ public class Containers {
 
     if (this.mongoContainer == null) {
 
-      this.mongoContainer = new GenericContainer<>(MONGO_DOCKER_NAME).withStartupAttempts(1).withEnv("MONGO_INITDB_ROOT_USERNAME", "root").withEnv("MONGO_INITDB_ROOT_PASSWORD", "password").withEnv("MONGO_INITDB_DATABASE", MONGODB_NAME)
+      Logger.trace("Starting MongoDB container");
+      this.mongoContainer = new GenericContainer<>(DockerImageName.parse(MONGO_DOCKER_NAME)).withStartupAttempts(1).withEnv("MONGO_INITDB_ROOT_USERNAME", "root").withEnv("MONGO_INITDB_ROOT_PASSWORD", "password")
+          .withEnv("MONGO_INITDB_DATABASE", MONGODB_NAME)
           .withCopyFileToContainer(MountableFile.forClasspathResource(Containers.class.getPackageName().replaceAll("\\.", "/") + "/initialize-wenetDB.js"), "/docker-entrypoint-initdb.d/init-mongo.js").withExposedPorts(EXPORT_MONGODB_PORT)
           .withNetwork(this.network).withNetworkAliases(MONGODB_NAME).waitingFor(Wait.forListeningPort());
       this.mongoContainer.start();
+      Logger.trace("Started MongoDB container");
     }
 
     return this;
@@ -245,7 +250,9 @@ public class Containers {
 
     if (this.service == null) {
 
+      Logger.trace("Starting Service Mocker");
       this.service = WeNetServiceMocker.start();
+      Logger.trace("Started Service Mocker");
 
     }
     return this;
@@ -260,7 +267,9 @@ public class Containers {
 
     if (this.socialContextBuilder == null) {
 
+      Logger.trace("Starting Social Context Mocker");
       this.socialContextBuilder = WeNetSocialContextBuilderMocker.start();
+      Logger.trace("Started Social Context Mocker");
 
     }
     return this;
@@ -275,7 +284,9 @@ public class Containers {
 
     if (this.incentiveServer == null) {
 
+      Logger.trace("Starting Incentive server Mocker");
       this.incentiveServer = WeNetIncentiveServerMocker.start();
+      Logger.trace("Started Incentive server Mocker");
 
     }
     return this;
@@ -398,9 +409,11 @@ public class Containers {
 
     if (this.profileManagerContainer == null) {
 
+      Logger.trace("Starting Profile Manager");
       this.profileManagerContainer = this.createContainerFor(WENET_PROFILE_MANAGER_DOCKER_NAME, this.profileManagerApiPort).withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi()).withEnv("WENET_SERVICE_API", this.service.getApiUrl())
           .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl()).waitingFor(Wait.forListeningPort());
       this.profileManagerContainer.start();
+      Logger.trace("Started Profile Manager");
     }
 
     return this;
@@ -415,9 +428,11 @@ public class Containers {
 
     if (this.taskManagerContainer == null) {
 
+      Logger.trace("Starting Task Manager");
       this.taskManagerContainer = this.createContainerFor(WENET_TASK_MANAGER_DOCKER_NAME, this.taskManagerApiPort).withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
           .withEnv("WENET_INTERACTION_PROTOCOL_ENGINE_API", this.getInteractionProtocolEngineApi()).withEnv("WENET_SERVICE_API", this.service.getApiUrl()).waitingFor(Wait.forListeningPort());
       this.taskManagerContainer.start();
+      Logger.trace("Started Task Manager");
     }
 
     return this;
@@ -432,10 +447,12 @@ public class Containers {
 
     if (this.interactionProtocolEngineContainer == null) {
 
+      Logger.trace("Starting Interaction Protocol Engine");
       this.interactionProtocolEngineContainer = this.createContainerFor(WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME, this.interactionProtocolEngineApiPort).withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
           .withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi()).withEnv("WENET_SERVICE_API", this.service.getApiUrl()).withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl())
           .withEnv("WENET_INCENTIVE_SERVER_API", this.incentiveServer.getApiUrl()).waitingFor(Wait.forListeningPort());
       this.interactionProtocolEngineContainer.start();
+      Logger.trace("Started Interaction Protocol Engine");
     }
 
     return this;

@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -84,6 +84,22 @@ public interface WeNetServiceSimulators {
   static Future<JsonArray> waitUntilCallbacks(final String appId, final Predicate<JsonArray> checkCallbacks, final Vertx vertx, final VertxTestContext testContext) {
 
     final Promise<JsonArray> promise = Promise.promise();
+    waitUntilCallbacks(appId, checkCallbacks, vertx, testContext, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Wait the App has received the specified call backs.
+   *
+   * @param appId          identifier of the application to get the call backs.
+   * @param checkCallbacks the function that has to be true to finish the get the callbacks.
+   * @param vertx          event bus to use.
+   * @param testContext    context to do the test.
+   * @param promise        to inform of the callbacks.
+   */
+  static void waitUntilCallbacks(final String appId, final Predicate<JsonArray> checkCallbacks, final Vertx vertx, final VertxTestContext testContext, final Promise<JsonArray> promise) {
+
     WeNetServiceSimulator.createProxy(vertx).retrieveJsonCallbacks(appId, testContext.succeeding(callbacks -> {
 
       if (checkCallbacks.test(callbacks)) {
@@ -92,12 +108,10 @@ public interface WeNetServiceSimulators {
 
       } else {
 
-        waitUntilCallbacks(appId, checkCallbacks, vertx, testContext).onComplete(testContext.succeeding(result -> promise.complete(result)));
+        waitUntilCallbacks(appId, checkCallbacks, vertx, testContext, promise);
       }
 
     }));
 
-    return promise.future();
   }
-
 }

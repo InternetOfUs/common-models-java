@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.tinylog.Logger;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Promise;
@@ -74,14 +76,18 @@ public abstract class AbstractMainVerticle extends AbstractVerticle {
 
         options.setWorker(true);
       }
+      Logger.trace("Deploying verticle {}", verticle);
       this.getVertx().deployVerticle(verticle, options, deploy -> {
 
         if (deploy.failed()) {
 
-          startPromise.fail(deploy.cause());
+          final var cause = deploy.cause();
+          Logger.error(cause, "Cannot deploy verticle {}", verticle);
+          startPromise.fail(cause);
 
         } else {
 
+          Logger.trace("Deployed verticle {}", verticle);
           this.deployNextVerticle(verticlesToDeploy, startPromise);
         }
       });

@@ -494,6 +494,7 @@ public interface ModelResources {
    *
    * @param <T>      type of model that contains the fields.
    * @param <E>      type of the field.
+   * @param <I>      type of the identifier.
    */
   static public <T extends Model, E extends Model, I> void retrieveModelField(@NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
       @NotNull final OperationContext context) {
@@ -866,6 +867,9 @@ public interface ModelResources {
    * @param idComparator predicate to check if the specified model has the specified id.
    *
    * @return the index of the element on the list or {@code -1} if not found.
+   *
+   * @param <E> type of the elements.
+   * @param <I> type of the identifier.
    */
   static public <E, I> BiFunction<List<E>, I, Integer> searchElementById(final BiPredicate<E, I> idComparator) {
 
@@ -893,6 +897,8 @@ public interface ModelResources {
    * Return the function that can be used to search a value by its index.
    *
    * @return the index of the element on the list or {@code -1} if not found.
+   *
+   * @param <E> type of the elements.
    */
   static public <E> BiFunction<List<E>, Integer, Integer> searchElementByIndex() {
 
