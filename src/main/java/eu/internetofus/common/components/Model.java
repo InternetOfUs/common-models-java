@@ -26,6 +26,7 @@
 
 package eu.internetofus.common.components;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -199,7 +200,7 @@ public interface Model {
     try {
 
       final var stream = type.getClassLoader().getResourceAsStream(resourceName);
-      final var encoded = IOUtils.toString(stream);
+      final var encoded = IOUtils.toString(stream, Charset.defaultCharset());
       return fromString(encoded, type);
 
     } catch (final Throwable throwable) {

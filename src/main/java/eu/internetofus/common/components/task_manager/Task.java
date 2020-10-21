@@ -76,10 +76,16 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
   public String requesterId;
 
   /**
-   * The identifier of the application the task is associated to.
+   * The identifier of the application where the task is done.
    */
-  @Schema(description = "The identifier of the application the task is associated to.", example = "yub129e5509bb79")
+  @Schema(description = "The identifier of the application where the task is done.", example = "yub129e5509bb79")
   public String appId;
+
+  /**
+   * The identifier of the community where the task is done.
+   */
+  @Schema(description = "The identifier of the community where the task is done.", example = "b846439eba79")
+  public String communityId;
 
   /**
    * The explanation of the task objective..

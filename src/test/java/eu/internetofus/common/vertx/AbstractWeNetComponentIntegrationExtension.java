@@ -28,6 +28,7 @@ package eu.internetofus.common.vertx;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -37,6 +38,7 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
@@ -49,6 +51,7 @@ import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 
 /**
  * Common extension to can run the integration test over a WeNet module component.
@@ -165,8 +168,38 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
   @Override
   public void afterEach(final ExtensionContext context) throws Exception {
 
-    this.vertxExtension.afterEach(context);
-    this.closeClientsIn(context);
+    @SuppressWarnings("unchecked")
+    final List<VertxTestContext> contexts = (List<VertxTestContext>) context.getStore(Namespace.GLOBAL).get("VertxTestContext");
+    try {
+
+      this.vertxExtension.afterEach(context);
+
+    } finally {
+
+      this.completeAll(contexts);
+      this.closeClientsIn(context);
+
+    }
+  }
+
+  /**
+   * Mark all the the context as completed.
+   *
+   * @param contexts to mark as completed.
+   */
+  protected void completeAll(final List<VertxTestContext> contexts) {
+
+    if (contexts != null) {
+
+      for (final VertxTestContext context : contexts) {
+
+        if (!context.completed()) {
+
+          context.completeNow();
+        }
+      }
+    }
+
   }
 
   /**
@@ -207,8 +240,18 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
   @Override
   public void afterTestExecution(final ExtensionContext context) throws Exception {
 
-    this.vertxExtension.afterTestExecution(context);
-    this.closeClientsIn(context);
+    @SuppressWarnings("unchecked")
+    final List<VertxTestContext> contexts = (List<VertxTestContext>) context.getStore(Namespace.GLOBAL).get("VertxTestContext");
+    try {
+
+      this.vertxExtension.afterTestExecution(context);
+
+    } finally {
+
+      this.completeAll(contexts);
+      this.closeClientsIn(context);
+
+    }
 
   }
 

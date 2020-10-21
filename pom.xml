@@ -47,7 +47,8 @@
 		<maven-site-plugin-version>3.9.1</maven-site-plugin-version>
 		<build-helper-maven-plugin-version>3.2.0</build-helper-maven-plugin-version>
 		<!-- Library versions -->
-		<io.vertx-version>3.9.3</io.vertx-version>
+		<io.vertx-version>3.9.4</io.vertx-version>
+		<io.reactiverse-version>0.1.0</io.reactiverse-version>
 		<io.swagger-version>2.1.5</io.swagger-version>
 		<commons-validator-version>1.7</commons-validator-version>
 		<com.googlecode.libphonenumber-version>8.12.11</com.googlecode.libphonenumber-version>
@@ -178,6 +179,12 @@
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-junit5-web-client</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.reactiverse</groupId>
+			<artifactId>reactiverse-junit5-web-client</artifactId>
+			<version>${io.reactiverse-version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

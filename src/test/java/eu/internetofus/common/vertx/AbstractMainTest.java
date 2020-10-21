@@ -32,6 +32,7 @@ import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.FileReader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Locale;
 
@@ -421,7 +422,8 @@ public class AbstractMainTest {
         var value = IOUtils.toString(new FileReader(effectiveConf));
         storedConf = new JsonObject(value);
 
-        value = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(this.main.getDefaultModuleConfigurationResurcePath()));
+        final var input = this.getClass().getClassLoader().getResourceAsStream(this.main.getDefaultModuleConfigurationResurcePath());
+        value = IOUtils.toString(input, Charset.defaultCharset());
         defaultConf = new JsonObject(value);
 
       } catch (final Throwable t) {

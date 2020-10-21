@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -42,18 +42,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
-import eu.internetofus.common.components.incentive_server.IncentiveTest;
-import eu.internetofus.common.components.interaction_protocol_engine.Message.Type;
 import eu.internetofus.common.components.profile_manager.Norm;
 import eu.internetofus.common.components.profile_manager.NormTest;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
-import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
 import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.service.WeNetServiceMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
-import eu.internetofus.common.components.task_manager.TaskTest;
-import eu.internetofus.common.components.task_manager.TaskTransactionTest;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.components.task_manager.WeNetTaskManagerMocker;
 import io.vertx.core.AsyncResult;
@@ -66,14 +61,14 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 /**
- * Test the {@link Message}
+ * Test the {@link ProtocolMessage}
  *
- * @see Message
+ * @see ProtocolMessage
  *
  * @author UDT-IA, IIIA-CSIC
  */
 @ExtendWith(VertxExtension.class)
-public class MessageTest extends ModelTestCase<Message> {
+public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
 
   /**
    * The profile manager mocked server.
@@ -137,32 +132,18 @@ public class MessageTest extends ModelTestCase<Message> {
    * {@inheritDoc}
    */
   @Override
-  public Message createModelExample(final int index) {
+  public ProtocolMessage createModelExample(final int index) {
 
-    final var model = new Message();
+    final var model = new ProtocolMessage();
     model.appId = "appId_" + index;
     model.communityId = "communityId_" + index;
-    model.senderId = "senderId_" + index;
+    model.sender = new ProtocolAddressTest().createModelExample(index);
+    model.receiver = new ProtocolAddressTest().createModelExample(index);
+    model.particle = "particle_" + index;
     model.taskId = "taskId_" + index;
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(index));
-    model.type = Message.Type.values()[index % Message.Type.values().length];
-    if (model.type == Type.TASK_CREATED) {
-
-      model.content = new TaskTest().createModelExample(index).toJsonObject();
-
-    } else if (model.type == Type.TASK_TRANSACTION) {
-
-      model.content = new TaskTransactionTest().createModelExample(index).toJsonObject();
-
-    } else if (model.type == Type.INCENTIVE) {
-
-      model.content = new IncentiveTest().createModelExample(index).toJsonObject();
-
-    } else {
-
-      model.content = new JsonObject();
-    }
+    model.content = new JsonObject().put("index", index);
 
     return model;
 
@@ -176,32 +157,26 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param testContext   context to test.
    * @param createHandler the component that will manage the created model.
    */
-  public void createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<Message>> createHandler) {
+  public void createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<ProtocolMessage>> createHandler) {
 
     StoreServices.storeTaskExample(index, vertx, testContext, testContext.succeeding(task -> {
 
-      final var model = this.createModelExample(index);
-      model.appId = task.appId;
-      model.senderId = task.requesterId;
-      model.taskId = task.id;
-      final var content = (JsonObject) model.content;
-      if (model.type == Type.TASK_CREATED) {
+      StoreServices.storeCommunityExample(index, vertx, testContext, testContext.succeeding(community -> {
+        new ProtocolAddressTest().createModelExample(index, vertx, testContext, testContext.succeeding(sender -> {
 
-        model.content = task.toJsonObject();
+          new ProtocolAddressTest().createModelExample(index + 1, vertx, testContext, testContext.succeeding(receiver -> {
 
-      } else if (model.type == Type.TASK_TRANSACTION) {
+            final var model = this.createModelExample(index);
+            model.appId = task.appId;
+            model.taskId = task.id;
+            model.communityId = community.id;
+            model.sender = sender;
+            model.receiver = receiver;
+            createHandler.handle(Future.succeededFuture(model));
 
-        content.put("taskId", model.taskId);
-
-      } else if (model.type == Type.INCENTIVE) {
-
-        content.put("AppID", model.appId);
-        content.put("UserId", model.senderId);
-
-      }
-
-      createHandler.handle(Future.succeededFuture(model));
-
+          }));
+        }));
+      }));
     }));
 
   }
@@ -213,7 +188,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6 })
@@ -231,7 +206,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6 })
@@ -247,7 +222,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
   public void shouldNotBeValidWithoutAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -264,7 +239,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
   public void shouldNotBeValidWithALargeAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -281,14 +256,12 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
   public void shouldNotBeValidWithUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-      // do not use message with incentive because otherwise the error is that the appId of the content not match the message.
-      assert model.type == Type.TASK_TRANSACTION;
       model.appId = "undefined";
       assertIsNotValid(model, "appId", vertx, testContext);
     }));
@@ -300,7 +273,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
   public void shouldNotBeValidWithoutCommunityId(final Vertx vertx, final VertxTestContext testContext) {
@@ -317,7 +290,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
   public void shouldNotBeValidWithALargeCommunityId(final Vertx vertx, final VertxTestContext testContext) {
@@ -329,53 +302,104 @@ public class MessageTest extends ModelTestCase<Message> {
   }
 
   /**
-   * Check that is valid without senderId.
+   * Check that is valid without sender.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidWithoutSenderId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWithoutSender(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-      model.senderId = null;
-      assertIsValid(model, vertx, testContext);
+      model.sender = null;
+      assertIsNotValid(model, "sender", vertx, testContext);
     }));
   }
 
   /**
-   * Check that not accept a large senderId.
+   * Check that is valid with bad sender.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidWithALargeSenderId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWithBadSender(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-      model.senderId = ValidationsTest.STRING_256;
-      assertIsNotValid(model, "senderId", vertx, testContext);
+      model.sender = new ProtocolAddressTest().createModelExample(1);
+      assertIsNotValid(model, "sender.userId", vertx, testContext);
     }));
   }
 
   /**
-   * Check that not accept an undefined senderId.
+   * Check that is valid without receiver.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidWithAnUndefinedSenderId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWithoutReceiver(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-      model.senderId = "undefined";
-      assertIsNotValid(model, "senderId", vertx, testContext);
+      model.receiver = null;
+      assertIsNotValid(model, "receiver", vertx, testContext);
+    }));
+  }
+
+  /**
+   * Check that is valid with bad receiver.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see ProtocolMessage#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithBadReceiver(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+      model.receiver = new ProtocolAddressTest().createModelExample(2);
+      assertIsNotValid(model, "receiver.userId", vertx, testContext);
+    }));
+  }
+
+  /**
+   * Check that is valid without particle.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see ProtocolMessage#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithoutParticle(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+      model.particle = null;
+      assertIsNotValid(model, "particle", vertx, testContext);
+    }));
+  }
+
+  /**
+   * Check that is valid with large particle.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see ProtocolMessage#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithLatgeParticle(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+      model.particle = ValidationsTest.STRING_256;
+      assertIsNotValid(model, "particle", vertx, testContext);
     }));
   }
 
@@ -385,7 +409,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
   public void shouldNotBeValidWithoutTaskId(final Vertx vertx, final VertxTestContext testContext) {
@@ -402,7 +426,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
   public void shouldNotBeValidWithALargeTaskId(final Vertx vertx, final VertxTestContext testContext) {
@@ -419,7 +443,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
   public void shouldNotBeValidWithAnUndefinedTaskId(final Vertx vertx, final VertxTestContext testContext) {
@@ -436,7 +460,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
   public void shouldNotBeValidWithoutContent(final Vertx vertx, final VertxTestContext testContext) {
@@ -453,7 +477,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
   public void shouldNotBeValidWithABadNorm(final Vertx vertx, final VertxTestContext testContext) {
@@ -467,186 +491,12 @@ public class MessageTest extends ModelTestCase<Message> {
   }
 
   /**
-   * Check that not accept a message without type.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithoutType(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-      model.type = null;
-      assertIsNotValid(model, "type", vertx, testContext);
-    }));
-  }
-
-  /**
-   * Check that not accept a content not match the task creation.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWitAContentNotMathcTypeTaskCreation(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-      model.type = Type.TASK_CREATED;
-      model.content = new JsonObject().put("key", "value");
-      assertIsNotValid(model, "content", vertx, testContext);
-    }));
-  }
-
-  /**
-   * Check that not accept a content not match the type task transaction.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWitAContentNotMathcTypeTaskTransaction(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-      model.type = Type.TASK_TRANSACTION;
-      model.content = new JsonObject().put("key", "value");
-      assertIsNotValid(model, "content", vertx, testContext);
-    }));
-  }
-
-  /**
-   * Check that not accept a content not match the type incentive.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWitAContentNotMathcTypeIncentive(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-      model.type = Type.INCENTIVE;
-      model.content = new JsonObject().put("key", "value");
-      assertIsNotValid(model, "content", vertx, testContext);
-    }));
-  }
-
-  /**
-   * Check that not accept a content with a different taskId.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWitATaskIdDiferentToTheMessageTaskId(final Vertx vertx, final VertxTestContext testContext) {
-
-    StoreServices.storeTaskExample(2, vertx, testContext, testContext.succeeding(task -> {
-
-      this.createModelExample(0, vertx, testContext, testContext.succeeding(model -> {
-        assert model.type == Type.TASK_CREATED;
-        model.content = task.toJsonObject();
-        assertIsNotValid(model, "content", vertx, testContext);
-      }));
-
-    }));
-  }
-
-  /**
-   * Check that not accept a content with a different taskId.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWitATransactionTaskIdDiferentToTheMessageTaskId(final Vertx vertx, final VertxTestContext testContext) {
-
-    StoreServices.storeTaskExample(2, vertx, testContext, testContext.succeeding(task -> {
-
-      this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-        assert model.type == Type.TASK_TRANSACTION;
-        model.content = new JsonObject().put("taskId", task.id);
-        assertIsNotValid(model, "content", vertx, testContext);
-      }));
-
-    }));
-  }
-
-  /**
-   * Check that not accept a content with a different appId.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWitAppIdDiferentToTheMessageAppId(final Vertx vertx, final VertxTestContext testContext) {
-
-    StoreServices.storeAppExample(2, vertx, testContext, testContext.succeeding(app -> {
-
-      this.createModelExample(2, vertx, testContext, testContext.succeeding(model -> {
-        assert model.type == Type.INCENTIVE;
-        model.content = new JsonObject().put("AppID", app.appId);
-        assertIsNotValid(model, "content", vertx, testContext);
-      }));
-
-    }));
-  }
-
-  /**
-   * Check that not accept a content with an undefined task.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWitAnUndefinedTaskForTaskCreation(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(0, vertx, testContext, testContext.succeeding(model -> {
-      assert model.type == Type.TASK_CREATED;
-      model.taskId = null;
-      ((JsonObject) model.content).put("id", "undefined");
-      assertIsNotValid(model, "content", vertx, testContext);
-    }));
-  }
-
-  /**
-   * Check that not accept a content with an undefined task.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWitAnDiferentTaskForTaskCreation(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(0, vertx, testContext, testContext.succeeding(model -> {
-      assert model.type == Type.TASK_CREATED;
-      ((JsonObject) model.content).put("goal", new JsonObject().put("name", "different name"));
-      assertIsNotValid(model, "content", vertx, testContext);
-    }));
-  }
-
-  /**
    * Check that a {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} with multiple norms is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see Message#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
   public void shouldExampleWithMultipleNormsBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -673,7 +523,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see Message#validate(String, Vertx)
+   * @see ProtocolMessage#validate(String, Vertx)
    */
   @Test
   public void shouldExampleWithDuplicatedNormIdsNotBeValid(final Vertx vertx, final VertxTestContext testContext) {

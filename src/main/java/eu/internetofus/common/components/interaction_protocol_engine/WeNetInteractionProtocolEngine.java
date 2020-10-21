@@ -92,9 +92,9 @@ public interface WeNetInteractionProtocolEngine {
    * @param sendHandler handler to send process.
    */
   @GenIgnore
-  default void sendMessage(@NotNull final Message message, @NotNull final Handler<AsyncResult<Message>> sendHandler) {
+  default void sendMessage(@NotNull final ProtocolMessage message, @NotNull final Handler<AsyncResult<ProtocolMessage>> sendHandler) {
 
-    this.sendMessage(message.toJsonObject(), ComponentClient.handlerForModel(Message.class, sendHandler));
+    this.sendMessage(message.toJsonObject(), ComponentClient.handlerForModel(ProtocolMessage.class, sendHandler));
   }
 
   /**

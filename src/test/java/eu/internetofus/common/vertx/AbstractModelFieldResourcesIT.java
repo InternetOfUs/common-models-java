@@ -28,7 +28,7 @@ package eu.internetofus.common.vertx;
 
 import static eu.internetofus.common.vertx.HttpResponses.assertThatBodyIs;
 import static eu.internetofus.common.vertx.HttpResponses.assertThatBodyIsArrayOf;
-import static io.vertx.junit5.web.TestRequest.testRequest;
+import static io.reactiverse.junit5.web.TestRequest.testRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;

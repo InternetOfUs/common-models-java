@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -53,6 +53,12 @@ public class TaskTransaction extends ReflectionModel implements Model, Validable
    */
   @Schema(description = "The unique identifier this transaction is associated to.", example = "b129e5509c9bb79")
   public String taskId;
+
+  /**
+   * The identifier of the WeNet user who created the transaction.
+   */
+  @Schema(description = "The identifier of the WeNet user who created the transaction.", example = "15837028-645a-4a55-9aaf-ceb846439eba")
+  public String creatorId;
 
   /**
    * The identifier of the task type.

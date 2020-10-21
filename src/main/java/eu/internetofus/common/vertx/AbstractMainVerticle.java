@@ -70,28 +70,36 @@ public abstract class AbstractMainVerticle extends AbstractVerticle {
     } else {
 
       final Class<? extends AbstractVerticle> verticle = verticlesToDeploy.remove(0);
-      final var conf = this.config();
-      final var options = new DeploymentOptions(conf).setConfig(conf);
-      if (verticle.isAnnotationPresent(Worker.class)) {
+      try {
 
-        options.setWorker(true);
-      }
-      Logger.trace("Deploying verticle {}", verticle);
-      this.getVertx().deployVerticle(verticle, options, deploy -> {
+        final var conf = this.config();
+        final var options = new DeploymentOptions(conf).setConfig(conf);
+        if (verticle.isAnnotationPresent(Worker.class)) {
 
-        if (deploy.failed()) {
-
-          final var cause = deploy.cause();
-          Logger.error(cause, "Cannot deploy verticle {}", verticle);
-          startPromise.fail(cause);
-
-        } else {
-
-          Logger.trace("Deployed verticle {}", verticle);
-          this.deployNextVerticle(verticlesToDeploy, startPromise);
+          options.setWorker(true);
         }
-      });
+        Logger.trace("Deploying verticle {}", verticle);
+        this.getVertx().deployVerticle(verticle, options, deploy -> {
 
+          if (deploy.failed()) {
+
+            final var cause = deploy.cause();
+            Logger.error(cause, "Cannot deploy verticle {}", verticle);
+            startPromise.fail(cause);
+
+          } else {
+
+            Logger.trace("Deployed verticle {}", verticle);
+            this.deployNextVerticle(verticlesToDeploy, startPromise);
+          }
+        });
+
+      } catch (final Throwable t) {
+
+        Logger.error(t, "Cannot deploy verticle {}", verticle);
+        startPromise.fail(t);
+
+      }
     }
 
   }

@@ -52,7 +52,7 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
   @Test
   public void shouldSendMessage(final Vertx vertx, final VertxTestContext testContext) {
 
-    new MessageTest().createModelExample(1, vertx, testContext, testContext.succeeding(message -> {
+    new ProtocolMessageTest().createModelExample(1, vertx, testContext, testContext.succeeding(message -> {
 
       message.norms = null;
       WeNetInteractionProtocolEngine.createProxy(vertx).sendMessage(message, testContext.succeeding(sent -> testContext.verify(() -> {
