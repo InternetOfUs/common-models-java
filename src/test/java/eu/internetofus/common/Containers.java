@@ -90,17 +90,17 @@ public class Containers {
   /**
    * The name of the WeNet profile manager docker container to use.
    */
-  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "wenet/profile-manager:0.15.0";
+  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:0.15.0";
 
   /**
    * The name of the WeNet task manager docker container to use.
    */
-  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "wenet/task-manager:0.6.0";
+  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:0.6.0";
 
   /**
    * The name of the WeNet interaction manager docker container to use.
    */
-  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "wenet/interaction-protocol-engine:0.12.0";
+  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:0.12.0";
 
   /**
    * The current implementation of the containers.
@@ -148,17 +148,17 @@ public class Containers {
   public int interactionProtocolEngineApiPort;
 
   /**
-   * The container with a WeNet/ProfileManager.
+   * The container with a profile manager component.
    */
   public FixedHostPortGenericContainer<?> profileManagerContainer;
 
   /**
-   * The container with a WeNet/TaskManager.
+   * The container with a task manager component.
    */
   public FixedHostPortGenericContainer<?> taskManagerContainer;
 
   /**
-   * The container with a WeNet/InteractionProtocolEngine.
+   * The container with a interaction protocol engine component.
    */
   public FixedHostPortGenericContainer<?> interactionProtocolEngineContainer;
 
