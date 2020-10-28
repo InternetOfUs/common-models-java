@@ -26,9 +26,12 @@
 
 package eu.internetofus.common.components.profile_manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import eu.internetofus.common.components.service.WeNetService;
@@ -37,6 +40,7 @@ import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 
 /**
  * Test the {@link WeNetProfileManager}.
@@ -96,6 +100,32 @@ public class WeNetProfileManagerTest extends WeNetProfileManagerTestCase {
     final var srviceConf = serviceMocker.getComponentConfiguration();
     WeNetServiceSimulator.register(vertx, client, srviceConf);
     WeNetService.register(vertx, client, srviceConf);
+
+  }
+
+  /**
+   * Should return an empty profiles page.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldReturnEmptyCommunityProfilesPage(final Vertx vertx, final VertxTestContext testContext) {
+
+    WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, null, null, null, 0, 100, testContext.succeeding(page -> testContext.verify(() -> {
+
+      assertThat(page).isNotNull();
+      assertThat(page.offset).isEqualTo(0);
+      assertThat(page.total).isEqualTo(0);
+      assertThat(page.communities).isNull();
+
+      WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage("appId", "name", "description", "keywords", "members", "order", 0, 100, testContext.succeeding(page2 -> testContext.verify(() -> {
+
+        assertThat(page).isEqualTo(page2);
+        testContext.completeNow();
+
+      })));
+    })));
 
   }
 

@@ -26,7 +26,9 @@
 
 package eu.internetofus.common.vertx;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -92,6 +94,31 @@ public class AbstractMainVerticleTest {
     final Promise<Void> startPromise = Promise.promise();
     this.verticle.start(startPromise);
     startPromise.future().onComplete(testContext.failing(error -> testContext.completeNow()));
+
+  }
+
+  /**
+   * Check that capture exception when start verticle.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context of the test.
+   *
+   * @throws Exception If the verticle cannot be started/stopped.
+   */
+  @Test
+  public void shouldCaptureExceptionWhenStartVerticle(final Vertx vertx, final VertxTestContext testContext) throws Exception {
+
+    doReturn(new Class[] { null }).when(this.verticle).getVerticleClassesToDeploy();
+    final var cause = new RuntimeException("No configuration defined");
+    doThrow(cause).when(this.verticle).config();
+    final Promise<Void> startPromise = Promise.promise();
+    this.verticle.start(startPromise);
+    startPromise.future().onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+      assertThat(error).isSameAs(cause);
+      testContext.completeNow();
+
+    })));
 
   }
 

@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -175,5 +175,40 @@ public interface WeNetProfileManager {
    * @param deleteHandler handler to manage the delete process.
    */
   void deleteCommunity(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
+
+  /**
+   * Return the page of the found community profiles.
+   *
+   * @param appId           application identifier to match for the communities to return.
+   * @param name            to match for the communities to return.
+   * @param description     to match for the communities to return.
+   * @param keywords        to match for the communities to return.
+   * @param members         to match for the communities to return.
+   * @param order           in with the communities has to be sort.
+   * @param offset          index of the first community to return.
+   * @param limit           number maximum of communities to return.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  void retrieveJsonCommunityProfilesPage(String appId, String name, String description, String keywords, String members, String order, int offset, int limit, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+
+  /**
+   * Return the found communities.
+   *
+   * @param appId           application identifier to match for the communities to return.
+   * @param name            to match for the communities to return.
+   * @param description     to match for the communities to return.
+   * @param keywords        to match for the communities to return.
+   * @param members         to match for the communities to return.
+   * @param order           in with the communities has to be sort.
+   * @param offset          index of the first community to return.
+   * @param limit           number maximum of communities to return.
+   * @param retrieveHandler handler to manage the retrieve process.
+   */
+  @GenIgnore
+  default void retrieveCommunityProfilesPage(final String appId, final String name, final String description, final String keywords, final String members, final String order, final int offset, final int limit, @NotNull final Handler<AsyncResult<CommunityProfilesPage>> retrieveHandler) {
+
+    this.retrieveJsonCommunityProfilesPage(appId, name, description, keywords, members, order, offset, limit, ComponentClient.handlerForModel(CommunityProfilesPage.class, retrieveHandler));
+
+  }
 
 }

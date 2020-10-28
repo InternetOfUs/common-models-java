@@ -146,74 +146,20 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
       if (this.id != null) {
 
-        future = future.compose(mapper -> {
-
-          final Promise<Void> verifyNotRepeatedIdPromise = Promise.promise();
-          WeNetTaskManager.createProxy(vertx).retrieveTask(this.id, task -> {
-
-            if (task.failed()) {
-
-              verifyNotRepeatedIdPromise.complete();
-
-            } else {
-
-              verifyNotRepeatedIdPromise.fail(new ValidationErrorException(codePrefix + ".id", "The user '" + this.id + "' has already a task."));
-            }
-          });
-          return verifyNotRepeatedIdPromise.future();
-        });
+        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false, WeNetTaskManager.createProxy(vertx)::retrieveTask);
       }
+
       this.taskTypeId = Validations.validateStringField(codePrefix, "taskTypeId", 255, this.taskTypeId);
-      future = future.compose(mapper -> {
+      future = Validations.composeValidateId(future, codePrefix, "taskTypeId", this.taskTypeId, true, WeNetTaskManager.createProxy(vertx)::retrieveTaskType);
 
-        final Promise<Void> verifyNotRepeatedIdPromise = Promise.promise();
-        WeNetTaskManager.createProxy(vertx).retrieveTaskType(this.taskTypeId, taskType -> {
-
-          if (!taskType.failed()) {
-
-            verifyNotRepeatedIdPromise.complete();
-
-          } else {
-
-            verifyNotRepeatedIdPromise.fail(new ValidationErrorException(codePrefix + ".taskTypeId", "The '" + this.taskTypeId + "' is not defined."));
-          }
-        });
-        return verifyNotRepeatedIdPromise.future();
-      });
       this.requesterId = Validations.validateStringField(codePrefix, "requesterId", 255, this.requesterId);
-      future = future.compose(mapper -> {
+      future = Validations.composeValidateId(future, codePrefix, "requesterId", this.requesterId, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
-        final Promise<Void> verifyRequesterIdExistPromise = Promise.promise();
-        WeNetProfileManager.createProxy(vertx).retrieveProfile(this.requesterId, search -> {
-
-          if (!search.failed()) {
-
-            verifyRequesterIdExistPromise.complete();
-
-          } else {
-
-            verifyRequesterIdExistPromise.fail(new ValidationErrorException(codePrefix + ".requesterId", "The '" + this.requesterId + "' is not defined.", search.cause()));
-          }
-        });
-        return verifyRequesterIdExistPromise.future();
-      });
       this.appId = Validations.validateStringField(codePrefix, "appId", 255, this.appId);
-      future = future.compose(mapper -> {
+      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true, WeNetService.createProxy(vertx)::retrieveApp);
 
-        final Promise<Void> verifyNotRepeatedIdPromise = Promise.promise();
-        WeNetService.createProxy(vertx).retrieveApp(this.appId, app -> {
-
-          if (!app.failed()) {
-
-            verifyNotRepeatedIdPromise.complete();
-
-          } else {
-
-            verifyNotRepeatedIdPromise.fail(new ValidationErrorException(codePrefix + ".appId", "The '" + this.appId + "' is not defined."));
-          }
-        });
-        return verifyNotRepeatedIdPromise.future();
-      });
+      this.communityId = Validations.validateStringField(codePrefix, "communityId", 255, this.communityId);
+      future = Validations.composeValidateId(future, codePrefix, "communityId", this.communityId, true, WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
 
       if (this.goal == null) {
 
@@ -279,73 +225,86 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
     final Promise<Task> promise = Promise.promise();
     var future = promise.future();
 
-    final var merged = new Task();
-    merged.taskTypeId = source.taskTypeId;
-    if (merged.taskTypeId == null) {
+    if (source != null) {
 
-      merged.taskTypeId = this.taskTypeId;
+      final var merged = new Task();
+      merged.taskTypeId = source.taskTypeId;
+      if (merged.taskTypeId == null) {
+
+        merged.taskTypeId = this.taskTypeId;
+      }
+
+      merged.requesterId = source.requesterId;
+      if (merged.requesterId == null) {
+
+        merged.requesterId = this.requesterId;
+      }
+
+      merged.appId = source.appId;
+      if (merged.appId == null) {
+
+        merged.appId = this.appId;
+      }
+
+      merged.communityId = source.communityId;
+      if (merged.communityId == null) {
+
+        merged.communityId = this.communityId;
+      }
+
+      merged.startTs = source.startTs;
+      if (merged.startTs == null) {
+
+        merged.startTs = this.startTs;
+      }
+
+      merged.endTs = source.endTs;
+      if (merged.endTs == null) {
+
+        merged.endTs = this.endTs;
+      }
+
+      merged.deadlineTs = source.deadlineTs;
+      if (merged.deadlineTs == null) {
+
+        merged.deadlineTs = this.deadlineTs;
+      }
+
+      merged.closeTs = source.closeTs;
+      if (merged.closeTs == null) {
+
+        merged.closeTs = this.closeTs;
+      }
+
+      merged.attributes = source.attributes;
+      if (merged.attributes == null) {
+
+        merged.attributes = this.attributes;
+      }
+
+      future = future.compose(Merges.mergeField(this.goal, source.goal, codePrefix + ".goal", vertx, (model, mergedGoal) -> model.goal = mergedGoal));
+
+      future = future.compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
+        model.norms = mergedNorms;
+      }));
+
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
+
+      promise.complete(merged);
+
+      // When merged set the fixed field values
+      future = future.map(mergedValidatedModel -> {
+
+        mergedValidatedModel.id = this.id;
+        mergedValidatedModel._creationTs = this._creationTs;
+        mergedValidatedModel._lastUpdateTs = this._lastUpdateTs;
+        return mergedValidatedModel;
+      });
+
+    } else {
+
+      promise.complete(this);
     }
-
-    merged.requesterId = source.requesterId;
-    if (merged.requesterId == null) {
-
-      merged.requesterId = this.requesterId;
-    }
-
-    merged.appId = source.appId;
-    if (merged.appId == null) {
-
-      merged.appId = this.appId;
-    }
-
-    merged.startTs = source.startTs;
-    if (merged.startTs == null) {
-
-      merged.startTs = this.startTs;
-    }
-
-    merged.endTs = source.endTs;
-    if (merged.endTs == null) {
-
-      merged.endTs = this.endTs;
-    }
-
-    merged.deadlineTs = source.deadlineTs;
-    if (merged.deadlineTs == null) {
-
-      merged.deadlineTs = this.deadlineTs;
-    }
-
-    merged.closeTs = source.closeTs;
-    if (merged.closeTs == null) {
-
-      merged.closeTs = this.closeTs;
-    }
-
-    merged.attributes = source.attributes;
-    if (merged.attributes == null) {
-
-      merged.attributes = this.attributes;
-    }
-
-    future = future.compose(Merges.mergeField(this.goal, source.goal, codePrefix + ".goal", vertx, (model, mergedGoal) -> model.goal = mergedGoal));
-
-    future = future.compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
-      model.norms = mergedNorms;
-    }));
-
-    future = future.compose(Validations.validateChain(codePrefix, vertx));
-
-    promise.complete(merged);
-
-    // When merged set the fixed field values
-    future = future.map(mergedValidatedModel -> {
-
-      mergedValidatedModel.id = this.id;
-      mergedValidatedModel._creationTs = this._creationTs;
-      mergedValidatedModel._lastUpdateTs = this._lastUpdateTs;
-      return mergedValidatedModel;
-    });
 
     return future;
   }
@@ -358,32 +317,38 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
 
     final Promise<Task> promise = Promise.promise();
     var future = promise.future();
+    if (source != null) {
 
-    final var updated = new Task();
-    updated.taskTypeId = source.taskTypeId;
-    updated.requesterId = source.requesterId;
-    updated.appId = source.appId;
-    updated.startTs = source.startTs;
-    updated.endTs = source.endTs;
-    updated.deadlineTs = source.deadlineTs;
-    updated.closeTs = source.closeTs;
-    updated.attributes = source.attributes;
-    updated.goal = source.goal;
-    updated.norms = source.norms;
+      final var updated = new Task();
+      updated.taskTypeId = source.taskTypeId;
+      updated.requesterId = source.requesterId;
+      updated.appId = source.appId;
+      updated.communityId = source.communityId;
+      updated.startTs = source.startTs;
+      updated.endTs = source.endTs;
+      updated.deadlineTs = source.deadlineTs;
+      updated.closeTs = source.closeTs;
+      updated.attributes = source.attributes;
+      updated.goal = source.goal;
+      updated.norms = source.norms;
 
-    future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
 
-    // When updated set the fixed field values
-    future = future.map(updatedValidatedModel -> {
+      // When updated set the fixed field values
+      future = future.map(updatedValidatedModel -> {
 
-      updatedValidatedModel.id = this.id;
-      updatedValidatedModel._creationTs = this._creationTs;
-      updatedValidatedModel._lastUpdateTs = this._lastUpdateTs;
-      return updatedValidatedModel;
-    });
+        updatedValidatedModel.id = this.id;
+        updatedValidatedModel._creationTs = this._creationTs;
+        updatedValidatedModel._lastUpdateTs = this._lastUpdateTs;
+        return updatedValidatedModel;
+      });
 
-    promise.complete(updated);
+      promise.complete(updated);
 
+    } else {
+
+      promise.complete(this);
+    }
     return future;
   }
 

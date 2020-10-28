@@ -28,6 +28,7 @@ package eu.internetofus.common.vertx;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
@@ -409,11 +410,11 @@ public class ComponentClient {
   /**
    * Patch a model to a component.
    *
-   * @param content    model to patch.
+   * @param content      model to patch.
    * @param patchHandler the handler to manager the patch resource.
-   * @param paths      to the component to patch.
+   * @param paths        to the component to patch.
    *
-   * @param <T>        type of model to patch.
+   * @param <T>          type of model to patch.
    */
   protected <T extends Model> void patch(@NotNull final T content, @NotNull final Handler<AsyncResult<T>> patchHandler, @NotNull final Object... paths) {
 
@@ -429,9 +430,9 @@ public class ComponentClient {
   /**
    * Patch a {@link JsonArray} to a component.
    *
-   * @param content    resource to patch.
+   * @param content      resource to patch.
    * @param patchHandler the handler to manager the patch resource.
-   * @param paths      to the component to patch.
+   * @param paths        to the component to patch.
    */
   protected void patch(final JsonArray content, final Handler<AsyncResult<JsonArray>> patchHandler, final Object... paths) {
 
@@ -445,9 +446,9 @@ public class ComponentClient {
   /**
    * Patch a {@link JsonObject} to a component.
    *
-   * @param content    resource to patch.
+   * @param content      resource to patch.
    * @param patchHandler the handler to manager the patch resource.
-   * @param paths      to the component to patch.
+   * @param paths        to the component to patch.
    */
   protected void patch(final JsonObject content, final Handler<AsyncResult<JsonObject>> patchHandler, final Object... paths) {
 
@@ -457,6 +458,7 @@ public class ComponentClient {
     this.client.patchAbs(url).sendJson(content, response -> this.successing(response, actionId, patchHandler, this.jsonObjectConsumer(actionId)));
 
   }
+
   /**
    * Get a resource model.
    *
@@ -498,10 +500,41 @@ public class ComponentClient {
    */
   protected void getJsonObject(@NotNull final Handler<AsyncResult<JsonObject>> getHandler, final Object... paths) {
 
+    this.getJsonObject(null, getHandler, paths);
+
+  }
+
+  /**
+   * Get a {@link JsonObject} with some parameters.
+   *
+   * @param queryParams the query parameters.
+   * @param getHandler  the handler to manage the receiver resource.
+   * @param paths       to the resource to get.
+   */
+  protected void getJsonObject(final Map<String, String> queryParams, @NotNull final Handler<AsyncResult<JsonObject>> getHandler, final Object... paths) {
+
     final var url = this.createAbsoluteUrlWith(paths);
     final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] GET {}", actionId, url);
-    this.client.getAbs(url).send(response -> this.successing(response, actionId, getHandler, this.jsonObjectConsumer(actionId)));
+    var request = this.client.getAbs(url);
+    if (queryParams != null && !queryParams.isEmpty()) {
+
+      Logger.trace("[{}] GET {} {}", actionId, url, queryParams);
+
+      for (final var entry : queryParams.entrySet()) {
+
+        final var key = entry.getKey();
+        final var value = entry.getValue();
+        request = request.addQueryParam(key, value);
+
+      }
+
+    } else {
+
+      Logger.trace("[{}] GET {}", actionId, url);
+
+    }
+
+    request.send(response -> this.successing(response, actionId, getHandler, this.jsonObjectConsumer(actionId)));
 
   }
 

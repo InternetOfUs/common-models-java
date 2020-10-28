@@ -50,6 +50,7 @@ import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
+import eu.internetofus.common.components.profile_manager.CommunityProfile;
 import eu.internetofus.common.components.profile_manager.Norm;
 import eu.internetofus.common.components.profile_manager.NormTest;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
@@ -147,6 +148,7 @@ public class TaskTest extends ModelTestCase<Task> {
     model.taskTypeId = "taskTypeId" + index;
     model.requesterId = "requesterId" + index;
     model.appId = "appId" + index;
+    model.communityId = "communityId" + index;
     model.goal = new TaskGoalTest().createModelExample(index);
     model.deadlineTs = TimeManager.now() + 10000 + 10000 * index;
     model.startTs = model.deadlineTs + 200000l + index;
@@ -239,20 +241,19 @@ public class TaskTest extends ModelTestCase<Task> {
    */
   public void createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<Task>> createHandler) {
 
-    StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(profile -> {
+    StoreServices.storeTaskTypeExample(index, vertx, testContext, testContext.succeeding(taskType -> {
 
-      StoreServices.storeTaskTypeExample(index, vertx, testContext, testContext.succeeding(taskType -> {
+      StoreServices.storeCommunityExample(index, vertx, testContext, testContext.succeeding(community -> {
 
-        StoreServices.storeApp(new App(), vertx, testContext, testContext.succeeding(app -> {
+        final var model = this.createModelExample(index);
+        model.requesterId = community.members.get(0).userId;
+        model.taskTypeId = taskType.id;
+        model.appId = community.appId;
+        model.communityId = community.id;
+        createHandler.handle(Future.succeededFuture(model));
 
-          final var model = this.createModelExample(index);
-          model.requesterId = profile.id;
-          model.taskTypeId = taskType.id;
-          model.appId = app.appId;
-          createHandler.handle(Future.succeededFuture(model));
-
-        }));
       }));
+
     }));
 
   }
@@ -474,6 +475,66 @@ public class TaskTest extends ModelTestCase<Task> {
 
       model.appId = "Undefined-app-id";
       assertIsNotValid(model, "appId", vertx, testContext);
+
+    }));
+
+  }
+
+  /**
+   * Check that can not be valid with a too large community identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithALargeCommunityId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+      model.communityId = ValidationsTest.STRING_256;
+      assertIsNotValid(model, "communityId", vertx, testContext);
+
+    }));
+
+  }
+
+  /**
+   * Check that can not be valid without a community identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithoutCommunityId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+      model.communityId = null;
+      assertIsNotValid(model, "communityId", vertx, testContext);
+
+    }));
+
+  }
+
+  /**
+   * Check that can not be valid with an undefined community identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithAnUndefinedCommunityId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+
+      model.communityId = "Undefined-community-id";
+      assertIsNotValid(model, "communityId", vertx, testContext);
 
     }));
 
@@ -1780,5 +1841,46 @@ public class TaskTest extends ModelTestCase<Task> {
     }));
 
   }
+
+  /**
+   * Should merge with {@code null}
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      assertCanMerge(target, null, vertx, testContext, merged -> {
+        assertThat(merged).isSameAs(target);
+      });
+    }));
+
+  }
+
+  /**
+   * Should update with {@code null}
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+
+      assertCanUpdate(target, null, vertx, testContext, updated -> {
+        assertThat(updated).isSameAs(target);
+      });
+    }));
+
+  }
+
 
 }

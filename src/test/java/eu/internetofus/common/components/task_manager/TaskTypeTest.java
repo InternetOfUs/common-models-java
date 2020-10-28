@@ -49,6 +49,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.ValidationsTest;
+import eu.internetofus.common.components.profile_manager.CommunityProfile;
 import eu.internetofus.common.components.profile_manager.Norm;
 import eu.internetofus.common.components.profile_manager.NormTest;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
@@ -953,4 +954,41 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     assertCannotUpdate(target, source, "attributes[2]", vertx, testContext);
 
   }
+
+  /**
+   * Should merge with {@code null}
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    assertCanMerge(target, null, vertx, testContext, merged -> {
+      assertThat(merged).isSameAs(target);
+    });
+
+  }
+
+  /**
+   * Should update with {@code null}
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shoudUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    assertCanUpdate(target, null, vertx, testContext, updated -> {
+      assertThat(updated).isSameAs(target);
+    });
+
+  }
+
 }

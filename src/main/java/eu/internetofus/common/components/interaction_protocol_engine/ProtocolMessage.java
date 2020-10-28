@@ -145,10 +145,6 @@ public class ProtocolMessage extends ReflectionModel implements Model, Validable
 
         promise.fail(new ValidationErrorException(codePrefix + ".receiver", "You must to define a receiver"));
 
-      } else if (this.particle == null) {
-
-        promise.fail(new ValidationErrorException(codePrefix + ".particle", "You must to define a particle"));
-
       } else if (this.content == null) {
 
         promise.fail(new ValidationErrorException(codePrefix + ".content", "You must to define a content"));

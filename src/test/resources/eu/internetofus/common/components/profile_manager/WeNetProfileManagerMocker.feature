@@ -75,6 +75,10 @@ Scenario: pathMatches('/communities') && methodIs('post')
     * def response = community
     * def responseStatus = 201
 
+Scenario: pathMatches('/communities') && methodIs('get')
+    * def response = {"offset":0,"total":0}
+    * def responseStatus = 200
+
 Scenario: pathMatches('/communities/{id}') && methodIs('delete') && communities[pathParams.id] != null
     * karate.remove('communities', '$.' + pathParams.id)
     * def responseStatus = 204

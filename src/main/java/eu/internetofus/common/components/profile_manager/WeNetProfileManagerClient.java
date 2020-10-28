@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,6 +25,10 @@
  */
 
 package eu.internetofus.common.components.profile_manager;
+
+import java.util.LinkedHashMap;
+
+import javax.validation.constraints.NotNull;
 
 import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
@@ -120,6 +124,43 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
   public void deleteCommunity(final String id, final Handler<AsyncResult<Void>> deleteHandler) {
 
     this.delete(deleteHandler, "/communities/", id);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveJsonCommunityProfilesPage(final String appId, final String name, final String description, final String keywords, final String members, final String order, final int offset, final int limit, @NotNull final Handler<AsyncResult<JsonObject>> retrieveHandler) {
+
+    final var params = new LinkedHashMap<String, String>();
+    if (appId != null) {
+
+      params.put("appId", appId);
+    }
+    if (name != null) {
+
+      params.put("name", name);
+    }
+    if (description != null) {
+
+      params.put("description", description);
+    }
+    if (keywords != null) {
+
+      params.put("keywords", keywords);
+    }
+    if (members != null) {
+
+      params.put("members", members);
+    }
+    if (order != null) {
+
+      params.put("description", order);
+    }
+    params.put("offset", String.valueOf(offset));
+    params.put("limit", String.valueOf(limit));
+    this.getJsonObject(params, retrieveHandler, "/communities");
 
   }
 
