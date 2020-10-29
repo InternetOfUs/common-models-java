@@ -56,7 +56,7 @@ import io.vertx.ext.mongo.UpdateOptions;
 public class Repository {
 
   /**
-   * Name of the filed to store the version of the schemas.
+   * Name of the field to store the version of the schemas.
    */
   public static final String SCHEMA_VERSION = "schema_version";
 

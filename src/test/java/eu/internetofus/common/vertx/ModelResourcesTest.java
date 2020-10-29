@@ -1054,7 +1054,7 @@ public class ModelResourcesTest {
   }
 
   /**
-   * Should not retrieve the model field element because the filed is {@code null}.
+   * Should not retrieve the model field element because the field is {@code null}.
    *
    * @param resultHandler handler to manage the HTTP result.
    * @param searcher      the function used to search a model.

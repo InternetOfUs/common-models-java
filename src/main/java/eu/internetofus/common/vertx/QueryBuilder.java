@@ -95,7 +95,7 @@ public class QueryBuilder {
   }
 
   /**
-   * Add a the restrictions to mark the filed to be in the specified range.
+   * Add a the restrictions to mark the field to be in the specified range.
    *
    * @param fieldName name of the field.
    * @param from      the value, inclusive, that mark the lowest value of the range.
@@ -127,7 +127,7 @@ public class QueryBuilder {
   }
 
   /**
-   * Add a the restrictions to mark the filed exist, thus that it is defined and not {@code null}.
+   * Add a the restrictions to mark the field exist, thus that it is defined and not {@code null}.
    *
    * @param fieldName  name of the field.
    * @param hasToExist is {@code true} is the field has to exist, {@code false} if has to no exist, or {@code null} to
@@ -158,7 +158,7 @@ public class QueryBuilder {
   }
 
   /**
-   * Add a the restrictions to mark the filed to be equals to the specified field.
+   * Add a the restrictions to mark the field to be equals to the specified field.
    *
    * @param fieldName name of the field.
    * @param value     for the field.
@@ -297,7 +297,7 @@ public class QueryBuilder {
   }
 
   /**
-   * Add a the restrictions to mark an array field that contains some elements where a filed matches a value or a regular expression.
+   * Add a the restrictions to mark an array field that contains some elements where a field matches a value or a regular expression.
    * It it is a regular expression it has to be between {@code /}.
    *
    * @param fieldName    name of the field that contains an array.
