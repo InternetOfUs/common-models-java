@@ -181,6 +181,10 @@ public class Repository {
 
     } else {
 
+      // NO modify the _creationTs.
+      updateModel.remove("_creationTs");
+
+      // Create the query to update the model.
       final var setFields = new JsonObject().put(SCHEMA_VERSION, this.schemaVersion);
       final var updateQuery = new JsonObject();
       updateQuery.put("$set", setFields);

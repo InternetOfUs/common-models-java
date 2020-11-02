@@ -38,10 +38,12 @@ import javax.ws.rs.core.Response.Status;
 
 import org.tinylog.Logger;
 
+import eu.internetofus.common.TimeManager;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
+import eu.internetofus.common.components.profile_manager.CreateUpdateTsDetails;
 import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -260,6 +262,12 @@ public interface ModelResources {
 
       validate(vertx, model, context, () -> {
 
+        if (model.value instanceof CreateUpdateTsDetails) {
+
+          final var now = TimeManager.now();
+          ((CreateUpdateTsDetails) model.value)._creationTs = now;
+          ((CreateUpdateTsDetails) model.value)._lastUpdateTs = now;
+        }
         storer.accept(model.value, stored -> {
 
           if (stored.failed()) {
@@ -408,6 +416,11 @@ public interface ModelResources {
   static public <T extends Model, I> void updateModelChain(@NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final OperationContext context,
       @NotNull final Runnable success) {
 
+    if (model.value instanceof CreateUpdateTsDetails) {
+
+      final var now = TimeManager.now();
+      ((CreateUpdateTsDetails) model.value)._lastUpdateTs = now;
+    }
     updater.accept(model.value, stored -> {
 
       if (stored.failed()) {
