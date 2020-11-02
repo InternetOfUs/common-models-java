@@ -156,7 +156,7 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
     }
     if (order != null) {
 
-      params.put("description", order);
+      params.put("order", order);
     }
     params.put("offset", String.valueOf(offset));
     params.put("limit", String.valueOf(limit));

@@ -284,7 +284,7 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
               assertThat(page).isNotNull();
               assertThat(page.offset).isEqualTo(1);
               assertThat(page.total).isEqualTo(4);
-              assertThat(page.communities).isNotEmpty().hasSize(2).containsExactly(community3, community4);
+              assertThat(page.communities).isNotEmpty().hasSize(2).containsExactly(community4, community3);
               testContext.completeNow();
 
             })));
