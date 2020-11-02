@@ -145,6 +145,7 @@ public abstract class WeNetTaskManagerTestCase {
           taskToMerge.attributes = new JsonObject().put("newKey", "NEW VALUE");
           service.mergeTask(id, taskToMerge, testContext.succeeding(mergedTask -> testContext.verify(() -> {
 
+            createdTask._lastUpdateTs = mergedTask._lastUpdateTs;
             createdTask.attributes = new JsonObject().put("newKey", "NEW VALUE");
             assertThat(mergedTask).isEqualTo(createdTask);
             service.deleteTask(id, testContext.succeeding(empty -> {
