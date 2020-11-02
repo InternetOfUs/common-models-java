@@ -28,6 +28,8 @@ package eu.internetofus.common.components.profile_manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 
 import eu.internetofus.common.components.Model;
@@ -97,7 +99,7 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
 
               assertThat(page).isNotNull();
               assertThat(page.offset).isEqualTo(0);
-              assertThat(page.total).isGreaterThan(4);
+              assertThat(page.total).isEqualTo(4);
               assertThat(page.communities).isNotEmpty().hasSize(2).contains(community, community2);
               testContext.completeNow();
 
@@ -121,6 +123,8 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
     StoreServices.storeCommunityExample(1, vertx, testContext, testContext.succeeding(community -> {
 
       final var newCommunity = Model.fromJsonObject(community.toJsonObject(), CommunityProfile.class);
+      final var name = UUID.randomUUID().toString();
+      newCommunity.name = name;
       newCommunity.id = null;
       StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community2 -> {
 
@@ -128,12 +132,12 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
 
           StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community4 -> {
 
-            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, community.name, null, null, null, null, 2, 3, testContext.succeeding(page -> testContext.verify(() -> {
+            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, name, null, null, null, null, 2, 3, testContext.succeeding(page -> testContext.verify(() -> {
 
               assertThat(page).isNotNull();
               assertThat(page.offset).isEqualTo(2);
-              assertThat(page.total).isGreaterThan(4);
-              assertThat(page.communities).isNotEmpty().hasSize(2).contains(community3, community4);
+              assertThat(page.total).isEqualTo(3);
+              assertThat(page.communities).isNotEmpty().hasSize(1).contains(community4);
               testContext.completeNow();
 
             })));
@@ -156,6 +160,8 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
     StoreServices.storeCommunityExample(1, vertx, testContext, testContext.succeeding(community -> {
 
       final var newCommunity = Model.fromJsonObject(community.toJsonObject(), CommunityProfile.class);
+      final var description = UUID.randomUUID().toString();
+      newCommunity.description = description;
       newCommunity.id = null;
       StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community2 -> {
 
@@ -163,12 +169,12 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
 
           StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community4 -> {
 
-            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, community.description, null, null, null, 2, 3, testContext.succeeding(page -> testContext.verify(() -> {
+            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, description, null, null, null, 0, 3, testContext.succeeding(page -> testContext.verify(() -> {
 
               assertThat(page).isNotNull();
-              assertThat(page.offset).isEqualTo(2);
-              assertThat(page.total).isGreaterThan(4);
-              assertThat(page.communities).isNotEmpty().hasSize(2).contains(community3, community4);
+              assertThat(page.offset).isEqualTo(0);
+              assertThat(page.total).isEqualTo(3);
+              assertThat(page.communities).isNotEmpty().hasSize(3).contains(community2, community3, community4);
               testContext.completeNow();
 
             })));
@@ -192,18 +198,20 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
 
       final var newCommunity = Model.fromJsonObject(community.toJsonObject(), CommunityProfile.class);
       newCommunity.id = null;
+      final var keyword = UUID.randomUUID().toString();
+      newCommunity.keywords.add(keyword);
       StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community2 -> {
 
         StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community3 -> {
 
           StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community4 -> {
 
-            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, community.keywords.get(0), null, null, 1, 2, testContext.succeeding(page -> testContext.verify(() -> {
+            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, keyword, null, null, 1, 2, testContext.succeeding(page -> testContext.verify(() -> {
 
               assertThat(page).isNotNull();
               assertThat(page.offset).isEqualTo(1);
-              assertThat(page.total).isGreaterThan(4);
-              assertThat(page.communities).isNotEmpty().hasSize(2).contains(community2, community3);
+              assertThat(page.total).isEqualTo(3);
+              assertThat(page.communities).isNotEmpty().hasSize(2).contains(community3, community4);
               testContext.completeNow();
 
             })));
@@ -237,7 +245,7 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
 
               assertThat(page).isNotNull();
               assertThat(page.offset).isEqualTo(0);
-              assertThat(page.total).isGreaterThan(4);
+              assertThat(page.total).isEqualTo(4);
               assertThat(page.communities).isNotEmpty().hasSize(4).contains(community, community2, community3, community4);
               testContext.completeNow();
 
@@ -271,12 +279,12 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
           newCommunity.name = "222" + newCommunity.name;
           StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community4 -> {
 
-            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, null, null, "-name", 1, 2, testContext.succeeding(page -> testContext.verify(() -> {
+            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(newCommunity.appId, null, null, null, null, "-name", 1, 2, testContext.succeeding(page -> testContext.verify(() -> {
 
               assertThat(page).isNotNull();
-              assertThat(page.offset).isEqualTo(0);
-              assertThat(page.total).isGreaterThan(4);
-              assertThat(page.communities).isNotEmpty().hasSize(4).contains(community4, community3);
+              assertThat(page.offset).isEqualTo(1);
+              assertThat(page.total).isEqualTo(4);
+              assertThat(page.communities).isNotEmpty().hasSize(2).containsExactly(community3, community4);
               testContext.completeNow();
 
             })));
