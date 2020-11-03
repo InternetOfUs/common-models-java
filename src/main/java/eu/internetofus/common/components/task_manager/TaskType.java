@@ -34,11 +34,11 @@ import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
+import eu.internetofus.common.components.profile_manager.CreateUpdateTsDetails;
 import eu.internetofus.common.components.profile_manager.Norm;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -53,7 +53,7 @@ import io.vertx.core.json.JsonObject;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "TaskType", description = "Describe a type of task that can be done by the users.")
-public class TaskType extends ReflectionModel implements Model, Validable, Mergeable<TaskType>, Updateable<TaskType> {
+public class TaskType extends CreateUpdateTsDetails implements Model, Validable, Mergeable<TaskType>, Updateable<TaskType> {
 
   /**
    * The identifier of the profile.
