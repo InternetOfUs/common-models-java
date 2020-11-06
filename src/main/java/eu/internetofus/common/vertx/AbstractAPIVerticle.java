@@ -68,6 +68,7 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
           final var router = routerFactory.getRouter();
           router.errorHandler(Status.NOT_FOUND.getStatusCode(), NotFoundHandler.build());
           router.errorHandler(Status.BAD_REQUEST.getStatusCode(), BadRequestHandler.build());
+          router.errorHandler(Status.INTERNAL_SERVER_ERROR.getStatusCode(), InternalServerErrorHandler.build());
 
           final var apiConf = this.config().getJsonObject("api", new JsonObject());
           final var httpServerOptions = new HttpServerOptions(apiConf);

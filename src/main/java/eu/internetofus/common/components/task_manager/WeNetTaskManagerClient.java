@@ -100,7 +100,7 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
   @Override
   public void createTaskType(final JsonObject taskType, final Handler<AsyncResult<JsonObject>> createHandler) {
 
-    this.post(taskType, createHandler, "/tasks/types");
+    this.post(taskType, createHandler, "/taskTypes");
 
   }
 
@@ -110,7 +110,7 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
   @Override
   public void retrieveJsonTaskType(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
 
-    this.getJsonObject(retrieveHandler, "/tasks/types", id);
+    this.getJsonObject(retrieveHandler, "/taskTypes", id);
 
   }
 
@@ -120,7 +120,7 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
   @Override
   public void deleteTaskType(final String id, final Handler<AsyncResult<Void>> deleteHandler) {
 
-    this.delete(deleteHandler, "/tasks/types", id);
+    this.delete(deleteHandler, "/taskTypes", id);
 
   }
 
