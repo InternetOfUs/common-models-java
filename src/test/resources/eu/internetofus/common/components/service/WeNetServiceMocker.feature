@@ -13,6 +13,7 @@ Background:
 
 Scenario: pathMatches('/app/{appId}') && methodIs('get') && apps[pathParams.appId] != null
     * def response = apps[pathParams.appId]
+    * karate.log('For the id ',pathParams.appId,' the app is ',response)
 
 Scenario: pathMatches('/app/{appId}') && methodIs('get')
     * def responseStatus = 404
@@ -83,9 +84,11 @@ Scenario: pathMatches('/app/{appId}/users') && methodIs('delete')
 
 Scenario: pathMatches('/callback/{appId}') && methodIs('get') && callbacks[pathParams.appId] != null
     * def response = callbacks[pathParams.appId]
+    * karate.log('On the app ',pathParams.appId,' the callbacks are ',response)
 
 Scenario: pathMatches('/callback/{appId}') && methodIs('get') && apps[pathParams.appId] != null
     * def response = []
+    * karate.log('On the app ',pathParams.appId,' the callbacks are []')
 
 Scenario: pathMatches('/callback/{appId}') && methodIs('get')
     * def responseStatus = 404
