@@ -50,8 +50,6 @@ import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.ValidationsTest;
 import eu.internetofus.common.components.profile_manager.CommunityProfile;
-import eu.internetofus.common.components.profile_manager.Norm;
-import eu.internetofus.common.components.profile_manager.NormTest;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -119,19 +117,13 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     model.keywords.add("keyword_" + index);
     model.keywords.add("keyword_" + (index + 1));
     model.keywords.add("keyword_" + (index + 2));
+    model.attributes = new JsonObject().put("key", index);
+    model.transactions = new JsonObject().put("transaction_" + index, new JsonObject());
+    model.callbacks = new JsonObject().put("transaction_" + index, new JsonObject());
     model.norms = new ArrayList<>();
-    model.norms.add(new NormTest().createModelExample(index));
-    model.norms.add(new NormTest().createModelExample(index + 1));
-    model.norms.add(new NormTest().createModelExample(index + 2));
-    model.attributes = new ArrayList<>();
-    model.attributes.add(new TaskAttributeTypeTest().createModelExample(index));
-    model.attributes.add(new TaskAttributeTypeTest().createModelExample(index + 1));
-    model.attributes.add(new TaskAttributeTypeTest().createModelExample(index + 2));
-    model.transactions = new ArrayList<>();
-    model.transactions.add(new TaskTransactionTypeTest().createModelExample(index));
-    model.transactions.add(new TaskTransactionTypeTest().createModelExample(index + 1));
-    model.transactions.add(new TaskTransactionTypeTest().createModelExample(index + 2));
-    model.constants = new JsonObject().put("index", index);
+    model.norms.add(new ProtocolNormTest().createModelExample(index));
+    model.norms.add(new ProtocolNormTest().createModelExample(index + 1));
+    model.norms.add(new ProtocolNormTest().createModelExample(index + 2));
     return model;
 
   }
@@ -348,31 +340,11 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
 
     final var model = this.createModelExample(1);
     model.norms = new ArrayList<>();
-    model.norms.add(new Norm());
-    model.norms.add(new Norm());
-    model.norms.add(new Norm());
-    model.norms.get(1).attribute = ValidationsTest.STRING_256;
-    assertIsNotValid(model, "norms[1].attribute", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the model is not valid with a bad attribute.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see TaskType#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithABadAttribute(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var model = this.createModelExample(1);
-    model.attributes = new ArrayList<>();
-    model.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
-    model.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
-    model.attributes.add(new TaskAttributeType());
-    assertIsNotValid(model, "attributes[2].name", vertx, testContext);
+    model.norms.add(new ProtocolNormTest().createModelExample(1));
+    model.norms.add(new ProtocolNormTest().createModelExample(2));
+    model.norms.add(new ProtocolNormTest().createModelExample(3));
+    model.norms.get(1).whenever = null;
+    assertIsNotValid(model, "norms[1].whenever", vertx, testContext);
 
   }
 
@@ -542,144 +514,12 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
 
     final var source = new TaskType();
     source.norms = new ArrayList<>();
-    source.norms.add(new Norm());
-    source.norms.add(new Norm());
-    source.norms.add(new Norm());
-    source.norms.get(1).attribute = ValidationsTest.STRING_256;
+    source.norms.add(new ProtocolNormTest().createModelExample(1));
+    source.norms.add(new ProtocolNormTest().createModelExample(2));
+    source.norms.add(new ProtocolNormTest().createModelExample(3));
+    source.norms.get(1).thenceforth = null;
     final var target = this.createModelExample(1);
-    assertCannotMerge(target, source, "norms[1].attribute", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the model does not with duplicated norm.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see TaskType#merge(TaskType, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithADuplicatedNormIds(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var source = new TaskType();
-    source.norms = new ArrayList<>();
-    source.norms.add(new Norm());
-    source.norms.add(new Norm());
-    source.norms.add(new Norm());
-    source.norms.get(1).id = "1";
-    source.norms.get(2).id = "1";
-    final var target = this.createModelExample(1);
-    target.norms = new ArrayList<>();
-    target.norms.add(new Norm());
-    target.norms.get(0).id = "1";
-    assertCannotMerge(target, source, "norms[2]", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the model merges with norm.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see TaskType#merge(TaskType, String, Vertx)
-   */
-  @Test
-  public void shouldMergeWithNorms(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var target = this.createModelExample(1);
-    target.norms = new ArrayList<>();
-    target.norms.add(new Norm());
-    target.norms.get(0).id = "1";
-    final var source = new TaskType();
-    source.norms = new ArrayList<>();
-    source.norms.add(new Norm());
-    source.norms.add(new Norm());
-    source.norms.add(new Norm());
-    source.norms.get(1).id = "1";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
-
-      assertThat(merged.norms).isNotEqualTo(target.norms).isEqualTo(source.norms);
-      assertThat(merged.norms.get(0).id).isNotEmpty();
-      assertThat(merged.norms.get(1).id).isEqualTo("1");
-      assertThat(merged.norms.get(2).id).isNotEmpty();
-
-    });
-
-  }
-
-  /**
-   * Check that the model does not merge with bad attribute.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see TaskType#merge(TaskType, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithABadAttribute(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var source = new TaskType();
-    source.attributes = new ArrayList<>();
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
-    source.attributes.add(new TaskAttributeType());
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
-    final var target = this.createModelExample(1);
-    assertCannotMerge(target, source, "attributes[1].name", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the model merges attributes.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see TaskType#merge(TaskType, String, Vertx)
-   */
-  @Test
-  public void shouldMergeWithAttributes(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var target = this.createModelExample(1);
-    target.attributes = new ArrayList<>();
-    target.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
-    final var source = new TaskType();
-    source.attributes = new ArrayList<>();
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
-    source.attributes.add(new TaskAttributeType());
-    source.attributes.get(1).name = target.attributes.get(0).name;
-    source.attributes.get(1).description = "NEW DESCRIPTION";
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(3));
-    assertCanMerge(target, source, vertx, testContext, merged -> {
-
-      assertThat(merged.attributes).isNotEqualTo(target.attributes).isNotEqualTo(source.attributes).hasSize(3).contains(source.attributes.get(0), atIndex(0)).contains(source.attributes.get(2), atIndex(2));
-      target.attributes.get(0).description = "NEW DESCRIPTION";
-      assertThat(merged.attributes.get(1)).isEqualTo(target.attributes.get(0));
-
-    });
-
-  }
-
-  /**
-   * Check that the model does not with duplicated attributes.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see TaskType#merge(TaskType, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithDuplicatedAtttributes(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var source = new TaskType();
-    source.attributes = new ArrayList<>();
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
-
-    final var target = this.createModelExample(1);
-    assertCannotMerge(target, source, "attributes[2]", vertx, testContext);
+    assertCannotMerge(target, source, "norms[1].thenceforth", vertx, testContext);
 
   }
 
@@ -816,142 +656,12 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     final var target = this.createModelExample(1);
     final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
     source.norms = new ArrayList<>();
-    source.norms.add(new Norm());
-    source.norms.add(new Norm());
-    source.norms.add(new Norm());
-    source.norms.get(1).attribute = ValidationsTest.STRING_256;
+    source.norms.add(new ProtocolNormTest().createModelExample(1));
+    source.norms.add(new ProtocolNormTest().createModelExample(2));
+    source.norms.add(new ProtocolNormTest().createModelExample(3));
+    source.norms.get(1).whenever = null;
 
-    assertCannotUpdate(target, source, "norms[1].attribute", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the model does not with duplicated norm.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see TaskType#update(TaskType, String, Vertx)
-   */
-  @Test
-  public void shouldNotUpdateWithADuplicatedNormIds(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var target = this.createModelExample(1);
-    target.norms = new ArrayList<>();
-    target.norms.add(new Norm());
-    target.norms.get(0).id = "1";
-    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
-    source.norms = new ArrayList<>();
-    source.norms.add(new Norm());
-    source.norms.add(new Norm());
-    source.norms.add(new Norm());
-    source.norms.get(1).id = "1";
-    source.norms.get(2).id = "1";
-
-    assertCannotUpdate(target, source, "norms[2]", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the model updates with norm.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see TaskType#update(TaskType, String, Vertx)
-   */
-  @Test
-  public void shouldUpdateWithNorms(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var target = this.createModelExample(1);
-    target.norms = new ArrayList<>();
-    target.norms.add(new Norm());
-    target.norms.get(0).id = "1";
-    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
-    source.norms = new ArrayList<>();
-    source.norms.add(new Norm());
-    source.norms.add(new Norm());
-    source.norms.add(new Norm());
-    source.norms.get(1).id = "1";
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
-
-      assertThat(updated.norms).isNotEqualTo(target.norms).isEqualTo(source.norms);
-      assertThat(updated.norms.get(0).id).isNotEmpty();
-      assertThat(updated.norms.get(1).id).isEqualTo("1");
-      assertThat(updated.norms.get(2).id).isNotEmpty();
-
-    });
-
-  }
-
-  /**
-   * Check that the model does not update with bad attribute.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see TaskType#update(TaskType, String, Vertx)
-   */
-  @Test
-  public void shouldNotUpdateWithABadAttribute(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var target = this.createModelExample(1);
-    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
-    source.attributes = new ArrayList<>();
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
-    source.attributes.add(new TaskAttributeType());
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
-
-    assertCannotUpdate(target, source, "attributes[1].name", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the model updates attributes.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see TaskType#update(TaskType, String, Vertx)
-   */
-  @Test
-  public void shouldUpdateWithAttributes(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var target = this.createModelExample(1);
-    target.attributes = new ArrayList<>();
-    target.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
-    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
-    source.attributes = new ArrayList<>();
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(3));
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
-
-      assertThat(updated).isNotEqualTo(target).isEqualTo(source);
-
-    });
-
-  }
-
-  /**
-   * Check that the model does not with duplicated attributes.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see TaskType#update(TaskType, String, Vertx)
-   */
-  @Test
-  public void shouldNotUpdateWithDuplicatedAtttributes(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var target = this.createModelExample(1);
-    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
-    source.attributes = new ArrayList<>();
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(2));
-    source.attributes.add(new TaskAttributeTypeTest().createModelExample(1));
-
-    assertCannotUpdate(target, source, "attributes[2]", vertx, testContext);
+    assertCannotUpdate(target, source, "norms[1].whenever", vertx, testContext);
 
   }
 

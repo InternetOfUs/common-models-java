@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,6 +29,8 @@ package eu.internetofus.common.components.interaction_protocol_engine;
 import javax.validation.constraints.NotNull;
 
 import eu.internetofus.common.components.incentive_server.Incentive;
+import eu.internetofus.common.components.task_manager.Task;
+import eu.internetofus.common.components.task_manager.TaskTransaction;
 import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -115,6 +117,46 @@ public interface WeNetInteractionProtocolEngine {
   default void sendIncentive(@NotNull final Incentive incentive, @NotNull final Handler<AsyncResult<Incentive>> sendHandler) {
 
     this.sendIncentive(incentive.toJsonObject(), ComponentClient.handlerForModel(Incentive.class, sendHandler));
+  }
+
+  /**
+   * Inform that a task has been created.
+   *
+   * @param task           that has been created.
+   * @param createdHandler handler to inform if it is accepted or not to process the creation of a task.
+   */
+  void createdTask(@NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> createdHandler);
+
+  /**
+   * Inform that a task has been created.
+   *
+   * @param task           that has been created.
+   * @param createdHandler handler to inform if it is accepted or not to process the creation of a task.
+   */
+  @GenIgnore
+  default void createdTask(@NotNull final Task task, @NotNull final Handler<AsyncResult<Task>> createdHandler) {
+
+    this.createdTask(task.toJsonObject(), ComponentClient.handlerForModel(Task.class, createdHandler));
+  }
+
+  /**
+   * Try to do a transaction over a task.
+   *
+   * @param transaction to do.
+   * @param doHandler   handler to inform if it is accepted or not to do the task transaction.
+   */
+  void doTransaction(@NotNull JsonObject transaction, @NotNull Handler<AsyncResult<JsonObject>> doHandler);
+
+  /**
+   * Try to do a transaction over a task.
+   *
+   * @param transaction to do.
+   * @param doHandler   handler to inform if it is accepted or not to do the task transaction.
+   */
+  @GenIgnore
+  default void doTransaction(@NotNull final TaskTransaction transaction, @NotNull final Handler<AsyncResult<TaskTransaction>> doHandler) {
+
+    this.doTransaction(transaction.toJsonObject(), ComponentClient.handlerForModel(TaskTransaction.class, doHandler));
   }
 
 }

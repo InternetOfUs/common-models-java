@@ -28,12 +28,14 @@ package eu.internetofus.common.components.task_manager;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import eu.internetofus.common.TimeManager;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -57,8 +59,14 @@ public class TaskTransaction extends ReflectionModel implements Model, Validable
   /**
    * The identifier of the WeNet user who created the transaction.
    */
-  @Schema(description = "The identifier of the WeNet user who created the transaction.", example = "15837028-645a-4a55-9aaf-ceb846439eba")
-  public String creatorId;
+  @Schema(description = "The identifier of the user that want to change the task.", example = "15837028-645a-4a55-9aaf-ceb846439eba")
+  public String actioneerId;
+
+  /**
+   * The UTC epoch timestamp representing the time whne the transaction is created.
+   */
+  @Schema(description = "The UTC epoch timestamp representing the time whne the transaction is created.", example = "1563930000")
+  public long _creationTs = TimeManager.now();
 
   /**
    * The identifier of the task type.
@@ -84,23 +92,16 @@ public class TaskTransaction extends ReflectionModel implements Model, Validable
     try {
 
       this.taskId = Validations.validateStringField(codePrefix, "taskId", 255, this.taskId);
-      future = future.compose(mapper -> {
+      future = Validations.composeValidateId(future, codePrefix, "taskId", this.taskId, true, WeNetTaskManager.createProxy(vertx)::retrieveTask);
 
-        final Promise<Void> verifyNotRepeatedIdPromise = Promise.promise();
-        WeNetTaskManager.createProxy(vertx).retrieveTask(this.taskId, task -> {
+      this.actioneerId = Validations.validateNullableStringField(codePrefix, "actioneerId", 255, this.actioneerId);
+      if (this.actioneerId != null) {
 
-          if (!task.failed()) {
+        future = Validations.composeValidateId(future, codePrefix, "actioneerId", this.actioneerId, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
-            verifyNotRepeatedIdPromise.complete();
-
-          } else {
-
-            verifyNotRepeatedIdPromise.fail(new ValidationErrorException(codePrefix + ".taskId", "The '" + this.taskId + "' is not defined."));
-          }
-        });
-        return verifyNotRepeatedIdPromise.future();
-      });
+      }
       this.label = Validations.validateStringField(codePrefix, "label", 255, this.label);
+
       // TODO verify the attributes are valid for the task transaction type
       promise.complete();
 

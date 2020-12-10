@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,6 +31,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import eu.internetofus.common.components.incentive_server.IncentiveTest;
+import eu.internetofus.common.components.task_manager.TaskTest;
+import eu.internetofus.common.components.task_manager.TaskTransactionTest;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 
@@ -85,6 +87,50 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
       })));
 
     }));
+
+  }
+
+  /**
+   * Should inform that a task is created.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldCreatedTask(final Vertx vertx, final VertxTestContext testContext) {
+
+    new TaskTest().createModelExample(1, vertx, testContext, testContext.succeeding(task -> {
+
+      WeNetInteractionProtocolEngine.createProxy(vertx).createdTask(task, testContext.succeeding(created -> testContext.verify(() -> {
+
+        assertThat(task).isEqualTo(created);
+        testContext.completeNow();
+
+      })));
+
+    }));
+
+  }
+
+  /**
+   * Should do a task transaction.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldDoTaskTransaction(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(new TaskTransactionTest().createModelExample(1, vertx, testContext)).onSuccess(taskTransaction -> {
+
+      WeNetInteractionProtocolEngine.createProxy(vertx).doTransaction(taskTransaction, testContext.succeeding(done -> testContext.verify(() -> {
+
+        assertThat(taskTransaction).isEqualTo(done);
+        testContext.completeNow();
+
+      })));
+
+    });
 
   }
 

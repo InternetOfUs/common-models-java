@@ -64,18 +64,6 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
   public String id;
 
   /**
-   * The identifier of the task type associated to the task.
-   */
-  @Schema(description = "The identifier of the task type associated to the task.", example = "b129e5509c9bb79")
-  public String taskTypeId;
-
-  /**
-   * The identifier of the WeNet user who created the task.
-   */
-  @Schema(description = "The identifier of the WeNet user who created the task.", example = "15837028-645a-4a55-9aaf-ceb846439eba")
-  public String requesterId;
-
-  /**
    * The identifier of the application where the task is done.
    */
   @Schema(description = "The identifier of the application where the task is done.", example = "yub129e5509bb79")
@@ -86,6 +74,18 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
    */
   @Schema(description = "The identifier of the community where the task is done.", example = "b846439eba79")
   public String communityId;
+
+  /**
+   * The identifier of the task type associated to the task.
+   */
+  @Schema(description = "The identifier of the task type associated to the task.", example = "b129e5509c9bb79")
+  public String taskTypeId;
+
+  /**
+   * The identifier of the WeNet user who created the task.
+   */
+  @Schema(description = "The identifier of the WeNet user who created the task.", example = "15837028-645a-4a55-9aaf-ceb846439eba")
+  public String requesterId;
 
   /**
    * The explanation of the task objective..

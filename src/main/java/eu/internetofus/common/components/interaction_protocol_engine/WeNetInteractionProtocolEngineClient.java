@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,6 +25,8 @@
  */
 
 package eu.internetofus.common.components.interaction_protocol_engine;
+
+import javax.validation.constraints.NotNull;
 
 import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
@@ -80,6 +82,25 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
   public void sendIncentive(final JsonObject incentive, final Handler<AsyncResult<JsonObject>> sendHandler) {
 
     this.post(incentive, sendHandler, "/incentives");
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void createdTask(@NotNull final JsonObject task, @NotNull final Handler<AsyncResult<JsonObject>> createdHandler) {
+
+    this.post(task, createdHandler, "/tasks/created");
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void doTransaction(@NotNull final JsonObject transaction, @NotNull final Handler<AsyncResult<JsonObject>> doHandler) {
+
+    this.post(transaction, doHandler, "/tasks/transactions");
 
   }
 
