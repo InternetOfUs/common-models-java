@@ -24,38 +24,54 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
+package eu.internetofus.common.vertx;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import javax.validation.constraints.NotNull;
 
-import org.junit.jupiter.api.Test;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.api.service.ServiceRequest;
+import io.vertx.ext.web.api.service.ServiceResponse;
 
 /**
- * Test the classes that extends the {@link TextualMessage}
+ * The context of the HTTP context.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class TextualMessageTest extends MessageTestCase<TextualMessage> {
+public class ServiceContext {
+
+  /**
+   * The information of the request operation.
+   */
+  @NotNull
+  public ServiceRequest request;
+
+  /**
+   * The handler to inform of the response.
+   */
+  @NotNull
+  public Handler<AsyncResult<ServiceResponse>> resultHandler;
+
+  /**
+   * Create a new context.
+   *
+   * @param request       information of the request operation.
+   * @param resultHandler handler to inform of the response.
+   */
+  public ServiceContext(@NotNull final ServiceRequest request, @NotNull final Handler<AsyncResult<ServiceResponse>> resultHandler) {
+
+    this.request = request;
+    this.resultHandler = resultHandler;
+
+  }
 
   /**
    * {@inheritDoc}
-   *
-   * @see TextualMessage#TextualMessage()
    */
   @Override
-  public TextualMessage createEmptyMessage() {
+  public String toString() {
 
-    return new TextualMessage();
+    return this.request.toJson().encodePrettily();
+
   }
-
-  /**
-   * Verify that the type is a textual message.
-   */
-  @Test
-  public void shouldTypeByTextualMessage() {
-
-    final var model = this.createEmptyMessage();
-    assertThat(model.type).isEqualTo(BaseMessage.Type.textualMessage);
-  }
-
 }

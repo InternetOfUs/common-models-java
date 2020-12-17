@@ -117,22 +117,7 @@ public class TaskType extends CreateUpdateTsDetails implements Model, Validable,
       this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
       if (this.id != null) {
 
-        future = future.compose(mapper -> {
-
-          final Promise<Void> verifyNotRepeatedIdPromise = Promise.promise();
-          WeNetTaskManager.createProxy(vertx).retrieveTaskType(this.id, profile -> {
-
-            if (profile.failed()) {
-
-              verifyNotRepeatedIdPromise.complete();
-
-            } else {
-
-              verifyNotRepeatedIdPromise.fail(new ValidationErrorException(codePrefix + ".id", "The '" + this.id + "' is already used by a task type."));
-            }
-          });
-          return verifyNotRepeatedIdPromise.future();
-        });
+        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false, WeNetTaskManager.createProxy(vertx)::retrieveTaskType);
       }
 
       this.name = Validations.validateStringField(codePrefix, "name", 255, this.name);

@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -47,9 +47,7 @@ import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.service.WeNetServiceMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
@@ -132,23 +130,25 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   /**
    * Create an example model that has the specified index.
    *
-   * @param index         to use in the example.
-   * @param vertx         event bus to use.
-   * @param testContext   test context to use.
-   * @param createHandler the component that will manage the created model.
+   * @param index       to use in the example.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the created incentive.
    */
-  public void createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<Incentive>> createHandler) {
+  public Future<Incentive> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(profile -> {
+    return testContext.assertComplete(StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(profile -> {
 
-      StoreServices.storeApp(new App(), vertx, testContext, testContext.succeeding(app -> {
+      return StoreServices.storeApp(new App(), vertx, testContext).compose(app -> {
 
         final var model = this.createModelExample(index);
         model.UserId = profile.id;
         model.AppID = app.appId;
-        createHandler.handle(Future.succeededFuture(model));
+        return Future.succeededFuture(model);
 
-      }));
+      });
+
     }));
 
   }
@@ -172,7 +172,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
    *
    * @param index       to verify
    *
@@ -185,7 +185,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext, testContext.succeeding(model -> assertIsValid(model, vertx, testContext)));
+    this.createModelExample(index, vertx, testContext).onSuccess(model -> assertIsValid(model, vertx, testContext));
 
   }
 
@@ -200,11 +200,11 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @Test
   public void shouldNotBeValidWithALargeAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.AppID = ValidationsTest.STRING_256;
       assertIsNotValid(model, "AppID", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -219,11 +219,11 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @Test
   public void shouldNotBeValidWithAnUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.AppID = "Undefined";
       assertIsNotValid(model, "AppID", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -238,11 +238,11 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @Test
   public void shouldNotBeValidWithALargeUserId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.UserId = ValidationsTest.STRING_256;
       assertIsNotValid(model, "UserId", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -257,11 +257,11 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @Test
   public void shouldNotBeValidWithAnUndefinedUserId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.UserId = "Undefined";
       assertIsNotValid(model, "UserId", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -276,11 +276,11 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @Test
   public void shouldNotBeValidWithALargeIssuer(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.Issuer = ValidationsTest.STRING_256;
       assertIsNotValid(model, "Issuer", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -295,11 +295,11 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @Test
   public void shouldNotBeValidWithALargeMessage(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.Message.content = ValidationsTest.STRING_1024;
       assertIsNotValid(model, "Message.content", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -314,11 +314,11 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @Test
   public void shouldNotBeValidWithALargeBadge(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.Badge.Message = ValidationsTest.STRING_1024;
       assertIsNotValid(model, "Badge.Message", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -333,12 +333,12 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @Test
   public void shouldNotBeValidWithoutMesageAndBadge(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.Message = null;
       model.Badge = null;
       assertIsNotValid(model, "Message", vertx, testContext);
-    }));
+    });
 
   }
 

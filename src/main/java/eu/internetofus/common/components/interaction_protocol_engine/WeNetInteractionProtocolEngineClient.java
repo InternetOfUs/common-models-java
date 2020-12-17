@@ -69,19 +69,9 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
    * {@inheritDoc}
    */
   @Override
-  public void sendMessage(final JsonObject message, final Handler<AsyncResult<JsonObject>> sendHandler) {
+  public void sendMessage(final JsonObject message, final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.post(message, sendHandler, "/messages");
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void sendIncentive(final JsonObject incentive, final Handler<AsyncResult<JsonObject>> sendHandler) {
-
-    this.post(incentive, sendHandler, "/incentives");
+    this.post(message, "/messages").onComplete(handler);
 
   }
 
@@ -89,18 +79,28 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
    * {@inheritDoc}
    */
   @Override
-  public void createdTask(@NotNull final JsonObject task, @NotNull final Handler<AsyncResult<JsonObject>> createdHandler) {
+  public void sendIncentive(final JsonObject incentive, final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.post(task, createdHandler, "/tasks/created");
+    this.post(incentive, "/incentives").onComplete(handler);
+
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public void doTransaction(@NotNull final JsonObject transaction, @NotNull final Handler<AsyncResult<JsonObject>> doHandler) {
+  public void createdTask(@NotNull final JsonObject task, final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.post(transaction, doHandler, "/tasks/transactions");
+    this.post(task, "/tasks/created").onComplete(handler);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void doTransaction(@NotNull final JsonObject transaction, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(transaction, "/tasks/transactions").onComplete(handler);
 
   }
 

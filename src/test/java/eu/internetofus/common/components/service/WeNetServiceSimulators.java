@@ -57,18 +57,15 @@ public interface WeNetServiceSimulators {
    */
   static Future<App> createApp(final List<WeNetUserProfile> users, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Promise<App> promise = Promise.promise();
-    StoreServices.storeApp(new App(), vertx, testContext, testContext.succeeding(app -> {
+    return StoreServices.storeApp(new App(), vertx, testContext).compose(app -> {
 
       final var appUsers = new JsonArray();
       for (final WeNetUserProfile profile : users) {
 
         appUsers.add(profile.id);
       }
-      WeNetServiceSimulator.createProxy(vertx).addUsers(app.appId, appUsers, testContext.succeeding(added -> promise.complete(app)));
-    }));
-
-    return promise.future();
+      return testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).addUsers(app.appId, appUsers)).compose(added -> Future.succeededFuture(app));
+    });
   }
 
   /**
@@ -100,7 +97,7 @@ public interface WeNetServiceSimulators {
    */
   static void waitUntilCallbacks(final String appId, final Predicate<JsonArray> checkCallbacks, final Vertx vertx, final VertxTestContext testContext, final Promise<JsonArray> promise) {
 
-    WeNetServiceSimulator.createProxy(vertx).retrieveJsonCallbacks(appId, testContext.succeeding(callbacks -> {
+    testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).retrieveJsonCallbacks(appId)).onSuccess(callbacks -> {
 
       if (checkCallbacks.test(callbacks)) {
 
@@ -111,7 +108,7 @@ public interface WeNetServiceSimulators {
         waitUntilCallbacks(appId, checkCallbacks, vertx, testContext, promise);
       }
 
-    }));
+    });
 
   }
 }

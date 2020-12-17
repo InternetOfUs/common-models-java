@@ -30,20 +30,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import javax.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.HttpHeaders;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.api.OperationRequest;
+import io.vertx.ext.web.api.service.ServiceRequest;
+
 
 /**
- * Classes used to extract information of an {@link OperationRequest}.
+ * Classes used to extract information of an {@link ServiceRequest}.
  *
- * @see OperationRequest
+ * @see ServiceRequest
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public interface OperationRequests {
+public interface ServiceRequests {
 
   /**
    * Obtain the accepted language defined on the header.
@@ -56,7 +57,7 @@ public interface OperationRequests {
    *
    * @see HttpHeaders#ACCEPT_LANGUAGE
    */
-  static String acceptedLanguageIn(final OperationRequest request, final String defaultLanguage, final String... poosibleLanguages) {
+  static String acceptedLanguageIn(final ServiceRequest request, final String defaultLanguage, final String... poosibleLanguages) {
 
     try {
 
@@ -86,7 +87,7 @@ public interface OperationRequests {
    *
    * @return the query parameters of the context.
    */
-  static JsonObject getQueryParamters(final OperationRequest context) {
+  static JsonObject getQueryParamters(final ServiceRequest context) {
 
     return context.getParams().getJsonObject("query", new JsonObject());
 

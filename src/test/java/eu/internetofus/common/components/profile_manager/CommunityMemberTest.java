@@ -49,9 +49,7 @@ import eu.internetofus.common.TimeManager;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
@@ -120,18 +118,19 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   /**
    * Create an example model that has the specified index.
    *
-   * @param index         to use in the example.
-   * @param vertx         event bus to use.
-   * @param testContext   test context to use.
-   * @param createHandler the component that will manage the created model.
+   * @param index       to use in the example.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the created community member.
    */
-  public void createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<CommunityMember>> createHandler) {
+  public Future<CommunityMember> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(stored -> {
+    return testContext.assertComplete(StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(stored -> {
 
       final var model = this.createModelExample(index);
       model.userId = stored.id;
-      createHandler.handle(Future.succeededFuture(model));
+      return Future.succeededFuture(model);
 
     }));
 
@@ -172,7 +171,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
    *
    * @param index       to verify
    * @param vertx       event bus to use.
@@ -184,11 +183,11 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(index, vertx, testContext).onSuccess(model -> {
 
       assertIsValid(model, vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -236,12 +235,12 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Test
   public void shouldNotBeValidWithABadPrivilege(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.privileges.add(ValidationsTest.STRING_256);
       assertIsNotValid(model, "privileges[1]", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -256,12 +255,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Test
   public void shoudMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
-
-      assertCanMerge(target, null, vertx, testContext, merged -> {
-        assertThat(merged).isSameAs(target);
-      });
-    }));
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target)));
 
   }
 
@@ -276,10 +270,10 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Test
   public void shoudMergeExamples(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       target._creationTs = 10000;
       target._lastUpdateTs = TimeManager.now();
-      this.createModelExample(2, vertx, testContext, testContext.succeeding(source -> {
+      this.createModelExample(2, vertx, testContext).onSuccess(source -> {
 
         assertCanMerge(target, source, vertx, testContext, merged -> {
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -288,8 +282,8 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
           source._lastUpdateTs = target._lastUpdateTs;
           assertThat(merged).isEqualTo(source);
         });
-      }));
-    }));
+      });
+    });
 
   }
 
@@ -304,13 +298,13 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Test
   public void shoudNotMergeWithBadPrivilege(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new CommunityMember();
       source.privileges = new ArrayList<>(target.privileges);
       source.privileges.add(ValidationsTest.STRING_256);
       assertCannotMerge(target, source, "privileges[1]", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -325,14 +319,14 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Test
   public void shoudMergeEmptyModel(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new CommunityMember();
       assertCanMerge(target, source, vertx, testContext, merged -> {
         assertThat(merged).isEqualTo(target).isNotEqualTo(source);
       });
 
-    }));
+    });
 
   }
 
@@ -347,7 +341,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Test
   public void shoudNotMergePrivileges(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new CommunityMember();
       source.privileges = new ArrayList<>(target.privileges);
@@ -359,7 +353,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
         source._lastUpdateTs = target._lastUpdateTs;
         assertThat(merged).isEqualTo(source);
       });
-    }));
+    });
 
   }
 
@@ -374,12 +368,12 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Test
   public void shoudUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       assertCanUpdate(target, null, vertx, testContext, updated -> {
         assertThat(updated).isSameAs(target);
       });
-    }));
+    });
 
   }
 
@@ -394,10 +388,10 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Test
   public void shoudUpdateExamples(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       target._creationTs = 10000;
       target._lastUpdateTs = TimeManager.now();
-      this.createModelExample(2, vertx, testContext, testContext.succeeding(source -> {
+      this.createModelExample(2, vertx, testContext).onSuccess(source -> {
 
         assertCanUpdate(target, source, vertx, testContext, updated -> {
           assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
@@ -406,8 +400,8 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
           source._lastUpdateTs = target._lastUpdateTs;
           assertThat(updated).isEqualTo(source);
         });
-      }));
-    }));
+      });
+    });
 
   }
 
@@ -422,13 +416,13 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
   @Test
   public void shoudNotUpdateWithBadPrivilege(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new CommunityMember();
       source.privileges = new ArrayList<>(target.privileges);
       source.privileges.add(ValidationsTest.STRING_256);
       assertCannotUpdate(target, source, "privileges[1]", vertx, testContext);
-    }));
+    });
 
   }
 

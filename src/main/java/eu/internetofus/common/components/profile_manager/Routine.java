@@ -99,22 +99,7 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
     try {
 
       this.user_id = Validations.validateStringField(codePrefix, "user_id", 255, this.user_id);
-      future = future.compose(mapper -> {
-
-        final Promise<Void> verifyUserIdExistPromise = Promise.promise();
-        WeNetProfileManager.createProxy(vertx).retrieveProfile(this.user_id, search -> {
-
-          if (!search.failed()) {
-
-            verifyUserIdExistPromise.complete();
-
-          } else {
-
-            verifyUserIdExistPromise.fail(new ValidationErrorException(codePrefix + ".user_id", "The '" + this.user_id + "' is not defined.", search.cause()));
-          }
-        });
-        return verifyUserIdExistPromise.future();
-      });
+      future = Validations.composeValidateId(future, codePrefix, "user_id", this.user_id, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
       this.weekday = Validations.validateStringField(codePrefix, "weekday", 255, this.weekday);
       if (this.label_distribution == null) {

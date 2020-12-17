@@ -68,19 +68,9 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
    * {@inheritDoc}
    */
   @Override
-  public void createTask(final JsonObject task, final Handler<AsyncResult<JsonObject>> createHandler) {
+  public void createTask(final JsonObject task, final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.post(task, createHandler, "/tasks");
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void retrieveJsonTask(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
-
-    this.getJsonObject(retrieveHandler, "/tasks", id);
+    this.post(task, "/tasks").onComplete(handler);
 
   }
 
@@ -88,19 +78,9 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
    * {@inheritDoc}
    */
   @Override
-  public void deleteTask(final String id, final Handler<AsyncResult<Void>> deleteHandler) {
+  public void retrieveTask(final String id, final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.delete(deleteHandler, "/tasks", id);
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void createTaskType(final JsonObject taskType, final Handler<AsyncResult<JsonObject>> createHandler) {
-
-    this.post(taskType, createHandler, "/taskTypes");
+    this.getJsonObject("/tasks", id).onComplete(handler);
 
   }
 
@@ -108,19 +88,9 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
    * {@inheritDoc}
    */
   @Override
-  public void retrieveJsonTaskType(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
+  public void deleteTask(final String id, final Handler<AsyncResult<Void>> handler) {
 
-    this.getJsonObject(retrieveHandler, "/taskTypes", id);
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void deleteTaskType(final String id, final Handler<AsyncResult<Void>> deleteHandler) {
-
-    this.delete(deleteHandler, "/taskTypes", id);
+    this.delete("/tasks", id).onComplete(handler);
 
   }
 
@@ -128,9 +98,9 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
    * {@inheritDoc}
    */
   @Override
-  public void mergeJsonTask(final String id, final JsonObject task, final Handler<AsyncResult<JsonObject>> mergeHandler) {
+  public void createTaskType(final JsonObject taskType, final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.patch(task, mergeHandler, "/tasks", id);
+    this.post(taskType, "/taskTypes").onComplete(handler);
 
   }
 
@@ -138,9 +108,39 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
    * {@inheritDoc}
    */
   @Override
-  public void doTaskTransaction(final JsonObject taskTransaction, final Handler<AsyncResult<JsonObject>> doHandler) {
+  public void retrieveTaskType(final String id, final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.post(taskTransaction, doHandler, "/tasks/transactions");
+    this.getJsonObject("/taskTypes", id).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteTaskType(final String id, final Handler<AsyncResult<Void>> handler) {
+
+    this.delete("/taskTypes", id).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void mergeTask(final String id, final JsonObject task, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.patch(task, "/tasks", id).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void doTaskTransaction(final JsonObject taskTransaction, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(taskTransaction, "/tasks/transactions").onComplete(handler);
 
   }
 

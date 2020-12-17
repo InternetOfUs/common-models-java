@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>eu.internetofus</groupId>
 	<artifactId>common</artifactId>
-	<version>0.2.0</version>
+	<version>0.3.0</version>
 	<description>This project will be used to provide the common classes for the UDT-IA IIIA-CSIC WeNet components.</description>
 	<organization>
 		<name>UDT-IA, IIIA-CSIC</name>
@@ -38,30 +38,30 @@
 		<maven-jar-plugin-version>3.2.0</maven-jar-plugin-version>
 		<maven-javadoc-plugin-version>3.2.0</maven-javadoc-plugin-version>
 		<maven-jxr-plugin-version>3.0.0</maven-jxr-plugin-version>
-		<maven-pmd-plugin-version>3.13.0</maven-pmd-plugin-version>
+		<maven-pmd-plugin-version>3.14.0</maven-pmd-plugin-version>
 		<maven-project-info-reports-plugin-version>3.1.1</maven-project-info-reports-plugin-version>
 		<maven-resources-plugin-version>3.2.0</maven-resources-plugin-version>
 		<maven-surefire-plugin-version>3.0.0-M5</maven-surefire-plugin-version>
 		<maven-surefire-report-plugin-version>3.0.0-M5</maven-surefire-report-plugin-version>
-		<org.jacoco-version>0.8.5</org.jacoco-version>
+		<org.jacoco-version>0.8.6</org.jacoco-version>
 		<maven-site-plugin-version>3.9.1</maven-site-plugin-version>
 		<build-helper-maven-plugin-version>3.2.0</build-helper-maven-plugin-version>
 		<!-- Library versions -->
-		<io.vertx-version>3.9.4</io.vertx-version>
-		<io.swagger-version>2.1.5</io.swagger-version>
+		<io.vertx-version>4.0.0</io.vertx-version>
+		<io.swagger-version>2.1.6</io.swagger-version>
 		<commons-validator-version>1.7</commons-validator-version>
-		<com.googlecode.libphonenumber-version>8.12.11</com.googlecode.libphonenumber-version>
-		<jakarta.ws.rs-version>2.1.6</jakarta.ws.rs-version>
+		<com.googlecode.libphonenumber-version>8.12.15</com.googlecode.libphonenumber-version>
+		<jakarta.ws.rs-version>3.0.0</jakarta.ws.rs-version>
 		<org.apache.commons-lang3-version>3.11</org.apache.commons-lang3-version>
-		<org.tinylog-version>2.1.2</org.tinylog-version>
+		<org.tinylog-version>2.2.1</org.tinylog-version>
 		<commons-cli-version>1.4</commons-cli-version>
 		<!-- Test library versions -->
 		<org.junit.jupiter-version>5.7.0</org.junit.jupiter-version>
 		<io.reactiverse-version>0.1.0</io.reactiverse-version>
-		<org.assertj-version>3.17.1</org.assertj-version>
+		<org.assertj-version>3.18.1</org.assertj-version>
 		<org.itsallcode-junit5-system-extensions-version>1.1.0</org.itsallcode-junit5-system-extensions-version>
-		<org.mockito-version>3.5.13</org.mockito-version>
-		<org.testcontainers-version>1.15.0</org.testcontainers-version>
+		<org.mockito-version>3.6.28</org.mockito-version>
+		<org.testcontainers-version>1.15.1</org.testcontainers-version>
 		<com.intuit.karate-version>0.9.6</com.intuit.karate-version>
 	</properties>
 	<dependencyManagement>
@@ -98,6 +98,10 @@
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-mongo-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web-openapi</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -174,11 +178,6 @@
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-junit5</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-junit5-web-client</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

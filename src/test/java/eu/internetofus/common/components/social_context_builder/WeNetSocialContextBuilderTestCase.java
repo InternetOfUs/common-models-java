@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -55,12 +55,12 @@ public abstract class WeNetSocialContextBuilderTestCase {
   public void shouldRetrieveSocialRelations(final Vertx vertx, final VertxTestContext testContext) {
 
     final var userId = UUID.randomUUID().toString();
-    WeNetSocialContextBuilder.createProxy(vertx).retrieveSocialRelations(userId, testContext.succeeding(relations -> testContext.verify(() -> {
+    testContext.assertComplete(WeNetSocialContextBuilder.createProxy(vertx).retrieveSocialRelations(userId)).onSuccess(relations -> testContext.verify(() -> {
 
       assertThat(relations).isNotNull();
       testContext.completeNow();
 
-    })));
+    }));
 
   }
 
@@ -76,12 +76,12 @@ public abstract class WeNetSocialContextBuilderTestCase {
     final var userId = UUID.randomUUID().toString();
     final var taskId = UUID.randomUUID().toString();
     final var volunteers = new JsonArray();
-    WeNetSocialContextBuilder.createProxy(vertx).updatePreferencesForUserOnTask(userId, taskId, volunteers, testContext.succeeding(updated -> testContext.verify(() -> {
+    testContext.assertComplete(WeNetSocialContextBuilder.createProxy(vertx).updatePreferencesForUserOnTask(userId, taskId, volunteers)).onSuccess(updated -> testContext.verify(() -> {
 
       assertThat(updated).isNotNull();
       testContext.completeNow();
 
-    })));
+    }));
 
   }
 
@@ -96,12 +96,12 @@ public abstract class WeNetSocialContextBuilderTestCase {
 
     final var userId = UUID.randomUUID().toString();
     final var taskId = UUID.randomUUID().toString();
-    WeNetSocialContextBuilder.createProxy(vertx).retrieveSocialExplanation(userId, taskId, testContext.succeeding(relations -> testContext.verify(() -> {
+    testContext.assertComplete(WeNetSocialContextBuilder.createProxy(vertx).retrieveSocialExplanation(userId, taskId)).onSuccess(relations -> testContext.verify(() -> {
 
       assertThat(relations).isNotNull();
       testContext.completeNow();
 
-    })));
+    }));
 
   }
 

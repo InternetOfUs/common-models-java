@@ -296,7 +296,7 @@ public class Repository {
    */
   protected void findOneDocument(@NotNull final String collectionName, final JsonObject query, final JsonObject fields, final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
 
-    JsonObject fieldWithoutSchema = null;
+    JsonObject fieldWithoutSchema;
     if (fields == null) {
 
       fieldWithoutSchema = new JsonObject();
@@ -551,6 +551,19 @@ public class Repository {
   }
 
   /**
+   * Create a the update query for set the schema version.
+   *
+   * @return the query to update the schema version of the components.
+   *
+   * @see #schemaVersion
+   */
+  protected JsonObject createUpdateForSchemaVersion() {
+
+    return new JsonObject().put("$set", new JsonObject().put(SCHEMA_VERSION, this.schemaVersion));
+
+  }
+
+  /**
    * Update all the document of a collection to have the current schema version.
    *
    * @param collectionName name of the collection to update.
@@ -560,9 +573,25 @@ public class Repository {
    */
   protected Future<Void> updateSchemaVersionOnCollection(final String collectionName) {
 
-    final Promise<Void> promise = Promise.promise();
     final var query = this.createQueryToReturnDocumentsThatNotMatchSchemaVersion();
-    final var update = new JsonObject().put("$set", new JsonObject().put(SCHEMA_VERSION, this.schemaVersion));
+    final var update = this.createUpdateForSchemaVersion();
+    return this.updateCollection(collectionName, query, update);
+
+  }
+
+  /**
+   * Update all the document of a collection.
+   *
+   * @param collectionName name of the collection to update.
+   * @param query          to the documents to update.
+   * @param update         query that specify how to update the documents.
+   *
+   * @return a future that inform if the documents of the collections are updated or not.
+   *
+   */
+  protected Future<Void> updateCollection(final String collectionName, final JsonObject query, final JsonObject update) {
+
+    final Promise<Void> promise = Promise.promise();
     final var options = new UpdateOptions();
     options.setMulti(true);
     this.pool.updateCollectionWithOptions(collectionName, query, update, options, updated -> {

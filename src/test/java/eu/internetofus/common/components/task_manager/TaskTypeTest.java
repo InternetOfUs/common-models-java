@@ -48,6 +48,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
+import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
 import eu.internetofus.common.components.profile_manager.CommunityProfile;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
@@ -158,13 +159,13 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   @Test
   public void shouldNotBeValidWithAnExistingId(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetTaskManager.createProxy(vertx).createTaskType(this.createModelExample(1), testContext.succeeding(created -> {
+    StoreServices.storeTaskTypeExample(1, vertx, testContext).onSuccess(created -> {
 
       final var model = this.createModelExample(1);
       model.id = created.id;
       assertIsNotValid(model, "id", vertx, testContext);
 
-    }));
+    });
 
   }
 

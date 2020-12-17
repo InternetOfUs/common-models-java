@@ -28,11 +28,13 @@ package eu.internetofus.common.components.profile_manager;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.vertx.ComponentClient;
+import eu.internetofus.common.components.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -79,102 +81,146 @@ public interface WeNetProfileManager {
   /**
    * Create a {@link WeNetUserProfile} in Json format.
    *
-   * @param profile       to create.
-   * @param createHandler handler to manage the creation process.
+   * @param profile to create.
+   * @param handler for the created profile.
    */
-  void createProfile(@NotNull JsonObject profile, @NotNull Handler<AsyncResult<JsonObject>> createHandler);
+  void createProfile(@NotNull JsonObject profile, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Create a profile.
    *
-   * @param profile       to create.
-   * @param createHandler handler to manage the creation process.
+   * @param profile to create.
+   *
+   * @return the future created profile.
    */
   @GenIgnore
-  default void createProfile(@NotNull final WeNetUserProfile profile, @NotNull final Handler<AsyncResult<WeNetUserProfile>> createHandler) {
+  default Future<WeNetUserProfile> createProfile(@NotNull final WeNetUserProfile profile) {
 
-    this.createProfile(profile.toJsonObject(), ComponentClient.handlerForModel(WeNetUserProfile.class, createHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.createProfile(profile.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), WeNetUserProfile.class);
 
   }
 
   /**
    * Return a {@link WeNetUserProfile} in Json format.
    *
-   * @param id              identifier of the profile to get.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id      identifier of the profile to get.
+   * @param handler for the found profile.
    */
-  void retrieveJsonProfile(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+  void retrieveProfile(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Return a profile.
    *
-   * @param id              identifier of the profile to get.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id identifier of the profile to get.
+   *
+   * @return the future found profile.
    */
   @GenIgnore
-  default void retrieveProfile(@NotNull final String id, @NotNull final Handler<AsyncResult<WeNetUserProfile>> retrieveHandler) {
+  default Future<WeNetUserProfile> retrieveProfile(@NotNull final String id) {
 
-    this.retrieveJsonProfile(id, ComponentClient.handlerForModel(WeNetUserProfile.class, retrieveHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.retrieveProfile(id, promise);
+    return Model.fromFutureJsonObject(promise.future(), WeNetUserProfile.class);
 
   }
 
   /**
    * Delete a profile.
    *
-   * @param id            identifier of the profile to get.
-   * @param deleteHandler handler to manage the delete process.
+   * @param id      identifier of the profile to get.
+   * @param handler to the deleted profile.
    */
-  void deleteProfile(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
+  void deleteProfile(@NotNull String id, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Delete a profile.
+   *
+   * @param id identifier of the profile to get.
+   *
+   * @return if the profile is deleted.
+   */
+  @GenIgnore
+  default Future<Void> deleteProfile(@NotNull final String id) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.deleteProfile(id, promise);
+    return promise.future();
+
+  }
 
   /**
    * Create a {@link CommunityProfile} in Json format.
    *
-   * @param community     to create.
-   * @param createHandler handler to manage the creation process.
+   * @param community to create.
+   *
+   * @param handler   of the created community.
    */
-  void createCommunity(@NotNull JsonObject community, @NotNull Handler<AsyncResult<JsonObject>> createHandler);
+  void createCommunity(@NotNull JsonObject community, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Create a community.
    *
-   * @param community     to create.
-   * @param createHandler handler to manage the creation process.
+   * @param community to create.
+   *
+   * @return the future created community.
    */
   @GenIgnore
-  default void createCommunity(@NotNull final CommunityProfile community, @NotNull final Handler<AsyncResult<CommunityProfile>> createHandler) {
+  default Future<CommunityProfile> createCommunity(@NotNull final CommunityProfile community) {
 
-    this.createCommunity(community.toJsonObject(), ComponentClient.handlerForModel(CommunityProfile.class, createHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.createCommunity(community.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), CommunityProfile.class);
 
   }
 
   /**
    * Return a {@link CommunityProfile} in Json format.
    *
-   * @param id              identifier of the community to get.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id      identifier of the community to get.
+   * @param handler for the found community.
    */
-  void retrieveJsonCommunity(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+  void retrieveCommunity(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Return a community.
    *
-   * @param id              identifier of the community to get.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id identifier of the community to get.
+   *
+   * @return the future found community.
    */
   @GenIgnore
-  default void retrieveCommunity(@NotNull final String id, @NotNull final Handler<AsyncResult<CommunityProfile>> retrieveHandler) {
+  default Future<CommunityProfile> retrieveCommunity(@NotNull final String id) {
 
-    this.retrieveJsonCommunity(id, ComponentClient.handlerForModel(CommunityProfile.class, retrieveHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.retrieveCommunity(id, promise);
+    return Model.fromFutureJsonObject(promise.future(), CommunityProfile.class);
 
   }
 
   /**
    * Delete a community.
    *
-   * @param id            identifier of the community to get.
-   * @param deleteHandler handler to manage the delete process.
+   * @param id      identifier of the community to get.
+   * @param handler to inform if the community is deleted.
    */
-  void deleteCommunity(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
+  void deleteCommunity(@NotNull String id, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Delete a community.
+   *
+   * @param id identifier of the community to get.
+   *
+   * @return the future deleted community.
+   */
+  @GenIgnore
+  default Future<Void> deleteCommunity(@NotNull final String id) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.deleteCommunity(id, promise);
+    return promise.future();
+  }
 
   /**
    * Return the page of the found community profiles.
@@ -188,8 +234,9 @@ public interface WeNetProfileManager {
    * @param offset          index of the first community to return.
    * @param limit           number maximum of communities to return.
    * @param retrieveHandler handler to manage the retrieve process.
+   * @param handler         to the communities page.
    */
-  void retrieveJsonCommunityProfilesPage(String appId, String name, String description, String keywords, String members, String order, int offset, int limit, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+  void retrieveCommunityProfilesPage(String appId, String name, String description, String keywords, String members, String order, int offset, int limit, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Return the found communities.
@@ -203,11 +250,15 @@ public interface WeNetProfileManager {
    * @param offset          index of the first community to return.
    * @param limit           number maximum of communities to return.
    * @param retrieveHandler handler to manage the retrieve process.
+   *
+   * @return the future with the communities page.
    */
   @GenIgnore
-  default void retrieveCommunityProfilesPage(final String appId, final String name, final String description, final String keywords, final String members, final String order, final int offset, final int limit, @NotNull final Handler<AsyncResult<CommunityProfilesPage>> retrieveHandler) {
+  default Future<CommunityProfilesPage> retrieveCommunityProfilesPage(final String appId, final String name, final String description, final String keywords, final String members, final String order, final int offset, final int limit) {
 
-    this.retrieveJsonCommunityProfilesPage(appId, name, description, keywords, members, order, offset, limit, ComponentClient.handlerForModel(CommunityProfilesPage.class, retrieveHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.retrieveCommunityProfilesPage(appId, name, description, keywords, members, order, offset, limit, promise);
+    return Model.fromFutureJsonObject(promise.future(), CommunityProfilesPage.class);
 
   }
 

@@ -28,8 +28,8 @@ package eu.internetofus.common.vertx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,14 +44,14 @@ import io.vertx.junit5.VertxTestContext;
 import io.vertx.serviceproxy.ServiceException;
 
 /**
- * Test the {@link OperationReponseHandlers}.
+ * Test the {@link ServiceResponseHandlers}.
  *
- * @see OperationReponseHandlers
+ * @see ServiceResponseHandlers
  *
  * @author UDT-IA, IIIA-CSIC
  */
 @ExtendWith(VertxExtension.class)
-public class OperationReponseHandlersTest {
+public class ServiceResponseHandlersTest {
 
   /**
    * Check the response with a {@link Model}.
@@ -61,7 +61,7 @@ public class OperationReponseHandlersTest {
   @Test
   public void shouldRepondWithModel(final VertxTestContext testContext) {
 
-    OperationReponseHandlers.responseWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    ServiceResponseHandlers.responseWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.ACCEPTED.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
@@ -80,7 +80,7 @@ public class OperationReponseHandlersTest {
   @Test
   public void shouldRepondWithStringJsonObject(final VertxTestContext testContext) {
 
-    OperationReponseHandlers.responseWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    ServiceResponseHandlers.responseWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.FOUND.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
@@ -99,7 +99,7 @@ public class OperationReponseHandlersTest {
   @Test
   public void shouldRepondWithString(final VertxTestContext testContext) {
 
-    OperationReponseHandlers.responseWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    ServiceResponseHandlers.responseWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.CONFLICT.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
@@ -118,7 +118,7 @@ public class OperationReponseHandlersTest {
   @Test
   public void shouldRepondWithOk(final VertxTestContext testContext) {
 
-    OperationReponseHandlers.responseOk(testContext.succeeding(reponse -> testContext.verify(() -> {
+    ServiceResponseHandlers.responseOk(testContext.succeeding(reponse -> testContext.verify(() -> {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.OK.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
@@ -137,7 +137,7 @@ public class OperationReponseHandlersTest {
   @Test
   public void shouldResponseWithErrorMessage(final VertxTestContext testContext) {
 
-    OperationReponseHandlers.responseWithErrorMessage(testContext.succeeding(reponse -> testContext.verify(() -> {
+    ServiceResponseHandlers.responseWithErrorMessage(testContext.succeeding(reponse -> testContext.verify(() -> {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
@@ -156,7 +156,7 @@ public class OperationReponseHandlersTest {
   @Test
   public void shouldResponseFailedWithNullException(final VertxTestContext testContext) {
 
-    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    ServiceResponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
@@ -175,7 +175,7 @@ public class OperationReponseHandlersTest {
   @Test
   public void shouldResponseFailedWithException(final VertxTestContext testContext) {
 
-    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    ServiceResponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_ACCEPTABLE.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
@@ -194,7 +194,7 @@ public class OperationReponseHandlersTest {
   @Test
   public void shouldResponseFailedWithValidationErrorException(final VertxTestContext testContext) {
 
-    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    ServiceResponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
@@ -213,7 +213,7 @@ public class OperationReponseHandlersTest {
   @Test
   public void shouldResponseFailedWithServiceException(final VertxTestContext testContext) {
 
-    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    ServiceResponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
@@ -232,7 +232,7 @@ public class OperationReponseHandlersTest {
   @Test
   public void shouldResponseFailedWithServiceExceptionWithDebugMessage(final VertxTestContext testContext) {
 
-    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    ServiceResponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
@@ -251,7 +251,7 @@ public class OperationReponseHandlersTest {
   @Test
   public void shouldResponseFailedWithServiceExceptionWithDebugCode(final VertxTestContext testContext) {
 
-    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    ServiceResponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
@@ -270,7 +270,7 @@ public class OperationReponseHandlersTest {
   @Test
   public void shouldResponseFailedWithServiceExceptionWithDebug(final VertxTestContext testContext) {
 
-    OperationReponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
+    ServiceResponseHandlers.responseFailedWith(testContext.succeeding(reponse -> testContext.verify(() -> {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);

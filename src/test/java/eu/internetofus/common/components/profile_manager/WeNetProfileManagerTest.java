@@ -112,20 +112,20 @@ public class WeNetProfileManagerTest extends WeNetProfileManagerTestCase {
   @Test
   public void shouldReturnEmptyCommunityProfilesPage(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, null, null, null, 0, 100, testContext.succeeding(page -> testContext.verify(() -> {
+    testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, null, null, null, 0, 100)).onSuccess(page -> testContext.verify(() -> {
 
       assertThat(page).isNotNull();
       assertThat(page.offset).isEqualTo(0);
       assertThat(page.total).isEqualTo(0);
       assertThat(page.communities).isNull();
 
-      WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage("appId", "name", "description", "keywords", "members", "order", 0, 100, testContext.succeeding(page2 -> testContext.verify(() -> {
+      testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage("appId", "name", "description", "keywords", "members", "order", 0, 100)).onSuccess(page2 -> testContext.verify(() -> {
 
         assertThat(page).isEqualTo(page2);
         testContext.completeNow();
 
-      })));
-    })));
+      }));
+    }));
 
   }
 

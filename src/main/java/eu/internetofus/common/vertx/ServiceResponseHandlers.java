@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,9 +26,6 @@
 
 package eu.internetofus.common.vertx;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
-
 import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ValidationErrorException;
@@ -38,17 +35,19 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.api.OperationResponse;
+import io.vertx.ext.web.api.service.ServiceResponse;
 import io.vertx.serviceproxy.ServiceException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
- * Classes used to generate handlers for an {@link OperationResponse}.
+ * Classes used to generate handlers for an {@link ServiceResponse}.
  *
- * @see OperationResponse
+ * @see ServiceResponse
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public interface OperationReponseHandlers {
+public interface ServiceResponseHandlers {
 
   /**
    * Handle with an error message.
@@ -57,7 +56,7 @@ public interface OperationReponseHandlers {
    * @param status        HTTP status code.
    * @param throwable     cause that explains why has failed the request.
    */
-  static void responseFailedWith(final Handler<AsyncResult<OperationResponse>> resultHandler, final Status status, final Throwable throwable) {
+  static void responseFailedWith(final Handler<AsyncResult<ServiceResponse>> resultHandler, final Status status, final Throwable throwable) {
 
     var code = "undefined";
     var message = "Unexpected failure";
@@ -105,7 +104,7 @@ public interface OperationReponseHandlers {
    * @param code          of the error.
    * @param message       of the error.
    */
-  static void responseWithErrorMessage(final Handler<AsyncResult<OperationResponse>> resultHandler, final Status status, final String code, final String message) {
+  static void responseWithErrorMessage(final Handler<AsyncResult<ServiceResponse>> resultHandler, final Status status, final String code, final String message) {
 
     responseWith(resultHandler, status, new ErrorMessage(code, message));
 
@@ -117,7 +116,7 @@ public interface OperationReponseHandlers {
    * @param resultHandler handler that will manage the response.
    * @param model         to response.
    */
-  static void responseOk(final Handler<AsyncResult<OperationResponse>> resultHandler, final Object model) {
+  static void responseOk(final Handler<AsyncResult<ServiceResponse>> resultHandler, final Object model) {
 
     responseWith(resultHandler, Status.OK, model);
 
@@ -128,9 +127,9 @@ public interface OperationReponseHandlers {
    *
    * @param resultHandler handler that will manage the response.
    */
-  static void responseOk(final Handler<AsyncResult<OperationResponse>> resultHandler) {
+  static void responseOk(final Handler<AsyncResult<ServiceResponse>> resultHandler) {
 
-    resultHandler.handle(Future.succeededFuture(new OperationResponse().setStatusCode(Status.NO_CONTENT.getStatusCode()).putHeader(HttpHeaders.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON)));
+    resultHandler.handle(Future.succeededFuture(new ServiceResponse().setStatusCode(Status.NO_CONTENT.getStatusCode()).putHeader(HttpHeaders.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON)));
 
   }
 
@@ -141,7 +140,7 @@ public interface OperationReponseHandlers {
    * @param status        HTTP status code.
    * @param model         to send.
    */
-  static void responseWith(final Handler<AsyncResult<OperationResponse>> resultHandler, final Status status, final Object model) {
+  static void responseWith(final Handler<AsyncResult<ServiceResponse>> resultHandler, final Status status, final Object model) {
 
     Buffer buffer;
     if (model instanceof Model) {
@@ -156,7 +155,7 @@ public interface OperationReponseHandlers {
 
       buffer = Buffer.buffer(String.valueOf(model));
     }
-    resultHandler.handle(Future.succeededFuture(new OperationResponse().setStatusCode(status.getStatusCode()).putHeader(HttpHeaders.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON).setPayload(buffer)));
+    resultHandler.handle(Future.succeededFuture(new ServiceResponse().setStatusCode(status.getStatusCode()).putHeader(HttpHeaders.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON).setPayload(buffer)));
 
   }
 

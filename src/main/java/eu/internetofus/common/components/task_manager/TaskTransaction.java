@@ -26,16 +26,19 @@
 
 package eu.internetofus.common.components.task_manager;
 
+import java.util.List;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-import eu.internetofus.common.TimeManager;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
+import eu.internetofus.common.components.profile_manager.CreateUpdateTsDetails;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
+import eu.internetofus.common.components.service.Message;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -48,25 +51,19 @@ import io.vertx.core.json.JsonObject;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "TaskTransaction", description = "Describe a transition to do over a task.")
-public class TaskTransaction extends ReflectionModel implements Model, Validable {
+public class TaskTransaction extends CreateUpdateTsDetails implements Model, Validable {
+
+  /**
+   * The identifier of the task that it refers.
+   */
+  @Schema(description = "The unique identified of the transaction.", example = "9dihugkdjfgndfg")
+  public String id;
 
   /**
    * The identifier of the task that it refers.
    */
   @Schema(description = "The unique identifier this transaction is associated to.", example = "b129e5509c9bb79")
   public String taskId;
-
-  /**
-   * The identifier of the WeNet user who created the transaction.
-   */
-  @Schema(description = "The identifier of the user that want to change the task.", example = "15837028-645a-4a55-9aaf-ceb846439eba")
-  public String actioneerId;
-
-  /**
-   * The UTC epoch timestamp representing the time whne the transaction is created.
-   */
-  @Schema(description = "The UTC epoch timestamp representing the time whne the transaction is created.", example = "1563930000")
-  public long _creationTs = TimeManager.now();
 
   /**
    * The identifier of the task type.
@@ -80,6 +77,19 @@ public class TaskTransaction extends ReflectionModel implements Model, Validable
   @Schema(type = "object", description = "The attributes that are set in the associated transaction type.")
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject attributes;
+
+  /**
+   * The identifier of the WeNet user who created the transaction.
+   */
+  @Schema(description = "The identifier of the user that want to change the task.", example = "15837028-645a-4a55-9aaf-ceb846439eba")
+  public String actioneerId;
+
+  /**
+   * The list of messages that has provokes the execution of this task transaction.
+   */
+  @ArraySchema(schema = @Schema(implementation = TaskTransaction.class), arraySchema = @Schema(description = "The list of messages that has provokes the execution of this task transaction."))
+  public List<Message> messages;
+
 
   /**
    * {@inheritDoc}

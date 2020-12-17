@@ -29,7 +29,6 @@ package eu.internetofus.common.components.task_manager;
 import java.util.function.Predicate;
 
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 
@@ -54,20 +53,22 @@ public interface WeNetTaskManagers {
    */
   static Future<Task> waitUntilTask(final String taskId, final Predicate<Task> checkTask, final Vertx vertx, final VertxTestContext testContext) {
 
-    final Promise<Task> promise = Promise.promise();
-    WeNetTaskManager.createProxy(vertx).retrieveTask(taskId, testContext.succeeding(task -> {
+    return testContext.assertComplete(WeNetTaskManager.createProxy(vertx).retrieveTask(taskId)).compose(task -> {
 
       if (checkTask.test(task)) {
 
-        promise.complete(task);
+        return Future.succeededFuture(task);
 
       } else if (!testContext.completed()) {
 
-        waitUntilTask(taskId, checkTask, vertx, testContext).onComplete(testContext.succeeding(result -> promise.complete(result)));
+        return waitUntilTask(taskId, checkTask, vertx, testContext);
+
+      } else {
+
+        return Future.failedFuture("Test finished");
       }
 
-    }));
+    });
 
-    return promise.future();
   }
 }

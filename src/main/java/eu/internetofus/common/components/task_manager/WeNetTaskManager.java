@@ -28,11 +28,13 @@ package eu.internetofus.common.components.task_manager;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.vertx.ComponentClient;
+import eu.internetofus.common.components.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -79,143 +81,194 @@ public interface WeNetTaskManager {
   /**
    * Search for a {@link Task} in Json format.
    *
-   * @param id              identifier of the task to get.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id      identifier of the task to get.
+   * @param handler for the retrieved task.
    */
-  void retrieveJsonTask(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+  void retrieveTask(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Return a task.
    *
-   * @param id              identifier of the task to get.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id identifier of the task to get.
+   *
+   * @return the future with the retrieved task.
    */
   @GenIgnore
-  default void retrieveTask(@NotNull final String id, @NotNull final Handler<AsyncResult<Task>> retrieveHandler) {
+  default Future<Task> retrieveTask(@NotNull final String id) {
 
-    this.retrieveJsonTask(id, ComponentClient.handlerForModel(Task.class, retrieveHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.retrieveTask(id, promise);
+    return Model.fromFutureJsonObject(promise.future(), Task.class);
 
   }
 
   /**
    * Create a {@link Task} in Json format.
    *
-   * @param task          to create.
-   * @param createHandler handler to manage the creation process.
+   * @param task    to create.
+   * @param handler to the created task.
    */
-  void createTask(@NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> createHandler);
+  void createTask(@NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Create a task.
    *
-   * @param task          to create.
-   * @param createHandler handler to manage the creation process.
-   */
-  @GenIgnore
-  default void createTask(@NotNull final Task task, @NotNull final Handler<AsyncResult<Task>> createHandler) {
-
-    this.createTask(task.toJsonObject(), ComponentClient.handlerForModel(Task.class, createHandler));
-  }
-
-  /**
-   * Merge a task.
+   * @param task to create.
    *
-   * @param id            identifier of the task to get.
-   * @param task          the new values for the task.
-   * @param mergeHandler handler to manage the merge process.
+   * @return the future created task.
    */
   @GenIgnore
-  default void mergeTask(@NotNull final String id, @NotNull final Task task, @NotNull final Handler<AsyncResult<Task>> mergeHandler) {
+  default Future<Task> createTask(@NotNull final Task task) {
 
-    this.mergeJsonTask(id, task.toJsonObject(), ComponentClient.handlerForModel(Task.class, mergeHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.createTask(task.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), Task.class);
 
   }
 
   /**
    * Merge a {@link Task} in Json format.
    *
-   * @param id            identifier of the task to get.
-   * @param task          the new values for the task.
-   * @param mergeHandler handler to manage the merge process.
+   * @param id      identifier of the task to get.
+   * @param task    the new values for the task.
+   * @param handler to the merged task.
    */
-  void mergeJsonTask(@NotNull String id, @NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> mergeHandler);
+  void mergeTask(@NotNull String id, @NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Merge a task.
+   *
+   * @param id   identifier of the task to get.
+   * @param task the new values for the task.
+   *
+   * @return the future merged task.
+   */
+  @GenIgnore
+  default Future<Task> mergeTask(@NotNull final String id, @NotNull final Task task) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.mergeTask(id, task.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), Task.class);
+
+  }
 
   /**
    * Delete a task.
    *
-   * @param id            identifier of the task to get.
-   * @param deleteHandler handler to manage the delete process.
+   * @param id      identifier of the task to get.
+   * @param handler to inform if the task is deleted task.
    */
-  void deleteTask(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
+  void deleteTask(@NotNull String id, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Delete a task.
+   *
+   * @param id identifier of the task to get.
+   *
+   * @return the future that inform if the task is deleted task.
+   */
+  @GenIgnore
+  default Future<Void> deleteTask(@NotNull final String id) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.deleteTask(id, promise);
+    return promise.future();
+
+  }
 
   /**
    * Return a {@link TaskType} in Json format.
    *
-   * @param id              identifier of the task to get.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id      identifier of the task to get.
+   * @param handler to the found task type.
    */
-  void retrieveJsonTaskType(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+  void retrieveTaskType(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Return a task type.
    *
-   * @param id              identifier of the task to get.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id identifier of the task to get.
+   *
+   * @return the future found task type.
    */
   @GenIgnore
-  default void retrieveTaskType(@NotNull final String id, @NotNull final Handler<AsyncResult<TaskType>> retrieveHandler) {
+  default Future<TaskType> retrieveTaskType(@NotNull final String id) {
 
-    this.retrieveJsonTaskType(id, ComponentClient.handlerForModel(TaskType.class, retrieveHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.retrieveTaskType(id, promise);
+    return Model.fromFutureJsonObject(promise.future(), TaskType.class);
 
   }
 
   /**
    * Create a {@link TaskType} in Json format.
    *
-   * @param task          to create.
-   * @param createHandler handler to manage the creation process.
+   * @param task    to create.
+   * @param handler to the created task type.
    */
-  void createTaskType(@NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> createHandler);
+  void createTaskType(@NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Create a task type.
    *
-   * @param taskType      to create.
-   * @param createHandler handler to manage the creation process.
+   * @param taskType to create.
+   *
+   * @return the future created task type.
    */
   @GenIgnore
-  default void createTaskType(@NotNull final TaskType taskType, @NotNull final Handler<AsyncResult<TaskType>> createHandler) {
+  default Future<TaskType> createTaskType(@NotNull final TaskType taskType) {
 
-    this.createTaskType(taskType.toJsonObject(), ComponentClient.handlerForModel(TaskType.class, createHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.createTaskType(taskType.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), TaskType.class);
 
   }
 
   /**
    * Delete a task type.
    *
-   * @param id            identifier of the task to get.
-   * @param deleteHandler handler to manage the delete process.
+   * @param id      identifier of the task to get.
+   * @param handler to inform if the task type is deleted.
    */
-  void deleteTaskType(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
+  void deleteTaskType(@NotNull String id, @NotNull Handler<AsyncResult<Void>> handler);
 
   /**
-   * Do a transaction over a task.
+   * Delete a task type.
    *
-   * @param taskTransaction to do.
-   * @param doHandler       handler to manage the transaction process.
-   */
-  void doTaskTransaction(@NotNull JsonObject taskTransaction, @NotNull Handler<AsyncResult<JsonObject>> doHandler);
-
-  /**
-   * Do a transaction over a task.
+   * @param id identifier of the task to get.
    *
-   * @param taskTransaction to do.
-   * @param doHandler       handler to manage the transaction process.
+   * @return the future to inform if the task type is deleted.
    */
   @GenIgnore
-  default void doTaskTransaction(@NotNull final TaskTransaction taskTransaction, @NotNull final Handler<AsyncResult<TaskTransaction>> doHandler) {
+  default Future<Void> deleteTaskType(@NotNull final String id) {
 
-    this.doTaskTransaction(taskTransaction.toJsonObject(), ComponentClient.handlerForModel(TaskTransaction.class, doHandler));
+    final Promise<Void> promise = Promise.promise();
+    this.deleteTaskType(id, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Do a transaction over a task.
+   *
+   * @param taskTransaction to do.
+   * @param handler         for the transaction that is try to do.
+   */
+  void doTaskTransaction(@NotNull JsonObject taskTransaction, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Do a transaction over a task.
+   *
+   * @param taskTransaction to do.
+   *
+   * @return the future with the transaction that is try to do.
+   */
+  @GenIgnore
+  default Future<TaskTransaction> doTaskTransaction(@NotNull final TaskTransaction taskTransaction) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.doTaskTransaction(taskTransaction.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), TaskTransaction.class);
 
   }
 

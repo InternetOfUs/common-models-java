@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -54,10 +54,7 @@ public abstract class WeNetServiceSimulatorTestCase {
   @Test
   public void shouldNotRetrieveUndefinedApp(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetServiceSimulator.createProxy(vertx).retrieveApp("undefined-app-identifier", testContext.failing(handler -> {
-      testContext.completeNow();
-
-    }));
+    testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).retrieveApp("undefined-app-identifier")).onFailure(handler -> testContext.completeNow());
 
   }
 
@@ -70,11 +67,7 @@ public abstract class WeNetServiceSimulatorTestCase {
   @Test
   public void shouldNotDeleteUndefinedApp(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetServiceSimulator.createProxy(vertx).deleteApp("undefined-app-identifier", testContext.failing(handler -> {
-      testContext.completeNow();
-
-    }));
-
+    testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).deleteApp("undefined-app-identifier")).onFailure(handler -> testContext.completeNow());
   }
 
   /**
@@ -87,24 +80,21 @@ public abstract class WeNetServiceSimulatorTestCase {
   public void shouldCreateRetrieveAndDeleteApp(final Vertx vertx, final VertxTestContext testContext) {
 
     final var service = WeNetServiceSimulator.createProxy(vertx);
-    service.createApp(new App(), testContext.succeeding(create -> {
+    testContext.assertComplete(service.createApp(new App())).onSuccess(create -> {
 
       final var id = create.appId;
-      service.retrieveApp(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
+      testContext.assertComplete(service.retrieveApp(id)).onSuccess(retrieve -> testContext.verify(() -> {
 
         assertThat(create).isEqualTo(retrieve);
-        service.deleteApp(id, testContext.succeeding(empty -> {
+        testContext.assertComplete(service.deleteApp(id)).onSuccess(empty -> {
 
-          service.retrieveApp(id, testContext.failing(handler -> {
-            testContext.completeNow();
+          testContext.assertFailure(service.retrieveApp(id)).onFailure(handler -> testContext.completeNow());
 
-          }));
+        });
 
-        }));
+      }));
 
-      })));
-
-    }));
+    });
 
   }
 
@@ -118,28 +108,24 @@ public abstract class WeNetServiceSimulatorTestCase {
   public void shouldCreateRetrieveAndDeleteAppUsers(final Vertx vertx, final VertxTestContext testContext) {
 
     final var service = WeNetServiceSimulator.createProxy(vertx);
-    service.createApp(new App(), testContext.succeeding(created -> {
+    testContext.assertComplete(service.createApp(new App())).onSuccess(created -> {
 
       final var users = new JsonArray().add("1").add("43").add("23");
-      service.addUsers(created.appId, users, testContext.succeeding(create -> {
+      testContext.assertComplete(service.addUsers(created.appId, users)).onSuccess(create -> {
 
-        service.retrieveJsonArrayAppUserIds(created.appId, testContext.succeeding(retrieve -> testContext.verify(() -> {
+        testContext.assertComplete(service.retrieveAppUserIds(created.appId)).onSuccess(retrieve -> testContext.verify(() -> {
 
           assertThat(retrieve).isEqualTo(users);
-          service.deleteUsers(created.appId, testContext.succeeding(empty -> {
+          testContext.assertComplete(service.deleteUsers(created.appId)).onSuccess(empty -> {
 
-            service.retrieveJsonArrayAppUserIds(created.appId, testContext.failing(handler -> {
+            testContext.assertFailure(service.retrieveAppUserIds(created.appId)).onFailure(handler -> {
 
-              service.deleteApp(created.appId, testContext.succeeding(emptyApp -> {
-
-                testContext.completeNow();
-
-              }));
-            }));
-          }));
-        })));
-      }));
-    }));
+              testContext.assertComplete(service.deleteApp(created.appId)).onSuccess(emptyApp -> testContext.completeNow());
+            });
+          });
+        }));
+      });
+    });
 
   }
 
@@ -153,33 +139,29 @@ public abstract class WeNetServiceSimulatorTestCase {
   public void shouldCreateRetrieveAndDeleteAppCallbacks(final Vertx vertx, final VertxTestContext testContext) {
 
     final var service = WeNetServiceSimulator.createProxy(vertx);
-    service.createApp(new App(), testContext.succeeding(created -> {
+    testContext.assertComplete(service.createApp(new App())).onSuccess(created -> {
 
       final var message1 = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
-      service.addJsonCallBack(created.appId, message1, testContext.succeeding(create1 -> {
+      testContext.assertComplete(service.addJsonCallBack(created.appId, message1)).onSuccess(create1 -> {
 
         final var message2 = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
-        service.addJsonCallBack(created.appId, message2, testContext.succeeding(create2 -> {
+        testContext.assertComplete(service.addJsonCallBack(created.appId, message2)).onSuccess(create2 -> {
 
-          service.retrieveJsonCallbacks(created.appId, testContext.succeeding(retrieve -> testContext.verify(() -> {
+          testContext.assertComplete(service.retrieveJsonCallbacks(created.appId)).onSuccess(retrieve -> testContext.verify(() -> {
 
             assertThat(retrieve).isEqualTo(new JsonArray().add(message1).add(message2));
-            service.deleteCallbacks(created.appId, testContext.succeeding(empty -> {
+            testContext.assertComplete(service.deleteCallbacks(created.appId)).onSuccess(empty -> {
 
-              service.retrieveJsonCallbacks(created.appId, testContext.succeeding(retrieve2 -> testContext.verify(() -> {
+              testContext.assertComplete(service.retrieveJsonCallbacks(created.appId)).onSuccess(retrieve2 -> testContext.verify(() -> {
 
                 assertThat(retrieve2).isEqualTo(new JsonArray());
-                service.deleteApp(created.appId, testContext.succeeding(emptyApp -> {
-
-                  testContext.completeNow();
-
-                }));
-              })));
-            }));
-          })));
-        }));
-      }));
-    }));
+                testContext.assertComplete(service.deleteApp(created.appId)).onSuccess(emptyApp -> testContext.completeNow());
+              }));
+            });
+          }));
+        });
+      });
+    });
 
   }
 
@@ -192,10 +174,7 @@ public abstract class WeNetServiceSimulatorTestCase {
   @Test
   public void shouldNotRetrieveCallbackForUndefinedApp(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetServiceSimulator.createProxy(vertx).retrieveJsonCallbacks("undefined-app-identifier", testContext.failing(handler -> {
-      testContext.completeNow();
-
-    }));
+    testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).retrieveJsonCallbacks("undefined-app-identifier")).onFailure(handler -> testContext.completeNow());
 
   }
 
@@ -208,11 +187,7 @@ public abstract class WeNetServiceSimulatorTestCase {
   @Test
   public void shouldNotDeleteUndefinedCallback(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetServiceSimulator.createProxy(vertx).deleteCallbacks("undefined-app-identifier", testContext.failing(handler -> {
-      testContext.completeNow();
-
-    }));
-
+    testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).deleteCallbacks("undefined-app-identifier")).onFailure(handler -> testContext.completeNow());
   }
 
   /**
@@ -225,24 +200,20 @@ public abstract class WeNetServiceSimulatorTestCase {
   public void shouldPostMessagoToAppCallbacks(final Vertx vertx, final VertxTestContext testContext) {
 
     final var service = WeNetServiceSimulator.createProxy(vertx);
-    service.createApp(new App(), testContext.succeeding(created -> {
+    testContext.assertComplete(service.createApp(new App())).onSuccess(created -> {
 
       final var message = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
       final var client = WebClient.create(vertx);
-      client.postAbs(created.messageCallbackUrl).sendJson(message, testContext.succeeding(create -> {
+      testContext.assertComplete(client.postAbs(created.messageCallbackUrl).sendJson(message)).onSuccess(create -> {
 
-        service.retrieveJsonCallbacks(created.appId, testContext.succeeding(retrieve -> testContext.verify(() -> {
+        testContext.assertComplete(service.retrieveJsonCallbacks(created.appId)).onSuccess(retrieve -> testContext.verify(() -> {
 
           assertThat(retrieve).isEqualTo(new JsonArray().add(message));
 
-          service.deleteApp(created.appId, testContext.succeeding(emptyApp -> {
-
-            testContext.completeNow();
-
-          }));
-        })));
-      }));
-    }));
+          testContext.assertComplete(service.deleteApp(created.appId)).onSuccess(emptyApp -> testContext.completeNow());
+        }));
+      });
+    });
 
   }
 }

@@ -28,8 +28,6 @@ package eu.internetofus.common.components.profile_manager;
 
 import java.util.LinkedHashMap;
 
-import javax.validation.constraints.NotNull;
-
 import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -71,19 +69,9 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
    * {@inheritDoc}
    */
   @Override
-  public void createProfile(final JsonObject profile, final Handler<AsyncResult<JsonObject>> createHandler) {
+  public void createProfile(final JsonObject profile, final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.post(profile, createHandler, "/profiles");
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void retrieveJsonProfile(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
-
-    this.getJsonObject(retrieveHandler, "/profiles/", id);
+    this.post(profile, "/profiles").onComplete(handler);
 
   }
 
@@ -91,19 +79,9 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
    * {@inheritDoc}
    */
   @Override
-  public void deleteProfile(final String id, final Handler<AsyncResult<Void>> deleteHandler) {
+  public void retrieveProfile(final String id, final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.delete(deleteHandler, "/profiles/", id);
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void createCommunity(final JsonObject community, final Handler<AsyncResult<JsonObject>> createHandler) {
-
-    this.post(community, createHandler, "/communities");
+    this.getJsonObject("/profiles", id).onComplete(handler);
 
   }
 
@@ -111,19 +89,9 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
    * {@inheritDoc}
    */
   @Override
-  public void retrieveJsonCommunity(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
+  public void deleteProfile(final String id, final Handler<AsyncResult<Void>> handler) {
 
-    this.getJsonObject(retrieveHandler, "/communities/", id);
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void deleteCommunity(final String id, final Handler<AsyncResult<Void>> deleteHandler) {
-
-    this.delete(deleteHandler, "/communities/", id);
+    this.delete("/profiles", id).onComplete(handler);
 
   }
 
@@ -131,7 +99,38 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
    * {@inheritDoc}
    */
   @Override
-  public void retrieveJsonCommunityProfilesPage(final String appId, final String name, final String description, final String keywords, final String members, final String order, final int offset, final int limit, @NotNull final Handler<AsyncResult<JsonObject>> retrieveHandler) {
+  public void createCommunity(final JsonObject community, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(community, "/communities").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveCommunity(final String id, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.getJsonObject("/communities", id).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteCommunity(final String id, final Handler<AsyncResult<Void>> handler) {
+
+    this.delete("/communities/", id).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveCommunityProfilesPage(final String appId, final String name, final String description, final String keywords, final String members, final String order, final int offset, final int limit,
+      final Handler<AsyncResult<JsonObject>> handler) {
 
     final var params = new LinkedHashMap<String, String>();
     if (appId != null) {
@@ -160,7 +159,7 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
     }
     params.put("offset", String.valueOf(offset));
     params.put("limit", String.valueOf(limit));
-    this.getJsonObject(params, retrieveHandler, "/communities");
+    this.getJsonObject(params, "/communities").onComplete(handler);
 
   }
 

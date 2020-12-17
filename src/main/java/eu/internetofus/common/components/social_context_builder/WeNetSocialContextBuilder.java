@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,11 +30,13 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.vertx.ComponentClient;
+import eu.internetofus.common.components.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -82,53 +84,79 @@ public interface WeNetSocialContextBuilder {
   /**
    * Return the relations of an user.
    *
-   * @param userId          identifier of the user.
-   * @param retrieveHandler handler to inform of the found relations.
+   * @param userId  identifier of the user.
+   * @param handler for the social relations.
    */
-  void retrieveJsonArraySocialRelations(@NotNull String userId, @NotNull Handler<AsyncResult<JsonArray>> retrieveHandler);
+  void retrieveSocialRelations(@NotNull String userId, @NotNull Handler<AsyncResult<JsonArray>> handler);
 
   /**
    * Return the relations of an user.
    *
-   * @param userId          identifier of the user.
-   * @param retrieveHandler handler to inform of the found relations.
+   * @param userId identifier of the user.
+   *
+   * @return the user relations.
    */
   @GenIgnore
-  default void retrieveSocialRelations(@NotNull final String userId, @NotNull final Handler<AsyncResult<List<UserRelation>>> retrieveHandler) {
+  default Future<List<UserRelation>> retrieveSocialRelations(@NotNull final String userId) {
 
-    this.retrieveJsonArraySocialRelations(userId, ComponentClient.handlerForListModel(UserRelation.class, retrieveHandler));
+    final Promise<JsonArray> promise = Promise.promise();
+    this.retrieveSocialRelations(userId, promise);
+    return Model.fromFutureJsonArray(promise.future(), UserRelation.class);
+
   }
 
   /**
    * Update the preferences of an user.
    *
-   * @param userId          identifier of the user.
-   * @param taskId          identifier of the task
-   * @param volunteers      the identifier of the volunteers of the task.
-   * @param retrieveHandler handler to inform of the found relations.
+   * @param userId     identifier of the user.
+   * @param taskId     identifier of the task
+   * @param volunteers the identifier of the volunteers of the task.
+   * @param handler    for the user relations.
    */
-  void updatePreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId, @NotNull JsonArray volunteers, @NotNull Handler<AsyncResult<JsonArray>> retrieveHandler);
+  void updatePreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId, @NotNull JsonArray volunteers, @NotNull Handler<AsyncResult<JsonArray>> handler);
+
+  /**
+   * Update the preferences of an user.
+   *
+   * @param userId     identifier of the user.
+   * @param taskId     identifier of the task
+   * @param volunteers the identifier of the volunteers of the task.
+   *
+   * @return the future with the user relations.
+   */
+  @GenIgnore
+  default Future<JsonArray> updatePreferencesForUserOnTask(@NotNull final String userId, @NotNull final String taskId, @NotNull final JsonArray volunteers) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    this.updatePreferencesForUserOnTask(userId, taskId, volunteers, promise);
+    return promise.future();
+
+  }
 
   /**
    * Return the social explanation why an user is selected to be a possible volunteer.
    *
-   * @param userId          identifier of the user.
-   * @param taskId          identifier of the task the user is involved.
-   * @param retrieveHandler handler to inform of the found explanation.
+   * @param userId identifier of the user.
+   * @param taskId identifier of the task the user is involved.
+   *
+   * @return the future with the retrieved social explanation.
    */
   @GenIgnore
-  default void retrieveSocialExplanation(@NotNull final String userId, @NotNull final String taskId, @NotNull final Handler<AsyncResult<SocialExplanation>> retrieveHandler) {
+  default Future<SocialExplanation> retrieveSocialExplanation(@NotNull final String userId, @NotNull final String taskId) {
 
-    this.retrieveJsonSocialExplanation(userId, taskId, ComponentClient.handlerForModel(SocialExplanation.class, retrieveHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.retrieveSocialExplanation(userId, taskId, promise);
+    return Model.fromFutureJsonObject(promise.future(), SocialExplanation.class);
+
   }
 
   /**
    * Return the social explanation object why an user is selected to be a possible volunteer.
    *
-   * @param userId          identifier of the user.
-   * @param taskId          identifier of the task the user is involved.
-   * @param retrieveHandler handler to inform of the found explanation.
+   * @param userId  identifier of the user.
+   * @param taskId  identifier of the task the user is involved.
+   * @param handler for the retrieved social explanation.
    */
-  void retrieveJsonSocialExplanation(@NotNull final String userId, @NotNull final String taskId, @NotNull final Handler<AsyncResult<JsonObject>> retrieveHandler);
+  void retrieveSocialExplanation(@NotNull final String userId, @NotNull final String taskId, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
 }

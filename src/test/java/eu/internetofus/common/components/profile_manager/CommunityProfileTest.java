@@ -53,9 +53,8 @@ import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.service.WeNetServiceMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
-import io.vertx.core.AsyncResult;
+import eu.internetofus.common.components.task_manager.ProtocolNormTest;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
@@ -134,7 +133,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
     model.name = "Name_" + index;
     model.description = "Description_" + index;
     model.norms = new ArrayList<>();
-    model.norms.add(new NormTest().createModelExample(index));
+    model.norms.add(new ProtocolNormTest().createModelExample(index));
     model.socialPractices = new ArrayList<>();
     model.socialPractices.add(new SocialPracticeTest().createModelExample(index));
     return model;
@@ -161,30 +160,31 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   /**
    * Create an example model that has the specified index.
    *
-   * @param index         to use in the example.
-   * @param vertx         event bus to use.
-   * @param testContext   test context to use.
-   * @param createHandler the component that will manage the created model.
+   * @param index       to use in the example.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the community profile.
    */
-  public void createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<CommunityProfile>> createHandler) {
+  public Future<CommunityProfile> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeApp(new App(), vertx, testContext, testContext.succeeding(storedApp -> {
+    return testContext.assertComplete(StoreServices.storeApp(new App(), vertx, testContext).compose(storedApp -> {
 
-      new CommunityMemberTest().createModelExample(index, vertx, testContext, testContext.succeeding(member -> {
+      return new CommunityMemberTest().createModelExample(index, vertx, testContext).compose(member -> {
 
         final var model = this.createModelExample(index);
         model.appId = storedApp.appId;
         model.members.clear();
         model.members.add(member);
-        createHandler.handle(Future.succeededFuture(model));
+        return Future.succeededFuture(model);
 
-      }));
+      });
     }));
 
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
    *
    * @param index       to verify
    * @param vertx       event bus to use.
@@ -196,16 +196,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext, testContext.succeeding(model -> {
-
-      assertIsValid(model, vertx, testContext);
-
-    }));
+    this.createModelExample(index, vertx, testContext).onSuccess(model -> assertIsValid(model, vertx, testContext));
 
   }
 
   /**
-   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} with multiple members is valid.
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with multiple members is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -215,23 +211,23 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldExampleWithMultipleMembersBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
-      new CommunityMemberTest().createModelExample(2, vertx, testContext, testContext.succeeding(member2 -> {
-        new CommunityMemberTest().createModelExample(3, vertx, testContext, testContext.succeeding(member3 -> {
+      new CommunityMemberTest().createModelExample(2, vertx, testContext).onSuccess(member2 -> {
+        new CommunityMemberTest().createModelExample(3, vertx, testContext).onSuccess(member3 -> {
 
           model.members.add(member2);
           model.members.add(member3);
           assertIsValid(model, vertx, testContext);
 
-        }));
-      }));
-    }));
+        });
+      });
+    });
 
   }
 
   /**
-   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} with multiple norms is valid.
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with multiple norms is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -241,24 +237,18 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldExampleWithMultipleNormsBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
-      model.norms.add(new NormTest().createModelExample(2));
-      model.norms.add(new NormTest().createModelExample(3));
-      for (var i = 0; i < model.norms.size(); i++) {
-
-        model.norms.get(i).id = String.valueOf(i);
-      }
-
+      model.norms.add(new ProtocolNormTest().createModelExample(2));
+      model.norms.add(new ProtocolNormTest().createModelExample(3));
       assertIsValid(model, vertx, testContext);
 
-    }));
+    });
 
   }
 
   /**
-   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} with multiple social practices is
-   * valid.
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with multiple social practices is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -268,7 +258,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldExampleWithMultipleSocialPracticesBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.socialPractices.add(new SocialPracticeTest().createModelExample(2));
       model.socialPractices.add(new SocialPracticeTest().createModelExample(3));
@@ -279,7 +269,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
 
       assertIsValid(model, vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -294,15 +284,15 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldNotBeValidWithADefinedId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
-      StoreServices.storeCommunityExample(200, vertx, testContext, testContext.succeeding(storedModel -> {
+      StoreServices.storeCommunityExample(200, vertx, testContext).onSuccess(storedModel -> {
 
         model.id = storedModel.id;
         assertIsNotValid(model, "id", vertx, testContext);
 
-      }));
-    }));
+      });
+    });
   }
 
   /**
@@ -316,12 +306,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldNotBeValidWithANullAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.appId = null;
       assertIsNotValid(model, "appId", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -335,12 +325,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldNotBeValidWithUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.appId = "Undefined identifier";
       assertIsNotValid(model, "appId", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -354,12 +344,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldNotBeValidWithInvalidName(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.name = ValidationsTest.STRING_256;
       assertIsNotValid(model, "name", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -373,12 +363,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldNotBeValidWithInvalidDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.description = ValidationsTest.STRING_1024;
       assertIsNotValid(model, "description", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -392,12 +382,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldNotBeValidWithInvalidKeyword(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.keywords.add(ValidationsTest.STRING_256);
       assertIsNotValid(model, "keywords[1]", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -411,12 +401,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldNotBeValidWithInvalidMember(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.members.add(new CommunityMemberTest().createModelExample(2));
       assertIsNotValid(model, "members[1].userId", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -430,13 +420,13 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldNotBeValidWithInvalidSocialPractice(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.socialPractices.add(new SocialPracticeTest().createModelExample(2));
       model.socialPractices.get(1).label = ValidationsTest.STRING_256;
       assertIsNotValid(model, "socialPractices[1].label", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -450,13 +440,13 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldNotBeValidWithInvalidNorm(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
-      model.norms.add(new NormTest().createModelExample(2));
-      model.norms.get(1).attribute = ValidationsTest.STRING_256;
-      assertIsNotValid(model, "norms[1].attribute", vertx, testContext);
+      model.norms.add(new ProtocolNormTest().createModelExample(2));
+      model.norms.get(1).thenceforth = null;
+      assertIsNotValid(model, "norms[1].thenceforth", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -470,12 +460,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       assertCanMerge(target, null, vertx, testContext, merged -> {
         assertThat(merged).isSameAs(target);
       });
-    }));
+    });
 
   }
 
@@ -490,10 +480,10 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudMergeExamples(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       target._creationTs = 10000;
       target._lastUpdateTs = TimeManager.now();
-      this.createModelExample(2, vertx, testContext, testContext.succeeding(source -> {
+      this.createModelExample(2, vertx, testContext).onSuccess(source -> {
 
         assertCanMerge(target, source, vertx, testContext, merged -> {
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
@@ -502,8 +492,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
           source._lastUpdateTs = target._lastUpdateTs;
           assertThat(merged).isEqualTo(source);
         });
-      }));
-    }));
+      });
+    });
 
   }
 
@@ -518,11 +508,11 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotMergeWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
       source.appId = "Undefined application id";
       assertCannotMerge(target, source, "appId", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -537,11 +527,11 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotMergeWithBadName(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
       source.name = ValidationsTest.STRING_256;
       assertCannotMerge(target, source, "name", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -556,11 +546,11 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotMergeWithBadDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
       source.description = ValidationsTest.STRING_1024;
       assertCannotMerge(target, source, "description", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -575,12 +565,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotMergeWithBadKeywords(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
       source.keywords = new ArrayList<>(target.keywords);
       source.keywords.add(ValidationsTest.STRING_256);
       assertCannotMerge(target, source, "keywords[1]", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -595,13 +585,13 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotMergeWithBadSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
       source.socialPractices = new ArrayList<>(target.socialPractices);
       source.socialPractices.add(new SocialPracticeTest().createModelExample(2));
       source.socialPractices.get(1).label = ValidationsTest.STRING_256;
       assertCannotMerge(target, source, "socialPractices[1].label", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -616,13 +606,13 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotMergeWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
       source.norms = new ArrayList<>(target.norms);
-      source.norms.add(new NormTest().createModelExample(2));
-      source.norms.get(1).attribute = ValidationsTest.STRING_256;
-      assertCannotMerge(target, source, "norms[1].attribute", vertx, testContext);
-    }));
+      source.norms.add(new ProtocolNormTest().createModelExample(2));
+      source.norms.get(1).whenever = null;
+      assertCannotMerge(target, source, "norms[1].whenever", vertx, testContext);
+    });
 
   }
 
@@ -637,12 +627,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotMergeWithBadMembers(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
       source.members = new ArrayList<>(target.members);
       source.members.add(new CommunityMemberTest().createModelExample(2));
       assertCannotMerge(target, source, "members[1].userId", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -657,7 +647,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldMergeWithSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       target.socialPractices = new ArrayList<>();
       target.socialPractices.add(new SocialPractice());
       target.socialPractices.get(0).id = "1";
@@ -675,7 +665,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
         assertThat(merged.socialPractices.get(2).id).isNotEmpty();
 
       });
-    }));
+    });
   }
 
   /**
@@ -689,12 +679,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       assertCanUpdate(target, null, vertx, testContext, updated -> {
         assertThat(updated).isSameAs(target);
       });
-    }));
+    });
 
   }
 
@@ -709,10 +699,10 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudUpdateExamples(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       target._creationTs = 10000;
       target._lastUpdateTs = TimeManager.now();
-      this.createModelExample(2, vertx, testContext, testContext.succeeding(source -> {
+      this.createModelExample(2, vertx, testContext).onSuccess(source -> {
 
         assertCanUpdate(target, source, vertx, testContext, updated -> {
           assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
@@ -721,8 +711,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
           source._lastUpdateTs = target._lastUpdateTs;
           assertThat(updated).isEqualTo(source);
         });
-      }));
-    }));
+      });
+    });
 
   }
 
@@ -737,11 +727,11 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotUpdateWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
       source.appId = "Undefined application id";
       assertCannotUpdate(target, source, "appId", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -756,11 +746,11 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotUpdateWithBadName(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
       source.name = ValidationsTest.STRING_256;
       assertCannotUpdate(target, source, "name", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -775,11 +765,11 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotUpdateWithBadDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
       source.description = ValidationsTest.STRING_1024;
       assertCannotUpdate(target, source, "description", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -794,12 +784,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotUpdateWithBadKeywords(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
       source.keywords = new ArrayList<>(target.keywords);
       source.keywords.add(ValidationsTest.STRING_256);
       assertCannotUpdate(target, source, "keywords[1]", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -814,13 +804,13 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotUpdateWithBadSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
       source.socialPractices = new ArrayList<>(target.socialPractices);
       source.socialPractices.add(new SocialPracticeTest().createModelExample(2));
       source.socialPractices.get(1).label = ValidationsTest.STRING_256;
       assertCannotUpdate(target, source, "socialPractices[1].label", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -835,13 +825,13 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotUpdateWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
       source.norms = new ArrayList<>(target.norms);
-      source.norms.add(new NormTest().createModelExample(2));
-      source.norms.get(1).attribute = ValidationsTest.STRING_256;
-      assertCannotUpdate(target, source, "norms[1].attribute", vertx, testContext);
-    }));
+      source.norms.add(new ProtocolNormTest().createModelExample(2));
+      source.norms.get(1).thenceforth = null;
+      assertCannotUpdate(target, source, "norms[1].thenceforth", vertx, testContext);
+    });
 
   }
 
@@ -856,12 +846,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shoudNotUpdateWithBadMembers(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
       source.members = new ArrayList<>(target.members);
       source.members.add(new CommunityMemberTest().createModelExample(2));
       assertCannotUpdate(target, source, "members[1].userId", vertx, testContext);
-    }));
+    });
 
   }
 
@@ -876,7 +866,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @Test
   public void shouldUpdateWithSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       target.socialPractices = new ArrayList<>();
       target.socialPractices.add(new SocialPractice());
       target.socialPractices.get(0).id = "1";
@@ -894,6 +884,6 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
         assertThat(updated.socialPractices.get(2).id).isNotEmpty();
 
       });
-    }));
+    });
   }
 }

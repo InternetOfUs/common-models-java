@@ -45,7 +45,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import eu.internetofus.common.TimeManager;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
@@ -60,9 +59,7 @@ import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.service.WeNetServiceMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -150,20 +147,19 @@ public class TaskTest extends ModelTestCase<Task> {
     model.appId = "appId" + index;
     model.communityId = "communityId" + index;
     model.goal = new TaskGoalTest().createModelExample(index);
-    model.deadlineTs = TimeManager.now() + 10000 + 10000 * index;
-    model.startTs = model.deadlineTs + 200000l + index;
-    model.endTs = model.startTs + 300000l + index;
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(index));
     model.norms.get(0).id = "norm_id_" + index;
     model.attributes = new JsonObject().put("index", index);
+    model.transactions = new ArrayList<>();
+    model.transactions.add(new TaskTransactionTest().createModelExample(index));
     model._creationTs = 1234567891 + index;
     model._lastUpdateTs = 1234567991 + index * 2;
     return model;
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
    *
    * @param index       to verify
    *
@@ -176,7 +172,7 @@ public class TaskTest extends ModelTestCase<Task> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext, testContext.succeeding(model -> assertIsValid(model, vertx, testContext)));
+    this.createModelExample(index, vertx, testContext).onSuccess(model -> assertIsValid(model, vertx, testContext));
 
   }
 
@@ -206,10 +202,10 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldTaskWithoutIdBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.id = null;
       assertIsValid(model, vertx, testContext);
-    }));
+    });
 
   }
 
@@ -224,7 +220,7 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldTaskWitIdBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> testContext.verify(() -> {
       model.id = UUID.randomUUID().toString();
       assertIsValid(model, vertx, testContext);
     }));
@@ -234,27 +230,25 @@ public class TaskTest extends ModelTestCase<Task> {
   /**
    * Create an example model that has the specified index.
    *
-   * @param index         to use in the example.
-   * @param vertx         event bus to use.
-   * @param testContext   test context to use.
-   * @param createHandler the component that will manage the created model.
+   * @param index       to use in the example.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the created task.
    */
-  public void createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<Task>> createHandler) {
+  public Future<Task> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeTaskTypeExample(index, vertx, testContext, testContext.succeeding(taskType -> {
+    return testContext.assertComplete(StoreServices.storeTaskTypeExample(index, vertx, testContext).compose(taskType -> StoreServices.storeCommunityExample(index, vertx, testContext).compose(community -> {
 
-      StoreServices.storeCommunityExample(index, vertx, testContext, testContext.succeeding(community -> {
+      final var model = this.createModelExample(index);
+      model.transactions = null;
+      model.requesterId = community.members.get(0).userId;
+      model.taskTypeId = taskType.id;
+      model.appId = community.appId;
+      model.communityId = community.id;
+      return Future.succeededFuture(model);
 
-        final var model = this.createModelExample(index);
-        model.requesterId = community.members.get(0).userId;
-        model.taskTypeId = taskType.id;
-        model.appId = community.appId;
-        model.communityId = community.id;
-        createHandler.handle(Future.succeededFuture(model));
-
-      }));
-
-    }));
+    })));
 
   }
 
@@ -269,14 +263,14 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithAnExistingId(final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeTaskExample(1, vertx, testContext, testContext.succeeding(created -> {
-      this.createModelExample(2, vertx, testContext, testContext.succeeding(model -> {
+    StoreServices.storeTaskExample(1, vertx, testContext).onSuccess(created -> {
+      this.createModelExample(2, vertx, testContext).onSuccess(model -> {
 
         model.id = created.id;
         assertIsNotValid(model, "id", vertx, testContext);
 
-      }));
-    }));
+      });
+    });
 
   }
 
@@ -291,12 +285,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithALargeTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.taskTypeId = ValidationsTest.STRING_256;
       assertIsNotValid(model, "taskTypeId", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -311,12 +305,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithALargeId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.id = ValidationsTest.STRING_256;
       assertIsNotValid(model, "id", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -331,12 +325,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithoutTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.taskTypeId = null;
       assertIsNotValid(model, "taskTypeId", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -351,12 +345,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithAnUndefinedTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.taskTypeId = "Undefined-task-type-ID";
       assertIsNotValid(model, "taskTypeId", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -371,12 +365,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithALargeRequesterId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.requesterId = ValidationsTest.STRING_256;
       assertIsNotValid(model, "requesterId", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -391,12 +385,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithoutRequesterId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.requesterId = null;
       assertIsNotValid(model, "requesterId", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -411,12 +405,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithAnUndefinedRequesterId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.requesterId = "Undefined-requester-id";
       assertIsNotValid(model, "requesterId", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -431,12 +425,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithALargeAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.appId = ValidationsTest.STRING_256;
       assertIsNotValid(model, "appId", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -451,12 +445,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithoutAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.appId = null;
       assertIsNotValid(model, "appId", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -471,12 +465,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithAnUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.appId = "Undefined-app-id";
       assertIsNotValid(model, "appId", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -491,12 +485,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithALargeCommunityId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.communityId = ValidationsTest.STRING_256;
       assertIsNotValid(model, "communityId", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -511,12 +505,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithoutCommunityId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.communityId = null;
       assertIsNotValid(model, "communityId", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -531,136 +525,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithAnUndefinedCommunityId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.communityId = "Undefined-community-id";
       assertIsNotValid(model, "communityId", vertx, testContext);
 
-    }));
-
-  }
-
-  /**
-   * Check that can not be valid with a too soon start time stamp.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see Task#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithATooSoonStartTimeStampn(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-
-      model.startTs = model.deadlineTs - 1;
-      assertIsNotValid(model, "startTs", vertx, testContext);
-      testContext.completeNow();
-
-    }));
-
-  }
-
-  /**
-   * Check that can not be valid without start time stamp.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see Task#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithoutStartTimeStampn(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-
-      model.startTs = null;
-      assertIsNotValid(model, "startTs", vertx, testContext);
-      testContext.completeNow();
-
-    }));
-
-  }
-
-  /**
-   * Check that can not be valid with a too soon end time stamp.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see Task#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithATooSoonEndTimeStampn(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-
-      model.endTs = model.startTs - 1;
-      assertIsNotValid(model, "endTs", vertx, testContext);
-
-    }));
-
-  }
-
-  /**
-   * Check that can not be valid without end time stamp.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see Task#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithoutEndTimeStampn(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-
-      model.endTs = null;
-      assertIsNotValid(model, "endTs", vertx, testContext);
-      testContext.completeNow();
-
-    }));
-
-  }
-
-  /**
-   * Check that can not be valid with a too soon deadline time stamp.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see Task#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithATooSoonDeadlineTimeStampn(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-
-      model.deadlineTs = TimeManager.now() - 1;
-      assertIsNotValid(model, "deadlineTs", vertx, testContext);
-
-    }));
-
-  }
-
-  /**
-   * Check that can not be valid without deadline time stamp.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see Task#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithoutDeadlineTimeStampn(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
-
-      model.deadlineTs = null;
-      assertIsNotValid(model, "deadlineTs", vertx, testContext);
-      testContext.completeNow();
-
-    }));
+    });
 
   }
 
@@ -675,7 +545,7 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.norms = new ArrayList<>();
       model.norms.add(new NormTest().createModelExample(1));
@@ -684,7 +554,7 @@ public class TaskTest extends ModelTestCase<Task> {
       model.norms.get(1).attribute = ValidationsTest.STRING_256;
       assertIsNotValid(model, "norms[1].attribute", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -699,13 +569,13 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldMergeStoredModels(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
-        this.createModelExample(2, vertx, testContext, testContext.succeeding(sourceToStore -> {
+        this.createModelExample(2, vertx, testContext).onSuccess(sourceToStore -> {
 
-          StoreServices.storeTask(sourceToStore, vertx, testContext, testContext.succeeding(source -> {
+          StoreServices.storeTask(sourceToStore, vertx, testContext).onSuccess(source -> {
 
             assertCanMerge(target, source, vertx, testContext, merged -> {
 
@@ -715,11 +585,10 @@ public class TaskTest extends ModelTestCase<Task> {
               assertThat(merged).isNotEqualTo(target).isEqualTo(source);
 
             });
-          }));
-        }));
-
-      }));
-    }));
+          });
+        });
+      });
+    });
 
   }
 
@@ -734,11 +603,11 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyMergeTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
-        StoreServices.storeTaskType(new TaskType(), vertx, testContext, testContext.succeeding(taskType -> {
+        StoreServices.storeTaskType(new TaskType(), vertx, testContext).onSuccess(taskType -> {
 
           final var source = new Task();
           source.taskTypeId = taskType.id;
@@ -749,10 +618,10 @@ public class TaskTest extends ModelTestCase<Task> {
             assertThat(merged).isEqualTo(target).isNotEqualTo(source);
           });
 
-        }));
-      }));
+        });
+      });
 
-    }));
+    });
 
   }
 
@@ -767,16 +636,16 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotMergeWithBadTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = new Task();
         source.taskTypeId = "undefined-task-type-identifier";
         assertCannotMerge(target, source, "taskTypeId", vertx, testContext);
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -791,11 +660,11 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyMergeRequesterId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
-        StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(requester -> {
+        StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(requester -> {
 
           final var source = new Task();
           source.requesterId = requester.id;
@@ -806,10 +675,9 @@ public class TaskTest extends ModelTestCase<Task> {
             assertThat(merged).isEqualTo(target).isNotEqualTo(source);
           });
 
-        }));
-      }));
-
-    }));
+        });
+      });
+    });
 
   }
 
@@ -824,16 +692,16 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotMergeWithBadRequesterId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = new Task();
         source.requesterId = "undefined-requester-identifier";
         assertCannotMerge(target, source, "requesterId", vertx, testContext);
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -848,11 +716,11 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyMergeAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
-        StoreServices.storeApp(new App(), vertx, testContext, testContext.succeeding(app -> {
+        StoreServices.storeApp(new App(), vertx, testContext).onSuccess(app -> {
 
           final var source = new Task();
           source.appId = app.appId;
@@ -863,10 +731,9 @@ public class TaskTest extends ModelTestCase<Task> {
             assertThat(merged).isEqualTo(target).isNotEqualTo(source);
           });
 
-        }));
-      }));
-
-    }));
+        });
+      });
+    });
 
   }
 
@@ -881,16 +748,16 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotMergeWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = new Task();
         source.appId = "undefined-application-identifier";
         assertCannotMerge(target, source, "appId", vertx, testContext);
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -905,9 +772,9 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyMergeGoal(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = new Task();
         source.goal = new TaskGoalTest().createModelExample(2);
@@ -918,9 +785,9 @@ public class TaskTest extends ModelTestCase<Task> {
           assertThat(merged).isEqualTo(target).isNotEqualTo(source);
         });
 
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -935,179 +802,17 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotMergeWithBadGoal(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = new Task();
         source.goal = new TaskGoal();
         source.goal.name = ValidationsTest.STRING_256;
         assertCannotMerge(target, source, "goal.name", vertx, testContext);
-      }));
+      });
 
-    }));
-
-  }
-
-  /**
-   * Check that merge when only is modified the {@link Task#startTs}.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldOnlyMergeStartTs(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
-
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
-
-        final var source = new Task();
-        source.startTs = target.startTs + 1;
-        assertCanMerge(target, source, vertx, testContext, merged -> {
-
-          assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-          target.startTs++;
-          assertThat(merged).isEqualTo(target).isNotEqualTo(source);
-        });
-
-      }));
-
-    }));
-
-  }
-
-  /**
-   * Check that can not merge when the {@link Task#startTs} has a bas value.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithBadStartTs(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
-
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
-
-        final var source = new Task();
-        source.startTs = -1l;
-        assertCannotMerge(target, source, "startTs", vertx, testContext);
-      }));
-
-    }));
-
-  }
-
-  /**
-   * Check that merge when only is modified the {@link Task#endTs}.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldOnlyMergeEndTs(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
-
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
-
-        final var source = new Task();
-        source.endTs = target.endTs + 1;
-        assertCanMerge(target, source, vertx, testContext, merged -> {
-
-          assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-          target.endTs++;
-          assertThat(merged).isEqualTo(target).isNotEqualTo(source);
-        });
-
-      }));
-
-    }));
-
-  }
-
-  /**
-   * Check that can not merge when the {@link Task#endTs} has a bas value.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithBadEndTs(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
-
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
-
-        final var source = new Task();
-        source.endTs = -1l;
-        assertCannotMerge(target, source, "endTs", vertx, testContext);
-      }));
-
-    }));
-
-  }
-
-  /**
-   * Check that merge when only is modified the {@link Task#deadlineTs}.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldOnlyMergeDeadlineTs(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
-
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
-
-        final var source = new Task();
-        source.deadlineTs = target.deadlineTs + 1;
-        assertCanMerge(target, source, vertx, testContext, merged -> {
-
-          assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-          target.deadlineTs++;
-          assertThat(merged).isEqualTo(target).isNotEqualTo(source);
-        });
-
-      }));
-
-    }));
-
-  }
-
-  /**
-   * Check that can not merge when the {@link Task#deadlineTs} has a bas value.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithBadDeadlineTs(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
-
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
-
-        final var source = new Task();
-        source.deadlineTs = -1l;
-        assertCannotMerge(target, source, "deadlineTs", vertx, testContext);
-      }));
-
-    }));
+    });
 
   }
 
@@ -1122,9 +827,9 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyMergeNewNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = new Task();
         source.norms = new ArrayList<>();
@@ -1138,9 +843,9 @@ public class TaskTest extends ModelTestCase<Task> {
           assertThat(merged).isEqualTo(target).isNotEqualTo(source);
         });
 
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -1155,9 +860,9 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyMergeAddingNewNorm(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = new Task();
         source.norms = new ArrayList<>();
@@ -1171,9 +876,9 @@ public class TaskTest extends ModelTestCase<Task> {
           assertThat(merged).isEqualTo(target).isNotEqualTo(source);
         });
 
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -1188,14 +893,14 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyMergeDeleteNorm(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
       targetToStore.norms.get(0).id = UUID.randomUUID().toString();
       final var normToMantain = new NormTest().createModelExample(2);
       normToMantain.id = UUID.randomUUID().toString();
       targetToStore.norms.add(normToMantain);
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = new Task();
         source.norms = new ArrayList<>();
@@ -1212,9 +917,9 @@ public class TaskTest extends ModelTestCase<Task> {
 
         });
 
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -1229,18 +934,18 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotMergeWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = new Task();
         source.norms = new ArrayList<>();
         source.norms.add(new Norm());
         source.norms.get(0).attribute = ValidationsTest.STRING_256;
         assertCannotMerge(target, source, "norms[0].attribute", vertx, testContext);
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -1255,7 +960,7 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyMergeNewAttributes(final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeTaskExample(1, vertx, testContext, testContext.succeeding(target -> {
+    StoreServices.storeTaskExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new Task();
       source.attributes = new JsonObject().put("index", 2);
@@ -1266,7 +971,7 @@ public class TaskTest extends ModelTestCase<Task> {
         assertThat(merged).isEqualTo(target).isNotEqualTo(source);
       });
 
-    }));
+    });
 
   }
 
@@ -1281,12 +986,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithoutGoal(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.goal = null;
       assertIsNotValid(model, "goal", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -1301,12 +1006,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotBeValidWithATooSoonCloseTimeStampn(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.closeTs = model._creationTs - 1;
       assertIsNotValid(model, "closeTs", vertx, testContext);
 
-    }));
+    });
 
   }
 
@@ -1321,13 +1026,13 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldUpdateStoredModels(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
-        this.createModelExample(2, vertx, testContext, testContext.succeeding(sourceToStore -> {
+        this.createModelExample(2, vertx, testContext).onSuccess(sourceToStore -> {
 
-          StoreServices.storeTask(sourceToStore, vertx, testContext, testContext.succeeding(source -> {
+          StoreServices.storeTask(sourceToStore, vertx, testContext).onSuccess(source -> {
 
             assertCanUpdate(target, source, vertx, testContext, updated -> {
 
@@ -1337,11 +1042,10 @@ public class TaskTest extends ModelTestCase<Task> {
               assertThat(updated).isNotEqualTo(target).isEqualTo(source);
 
             });
-          }));
-        }));
-
-      }));
-    }));
+          });
+        });
+      });
+    });
 
   }
 
@@ -1356,11 +1060,11 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyUpdateTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
-        StoreServices.storeTaskType(new TaskType(), vertx, testContext, testContext.succeeding(taskType -> {
+        StoreServices.storeTaskType(new TaskType(), vertx, testContext).onSuccess(taskType -> {
 
           final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
           source.taskTypeId = taskType.id;
@@ -1371,10 +1075,10 @@ public class TaskTest extends ModelTestCase<Task> {
             assertThat(updated).isEqualTo(target);
           });
 
-        }));
-      }));
+        });
+      });
 
-    }));
+    });
 
   }
 
@@ -1389,16 +1093,16 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotUpdateWithBadTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.taskTypeId = "undefined-task-type-identifier";
         assertCannotUpdate(target, source, "taskTypeId", vertx, testContext);
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -1413,11 +1117,11 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyUpdateRequesterId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
-        StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext, testContext.succeeding(requester -> {
+        StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(requester -> {
 
           final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
           source.requesterId = requester.id;
@@ -1428,10 +1132,10 @@ public class TaskTest extends ModelTestCase<Task> {
             assertThat(updated).isEqualTo(target);
           });
 
-        }));
-      }));
+        });
+      });
 
-    }));
+    });
 
   }
 
@@ -1446,16 +1150,16 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotUpdateWithBadRequesterId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.requesterId = "undefined-requester-identifier";
         assertCannotUpdate(target, source, "requesterId", vertx, testContext);
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -1470,11 +1174,11 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyUpdateAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
-        StoreServices.storeApp(new App(), vertx, testContext, testContext.succeeding(app -> {
+        StoreServices.storeApp(new App(), vertx, testContext).onSuccess(app -> {
 
           final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
           source.appId = app.appId;
@@ -1485,10 +1189,10 @@ public class TaskTest extends ModelTestCase<Task> {
             assertThat(updated).isEqualTo(target);
           });
 
-        }));
-      }));
+        });
+      });
 
-    }));
+    });
 
   }
 
@@ -1503,16 +1207,16 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotUpdateWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.appId = "undefined-application-identifier";
         assertCannotUpdate(target, source, "appId", vertx, testContext);
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -1527,9 +1231,9 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyUpdateGoal(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.goal = new TaskGoalTest().createModelExample(2);
@@ -1540,9 +1244,9 @@ public class TaskTest extends ModelTestCase<Task> {
           assertThat(updated).isEqualTo(target);
         });
 
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -1557,177 +1261,17 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotUpdateWithBadGoal(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.goal = new TaskGoal();
         source.goal.name = ValidationsTest.STRING_256;
         assertCannotUpdate(target, source, "goal.name", vertx, testContext);
-      }));
+      });
 
-    }));
-
-  }
-
-  /**
-   * Check that update when only is modified the {@link Task#startTs}.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldOnlyUpdateStartTs(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
-
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
-
-        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
-        source.startTs = target.startTs + 1;
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
-
-          assertThat(updated).isNotEqualTo(target).isEqualTo(source);
-        });
-
-      }));
-
-    }));
-
-  }
-
-  /**
-   * Check that can not update when the {@link Task#startTs} has a bas value.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldNotUpdateWithBadStartTs(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
-
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
-
-        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
-        source.startTs = -1l;
-        assertCannotUpdate(target, source, "startTs", vertx, testContext);
-      }));
-
-    }));
-
-  }
-
-  /**
-   * Check that update when only is modified the {@link Task#endTs}.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldOnlyUpdateEndTs(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
-
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
-
-        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
-        source.endTs = target.endTs + 1;
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
-
-          assertThat(updated).isNotEqualTo(target).isEqualTo(source);
-          target.endTs++;
-          assertThat(updated).isEqualTo(target);
-        });
-
-      }));
-
-    }));
-
-  }
-
-  /**
-   * Check that can not update when the {@link Task#endTs} has a bas value.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldNotUpdateWithBadEndTs(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
-
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
-
-        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
-        source.endTs = -1l;
-        assertCannotUpdate(target, source, "endTs", vertx, testContext);
-      }));
-
-    }));
-
-  }
-
-  /**
-   * Check that update when only is modified the {@link Task#deadlineTs}.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldOnlyUpdateDeadlineTs(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
-
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
-
-        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
-        source.deadlineTs = target.deadlineTs + 1;
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
-
-          assertThat(updated).isNotEqualTo(target).isEqualTo(source);
-          target.deadlineTs++;
-          assertThat(updated).isEqualTo(target);
-        });
-
-      }));
-
-    }));
-
-  }
-
-  /**
-   * Check that can not update when the {@link Task#deadlineTs} has a bas value.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
-   */
-  @Test
-  public void shouldNotUpdateWithBadDeadlineTs(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
-
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
-
-        final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
-        source.deadlineTs = -1l;
-        assertCannotUpdate(target, source, "deadlineTs", vertx, testContext);
-      }));
-
-    }));
+    });
 
   }
 
@@ -1742,9 +1286,9 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyUpdateNewNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.norms = new ArrayList<>();
@@ -1754,9 +1298,9 @@ public class TaskTest extends ModelTestCase<Task> {
           assertThat(updated).isNotEqualTo(target).isEqualTo(source);
         });
 
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -1771,9 +1315,9 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyUpdateAddingNewNorm(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.norms = new ArrayList<>();
@@ -1784,9 +1328,9 @@ public class TaskTest extends ModelTestCase<Task> {
           assertThat(updated).isNotEqualTo(target).isEqualTo(source);
         });
 
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -1801,18 +1345,18 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldNotUpdateWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(targetToStore -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
-      StoreServices.storeTask(targetToStore, vertx, testContext, testContext.succeeding(target -> {
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.norms = new ArrayList<>();
         source.norms.add(new Norm());
         source.norms.get(0).attribute = ValidationsTest.STRING_256;
         assertCannotUpdate(target, source, "norms[0].attribute", vertx, testContext);
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -1827,7 +1371,7 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shouldOnlyUpdateNewAttributes(final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeTaskExample(1, vertx, testContext, testContext.succeeding(target -> {
+    StoreServices.storeTaskExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
       source.attributes = new JsonObject().put("index", 2);
@@ -1838,7 +1382,7 @@ public class TaskTest extends ModelTestCase<Task> {
         assertThat(updated).isEqualTo(target);
       });
 
-    }));
+    });
 
   }
 
@@ -1853,12 +1397,12 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shoudMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       assertCanMerge(target, null, vertx, testContext, merged -> {
         assertThat(merged).isSameAs(target);
       });
-    }));
+    });
 
   }
 
@@ -1873,14 +1417,13 @@ public class TaskTest extends ModelTestCase<Task> {
   @Test
   public void shoudUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       assertCanUpdate(target, null, vertx, testContext, updated -> {
         assertThat(updated).isSameAs(target);
       });
-    }));
+    });
 
   }
-
 
 }

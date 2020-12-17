@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,11 +28,13 @@ package eu.internetofus.common.components.service;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.vertx.ComponentClient;
+import eu.internetofus.common.components.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -82,28 +84,49 @@ public interface WeNetService {
    *
    * @param id              identifier of the app to get.
    * @param retrieveHandler handler to manage the retrieve process.
+   * @param handler         for the application.
    */
-  void retrieveJsonApp(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+  void retrieveApp(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Return an application.
    *
    * @param id              identifier of the app to get.
    * @param retrieveHandler handler to manage the retrieve process.
+   *
+   * @return the application for the model.
    */
   @GenIgnore
-  default void retrieveApp(@NotNull final String id, @NotNull final Handler<AsyncResult<App>> retrieveHandler) {
+  default Future<App> retrieveApp(@NotNull final String id) {
 
-    this.retrieveJsonApp(id, ComponentClient.handlerForModel(App.class, retrieveHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.retrieveApp(id, promise);
+    return Model.fromFutureJsonObject(promise.future(), App.class);
 
   }
 
   /**
    * Return the identifiers of the users that are defined on an application.
    *
-   * @param id              identifier of the app to get the users.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id      identifier of the app to get the users.
+   * @param handler for the identifiers of the user in the application.
    */
-  void retrieveJsonArrayAppUserIds(@NotNull String id, @NotNull Handler<AsyncResult<JsonArray>> retrieveHandler);
+  void retrieveAppUserIds(@NotNull String id, @NotNull Handler<AsyncResult<JsonArray>> handler);
+
+  /**
+   * Return the identifiers of the users that are defined on an application.
+   *
+   * @param id identifier of the app to get the users.
+   *
+   * @return the future identifiers of the user in the application.
+   */
+  @GenIgnore
+  default Future<JsonArray> retrieveAppUserIds(@NotNull final String id) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    this.retrieveAppUserIds(id, promise);
+    return promise.future();
+
+  }
 
 }

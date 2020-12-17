@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
@@ -42,9 +41,7 @@ import org.apache.commons.validator.routines.EmailValidator;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 
@@ -478,37 +475,35 @@ public interface Validations {
    *
    * @return the mapper that will check the identifier.
    */
-  static <T> Future<Void> composeValidateId(final Future<Void> future, final String codePrefix, final String fieldName, final String id, final boolean exist, final BiConsumer<String, Handler<AsyncResult<T>>> searcher) {
+  static <T> Future<Void> composeValidateId(final Future<Void> future, final String codePrefix, final String fieldName, final String id, final boolean exist, final Function<String, Future<T>> searcher) {
 
-    return future.compose(mapper -> {
+    final Promise<Void> promise = Promise.promise();
+    searcher.apply(id).onComplete(search -> {
 
-      final Promise<Void> validatePromise = Promise.promise();
-      searcher.accept(id, search -> {
+      if (search.failed()) {
 
-        if (search.failed()) {
+        if (exist) {
 
-          if (exist) {
-
-            validatePromise.fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' '" + id + "' is not defined."));
-
-          } else {
-
-            validatePromise.complete();
-          }
-
-        } else if (exist) {
-
-          validatePromise.complete();
+          promise.fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' '" + id + "' is not defined."));
 
         } else {
 
-          validatePromise.fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' '" + id + "' has already defined."));
+          promise.complete();
         }
-      });
 
-      return validatePromise.future();
+      } else if (exist) {
+
+        promise.complete();
+
+      } else {
+
+        promise.fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' '" + id + "' has already defined."));
+      }
 
     });
+
+    return promise.future();
+
   }
 
   /**

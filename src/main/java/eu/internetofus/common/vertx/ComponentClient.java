@@ -31,9 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.Response.Status;
 
 import org.tinylog.Logger;
 
@@ -42,12 +42,17 @@ import eu.internetofus.common.components.Model;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceException;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * A HTTP client to interact with a WeNet platform components.
@@ -111,168 +116,23 @@ public class ComponentClient {
   }
 
   /**
-   * Notify to a handler that the HTTP request ends with an error.
+   * Create a service exception from a client response.
    *
-   * @param actionHandler to notify the HTTP response is an error.
-   * @param response      that contains the error.
+   * @param response that contains the error.
    *
-   * @param <T>           expected responses for the HTTP request.
+   * @return the exception with the error.
    */
-  protected <T> void notifyErrorTo(final Handler<AsyncResult<T>> actionHandler, final HttpResponse<Buffer> response) {
+  protected ServiceException toServiceException(final HttpResponse<Buffer> response) {
 
-    ServiceException cause = null;
     final var message = Model.fromResponse(response, ErrorMessage.class);
     if (message != null) {
 
-      cause = new ServiceException(response.statusCode(), response.statusMessage(), message.toJsonObject());
+      return new ServiceException(response.statusCode(), response.statusMessage(), message.toJsonObject());
 
     } else {
 
-      cause = new ServiceException(response.statusCode(), response.statusMessage());
+      return new ServiceException(response.statusCode(), response.statusMessage());
     }
-
-    actionHandler.handle(Future.failedFuture(cause));
-  }
-
-  /**
-   * Continue if the result has not failed.
-   *
-   * @param action        HTTP action
-   * @param actionId      identifier of the action.
-   * @param resultHandler handler for the result.
-   * @param consumer      to process the response result.
-   *
-   * @param <T>           type of content for the response.
-   *
-   */
-  protected <T> void successing(final AsyncResult<HttpResponse<Buffer>> action, @NotNull final String actionId, @NotNull final Handler<AsyncResult<T>> resultHandler,
-      final BiConsumer<Handler<AsyncResult<T>>, HttpResponse<Buffer>> consumer) {
-
-    if (action.failed()) {
-
-      final var cause = action.cause();
-      Logger.trace(cause, "[{}] FAILED", actionId);
-      resultHandler.handle(Future.failedFuture(cause));
-
-    } else {
-
-      final var response = action.result();
-      final var code = response.statusCode();
-      if (Status.Family.familyOf(code) == Status.Family.SUCCESSFUL) {
-
-        consumer.accept(resultHandler, response);
-
-      } else {
-
-        Logger.trace("[{}] FAILED ({}) {}", () -> actionId, () -> code, () -> response.bodyAsString());
-        this.notifyErrorTo(resultHandler, response);
-
-      }
-    }
-
-  }
-
-  /**
-   * Create a consumer to extract a {@link JsonArray} from an HTTP response.
-   *
-   * @param actionId identifier of the action.
-   *
-   * @return the consumer that obtain a JSON array.
-   */
-  protected BiConsumer<Handler<AsyncResult<JsonArray>>, HttpResponse<Buffer>> jsonArrayConsumer(@NotNull final String actionId) {
-
-    return (handler, response) -> {
-
-      try {
-
-        final JsonArray array = response.bodyAsJsonArray();
-        if (array == null) {
-
-          Logger.trace("[{}] FAILED {} is not a JSON array", () -> actionId, () -> response.bodyAsString());
-          handler.handle(Future.failedFuture("The response is not a JsonArray"));
-
-        } else {
-
-          Logger.trace("[{}] SUCCESS with {}", actionId, array);
-          handler.handle(Future.succeededFuture(array));
-
-        }
-
-      } catch (final Throwable cause) {
-
-        Logger.trace("[{}] FAILED {} is not a JSON array", () -> actionId, () -> response.bodyAsString());
-        handler.handle(Future.failedFuture(cause));
-
-      }
-    };
-
-  }
-
-  /**
-   * Create a consumer to extract a {@link JsonObject} from an HTTP response.
-   *
-   * @param actionId identifier of the action.
-   *
-   * @return the consumer that obtain a JSON object.
-   */
-  protected BiConsumer<Handler<AsyncResult<JsonObject>>, HttpResponse<Buffer>> jsonObjectConsumer(@NotNull final String actionId) {
-
-    return (handler, response) -> {
-
-      try {
-
-        final JsonObject object = response.bodyAsJsonObject();
-        if (object == null) {
-
-          Logger.trace("[{}] FAILED {} is not a JSON object", () -> actionId, () -> response.bodyAsString());
-          handler.handle(Future.failedFuture("The response is not a JsonObject"));
-
-        } else {
-
-          Logger.trace("[{}] SUCCESS with {}", actionId, object);
-          handler.handle(Future.succeededFuture(object));
-
-        }
-
-      } catch (final Throwable cause) {
-
-        Logger.trace("[{}] FAILED {} is not a JSON object", () -> actionId, () -> response.bodyAsString());
-        handler.handle(Future.failedFuture(cause));
-
-      }
-
-    };
-
-  }
-
-  /**
-   * Create a consumer to extract a {@link Model} from an HTTP response.
-   *
-   * @param type     of model to extract.
-   * @param actionId identifier of the action.
-   *
-   * @param <T>      type of model to extract.
-   *
-   * @return the consumer that obtain a JSON array.
-   */
-  protected <T extends Model> BiConsumer<Handler<AsyncResult<T>>, HttpResponse<Buffer>> modelConsumer(@NotNull final Class<T> type, @NotNull final String actionId) {
-
-    return (handler, response) -> {
-
-      final var model = Model.fromResponse(response, type);
-      if (model == null) {
-
-        Logger.trace("[{}] FAILED {} is not a {}", () -> actionId, () -> response.bodyAsString(), () -> type);
-        handler.handle(Future.failedFuture("The response is not a " + type));
-
-      } else {
-
-        Logger.trace("[{}] SUCCESS with {}", actionId, model);
-        handler.handle(Future.succeededFuture(model));
-
-      }
-
-    };
 
   }
 
@@ -303,204 +163,338 @@ public class ComponentClient {
   }
 
   /**
-   * Post a model to a component.
+   * Post an object to a component.
    *
-   * @param content     model to post.
-   * @param postHandler the handler to manager the posted resource.
-   * @param paths       to the component to post.
+   * @param content object to post.
+   * @param paths   to the component to post.
    *
-   * @param <T>         type of model to post.
+   * @return the future with the response object.
    */
-  protected <T extends Model> void post(@NotNull final T content, @NotNull final Handler<AsyncResult<T>> postHandler, @NotNull final Object... paths) {
+  protected Future<JsonObject> post(@NotNull final JsonObject content, @NotNull final Object... paths) {
 
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] POST {} to {}", actionId, content, url);
-    final var body = content.toJsonObject();
-    @SuppressWarnings("unchecked")
-    final var type = (Class<T>) content.getClass();
-    this.client.postAbs(url).sendJsonObject(body, response -> this.successing(response, actionId, postHandler, this.modelConsumer(type, actionId)));
+    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), content.toBuffer(), this.createObjectExtractor());
 
   }
 
   /**
-   * Post a {@link JsonArray} to a component.
+   * Post an array to a component.
    *
-   * @param content     resource to post.
-   * @param postHandler the handler to manager the posted resource.
-   * @param paths       to the component to post.
+   * @param content array to post.
+   * @param paths   to the component to post.
+   *
+   * @return the future with the response array.
    */
-  protected void post(final JsonArray content, final Handler<AsyncResult<JsonArray>> postHandler, final Object... paths) {
+  protected Future<JsonArray> post(@NotNull final JsonArray content, @NotNull final Object... paths) {
 
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] POST {} to {}", actionId, content, url);
-    this.client.postAbs(url).sendJson(content, response -> this.successing(response, actionId, postHandler, this.jsonArrayConsumer(actionId)));
+    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), content.toBuffer(), this.createArrayExtractor());
 
   }
 
   /**
-   * Post a {@link JsonObject} to a component.
+   * Put an object to a component.
    *
-   * @param content     resource to post.
-   * @param postHandler the handler to manager the posted resource.
-   * @param paths       to the component to post.
+   * @param content object to put.
+   * @param paths   to the component to put.
+   *
+   * @return the future with the response object.
    */
-  protected void post(final JsonObject content, final Handler<AsyncResult<JsonObject>> postHandler, final Object... paths) {
+  protected Future<JsonObject> put(@NotNull final JsonObject content, @NotNull final Object... paths) {
 
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] POST {} to {}", actionId, content, url);
-    this.client.postAbs(url).sendJson(content, response -> this.successing(response, actionId, postHandler, this.jsonObjectConsumer(actionId)));
+    return this.request(HttpMethod.PUT, this.createAbsoluteUrlWith(paths), content.toBuffer(), this.createObjectExtractor());
 
   }
 
   /**
-   * Put a model to a component.
+   * Put an array to a component.
    *
-   * @param content    model to put.
-   * @param putHandler the handler to manager the put resource.
-   * @param paths      to the component to put.
+   * @param content array to put.
+   * @param paths   to the component to put.
    *
-   * @param <T>        type of model to put.
+   * @return the future with the response array.
    */
-  protected <T extends Model> void put(@NotNull final T content, @NotNull final Handler<AsyncResult<T>> putHandler, @NotNull final Object... paths) {
+  protected Future<JsonArray> put(@NotNull final JsonArray content, @NotNull final Object... paths) {
 
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] PUT {} to {}", actionId, content, url);
-    final var body = content.toJsonObject();
-    @SuppressWarnings("unchecked")
-    final var type = (Class<T>) content.getClass();
-    this.client.putAbs(url).sendJsonObject(body, response -> this.successing(response, actionId, putHandler, this.modelConsumer(type, actionId)));
-  }
-
-  /**
-   * Put a {@link JsonArray} to a component.
-   *
-   * @param content    resource to put.
-   * @param putHandler the handler to manager the put resource.
-   * @param paths      to the component to put.
-   */
-  protected void put(final JsonArray content, final Handler<AsyncResult<JsonArray>> putHandler, final Object... paths) {
-
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] PUT {} to {}", actionId, content, url);
-    this.client.putAbs(url).sendJson(content, response -> this.successing(response, actionId, putHandler, this.jsonArrayConsumer(actionId)));
+    return this.request(HttpMethod.PUT, this.createAbsoluteUrlWith(paths), content.toBuffer(), this.createArrayExtractor());
 
   }
 
   /**
-   * Put a {@link JsonObject} to a component.
+   * Patch an object to a component.
    *
-   * @param content    resource to put.
-   * @param putHandler the handler to manager the put resource.
-   * @param paths      to the component to put.
+   * @param content object to patch.
+   * @param paths   to the component to patch.
+   *
+   * @return the future with the response object.
    */
-  protected void put(final JsonObject content, final Handler<AsyncResult<JsonObject>> putHandler, final Object... paths) {
+  protected Future<JsonObject> patch(@NotNull final JsonObject content, @NotNull final Object... paths) {
 
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] PUT {} to {}", actionId, content, url);
-    this.client.putAbs(url).sendJson(content, response -> this.successing(response, actionId, putHandler, this.jsonObjectConsumer(actionId)));
+    return this.request(HttpMethod.PATCH, this.createAbsoluteUrlWith(paths), content.toBuffer(), this.createObjectExtractor());
 
   }
 
   /**
-   * Patch a model to a component.
+   * Patch an array to a component.
    *
-   * @param content      model to patch.
-   * @param patchHandler the handler to manager the patch resource.
-   * @param paths        to the component to patch.
+   * @param content array to patch.
+   * @param paths   to the component to patch.
    *
-   * @param <T>          type of model to patch.
+   * @return the future with the response array.
    */
-  protected <T extends Model> void patch(@NotNull final T content, @NotNull final Handler<AsyncResult<T>> patchHandler, @NotNull final Object... paths) {
+  protected Future<JsonArray> patch(@NotNull final JsonArray content, @NotNull final Object... paths) {
 
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] PATCH {} to {}", actionId, content, url);
-    final var body = content.toJsonObject();
-    @SuppressWarnings("unchecked")
-    final var type = (Class<T>) content.getClass();
-    this.client.patchAbs(url).sendJsonObject(body, response -> this.successing(response, actionId, patchHandler, this.modelConsumer(type, actionId)));
-  }
-
-  /**
-   * Patch a {@link JsonArray} to a component.
-   *
-   * @param content      resource to patch.
-   * @param patchHandler the handler to manager the patch resource.
-   * @param paths        to the component to patch.
-   */
-  protected void patch(final JsonArray content, final Handler<AsyncResult<JsonArray>> patchHandler, final Object... paths) {
-
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] PATCH {} to {}", actionId, content, url);
-    this.client.patchAbs(url).sendJson(content, response -> this.successing(response, actionId, patchHandler, this.jsonArrayConsumer(actionId)));
+    return this.request(HttpMethod.PATCH, this.createAbsoluteUrlWith(paths), content.toBuffer(), this.createArrayExtractor());
 
   }
 
   /**
-   * Patch a {@link JsonObject} to a component.
+   * Create a request to the specified URL with the specified query parameters.
    *
-   * @param content      resource to patch.
-   * @param patchHandler the handler to manager the patch resource.
-   * @param paths        to the component to patch.
+   * @param method      the HTTP method.
+   * @param url         to request.
+   * @param queryParams parameters for the request.
+   *
+   * @return the request to call.
    */
-  protected void patch(final JsonObject content, final Handler<AsyncResult<JsonObject>> patchHandler, final Object... paths) {
+  protected HttpRequest<Buffer> createRequestFor(final HttpMethod method, @NotNull final String url, final Map<String, String> queryParams) {
 
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] PATCH {} to {}", actionId, content, url);
-    this.client.patchAbs(url).sendJson(content, response -> this.successing(response, actionId, patchHandler, this.jsonObjectConsumer(actionId)));
+    var request = this.client.requestAbs(method, url);
+    for (final var entry : queryParams.entrySet()) {
+
+      final var key = entry.getKey();
+      final var value = entry.getValue();
+      request = request.addQueryParam(key, value);
+
+    }
+    return request;
 
   }
 
   /**
-   * Get a resource model.
+   * Return the action identifier to the specified method and URL.
    *
-   * @param type       of model to get.
-   * @param getHandler the handler to manage the receiver resource.
-   * @param paths      to the resource to get.
+   * @param method the HTTP method.
+   * @param url    to request.
    *
-   * @param <T>        type of model to get.
+   * @return the action identifier.
    */
-  protected <T extends Model> void getModel(final Class<T> type, @NotNull final Handler<AsyncResult<T>> getHandler, final Object... paths) {
+  protected String createActionId(@NotNull final HttpMethod method, @NotNull final String url) {
 
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] GET {}", actionId, url);
-    this.client.getAbs(url).send(response -> this.successing(response, actionId, getHandler, this.modelConsumer(type, actionId)));
+    return "[" + UUID.randomUUID() + "] " + method + " " + url;
+  }
+
+  /**
+   * Return the action identifier to the specified method and URL.
+   *
+   * @param method      the HTTP method.
+   * @param url         to request.
+   * @param queryParams parameters for the request.
+   *
+   * @return the action identifier.
+   */
+  protected String createActionId(@NotNull final HttpMethod method, @NotNull final String url, @NotNull final Map<String, String> queryParams) {
+
+    return this.createActionId(method, url) + "?" + queryParams;
 
   }
 
   /**
-   * Get a {@link JsonArray}.
+   * Request and process the response.
    *
-   * @param getHandler the handler to manage the receiver resource.
-   * @param paths      to the resource to get.
+   * @param method    the HTTP method.
+   * @param url       to request.
+   * @param extractor function to obtain the
+   *
+   * @param <T>       type of model to receive.
+   *
+   * @return the future with the received model as response.
    */
-  protected void getJsonArray(@NotNull final Handler<AsyncResult<JsonArray>> getHandler, final Object... paths) {
+  protected <T> Future<T> request(final HttpMethod method, @NotNull final String url, @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
 
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] GET {}", actionId, url);
-    this.client.getAbs(url).send(response -> this.successing(response, actionId, getHandler, this.jsonArrayConsumer(actionId)));
+    final Promise<T> promise = Promise.promise();
+    final var actionId = this.createActionId(method, url);
+    Logger.trace("{} STARTED", actionId);
+    this.client.requestAbs(method, url).send().onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId)).onFailure(this.createRequestFailureHandler(promise, actionId));
+    return promise.future();
+
+  }
+
+  /**
+   * Request and process the response.
+   *
+   * @param method      the HTTP method.
+   * @param url         to request.
+   * @param queryParams parameters for the request.
+   * @param extractor   function to obtain the
+   *
+   * @param <T>         type of model to receive.
+   *
+   * @return the future with the received model as response.
+   */
+  protected <T> Future<T> request(final HttpMethod method, @NotNull final String url, final Map<String, String> queryParams, @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
+
+    final Promise<T> promise = Promise.promise();
+    final var actionId = this.createActionId(method, url, queryParams);
+    Logger.trace("{} STARTED", actionId);
+    this.createRequestFor(method, url, queryParams).send().onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId)).onFailure(this.createRequestFailureHandler(promise, actionId));
+    return promise.future();
+
+  }
+
+  /**
+   * Request and process the response.
+   *
+   * @param method    the HTTP method.
+   * @param url       to request.
+   * @param content   to send.
+   * @param extractor function to obtain the
+   *
+   * @param <T>       type of model to receive.
+   *
+   * @return the future with the received model as response.
+   */
+  protected <T> Future<T> request(final HttpMethod method, @NotNull final String url, final Buffer content, @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
+
+    final Promise<T> promise = Promise.promise();
+    final var actionId = this.createActionId(method, url);
+    Logger.trace("{} with {} STARTED", actionId, content);
+    this.client.requestAbs(method, url).sendBuffer(content).onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId)).onFailure(this.createRequestFailureHandler(promise, actionId));
+    return promise.future();
+
+  }
+
+  /**
+   * Create the component to extract a {@link JsonObject} from a response.
+   *
+   * @return the extractor to obtain the object from the response.
+   */
+  protected Function<HttpResponse<Buffer>, JsonObject> createObjectExtractor() {
+
+    return response -> response.bodyAsJsonObject();
+  }
+
+  /**
+   * Create the component to extract a {@link JsonArray} from a response.
+   *
+   * @return the extractor to obtain the array from the response.
+   */
+  protected Function<HttpResponse<Buffer>, JsonArray> createArrayExtractor() {
+
+    return response -> response.bodyAsJsonArray();
+  }
+
+  /**
+   * Create the component to extract from a response the specified class.
+   *
+   * @param type of model to extract.
+   *
+   * @return the extractor to obtain the model from the response.
+   *
+   */
+  protected <T> Function<HttpResponse<Buffer>, List<T>> createListModelExtractor(final Class<T> type) {
+
+    return response -> {
+
+      final List<T> models = new ArrayList<>();
+      final var array = response.bodyAsJsonArray();
+      final var max = array.size();
+      for (int i = 0; i < max; i++) {
+
+        final var element = array.getBuffer(i);
+        final T model = Json.decodeValue(element, type);
+        models.add(model);
+      }
+
+      return models;
+
+    };
+
+  }
+
+  /**
+   * Create the handler to manage when the request failed.
+   *
+   * @param promise  to inform of the model.
+   * @param actionId identifier of the HTTP requests.
+   *
+   * @param <T>      type of content that has try to send.
+   *
+   * @return the extractor to obtain the array from the response.
+   */
+  protected <T> Handler<Throwable> createRequestFailureHandler(final Promise<T> promise, final String actionId) {
+
+    return cause -> {
+
+      Logger.trace(cause, "{} FAILED to be executed", actionId);
+      promise.fail(cause);
+
+    };
+  }
+
+  /**
+   * Create a handler that extract the model from a {@link HttpResponse}.
+   *
+   * @param extractor function to obtain the content of the response.
+   * @param promise   to inform of the model.
+   * @param actionId  identifier of the HTTP requests.
+   *
+   * @param <T>       type of model to extract.
+   *
+   * @return the handler for the response object.
+   */
+  protected <T> Handler<HttpResponse<Buffer>> createHandlerThatExtractBodyFromSuccessResponse(final Function<HttpResponse<Buffer>, T> extractor, final Promise<T> promise, final String actionId) {
+
+    return response -> {
+
+      final var code = response.statusCode();
+      if (Status.Family.familyOf(code) == Status.Family.SUCCESSFUL) {
+
+        try {
+
+          final T model = extractor.apply(response);
+          Logger.trace("{} SUCCESS with code {} and content {}", actionId, code, model);
+          promise.complete(model);
+
+        } catch (final Throwable cause) {
+
+          Logger.trace(cause, "{} FAILED with code {} and unexpected content {}", () -> actionId, () -> code, () -> response.bodyAsString());
+          promise.fail(cause);
+        }
+
+      } else {
+
+        Logger.trace("{} FAILED with code {} and content {}", () -> actionId, () -> code, () -> response.bodyAsString());
+        final var cause = this.toServiceException(response);
+        promise.fail(cause);
+
+      }
+
+    };
 
   }
 
   /**
    * Get a {@link JsonObject}.
    *
-   * @param getHandler the handler to manage the receiver resource.
-   * @param paths      to the resource to get.
+   * @param paths to the resource to get.
+   *
+   * @return the future received {@link JsonObject}.
    */
-  protected void getJsonObject(@NotNull final Handler<AsyncResult<JsonObject>> getHandler, final Object... paths) {
+  protected Future<JsonObject> getJsonObject(final Object... paths) {
 
-    this.getJsonObject(null, getHandler, paths);
+    return this.request(HttpMethod.GET, this.createAbsoluteUrlWith(paths), this.createObjectExtractor());
+
+  }
+
+  /**
+   * Get a {@link JsonArray}.
+   *
+   * @param paths to the resource to get.
+   *
+   * @return the future received {@link JsonArray}.
+   */
+  protected Future<JsonArray> getJsonArray(final Object... paths) {
+
+    return this.request(HttpMethod.GET, this.createAbsoluteUrlWith(paths), this.createArrayExtractor());
 
   }
 
@@ -508,154 +502,63 @@ public class ComponentClient {
    * Get a {@link JsonObject} with some parameters.
    *
    * @param queryParams the query parameters.
-   * @param getHandler  the handler to manage the receiver resource.
    * @param paths       to the resource to get.
+   *
+   * @return the future received {@link JsonObject}.
    */
-  protected void getJsonObject(final Map<String, String> queryParams, @NotNull final Handler<AsyncResult<JsonObject>> getHandler, final Object... paths) {
+  protected Future<JsonObject> getJsonObject(final Map<String, String> queryParams, final Object... paths) {
 
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    var request = this.client.getAbs(url);
-    if (queryParams != null && !queryParams.isEmpty()) {
+    // return this.createRequestFor(method, url, queryParams).send()request(HttpMethod.GET,
+    // this.createAbsoluteUrlWith(paths), this.createArrayExtractor());
 
-      Logger.trace("[{}] GET {} {}", actionId, url, queryParams);
+    // final var url = this.createAbsoluteUrlWith(paths);
+    // final var actionId = UUID.randomUUID().toString();
+    // var request = this.client.getAbs(url);
+    // if (queryParams != null && !queryParams.isEmpty()) {
+    //
+    // Logger.trace("[{}] GET {} {}", actionId, url, queryParams);
+    //
+    // for (final var entry : queryParams.entrySet()) {
+    //
+    // final var key = entry.getKey();
+    // final var value = entry.getValue();
+    // request = request.addQueryParam(key, value);
+    //
+    // }
+    //
+    // } else {
+    //
+    // Logger.trace("[{}] GET {}", actionId, url);
+    //
+    // }
+    //
+    // request.send(response -> this.successing(response, actionId, getHandler, this.jsonObjectConsumer(actionId)));
 
-      for (final var entry : queryParams.entrySet()) {
-
-        final var key = entry.getKey();
-        final var value = entry.getValue();
-        request = request.addQueryParam(key, value);
-
-      }
-
-    } else {
-
-      Logger.trace("[{}] GET {}", actionId, url);
-
-    }
-
-    request.send(response -> this.successing(response, actionId, getHandler, this.jsonObjectConsumer(actionId)));
+    return null;
 
   }
 
   /**
    * Delete a resource.
    *
-   * @param deleteHandler the handler to manage the delete result.
-   * @param paths         to the resource to remove.
+   * @param paths to the resource to remove.
+   *
+   * @return the future that explain if the component is deleted or not.
    */
-  protected void delete(final Handler<AsyncResult<Void>> deleteHandler, final Object... paths) {
+  protected Future<Void> delete(final Object... paths) {
 
-    final var url = this.createAbsoluteUrlWith(paths);
-    final var actionId = UUID.randomUUID().toString();
-    Logger.trace("[{}] DELETE {}", actionId, url);
-    this.client.deleteAbs(url).send(response -> this.successing(response, actionId, deleteHandler, this.noContentConsumer(actionId)));
+    return this.request(HttpMethod.DELETE, this.createAbsoluteUrlWith(paths), this.createNoContentExtractor());
 
   }
 
   /**
-   * Create a handler to convert a {@link JsonObject} to a {@link Model}
+   * Create the component to extract a {@link JsonArray} from a response.
    *
-   * @param type            of model to handle.
-   * @param retrieveHandler handler to inform of the model obtained by the {@link JsonObject}.
-   *
-   * @param <T>             type of model to handle.
-   *
-   * @return a handler to process the {@link JsonObject} and return the model
+   * @return the extractor to obtain the array from the response.
    */
-  public static <T extends Model> Handler<AsyncResult<JsonObject>> handlerForModel(final Class<T> type, final Handler<AsyncResult<T>> retrieveHandler) {
+  protected Function<HttpResponse<Buffer>, Void> createNoContentExtractor() {
 
-    return handler -> {
-
-      if (handler.failed()) {
-
-        retrieveHandler.handle(Future.failedFuture(handler.cause()));
-
-      } else {
-
-        final var result = handler.result();
-        if (result == null) {
-
-          retrieveHandler.handle(Future.succeededFuture());
-
-        } else {
-
-          final var model = Model.fromJsonObject(result, type);
-          if (model == null) {
-
-            Logger.trace(handler.cause(), "Unexpected content {} is not of the type {}", result, type);
-            retrieveHandler.handle(Future.failedFuture(result + " is not of the type '" + type + "'."));
-
-          } else {
-
-            retrieveHandler.handle(Future.succeededFuture(model));
-          }
-
-        }
-      }
-
-    };
-  }
-
-  /**
-   * Create a handler to convert a {@link JsonArray} to a {@link List} {@link Model}'s.
-   *
-   * @param type            of model to handle.
-   * @param retrieveHandler handler to inform of the model obtained by the {@link JsonArray}.
-   *
-   * @param <T>             type of model to handle.
-   *
-   * @return a handler to process the {@link JsonArray} and return the list models.
-   */
-  public static <T extends Model> Handler<AsyncResult<JsonArray>> handlerForListModel(final Class<T> type, final Handler<AsyncResult<List<T>>> retrieveHandler) {
-
-    return handler -> {
-
-      if (handler.failed()) {
-
-        retrieveHandler.handle(Future.failedFuture(handler.cause()));
-
-      } else {
-
-        final var result = handler.result();
-        if (result == null) {
-
-          retrieveHandler.handle(Future.succeededFuture());
-
-        } else {
-
-          final List<T> models = new ArrayList<>();
-          for (var i = 0; i < result.size(); i++) {
-
-            try {
-
-              final var object = result.getJsonObject(i);
-              final var model = Model.fromJsonObject(object, type);
-              if (model == null) {
-
-                Logger.trace("Unexpected content {} at {} is not of the type {}", result, i, type);
-                retrieveHandler.handle(Future.failedFuture(result + " at '" + i + "' is not of the type '" + type + "'."));
-
-              } else {
-
-                models.add(model);
-              }
-
-            } catch (final ClassCastException cause) {
-
-              Logger.trace(cause, "Unexpected content {} at {} is not of the type {}", result, i, type);
-              retrieveHandler.handle(Future.failedFuture(result + " at '" + i + "' is not of the type '" + type + "'."));
-
-            }
-
-          }
-
-          retrieveHandler.handle(Future.succeededFuture(models));
-
-        }
-      }
-
-    };
+    return response -> null;
   }
 
 }

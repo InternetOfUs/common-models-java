@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,9 +43,7 @@ import eu.internetofus.common.components.task_manager.TaskTest;
 import eu.internetofus.common.components.task_manager.TaskType;
 import eu.internetofus.common.components.task_manager.TaskTypeTest;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
@@ -60,17 +58,18 @@ public interface StoreServices {
   /**
    * Store a profile.
    *
-   * @param profile      to store.
-   * @param vertx        event bus to use.
-   * @param testContext  test context to use.
-   * @param storeHandler the component that will manage the stored model.
+   * @param profile     to store.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the stored profile.
    */
-  static void storeProfile(final WeNetUserProfile profile, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<WeNetUserProfile>> storeHandler) {
+  static Future<WeNetUserProfile> storeProfile(final WeNetUserProfile profile, final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManager.createProxy(vertx).createProfile(profile.toJsonObject(), testContext.succeeding(created -> {
+    return testContext.assertComplete(WeNetProfileManager.createProxy(vertx).createProfile(profile.toJsonObject()).compose(created -> {
 
       final var result = Model.fromJsonObject(created, WeNetUserProfile.class);
-      storeHandler.handle(Future.succeededFuture(result));
+      return Future.succeededFuture(result);
 
     }));
 
@@ -79,120 +78,107 @@ public interface StoreServices {
   /**
    * Store a profile example.
    *
-   * @param index        of the example to store.
-   * @param vertx        event bus to use.
-   * @param testContext  test context to use.
-   * @param storeHandler the component that will manage the stored model.
+   * @param index       of the example to store.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the stored profile.
    */
-  static void storeProfileExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<WeNetUserProfile>> storeHandler) {
+  static Future<WeNetUserProfile> storeProfileExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    new WeNetUserProfileTest().createModelExample(index, vertx, testContext, testContext.succeeding(example -> {
-
-      storeProfile(example, vertx, testContext, storeHandler);
-
-    }));
+    return testContext.assertComplete(new WeNetUserProfileTest().createModelExample(index, vertx, testContext).compose(example -> storeProfile(example, vertx, testContext)));
 
   }
 
   /**
    * Store a task type.
    *
-   * @param taskType     to store.
-   * @param vertx        event bus to use.
-   * @param testContext  test context to use.
-   * @param storeHandler the component that will manage the stored model.
+   * @param taskType    to store.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the stored model.
    */
-  static void storeTaskType(final TaskType taskType, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<TaskType>> storeHandler) {
+  static Future<TaskType> storeTaskType(final TaskType taskType, final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetTaskManager.createProxy(vertx).createTaskType(taskType, testContext.succeeding(created -> {
-
-      storeHandler.handle(Future.succeededFuture(created));
-
-    }));
+    return testContext.assertComplete(WeNetTaskManager.createProxy(vertx).createTaskType(taskType));
 
   }
 
   /**
    * Store a task type example.
    *
-   * @param index        of the example to store.
-   * @param vertx        event bus to use.
-   * @param testContext  test context to use.
-   * @param storeHandler the component that will manage the stored model.
+   * @param index       of the example to store.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the stored model.
    */
-  static void storeTaskTypeExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<TaskType>> storeHandler) {
+  static Future<TaskType> storeTaskTypeExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var example = new TaskTypeTest().createModelExample(index);
-    storeTaskType(example, vertx, testContext, storeHandler);
+    return storeTaskType(example, vertx, testContext);
 
   }
 
   /**
    * Store a task.
    *
-   * @param task         to store.
-   * @param vertx        event bus to use.
-   * @param testContext  test context to use.
-   * @param storeHandler the component that will manage the stored model.
+   * @param task        to store.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the stored task.
    */
-  static void storeTask(final Task task, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<Task>> storeHandler) {
+  static Future<Task> storeTask(final Task task, final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetTaskManager.createProxy(vertx).createTask(task, testContext.succeeding(created -> {
-
-      storeHandler.handle(Future.succeededFuture(created));
-
-    }));
+    return testContext.assertComplete(WeNetTaskManager.createProxy(vertx).createTask(task));
 
   }
 
   /**
    * Store a task example.
    *
-   * @param index        of the example to store.
-   * @param vertx        event bus to use.
-   * @param testContext  test context to use.
-   * @param storeHandler the component that will manage the stored model.
+   * @param index       of the example to store.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the stored task.
    */
-  static void storeTaskExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<Task>> storeHandler) {
+  static Future<Task> storeTaskExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    new TaskTest().createModelExample(index, vertx, testContext, testContext.succeeding(example -> {
-
-      storeTask(example, vertx, testContext, storeHandler);
-
-    }));
+    return testContext.assertComplete(new TaskTest().createModelExample(index, vertx, testContext).compose(example -> storeTask(example, vertx, testContext)));
 
   }
 
   /**
    * Store an application.
    *
-   * @param app          to store.
-   * @param vertx        event bus to use.
-   * @param testContext  test context to use.
-   * @param storeHandler the component that will manage the stored model.
+   * @param app         to store.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the stored application.
    */
-  static void storeApp(final App app, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<App>> storeHandler) {
+  static Future<App> storeApp(final App app, final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetServiceSimulator.createProxy(vertx).createApp(app, testContext.succeeding(created -> {
-
-      storeHandler.handle(Future.succeededFuture(created));
-
-    }));
+    return testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).createApp(app));
 
   }
 
   /**
    * Store an application example.
    *
-   * @param index        of the example to store.
-   * @param vertx        event bus to use.
-   * @param testContext  test context to use.
-   * @param storeHandler the component that will manage the stored model.
+   * @param index       of the example to store.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the stored application.
    */
-  static void storeAppExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<App>> storeHandler) {
+  static Future<App> storeAppExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var example = new AppTest().createModelExample(index);
-    storeApp(example, vertx, testContext, storeHandler);
+    return testContext.assertComplete(storeApp(example, vertx, testContext));
 
   }
 
@@ -215,23 +201,21 @@ public interface StoreServices {
     for (var i = 0; i < max; i++) {
 
       final var exampleIndex = i;
-      future = future.compose(tasks -> {
+      future = future.compose(tasks -> new TaskTest().createModelExample(exampleIndex, vertx, testContext).compose(task -> {
 
-        final Promise<List<Task>> storePromise = Promise.promise();
-        new TaskTest().createModelExample(exampleIndex, vertx, testContext, testContext.succeeding(task -> {
+        if (change != null) {
 
-          if (change != null) {
+          change.accept(exampleIndex, task);
+        }
 
-            change.accept(exampleIndex, task);
-          }
-          storeTask(task, vertx, testContext, testContext.succeeding(storedTask -> {
-            tasks.add(storedTask);
-            storePromise.complete(tasks);
-          }));
+        return storeTask(task, vertx, testContext).compose(storedTask -> {
 
-        }));
-        return storePromise.future();
-      });
+          tasks.add(storedTask);
+          return Future.succeededFuture(tasks);
+
+        });
+
+      }));
 
     }
 
@@ -241,35 +225,33 @@ public interface StoreServices {
   /**
    * Store a community.
    *
-   * @param community    to store.
-   * @param vertx        event bus to use.
-   * @param testContext  test context to use.
-   * @param storeHandler the component that will manage the stored model.
+   * @param community   to store.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the stored profile.
    */
-  static void storeCommunity(final CommunityProfile community, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<CommunityProfile>> storeHandler) {
+  static Future<CommunityProfile> storeCommunity(final CommunityProfile community, final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManager.createProxy(vertx).createCommunity(community, testContext.succeeding(created -> {
-
-      storeHandler.handle(Future.succeededFuture(created));
-
-    }));
+    return testContext.assertComplete(WeNetProfileManager.createProxy(vertx).createCommunity(community));
 
   }
 
   /**
    * Store a community example.
    *
-   * @param index        of the example to store.
-   * @param vertx        event bus to use.
-   * @param testContext  test context to use.
-   * @param storeHandler the component that will manage the stored model.
+   * @param index       of the example to store.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the stored profile.
    */
-  static void storeCommunityExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<CommunityProfile>> storeHandler) {
+  static Future<CommunityProfile> storeCommunityExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    new CommunityProfileTest().createModelExample(index, vertx, testContext, testContext.succeeding(example -> {
+    return testContext.assertComplete(new CommunityProfileTest().createModelExample(index, vertx, testContext).compose(example -> {
 
       example.id = null;
-      storeCommunity(example, vertx, testContext, storeHandler);
+      return storeCommunity(example, vertx, testContext);
 
     }));
 

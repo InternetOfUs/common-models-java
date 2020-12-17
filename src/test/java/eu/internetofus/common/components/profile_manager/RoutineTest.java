@@ -44,9 +44,7 @@ import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -140,21 +138,22 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param index       of the example to create.
    * @param vertx       event bus to use.
    * @param testContext test context to use.
-   * @param handler     to inform about the created routine.
+   *
+   * @return the created routine.
    */
-  public void createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<Routine>> handler) {
+  public Future<Routine> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeProfileExample(index, vertx, testContext, testContext.succeeding(profile -> {
+    return StoreServices.storeProfileExample(index, vertx, testContext).compose(profile -> {
 
       final var model = this.createModelExample(index);
       model.user_id = profile.id;
-      handler.handle(Future.succeededFuture(model));
-    }));
+      return Future.succeededFuture(model);
+    });
 
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -164,10 +163,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldComplexExampleBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(routine -> {
-
-      assertIsValid(routine, vertx, testContext);
-    }));
+    this.createModelExample(1, vertx, testContext).onSuccess(routine -> assertIsValid(routine, vertx, testContext));
 
   }
 
@@ -182,12 +178,12 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldRoutineWithoutUserIdNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> testContext.verify(() -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.user_id = null;
       assertIsNotValid(model, "user_id", vertx, testContext);
 
-    })));
+    });
 
   }
 
@@ -202,12 +198,12 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldRoutineWithUndefinedUserIdNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> testContext.verify(() -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.user_id = "Undefined user id";
       assertIsNotValid(model, "user_id", vertx, testContext);
 
-    })));
+    });
 
   }
 
@@ -222,12 +218,12 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldRoutineWithoutWeekdaydNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> testContext.verify(() -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.weekday = null;
       assertIsNotValid(model, "weekday", vertx, testContext);
 
-    })));
+    });
 
   }
 
@@ -242,12 +238,12 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldRoutineWithTooLargeWeekdaydNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> testContext.verify(() -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.weekday = ValidationsTest.STRING_256;
       assertIsNotValid(model, "weekday", vertx, testContext);
 
-    })));
+    });
 
   }
 
@@ -262,12 +258,12 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldRoutineWithoutConfidencedNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> testContext.verify(() -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.confidence = null;
       assertIsNotValid(model, "confidence", vertx, testContext);
 
-    })));
+    });
 
   }
 
@@ -282,12 +278,12 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldRoutineWithoutLabel_distributiondNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> testContext.verify(() -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.label_distribution = null;
       assertIsNotValid(model, "label_distribution", vertx, testContext);
 
-    })));
+    });
 
   }
 
@@ -302,12 +298,12 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldRoutineWithANotArrayInLabel_distributiondNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> testContext.verify(() -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.label_distribution.put("bad_distribution", new JsonObject());
       assertIsNotValid(model, "label_distribution.bad_distribution", vertx, testContext);
 
-    })));
+    });
 
   }
 
@@ -322,12 +318,12 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldRoutineWithANotScoredLabelArrayInLabel_distributiondNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> testContext.verify(() -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.label_distribution.put("bad_value", new JsonArray().add(new JsonArray()));
       assertIsNotValid(model, "label_distribution.bad_value", vertx, testContext);
 
-    })));
+    });
 
   }
 
@@ -342,12 +338,12 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldRoutineWithABadScoredLabelArrayInLabel_distributiondNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> testContext.verify(() -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.label_distribution.put("bad_score_label", new JsonArray().add(new ScoredLabelTest().createModelExample(1).toJsonObject()).add(new JsonObject()));
       assertIsNotValid(model, "label_distribution.bad_score_label[1].label", vertx, testContext);
 
-    })));
+    });
 
   }
 
@@ -377,8 +373,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldMergeTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> this.createModelExample(2, vertx, testContext,
-        testContext.succeeding(source -> assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))))));
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> this.createModelExample(2, vertx, testContext)
+        .onSuccess(source -> assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))));
   }
 
   /**
@@ -392,9 +388,9 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldMergeOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
-      StoreServices.storeProfileExample(43, vertx, testContext, testContext.succeeding(profile -> {
+      StoreServices.storeProfileExample(43, vertx, testContext).onSuccess(profile -> {
 
         final var source = new Routine();
         source.user_id = profile.id;
@@ -406,9 +402,9 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
         });
 
-      }));
+      });
 
-    }));
+    });
   }
 
   /**
@@ -422,13 +418,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldNotMergeWithBadUserId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new Routine();
       source.user_id = "undefined user indentifier";
       assertCannotMerge(target, source, "user_id", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -442,7 +438,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldMergeOnlyWeekday(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new Routine();
       source.weekday = "DV";
@@ -454,7 +450,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       });
 
-    }));
+    });
   }
 
   /**
@@ -468,13 +464,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldNotMergeWithBadWeekday(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new Routine();
       source.weekday = ValidationsTest.STRING_256;
       assertCannotMerge(target, source, "weekday", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -488,7 +484,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldMergeOnlyConfidence(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new Routine();
       source.confidence = 43d;
@@ -500,7 +496,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       });
 
-    }));
+    });
   }
 
   /**
@@ -514,7 +510,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldMergeOnlyLabelDistribution(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new Routine();
       source.label_distribution = new JsonObject();
@@ -526,7 +522,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       });
 
-    }));
+    });
   }
 
   /**
@@ -540,13 +536,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldNotMergeWithBadLabelDistibutionField(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new Routine();
       source.label_distribution = new JsonObject().put("bad_field", new JsonObject());
       assertCannotMerge(target, source, "label_distribution.bad_field", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -560,13 +556,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldNotMergeWithBadLabelDistibutionArray(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new Routine();
       source.label_distribution = new JsonObject().put("bad_array", new JsonArray().add(new JsonArray()));
       assertCannotMerge(target, source, "label_distribution.bad_array", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -580,13 +576,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldNotMergeWithBadLabelDistibutionScoredLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new Routine();
       source.label_distribution = new JsonObject().put("bad_scored_label", new JsonArray().add(new JsonObject()));
       assertCannotMerge(target, source, "label_distribution.bad_scored_label[0].label", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -600,7 +596,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldMergeOnlyScoredLAbelInLabelDistribution(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new Routine();
       source.label_distribution = new JsonObject(target.label_distribution.toBuffer());
@@ -614,7 +610,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       });
 
-    }));
+    });
   }
 
   /**
@@ -643,8 +639,9 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldUpdateTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> this.createModelExample(2, vertx, testContext,
-        testContext.succeeding(source -> assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))))));
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> this.createModelExample(2, vertx, testContext)
+        .onSuccess(source -> assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))));
+
   }
 
   /**
@@ -658,9 +655,9 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldUpdateOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
-      StoreServices.storeProfileExample(43, vertx, testContext, testContext.succeeding(profile -> {
+      StoreServices.storeProfileExample(43, vertx, testContext).onSuccess(profile -> {
 
         final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
         source.user_id = profile.id;
@@ -670,9 +667,9 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
         });
 
-      }));
+      });
 
-    }));
+    });
   }
 
   /**
@@ -686,13 +683,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldNotUpdateWithBadUserId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.user_id = "undefined user indentifier";
       assertCannotUpdate(target, source, "user_id", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -706,7 +703,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldUpdateOnlyWeekday(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.weekday = "DV";
@@ -716,7 +713,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       });
 
-    }));
+    });
   }
 
   /**
@@ -730,13 +727,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldNotUpdateWithBadWeekday(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.weekday = ValidationsTest.STRING_256;
       assertCannotUpdate(target, source, "weekday", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -750,7 +747,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldUpdateOnlyConfidence(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.confidence = 43d;
@@ -760,7 +757,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       });
 
-    }));
+    });
   }
 
   /**
@@ -774,7 +771,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldUpdateOnlyLabelDistribution(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.label_distribution = new JsonObject();
@@ -784,7 +781,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       });
 
-    }));
+    });
   }
 
   /**
@@ -798,13 +795,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldNotUpdateWithBadLabelDistibutionField(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.label_distribution = new JsonObject().put("bad_field", new JsonObject());
       assertCannotUpdate(target, source, "label_distribution.bad_field", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -818,13 +815,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldNotUpdateWithBadLabelDistibutionArray(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.label_distribution = new JsonObject().put("bad_array", new JsonArray().add(new JsonArray()));
       assertCannotUpdate(target, source, "label_distribution.bad_array", vertx, testContext);
 
-    }));
+    });
   }
 
   /**
@@ -838,13 +835,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldNotUpdateWithBadLabelDistibutionScoredLabel(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(target -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.label_distribution = new JsonObject().put("bad_scored_label", new JsonArray().add(new JsonObject()));
       assertCannotUpdate(target, source, "label_distribution.bad_scored_label[0].label", vertx, testContext);
 
-    }));
+    });
   }
 
 }

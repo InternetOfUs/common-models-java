@@ -30,7 +30,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-import eu.internetofus.common.TimeManager;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
@@ -64,6 +63,12 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
   public String id;
 
   /**
+   * The identifier of the task type associated to the task.
+   */
+  @Schema(description = "The identifier of the task type associated to the task.", example = "b129e5509c9bb79")
+  public String taskTypeId;
+
+  /**
    * The identifier of the application where the task is done.
    */
   @Schema(description = "The identifier of the application where the task is done.", example = "yub129e5509bb79")
@@ -76,12 +81,6 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
   public String communityId;
 
   /**
-   * The identifier of the task type associated to the task.
-   */
-  @Schema(description = "The identifier of the task type associated to the task.", example = "b129e5509c9bb79")
-  public String taskTypeId;
-
-  /**
    * The identifier of the WeNet user who created the task.
    */
   @Schema(description = "The identifier of the WeNet user who created the task.", example = "15837028-645a-4a55-9aaf-ceb846439eba")
@@ -92,27 +91,6 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
    */
   @Schema(description = "The explanation of the task objective.")
   public TaskGoal goal;
-
-  /**
-   * The difference, measured in seconds, between the time when the task should be started and midnight, January 1, 1970
-   * UTC.
-   */
-  @Schema(description = "The UTC epoch timestamp representing the time the task should be started.", example = "1563900000")
-  public Long startTs;
-
-  /**
-   * The difference, measured in seconds, between the time when the task should be completed by and midnight, January 1,
-   * 1970 UTC.
-   */
-  @Schema(description = "The UTC epoch timestamp representing the time the task should be completed by.", example = "1563930000")
-  public Long endTs;
-
-  /**
-   * The difference, measured in seconds, between the time when the task accept new volunteers and midnight, January 1,
-   * 1970 UTC.
-   */
-  @Schema(description = "The UTC epoch timestamp representing the deadline time for offering help.", example = "1563930000")
-  public Long deadlineTs;
 
   /**
    * The difference, measured in seconds, between the time when the task is closed by and midnight, January 1, 1970 UTC.
@@ -132,6 +110,12 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
   @Schema(type = "object", description = "The set of norms that define the interaction of the user when do the task.")
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject attributes;
+
+  /**
+   * The list of historical transactions that has been done in this task.
+   */
+  @ArraySchema(schema = @Schema(implementation = TaskTransaction.class), arraySchema = @Schema(description = "List of historical transactions that has been done in this task."))
+  public List<TaskTransaction> transactions;
 
   /**
    * {@inheritDoc}
@@ -168,43 +152,19 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       } else {
 
         future = future.compose(mapper -> this.goal.validate(codePrefix + ".goal", vertx));
-        this.deadlineTs = Validations.validateTimeStamp(codePrefix, "deadlineTs", this.deadlineTs, false);
-        if (this.deadlineTs < TimeManager.now()) {
+        this.closeTs = Validations.validateTimeStamp(codePrefix, "closeTs", this.closeTs, true);
+        if (this.closeTs != null && this.closeTs < this._creationTs) {
 
-          promise.fail(new ValidationErrorException(codePrefix + ".deadlineTs", "The 'deadlineTs' has to be greater than Now."));
+          promise.fail(new ValidationErrorException(codePrefix + ".closeTs", "The 'closeTs' has to be after the '_creationTs'."));
 
         } else {
 
-          this.startTs = Validations.validateTimeStamp(codePrefix, "startTs", this.startTs, false);
-          if (this.startTs < this.deadlineTs) {
+          future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
 
-            promise.fail(new ValidationErrorException(codePrefix + ".startTs", "The 'startTs' has to be after the 'deadlineTs'."));
+          // TODO check the attributes fetch the attributes on the type
 
-          } else {
+          promise.complete();
 
-            this.endTs = Validations.validateTimeStamp(codePrefix, "endTs", this.endTs, false);
-            if (this.endTs < this.startTs) {
-
-              promise.fail(new ValidationErrorException(codePrefix + ".endTs", "The 'endTs' has to be after the 'startTs'."));
-
-            } else {
-
-              this.closeTs = Validations.validateTimeStamp(codePrefix, "closeTs", this.closeTs, true);
-              if (this.closeTs != null && this.closeTs < this._creationTs) {
-
-                promise.fail(new ValidationErrorException(codePrefix + ".closeTs", "The 'closeTs' has to be after the '_creationTs'."));
-
-              } else {
-
-                future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
-
-                // TODO check the attributes fetch the attributes on the type
-
-                promise.complete();
-
-              }
-            }
-          }
         }
       }
 
@@ -252,24 +212,6 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
         merged.communityId = this.communityId;
       }
 
-      merged.startTs = source.startTs;
-      if (merged.startTs == null) {
-
-        merged.startTs = this.startTs;
-      }
-
-      merged.endTs = source.endTs;
-      if (merged.endTs == null) {
-
-        merged.endTs = this.endTs;
-      }
-
-      merged.deadlineTs = source.deadlineTs;
-      if (merged.deadlineTs == null) {
-
-        merged.deadlineTs = this.deadlineTs;
-      }
-
       merged.closeTs = source.closeTs;
       if (merged.closeTs == null) {
 
@@ -280,6 +222,12 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       if (merged.attributes == null) {
 
         merged.attributes = this.attributes;
+      }
+
+      merged.transactions = source.transactions;
+      if (merged.transactions == null) {
+
+        merged.transactions = this.transactions;
       }
 
       future = future.compose(Merges.mergeField(this.goal, source.goal, codePrefix + ".goal", vertx, (model, mergedGoal) -> model.goal = mergedGoal));
@@ -324,13 +272,11 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       updated.requesterId = source.requesterId;
       updated.appId = source.appId;
       updated.communityId = source.communityId;
-      updated.startTs = source.startTs;
-      updated.endTs = source.endTs;
-      updated.deadlineTs = source.deadlineTs;
       updated.closeTs = source.closeTs;
       updated.attributes = source.attributes;
       updated.goal = source.goal;
       updated.norms = source.norms;
+      updated.transactions = source.transactions;
 
       future = future.compose(Validations.validateChain(codePrefix, vertx));
 

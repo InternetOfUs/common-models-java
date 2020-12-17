@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -169,22 +169,8 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
       this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
       if (this.id != null) {
 
-        future = future.compose(mapper -> {
+        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
-          final Promise<Void> verifyNotRepeatedIdPromise = Promise.promise();
-          WeNetProfileManager.createProxy(vertx).retrieveProfile(this.id, profile -> {
-
-            if (profile.failed()) {
-
-              verifyNotRepeatedIdPromise.complete();
-
-            } else {
-
-              verifyNotRepeatedIdPromise.fail(new ValidationErrorException(codePrefix + ".id", "The user '" + this.id + "' has already a profile."));
-            }
-          });
-          return verifyNotRepeatedIdPromise.future();
-        });
       }
 
       if (this.name != null) {

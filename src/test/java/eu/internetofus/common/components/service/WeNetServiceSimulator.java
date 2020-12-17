@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,11 +28,10 @@ package eu.internetofus.common.components.service;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.vertx.ComponentClient;
+import eu.internetofus.common.components.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -80,101 +79,112 @@ public interface WeNetServiceSimulator {
   /**
    * Return an {@link App} in JSON format.
    *
-   * @param id              identifier of the app to get.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id identifier of the app to get.
+   *
+   * @return the found application.
    */
-  void retrieveJsonApp(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> retrieveHandler);
+  Future<JsonObject> retrieveJsonApp(@NotNull String id);
 
   /**
    * Return an application.
    *
-   * @param id              identifier of the app to get.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id identifier of the app to get.
+   *
+   * @return the found application.
    */
   @GenIgnore
-  default void retrieveApp(@NotNull final String id, @NotNull final Handler<AsyncResult<App>> retrieveHandler) {
+  default Future<App> retrieveApp(@NotNull final String id) {
 
-    this.retrieveJsonApp(id, ComponentClient.handlerForModel(App.class, retrieveHandler));
+    return Model.fromFutureJsonObject(this.retrieveJsonApp(id), App.class);
 
   }
 
   /**
    * Defined method only for testing and can store an APP.
    *
-   * @param app           to create.
-   * @param createHandler handler to manage the creation process.
+   * @param app to create.
+   *
+   * @return the created application.
    */
-  void createApp(@NotNull JsonObject app, @NotNull Handler<AsyncResult<JsonObject>> createHandler);
+  Future<JsonObject> createApp(@NotNull JsonObject app);
 
   /**
    * Defined method only for testing and can store an APP.
    *
-   * @param app           to create.
-   * @param createHandler handler to manage the creation process.
+   * @param app to create.
+   *
+   * @return the created application.
    */
   @GenIgnore
-  default void createApp(@NotNull final App app, @NotNull final Handler<AsyncResult<App>> createHandler) {
+  default Future<App> createApp(@NotNull final App app) {
 
-    this.createApp(app.toJsonObject(), ComponentClient.handlerForModel(App.class, createHandler));
+    return Model.fromFutureJsonObject(this.createApp(app.toJsonObject()), App.class);
 
   }
 
   /**
    * Defined method only for testing and can delete an APP.
    *
-   * @param id            identifier of the application to remove.
-   * @param deleteHandler handler to manage the delete process.
+   * @param id identifier of the application to remove.
+   *
+   * @return the deleted application.
    */
-  void deleteApp(@NotNull String id, @NotNull Handler<AsyncResult<Void>> deleteHandler);
+  Future<Void> deleteApp(@NotNull String id);
 
   /**
    * Return all the callbacks messages received by an {@link App}.
    *
-   * @param id              identifier of the app to get the callback messages.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id identifier of the app to get the callback messages.
+   *
+   * @return the callback messsages.
    */
-  void retrieveJsonCallbacks(@NotNull String id, @NotNull Handler<AsyncResult<JsonArray>> retrieveHandler);
+  Future<JsonArray> retrieveJsonCallbacks(@NotNull String id);
 
   /**
    * Add a callback message for an application.
    *
    * @param appId   identifier of the application to add the message.
    * @param message callback message.
-   * @param handler to manage the adding.
+   *
+   * @return the added callback.
    */
-  void addJsonCallBack(String appId, JsonObject message, Handler<AsyncResult<JsonObject>> handler);
+  Future<JsonObject> addJsonCallBack(String appId, JsonObject message);
 
   /**
    * Delete all the callbacks for an application.
    *
-   * @param appId   identifier of the application to delete all the callbacks.
-   * @param handler to manage the delete.
+   * @param appId identifier of the application to delete all the callbacks.
+   *
+   * @return the deleted callbacks result.
    */
-  void deleteCallbacks(String appId, Handler<AsyncResult<Void>> handler);
+  Future<Void> deleteCallbacks(String appId);
 
   /**
    * Return all the users users received by an {@link App}.
    *
-   * @param id              identifier of the app to get the user users.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id identifier of the app to get the user users.
+   *
+   * @return the appliction users.
    */
-  void retrieveJsonArrayAppUserIds(@NotNull String id, @NotNull Handler<AsyncResult<JsonArray>> retrieveHandler);
+  Future<JsonArray> retrieveAppUserIds(@NotNull String id);
 
   /**
    * Add users into an application.
    *
-   * @param appId   identifier of the application to add the users.
-   * @param users   to add.
-   * @param handler to manage the adding.
+   * @param appId identifier of the application to add the users.
+   * @param users to add.
+   *
+   * @return the added user.
    */
-  void addUsers(String appId, JsonArray users, Handler<AsyncResult<JsonArray>> handler);
+  Future<JsonArray> addUsers(String appId, JsonArray users);
 
   /**
    * Delete all the users of an application.
    *
-   * @param appId   identifier of the application to delete all the users.
-   * @param handler to manage the delete.
+   * @param appId identifier of the application to delete all the users.
+   *
+   * @return the result of the deleted users.
    */
-  void deleteUsers(String appId, Handler<AsyncResult<Void>> handler);
+  Future<Void> deleteUsers(String appId);
 
 }

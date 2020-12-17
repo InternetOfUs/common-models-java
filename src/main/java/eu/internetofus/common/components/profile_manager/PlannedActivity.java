@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,7 +29,6 @@ package eu.internetofus.common.components.profile_manager;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
@@ -133,24 +132,8 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
               }
             }
 
-            future = future.compose((Function<Void, Future<Void>>) map -> {
+            future = Validations.composeValidateId(future, codePrefix, ".attendees[" + index + "]", id, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
-              final Promise<Void> searchPromise = Promise.promise();
-              WeNetProfileManager.createProxy(vertx).retrieveProfile(id, search -> {
-
-                if (search.result() != null) {
-
-                  searchPromise.complete();
-
-                } else {
-
-                  searchPromise.fail(new ValidationErrorException(codePrefix + ".attendees[" + index + "]", "Does not exist an user with the identifier '" + id + "'."));
-                }
-
-              });
-
-              return searchPromise.future();
-            });
           }
 
         }

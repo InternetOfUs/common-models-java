@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -68,9 +68,9 @@ public class WeNetServiceClient extends ComponentClient implements WeNetService 
    * {@inheritDoc}
    */
   @Override
-  public void retrieveJsonApp(final String id, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
+  public void retrieveApp(final String id, final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.getJsonObject(retrieveHandler, "/app", id);
+    this.getJsonObject("/app", id).onComplete(handler);
 
   }
 
@@ -78,9 +78,9 @@ public class WeNetServiceClient extends ComponentClient implements WeNetService 
    * {@inheritDoc}
    */
   @Override
-  public void retrieveJsonArrayAppUserIds(final String id, final Handler<AsyncResult<JsonArray>> retrieveHandler) {
+  public void retrieveAppUserIds(final String id, final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.getJsonArray(retrieveHandler, "/app", id, "/users");
+    this.getJsonArray("/app", id, "/users").onComplete(handler);
 
   }
 

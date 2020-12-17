@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -95,46 +95,14 @@ public class Incentive extends ReflectionModel implements Model, Validable {
       this.AppID = Validations.validateNullableStringField(codePrefix, "AppID", 255, this.AppID);
       if (this.AppID != null) {
 
-        future = future.compose(val -> {
+        future = Validations.composeValidateId(future, codePrefix, "AppID", this.AppID, true, WeNetService.createProxy(vertx)::retrieveApp);
 
-          final Promise<Void> checkExistApp = Promise.promise();
-          WeNetService.createProxy(vertx).retrieveApp(this.AppID, retrieve -> {
-
-            if (retrieve.failed()) {
-
-              checkExistApp.fail(new ValidationErrorException(codePrefix + ".AppID", "No found application associated to the specified identifier"));
-
-            } else {
-
-              checkExistApp.complete();
-            }
-
-          });
-
-          return checkExistApp.future();
-        });
       }
       this.UserId = Validations.validateNullableStringField(codePrefix, "UserId", 255, this.UserId);
       if (this.UserId != null) {
 
-        future = future.compose(val -> {
+        future = Validations.composeValidateId(future, codePrefix, "UserId", this.UserId, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
-          final Promise<Void> checkExistUser = Promise.promise();
-          WeNetProfileManager.createProxy(vertx).retrieveProfile(this.UserId, retrieve -> {
-
-            if (retrieve.failed()) {
-
-              checkExistUser.fail(new ValidationErrorException(codePrefix + ".UserId", "No found user associated to the specified identifier"));
-
-            } else {
-
-              checkExistUser.complete();
-            }
-
-          });
-
-          return checkExistUser.future();
-        });
       }
       this.IncentiveType = Validations.validateNullableStringField(codePrefix, "IncentiveType", 255, this.IncentiveType);
       this.Issuer = Validations.validateNullableStringField(codePrefix, "Issuer", 255, this.Issuer);

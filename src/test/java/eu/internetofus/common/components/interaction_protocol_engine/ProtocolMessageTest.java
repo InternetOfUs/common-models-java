@@ -51,9 +51,7 @@ import eu.internetofus.common.components.service.WeNetServiceMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.components.task_manager.WeNetTaskManagerMocker;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -152,19 +150,21 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   /**
    * Create an example model that has the specified index that create any required component.
    *
-   * @param index         to use in the example.
-   * @param vertx         event bus to use.
-   * @param testContext   context to test.
-   * @param createHandler the component that will manage the created model.
+   * @param index       to use in the example.
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @return the created protocol message.
    */
-  public void createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<ProtocolMessage>> createHandler) {
+  public Future<ProtocolMessage> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeTaskExample(index, vertx, testContext, testContext.succeeding(task -> {
+    return testContext.assertComplete(StoreServices.storeTaskExample(index, vertx, testContext).compose(task -> {
 
-      StoreServices.storeCommunityExample(index, vertx, testContext, testContext.succeeding(community -> {
-        new ProtocolAddressTest().createModelExample(index, vertx, testContext, testContext.succeeding(sender -> {
+      return StoreServices.storeCommunityExample(index, vertx, testContext).compose(community -> {
 
-          new ProtocolAddressTest().createModelExample(index + 1, vertx, testContext, testContext.succeeding(receiver -> {
+        return new ProtocolAddressTest().createModelExample(index, vertx, testContext).compose(sender -> {
+
+          return new ProtocolAddressTest().createModelExample(index + 1, vertx, testContext).compose(receiver -> {
 
             final var model = this.createModelExample(index);
             model.appId = task.appId;
@@ -172,11 +172,11 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
             model.communityId = community.id;
             model.sender = sender;
             model.receiver = receiver;
-            createHandler.handle(Future.succeededFuture(model));
+            return Future.succeededFuture(model);
 
-          }));
-        }));
-      }));
+          });
+        });
+      });
     }));
 
   }
@@ -200,7 +200,7 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
    *
    * @param index       to verify
    * @param vertx       event bus to use.
@@ -212,7 +212,7 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext, testContext.succeeding(model -> assertIsValid(model, vertx, testContext)));
+    this.createModelExample(index, vertx, testContext).onSuccess(model -> assertIsValid(model, vertx, testContext));
 
   }
 
@@ -227,10 +227,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithoutAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.appId = null;
       assertIsValid(model, vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -244,10 +244,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithALargeAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.appId = ValidationsTest.STRING_256;
       assertIsNotValid(model, "appId", vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -261,10 +261,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.appId = "undefined";
       assertIsNotValid(model, "appId", vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -278,10 +278,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithoutCommunityId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.communityId = null;
       assertIsValid(model, vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -295,10 +295,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithALargeCommunityId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.communityId = ValidationsTest.STRING_256;
       assertIsNotValid(model, "communityId", vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -312,10 +312,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithoutSender(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.sender = null;
       assertIsNotValid(model, "sender", vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -329,10 +329,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithBadSender(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.sender = new ProtocolAddressTest().createModelExample(1);
       assertIsNotValid(model, "sender.userId", vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -346,10 +346,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithoutReceiver(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.receiver = null;
       assertIsNotValid(model, "receiver", vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -363,10 +363,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithBadReceiver(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.receiver = new ProtocolAddressTest().createModelExample(2);
       assertIsNotValid(model, "receiver.userId", vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -380,10 +380,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithoutParticle(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.particle = null;
       assertIsNotValid(model, "particle", vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -397,10 +397,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithLatgeParticle(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.particle = ValidationsTest.STRING_256;
       assertIsNotValid(model, "particle", vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -414,10 +414,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithoutTaskId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.taskId = null;
       assertIsValid(model, vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -431,10 +431,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithALargeTaskId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.taskId = ValidationsTest.STRING_256;
       assertIsNotValid(model, "taskId", vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -448,10 +448,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithAnUndefinedTaskId(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(2, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(2, vertx, testContext).onSuccess(model -> {
       model.taskId = "undefined";
       assertIsNotValid(model, "taskId", vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -465,10 +465,10 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithoutContent(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.content = null;
       assertIsNotValid(model, "content", vertx, testContext);
-    }));
+    });
   }
 
   /**
@@ -482,16 +482,16 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldNotBeValidWithABadNorm(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       final var badNorm = new Norm();
       badNorm.attribute = ValidationsTest.STRING_256;
       model.norms.add(badNorm);
       assertIsNotValid(model, "norms[1].attribute", vertx, testContext);
-    }));
+    });
   }
 
   /**
-   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} with multiple norms is valid.
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext )} with multiple norms is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -501,7 +501,7 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldExampleWithMultipleNormsBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.norms.add(new NormTest().createModelExample(2));
       model.norms.add(new NormTest().createModelExample(3));
@@ -512,13 +512,13 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
 
       assertIsValid(model, vertx, testContext);
 
-    }));
+    });
 
   }
 
   /**
-   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext, Handler)} with multiple norms with the same id
-   * is not valid.
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with multiple norms with the same id is not
+   * valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -528,7 +528,7 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @Test
   public void shouldExampleWithDuplicatedNormIdsNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext, testContext.succeeding(model -> {
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.norms.add(new NormTest().createModelExample(2));
       model.norms.add(new NormTest().createModelExample(3));
@@ -539,7 +539,7 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
 
       assertIsNotValid(model, "norms[1]", vertx, testContext);
 
-    }));
+    });
 
   }
 

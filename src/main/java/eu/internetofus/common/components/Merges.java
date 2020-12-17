@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -42,8 +42,6 @@ import eu.internetofus.common.components.profile_manager.PlannedActivity;
 import eu.internetofus.common.components.profile_manager.RelevantLocation;
 import eu.internetofus.common.components.profile_manager.Routine;
 import eu.internetofus.common.components.profile_manager.SocialPractice;
-import eu.internetofus.common.components.task_manager.TaskAttributeType;
-import eu.internetofus.common.components.task_manager.TaskTransactionType;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -347,48 +345,6 @@ public interface Merges {
       }
 
     };
-
-  }
-
-  /**
-   * Merge two list of task attribute types.
-   *
-   * @param targetTaskAttributeTypes target task attribute types to merge.
-   * @param sourceTaskAttributeTypes source task attribute types to merge.
-   * @param codePrefix               prefix for the error code.
-   * @param vertx                    the event bus infrastructure to use.
-   * @param setter                   function to set the merged field list into the merged model.
-   *
-   * @param <M>                      type of merging model.
-   *
-   * @return the future that will provide the merged list of task attribute types.
-   */
-  static <M> Function<M, Future<M>> mergeTaskAttributeTypes(final List<TaskAttributeType> targetTaskAttributeTypes, final List<TaskAttributeType> sourceTaskAttributeTypes, final String codePrefix, final Vertx vertx,
-      final BiConsumer<M, List<TaskAttributeType>> setter) {
-
-    return Merges.mergeFieldList(targetTaskAttributeTypes, sourceTaskAttributeTypes, codePrefix, vertx, taskattributetype -> taskattributetype.name != null,
-        (targetTaskAttributeType, sourceTaskAttributeType) -> targetTaskAttributeType.name.equals(sourceTaskAttributeType.name), setter);
-
-  }
-
-  /**
-   * Merge two list of task transaction types.
-   *
-   * @param targetTaskTransactionTypes target task transaction types to merge.
-   * @param sourceTaskTransactionTypes source task transaction types to merge.
-   * @param codePrefix                 prefix for the error code.
-   * @param vertx                      the event bus infrastructure to use.
-   * @param setter                     function to set the merged field list into the merged model.
-   *
-   * @param <M>                        type of merging model.
-   *
-   * @return the future that will provide the merged list of task transaction types.
-   */
-  static <M> Function<M, Future<M>> mergeTaskTransactionTypes(final List<TaskTransactionType> targetTaskTransactionTypes, final List<TaskTransactionType> sourceTaskTransactionTypes, final String codePrefix, final Vertx vertx,
-      final BiConsumer<M, List<TaskTransactionType>> setter) {
-
-    return Merges.mergeFieldList(targetTaskTransactionTypes, sourceTaskTransactionTypes, codePrefix, vertx, taskTransactionType -> taskTransactionType.label != null,
-        (targetTaskTransactionType, sourceTaskTransactionType) -> targetTaskTransactionType.label.equals(sourceTaskTransactionType.label), setter);
 
   }
 

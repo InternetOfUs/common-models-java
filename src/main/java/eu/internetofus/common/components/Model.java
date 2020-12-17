@@ -36,6 +36,7 @@ import org.tinylog.Logger;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -106,6 +107,71 @@ public interface Model {
     }
     // No model found
     return null;
+  }
+
+  /**
+   * Obtain the model associated to a future {@link JsonObject}.
+   *
+   * @param futureObject the future object of the model.
+   * @param type         of model to obtain.
+   *
+   * @param <T>          type of model.
+   *
+   * @return the future model defined on the object.
+   */
+  public static <T extends Model> Future<T> fromFutureJsonObject(final Future<JsonObject> futureObject, final Class<T> type) {
+
+    return futureObject.compose(object -> {
+
+      try {
+
+        final var value = Json.decodeValue(object.toBuffer(), type);
+        return Future.succeededFuture(value);
+
+      } catch (final Throwable throwable) {
+
+        return Future.failedFuture(throwable);
+      }
+
+    });
+
+  }
+
+  /**
+   * Obtain the model associated to a future {@link JsonArray}.
+   *
+   * @param futureArray the future array of the model.
+   * @param type        of model to obtain.
+   *
+   * @param <T>         type of model.
+   *
+   * @return the future model defined on the array.
+   */
+  public static <T extends Model> Future<List<T>> fromFutureJsonArray(final Future<JsonArray> futureArray, final Class<T> type) {
+
+    return futureArray.compose(array -> {
+
+      try {
+
+        final var values = new ArrayList<T>();
+        final var max = array.size();
+        for (var i = 0; i < max; i++) {
+
+          final var element = array.getJsonObject(i);
+          final var value = Json.decodeValue(element.toBuffer(), type);
+          values.add(value);
+
+        }
+
+        return Future.succeededFuture(values);
+
+      } catch (final Throwable throwable) {
+
+        return Future.failedFuture(throwable);
+      }
+
+    });
+
   }
 
   /**

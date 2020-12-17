@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,11 +28,13 @@ package eu.internetofus.common.components.incentive_server;
 
 import javax.validation.constraints.NotNull;
 
-import eu.internetofus.common.vertx.ComponentClient;
+import eu.internetofus.common.components.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -79,21 +81,25 @@ public interface WeNetIncentiveServer {
   /**
    * Update the status of a task.
    *
-   * @param status        for the task.
-   * @param updateHandler handler to manage the update process.
+   * @param status for the task.
+   *
+   * @return the future task status.
    */
   @GenIgnore
-  default void updateTaskStatus(final @NotNull TaskStatus status, @NotNull final Handler<AsyncResult<TaskStatus>> updateHandler) {
+  default Future<TaskStatus> updateTaskStatus(final @NotNull TaskStatus status) {
 
-    this.updateJsonTaskStatus(status.toJsonObject(), ComponentClient.handlerForModel(TaskStatus.class, updateHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.updateTaskStatus(status.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), TaskStatus.class);
+
   }
 
   /**
    * Update the status of a task.
    *
-   * @param status        for the task.
-   * @param updateHandler handler to manage the update process.
+   * @param status  for the task.
+   * @param handler for the task status.
    */
-  void updateJsonTaskStatus(@NotNull JsonObject status, @NotNull Handler<AsyncResult<JsonObject>> updateHandler);
+  void updateTaskStatus(@NotNull JsonObject status, Handler<AsyncResult<JsonObject>> handler);
 
 }

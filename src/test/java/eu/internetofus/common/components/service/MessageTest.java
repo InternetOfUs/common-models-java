@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,36 +26,31 @@
 
 package eu.internetofus.common.components.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.jupiter.api.Test;
-
 import eu.internetofus.common.components.ModelTestCase;
+import io.vertx.core.json.JsonObject;
 
 /**
- * Test the classes that extends the {@link BaseMessage}
- *
- * @param <T> type of message to test.
+ * Test the {@link Message}
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class BaseMessageTestCase<T extends BaseMessage> extends ModelTestCase<T> {
+public class MessageTest extends ModelTestCase<Message> {
 
   /**
-   * Create an empty message.
-   *
-   * @return the created empty message.
+   * {@inheritDoc}
    */
-  public abstract T createEmptyMessage();
+  @Override
+  public Message createModelExample(final int index) {
 
-  /**
-   * Verify that is the the type of the message when it is created.
-   */
-  @Test
-  public void shouldHaveType() {
+    final var model = new Message();
+    model.appId = "appId_" + index;
+    model.attributes = new JsonObject().put("key", "value").put("index", index);
+    model.communityId = "communityId_" + index;
+    model.label = "label_" + index;
+    model.receiverId = "receiverId_" + index;
+    model.taskId = "taskId_" + index;
+    return model;
 
-    final var model = this.createEmptyMessage();
-    assertThat(model.type).isNotNull();
   }
 
 }

@@ -55,12 +55,12 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
   @Test
   public void shouldRetrieveCommunityProfilesPage(final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeCommunityExample(1, vertx, testContext, testContext.succeeding(community -> {
-      StoreServices.storeCommunityExample(2, vertx, testContext, testContext.succeeding(community2 -> {
-        StoreServices.storeCommunityExample(3, vertx, testContext, testContext.succeeding(community3 -> {
-          StoreServices.storeCommunityExample(4, vertx, testContext, testContext.succeeding(community4 -> {
+    StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
+      StoreServices.storeCommunityExample(2, vertx, testContext).onSuccess(community2 -> {
+        StoreServices.storeCommunityExample(3, vertx, testContext).onSuccess(community3 -> {
+          StoreServices.storeCommunityExample(4, vertx, testContext).onSuccess(community4 -> {
 
-            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, null, null, null, 1, 3, testContext.succeeding(page -> testContext.verify(() -> {
+            testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, null, null, null, 1, 3).onSuccess(page -> testContext.verify(() -> {
 
               assertThat(page).isNotNull();
               assertThat(page.offset).isEqualTo(1);
@@ -69,10 +69,10 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
               testContext.completeNow();
 
             })));
-          }));
-        }));
-      }));
-    }));
+          });
+        });
+      });
+    });
 
   }
 
@@ -85,17 +85,17 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
   @Test
   public void shouldRetrieveCommunityProfilesPageByApp(final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeCommunityExample(1, vertx, testContext, testContext.succeeding(community -> {
+    StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
 
       final var newCommunity = Model.fromJsonObject(community.toJsonObject(), CommunityProfile.class);
       newCommunity.id = null;
-      StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community2 -> {
+      StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community2 -> {
 
-        StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community3 -> {
+        StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community3 -> {
 
-          StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community4 -> {
+          StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community4 -> {
 
-            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(community.appId, null, null, null, null, null, 0, 2, testContext.succeeding(page -> testContext.verify(() -> {
+            testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(community.appId, null, null, null, null, null, 0, 2).onSuccess(page -> testContext.verify(() -> {
 
               assertThat(page).isNotNull();
               assertThat(page.offset).isEqualTo(0);
@@ -104,10 +104,10 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
               testContext.completeNow();
 
             })));
-          }));
-        }));
-      }));
-    }));
+          });
+        });
+      });
+    });
 
   }
 
@@ -120,19 +120,19 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
   @Test
   public void shouldRetrieveCommunityProfilesPageByName(final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeCommunityExample(1, vertx, testContext, testContext.succeeding(community -> {
+    StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
 
       final var newCommunity = Model.fromJsonObject(community.toJsonObject(), CommunityProfile.class);
       final var name = UUID.randomUUID().toString();
       newCommunity.name = name;
       newCommunity.id = null;
-      StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community2 -> {
+      StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community2 -> {
 
-        StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community3 -> {
+        StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community3 -> {
 
-          StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community4 -> {
+          StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community4 -> {
 
-            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, name, null, null, null, null, 2, 3, testContext.succeeding(page -> testContext.verify(() -> {
+            testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, name, null, null, null, null, 2, 3).onSuccess(page -> testContext.verify(() -> {
 
               assertThat(page).isNotNull();
               assertThat(page.offset).isEqualTo(2);
@@ -141,10 +141,10 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
               testContext.completeNow();
 
             })));
-          }));
-        }));
-      }));
-    }));
+          });
+        });
+      });
+    });
 
   }
 
@@ -157,19 +157,19 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
   @Test
   public void shouldRetrieveCommunityProfilesPageByDescription(final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeCommunityExample(1, vertx, testContext, testContext.succeeding(community -> {
+    StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
 
       final var newCommunity = Model.fromJsonObject(community.toJsonObject(), CommunityProfile.class);
       final var description = UUID.randomUUID().toString();
       newCommunity.description = description;
       newCommunity.id = null;
-      StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community2 -> {
+      StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community2 -> {
 
-        StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community3 -> {
+        StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community3 -> {
 
-          StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community4 -> {
+          StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community4 -> {
 
-            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, description, null, null, null, 0, 3, testContext.succeeding(page -> testContext.verify(() -> {
+            testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, description, null, null, null, 0, 3).onSuccess(page -> testContext.verify(() -> {
 
               assertThat(page).isNotNull();
               assertThat(page.offset).isEqualTo(0);
@@ -178,10 +178,10 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
               testContext.completeNow();
 
             })));
-          }));
-        }));
-      }));
-    }));
+          });
+        });
+      });
+    });
 
   }
 
@@ -194,19 +194,19 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
   @Test
   public void shouldRetrieveCommunityProfilesPageByKeywords(final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeCommunityExample(1, vertx, testContext, testContext.succeeding(community -> {
+    StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
 
       final var newCommunity = Model.fromJsonObject(community.toJsonObject(), CommunityProfile.class);
       newCommunity.id = null;
       final var keyword = UUID.randomUUID().toString();
       newCommunity.keywords.add(keyword);
-      StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community2 -> {
+      StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community2 -> {
 
-        StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community3 -> {
+        StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community3 -> {
 
-          StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community4 -> {
+          StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community4 -> {
 
-            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, keyword, null, null, 1, 2, testContext.succeeding(page -> testContext.verify(() -> {
+            testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, keyword, null, null, 1, 2).onSuccess(page -> testContext.verify(() -> {
 
               assertThat(page).isNotNull();
               assertThat(page.offset).isEqualTo(1);
@@ -215,10 +215,10 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
               testContext.completeNow();
 
             })));
-          }));
-        }));
-      }));
-    }));
+          });
+        });
+      });
+    });
 
   }
 
@@ -231,17 +231,17 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
   @Test
   public void shouldRetrieveCommunityProfilesPageByMembers(final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeCommunityExample(1, vertx, testContext, testContext.succeeding(community -> {
+    StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
 
       final var newCommunity = Model.fromJsonObject(community.toJsonObject(), CommunityProfile.class);
       newCommunity.id = null;
-      StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community2 -> {
+      StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community2 -> {
 
-        StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community3 -> {
+        StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community3 -> {
 
-          StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community4 -> {
+          StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community4 -> {
 
-            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, null, community.members.get(0).userId, null, 0, 100, testContext.succeeding(page -> testContext.verify(() -> {
+            testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, null, community.members.get(0).userId, null, 0, 100).onSuccess(page -> testContext.verify(() -> {
 
               assertThat(page).isNotNull();
               assertThat(page.offset).isEqualTo(0);
@@ -250,10 +250,10 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
               testContext.completeNow();
 
             })));
-          }));
-        }));
-      }));
-    }));
+          });
+        });
+      });
+    });
 
   }
 
@@ -266,20 +266,20 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
   @Test
   public void shouldRetrieveCommunityProfilesPageByOrder(final Vertx vertx, final VertxTestContext testContext) {
 
-    StoreServices.storeCommunityExample(1, vertx, testContext, testContext.succeeding(community -> {
+    StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
 
       final var newCommunity = Model.fromJsonObject(community.toJsonObject(), CommunityProfile.class);
       newCommunity.id = null;
       newCommunity.name = "000" + newCommunity.name;
-      StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community2 -> {
+      StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community2 -> {
 
         newCommunity.name = "111" + newCommunity.name;
-        StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community3 -> {
+        StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community3 -> {
 
           newCommunity.name = "222" + newCommunity.name;
-          StoreServices.storeCommunity(newCommunity, vertx, testContext, testContext.succeeding(community4 -> {
+          StoreServices.storeCommunity(newCommunity, vertx, testContext).onSuccess(community4 -> {
 
-            WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(newCommunity.appId, null, null, null, null, "-name", 1, 2, testContext.succeeding(page -> testContext.verify(() -> {
+            testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(newCommunity.appId, null, null, null, null, "-name", 1, 2).onSuccess(page -> testContext.verify(() -> {
 
               assertThat(page).isNotNull();
               assertThat(page.offset).isEqualTo(1);
@@ -288,10 +288,10 @@ public abstract class WeNetProfileManagerITCase extends WeNetProfileManagerTestC
               testContext.completeNow();
 
             })));
-          }));
-        }));
-      }));
-    }));
-
+          });
+        });
+      });
+    });
   }
+
 }

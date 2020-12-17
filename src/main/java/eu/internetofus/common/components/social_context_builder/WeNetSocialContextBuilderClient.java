@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -66,19 +66,9 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
    * {@inheritDoc}
    */
   @Override
-  public void retrieveJsonArraySocialRelations(final String userId, final Handler<AsyncResult<JsonArray>> retrieveHandler) {
+  public void retrieveSocialRelations(final String userId, final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.getJsonArray(retrieveHandler, "/social/relations", userId, "/");
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void updatePreferencesForUserOnTask(final String userId, final String taskId, final JsonArray volunteers, final Handler<AsyncResult<JsonArray>> updateHandler) {
-
-    this.post(volunteers, updateHandler, "/social/preferences", userId, taskId, "/");
+    this.getJsonArray("/social/relations", userId, "/").onComplete(handler);
 
   }
 
@@ -86,9 +76,19 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
    * {@inheritDoc}
    */
   @Override
-  public void retrieveJsonSocialExplanation(final String userId, final String taskId, final Handler<AsyncResult<JsonObject>> retrieveHandler) {
+  public void updatePreferencesForUserOnTask(final String userId, final String taskId, final JsonArray volunteers, final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.getJsonObject(retrieveHandler, "/social/explanations", userId, taskId, "/");
+    this.post(volunteers, "/social/preferences", userId, taskId, "/").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveSocialExplanation(final String userId, final String taskId, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.getJsonObject("/social/explanations", userId, taskId, "/").onComplete(handler);
 
   }
 

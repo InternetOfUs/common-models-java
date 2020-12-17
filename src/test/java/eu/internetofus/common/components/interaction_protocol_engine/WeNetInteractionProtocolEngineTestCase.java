@@ -54,17 +54,17 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
   @Test
   public void shouldSendMessage(final Vertx vertx, final VertxTestContext testContext) {
 
-    new ProtocolMessageTest().createModelExample(1, vertx, testContext, testContext.succeeding(message -> {
+    new ProtocolMessageTest().createModelExample(1, vertx, testContext).onSuccess(message -> {
 
       message.norms = null;
-      WeNetInteractionProtocolEngine.createProxy(vertx).sendMessage(message, testContext.succeeding(sent -> testContext.verify(() -> {
+      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).sendMessage(message)).onSuccess(sent -> testContext.verify(() -> {
 
         assertThat(message).isEqualTo(sent);
         testContext.completeNow();
 
-      })));
+      }));
 
-    }));
+    });
 
   }
 
@@ -77,16 +77,16 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
   @Test
   public void shouldSendIncentive(final Vertx vertx, final VertxTestContext testContext) {
 
-    new IncentiveTest().createModelExample(1, vertx, testContext, testContext.succeeding(incentive -> {
+    new IncentiveTest().createModelExample(1, vertx, testContext).onSuccess(incentive -> {
 
-      WeNetInteractionProtocolEngine.createProxy(vertx).sendIncentive(incentive, testContext.succeeding(sent -> testContext.verify(() -> {
+      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).sendIncentive(incentive)).onSuccess(sent -> testContext.verify(() -> {
 
         assertThat(incentive).isEqualTo(sent);
         testContext.completeNow();
 
-      })));
+      }));
 
-    }));
+    });
 
   }
 
@@ -99,16 +99,16 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
   @Test
   public void shouldCreatedTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    new TaskTest().createModelExample(1, vertx, testContext, testContext.succeeding(task -> {
+    new TaskTest().createModelExample(1, vertx, testContext).onSuccess(task -> {
 
-      WeNetInteractionProtocolEngine.createProxy(vertx).createdTask(task, testContext.succeeding(created -> testContext.verify(() -> {
+      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).createdTask(task)).onSuccess(created -> testContext.verify(() -> {
 
         assertThat(task).isEqualTo(created);
         testContext.completeNow();
 
-      })));
+      }));
 
-    }));
+    });
 
   }
 
@@ -123,12 +123,12 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
 
     testContext.assertComplete(new TaskTransactionTest().createModelExample(1, vertx, testContext)).onSuccess(taskTransaction -> {
 
-      WeNetInteractionProtocolEngine.createProxy(vertx).doTransaction(taskTransaction, testContext.succeeding(done -> testContext.verify(() -> {
+      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).doTransaction(taskTransaction)).onSuccess(done -> testContext.verify(() -> {
 
         assertThat(taskTransaction).isEqualTo(done);
         testContext.completeNow();
 
-      })));
+      }));
 
     });
 

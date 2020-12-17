@@ -102,23 +102,7 @@ public class SocialNetworkRelationship extends ReflectionModel implements Model,
       } else {
 
         this.userId = Validations.validateStringField(codePrefix, "userId", 255, this.userId);
-        future = future.compose(mapper -> {
-
-          final Promise<Void> searchPromise = Promise.promise();
-          WeNetProfileManager.createProxy(vertx).retrieveProfile(this.userId, search -> {
-
-            if (search.result() != null) {
-
-              searchPromise.complete();
-
-            } else {
-
-              searchPromise.fail(new ValidationErrorException(codePrefix + ".userId", "Does not exist any user identifier by '" + this.userId + "'."));
-            }
-
-          });
-          return searchPromise.future();
-        });
+        future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
         this.weight = Validations.validateNumberOnRange(codePrefix, "weight", this.weight, true, 0d, 1d);
         promise.complete();
       }

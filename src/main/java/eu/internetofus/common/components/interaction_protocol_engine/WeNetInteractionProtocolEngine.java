@@ -28,14 +28,16 @@ package eu.internetofus.common.components.interaction_protocol_engine;
 
 import javax.validation.constraints.NotNull;
 
+import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.incentive_server.Incentive;
 import eu.internetofus.common.components.task_manager.Task;
 import eu.internetofus.common.components.task_manager.TaskTransaction;
-import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -82,81 +84,96 @@ public interface WeNetInteractionProtocolEngine {
   /**
    * Send a message to be processed.
    *
-   * @param message     to be processed.
-   * @param sendHandler handler to send process.
+   * @param message to be processed.
+   * @param handler to send message.
    */
-  void sendMessage(@NotNull JsonObject message, @NotNull Handler<AsyncResult<JsonObject>> sendHandler);
+  void sendMessage(@NotNull JsonObject message, Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Send a message to be processed.
    *
-   * @param message     to be processed.
-   * @param sendHandler handler to send process.
+   * @param message to be processed.
+   *
+   * @return the future message.
    */
   @GenIgnore
-  default void sendMessage(@NotNull final ProtocolMessage message, @NotNull final Handler<AsyncResult<ProtocolMessage>> sendHandler) {
+  default Future<ProtocolMessage> sendMessage(@NotNull final ProtocolMessage message) {
 
-    this.sendMessage(message.toJsonObject(), ComponentClient.handlerForModel(ProtocolMessage.class, sendHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.sendMessage(message.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), ProtocolMessage.class);
   }
 
   /**
    * Send a incentive to be processed.
    *
-   * @param incentive   to be processed.
-   * @param sendHandler handler to send process.
+   * @param incentive to be processed.
+   * @param handler   for the send incentive.
    */
-  void sendIncentive(@NotNull JsonObject incentive, @NotNull Handler<AsyncResult<JsonObject>> sendHandler);
+  void sendIncentive(@NotNull JsonObject incentive, Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Send a incentive to be processed.
    *
-   * @param incentive   to be processed.
-   * @param sendHandler handler to send process.
+   * @param incentive to be processed.
+   *
+   * @return the future incentive.
    */
   @GenIgnore
-  default void sendIncentive(@NotNull final Incentive incentive, @NotNull final Handler<AsyncResult<Incentive>> sendHandler) {
+  default Future<Incentive> sendIncentive(@NotNull final Incentive incentive) {
 
-    this.sendIncentive(incentive.toJsonObject(), ComponentClient.handlerForModel(Incentive.class, sendHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.sendIncentive(incentive.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), Incentive.class);
+
   }
 
   /**
    * Inform that a task has been created.
    *
-   * @param task           that has been created.
-   * @param createdHandler handler to inform if it is accepted or not to process the creation of a task.
+   * @param task    that has been created.
+   * @param handler for the created task.
    */
-  void createdTask(@NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> createdHandler);
+  void createdTask(@NotNull JsonObject task, Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Inform that a task has been created.
    *
-   * @param task           that has been created.
-   * @param createdHandler handler to inform if it is accepted or not to process the creation of a task.
+   * @param task that has been created.
+   *
+   * @return the future created task.
    */
   @GenIgnore
-  default void createdTask(@NotNull final Task task, @NotNull final Handler<AsyncResult<Task>> createdHandler) {
+  default Future<Task> createdTask(@NotNull final Task task) {
 
-    this.createdTask(task.toJsonObject(), ComponentClient.handlerForModel(Task.class, createdHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.createdTask(task.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), Task.class);
+
   }
 
   /**
    * Try to do a transaction over a task.
    *
    * @param transaction to do.
-   * @param doHandler   handler to inform if it is accepted or not to do the task transaction.
+   * @param handler     for teh transaction to do.
    */
-  void doTransaction(@NotNull JsonObject transaction, @NotNull Handler<AsyncResult<JsonObject>> doHandler);
+  void doTransaction(@NotNull JsonObject transaction, Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Try to do a transaction over a task.
    *
    * @param transaction to do.
-   * @param doHandler   handler to inform if it is accepted or not to do the task transaction.
+   *
+   * @return the future transaction.
    */
   @GenIgnore
-  default void doTransaction(@NotNull final TaskTransaction transaction, @NotNull final Handler<AsyncResult<TaskTransaction>> doHandler) {
+  default Future<TaskTransaction> doTransaction(@NotNull final TaskTransaction transaction) {
 
-    this.doTransaction(transaction.toJsonObject(), ComponentClient.handlerForModel(TaskTransaction.class, doHandler));
+    final Promise<JsonObject> promise = Promise.promise();
+    this.doTransaction(transaction.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), TaskTransaction.class);
+
   }
 
 }

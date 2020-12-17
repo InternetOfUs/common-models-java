@@ -53,9 +53,7 @@ public abstract class WeNetTaskManagerTestCase {
   @Test
   public void shouldNotCreateBadTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetTaskManager.createProxy(vertx).createTask(new JsonObject().put("undefinedField", "value"), testContext.failing(handler -> {
-      testContext.completeNow();
-    }));
+    testContext.assertFailure(WeNetTaskManager.createProxy(vertx).createTask(new JsonObject().put("undefinedField", "value"))).onFailure(handler -> testContext.completeNow());
 
   }
 
@@ -68,9 +66,7 @@ public abstract class WeNetTaskManagerTestCase {
   @Test
   public void shouldNorRetrieveUndefinedTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetTaskManager.createProxy(vertx).retrieveTask("undefined-task-identifier", testContext.failing(handler -> {
-      testContext.completeNow();
-    }));
+    testContext.assertFailure(WeNetTaskManager.createProxy(vertx).retrieveTask("undefined-task-identifier")).onFailure(handler -> testContext.completeNow());
 
   }
 
@@ -83,11 +79,7 @@ public abstract class WeNetTaskManagerTestCase {
   @Test
   public void shouldNotDeleteUndefinedTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetTaskManager.createProxy(vertx).deleteTask("undefined-task-identifier", testContext.failing(handler -> {
-      testContext.completeNow();
-
-    }));
-
+    testContext.assertFailure(WeNetTaskManager.createProxy(vertx).deleteTask("undefined-task-identifier")).onFailure(handler -> testContext.completeNow());
   }
 
   /**
@@ -99,11 +91,7 @@ public abstract class WeNetTaskManagerTestCase {
   @Test
   public void shouldNotMergeUndefinedTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetTaskManager.createProxy(vertx).mergeTask("undefined-task-identifier", new Task(), testContext.failing(handler -> {
-      testContext.completeNow();
-
-    }));
-
+    testContext.assertFailure(WeNetTaskManager.createProxy(vertx).mergeTask("undefined-task-identifier", new Task())).onFailure(handler -> testContext.completeNow());
   }
 
   /**
@@ -116,11 +104,7 @@ public abstract class WeNetTaskManagerTestCase {
   public void shouldNotDoTranactionMergeUndefinedTask(final Vertx vertx, final VertxTestContext testContext) {
 
     final var taskTransaction = new TaskTransaction();
-    WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction, testContext.failing(handler -> {
-      testContext.completeNow();
-
-    }));
-
+    testContext.assertFailure(WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)).onFailure(handler -> testContext.completeNow());
   }
 
   /**
@@ -132,39 +116,35 @@ public abstract class WeNetTaskManagerTestCase {
   @Test
   public void shouldCreateRetrieveMergeAndDeleteTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    new TaskTest().createModelExample(1, vertx, testContext, testContext.succeeding(task -> {
+    new TaskTest().createModelExample(1, vertx, testContext).onSuccess(task -> {
 
       final var service = WeNetTaskManager.createProxy(vertx);
-      service.createTask(task, testContext.succeeding(createdTask -> {
+      testContext.assertComplete(service.createTask(task)).onSuccess(createdTask -> {
 
         final var id = createdTask.id;
-        service.retrieveTask(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
+        testContext.assertComplete(service.retrieveTask(id)).onSuccess(retrieve -> testContext.verify(() -> {
 
           assertThat(createdTask).isEqualTo(retrieve);
           final var taskToMerge = Model.fromJsonObject(createdTask.toJsonObject(), Task.class);
           taskToMerge.attributes = new JsonObject().put("newKey", "NEW VALUE");
-          service.mergeTask(id, taskToMerge, testContext.succeeding(mergedTask -> testContext.verify(() -> {
+          testContext.assertComplete(service.mergeTask(id, taskToMerge)).onSuccess(mergedTask -> testContext.verify(() -> {
 
             createdTask._lastUpdateTs = mergedTask._lastUpdateTs;
             createdTask.attributes = new JsonObject().put("newKey", "NEW VALUE");
             assertThat(mergedTask).isEqualTo(createdTask);
-            service.deleteTask(id, testContext.succeeding(empty -> {
+            testContext.assertComplete(service.deleteTask(id)).onSuccess(empty -> {
 
-              service.retrieveTask(id, testContext.failing(handler -> {
+              testContext.assertFailure(service.retrieveTask(id)).onFailure(handler -> testContext.completeNow());
 
-                testContext.completeNow();
+            });
 
-              }));
+          }));
 
-            }));
+        }));
 
-          })));
+      });
 
-        })));
-
-      }));
-
-    }));
+    });
   }
 
   /**
@@ -176,11 +156,7 @@ public abstract class WeNetTaskManagerTestCase {
   @Test
   public void shouldNotCreateBadTaskType(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetTaskManager.createProxy(vertx).createTaskType(new JsonObject().put("undefinedField", "value"), testContext.failing(handler -> {
-      testContext.completeNow();
-
-    }));
-
+    testContext.assertFailure(WeNetTaskManager.createProxy(vertx).createTaskType(new JsonObject().put("undefinedField", "value"))).onFailure(handler -> testContext.completeNow());
   }
 
   /**
@@ -192,11 +168,7 @@ public abstract class WeNetTaskManagerTestCase {
   @Test
   public void shouldNorRetrieveUndefinedTaskType(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetTaskManager.createProxy(vertx).retrieveTaskType("undefined-task-type-identifier", testContext.failing(handler -> {
-      testContext.completeNow();
-
-    }));
-
+    testContext.assertFailure(WeNetTaskManager.createProxy(vertx).retrieveTaskType("undefined-task-type-identifier")).onFailure(handler -> testContext.completeNow());
   }
 
   /**
@@ -208,11 +180,7 @@ public abstract class WeNetTaskManagerTestCase {
   @Test
   public void shouldNotDeleteUndefinedTaskType(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetTaskManager.createProxy(vertx).deleteTaskType("undefined-task-type-identifier", testContext.failing(handler -> {
-      testContext.completeNow();
-
-    }));
-
+    testContext.assertFailure(WeNetTaskManager.createProxy(vertx).deleteTaskType("undefined-task-type-identifier")).onFailure(handler -> testContext.completeNow());
   }
 
   /**
@@ -226,24 +194,19 @@ public abstract class WeNetTaskManagerTestCase {
 
     final var taskType = new TaskTypeTest().createModelExample(1);
     final var service = WeNetTaskManager.createProxy(vertx);
-    service.createTaskType(taskType, testContext.succeeding(create -> {
+    testContext.assertComplete(service.createTaskType(taskType)).onSuccess(create -> {
 
       final var id = create.id;
-      service.retrieveTaskType(id, testContext.succeeding(retrieve -> testContext.verify(() -> {
+      testContext.assertComplete(service.retrieveTaskType(id)).onSuccess(retrieve -> testContext.verify(() -> {
 
         assertThat(create).isEqualTo(retrieve);
-        service.deleteTaskType(id, testContext.succeeding(empty -> {
+        testContext.assertComplete(service.deleteTaskType(id)).onSuccess(empty -> {
 
-          service.retrieveTaskType(id, testContext.failing(handler -> {
-            testContext.completeNow();
+          testContext.assertFailure(service.retrieveTaskType(id)).onFailure(handler -> testContext.completeNow());
 
-          }));
-
-        }));
-
-      })));
-
-    }));
+        });
+      }));
+    });
 
   }
 

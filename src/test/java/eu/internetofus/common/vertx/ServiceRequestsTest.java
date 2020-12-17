@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,8 +30,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 
-import javax.ws.rs.core.HttpHeaders;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -39,16 +37,17 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.api.OperationRequest;
+import io.vertx.ext.web.api.service.ServiceRequest;
+import jakarta.ws.rs.core.HttpHeaders;
 
 /**
- * Test the {@link OperationRequests}.
+ * Test the {@link ServiceRequests}.
  *
- * @see OperationRequests
+ * @see ServiceRequests
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class OperationRequestsTest {
+public class ServiceRequestsTest {
 
   /**
    * Check return the default language.
@@ -65,8 +64,8 @@ public class OperationRequestsTest {
 
       headers.put(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage);
     }
-    final var request = new OperationRequest(new JsonObject().put("headers", headers));
-    assertThat(OperationRequests.acceptedLanguageIn(request, "en", "ca")).isEqualTo("en");
+    final var request = new ServiceRequest(new JsonObject().put("headers", headers));
+    assertThat(ServiceRequests.acceptedLanguageIn(request, "en", "ca")).isEqualTo("en");
 
   }
 
@@ -78,8 +77,8 @@ public class OperationRequestsTest {
 
     final var headers = new JsonObject();
     headers.put(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, fr;q=0.9, en;q=0.8, ca;q=0.7, es;q=0.3,*;q=0.5");
-    final var request = new OperationRequest(new JsonObject().put("headers", headers));
-    assertThat(OperationRequests.acceptedLanguageIn(request, "en", "ca", "es")).isEqualTo("ca");
+    final var request = new ServiceRequest(new JsonObject().put("headers", headers));
+    assertThat(ServiceRequests.acceptedLanguageIn(request, "en", "ca", "es")).isEqualTo("ca");
 
   }
 
@@ -89,7 +88,7 @@ public class OperationRequestsTest {
   @Test
   public void shouldNullArrayBeNullListString() {
 
-    assertThat(OperationRequests.toListString(null)).isNull();
+    assertThat(ServiceRequests.toListString(null)).isNull();
 
   }
 
@@ -99,7 +98,7 @@ public class OperationRequestsTest {
   @Test
   public void shouldEmptyArrayBeNullListString() {
 
-    assertThat(OperationRequests.toListString(new JsonArray())).isNull();
+    assertThat(ServiceRequests.toListString(new JsonArray())).isNull();
 
   }
 
@@ -109,7 +108,7 @@ public class OperationRequestsTest {
   @Test
   public void shouldArrayBeConvertedToListString() {
 
-    assertThat(OperationRequests.toListString(new JsonArray().add("value").add("true").add("3"))).isEqualTo(Arrays.asList("value", "true", "3"));
+    assertThat(ServiceRequests.toListString(new JsonArray().add("value").add("true").add("3"))).isEqualTo(Arrays.asList("value", "true", "3"));
 
   }
 
@@ -119,8 +118,8 @@ public class OperationRequestsTest {
   @Test
   public void shouldEmptyQueryObjectWhenNotDefined() {
 
-    final var context = new OperationRequest(new JsonObject());
-    assertThat(OperationRequests.getQueryParamters(context)).isEqualTo(new JsonObject());
+    final var context = new ServiceRequest(new JsonObject());
+    assertThat(ServiceRequests.getQueryParamters(context)).isEqualTo(new JsonObject());
 
   }
 

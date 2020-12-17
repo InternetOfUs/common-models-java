@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.vertx;
 
-import javax.ws.rs.core.Response.Status;
-
 import org.tinylog.Logger;
 
 import io.vertx.core.AbstractVerticle;
@@ -35,7 +33,8 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.api.contract.openapi3.OpenAPI3RouterFactory;
+import io.vertx.ext.web.openapi.RouterBuilder;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * The verticle to load the API specification and start the HTTP server.
@@ -55,7 +54,7 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
   @Override
   public void start(final Promise<Void> startPromise) throws Exception {
 
-    OpenAPI3RouterFactory.create(this.getVertx(), this.getOpenAPIResourcePath(), createRouterFactory -> {
+    RouterBuilder.create(this.getVertx(), this.getOpenAPIResourcePath()).onComplete(createRouterFactory -> {
       if (createRouterFactory.succeeded()) {
 
         try {
@@ -65,7 +64,7 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
           this.mountServiceInterfaces(routerFactory);
 
           // bind the ERROR handlers
-          final var router = routerFactory.getRouter();
+          final var router = routerFactory.createRouter();
           router.errorHandler(Status.NOT_FOUND.getStatusCode(), NotFoundHandler.build());
           router.errorHandler(Status.BAD_REQUEST.getStatusCode(), BadRequestHandler.build());
           router.errorHandler(Status.INTERNAL_SERVER_ERROR.getStatusCode(), InternalServerErrorHandler.build());
@@ -117,7 +116,7 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
    *
    * @param routerFactory to register the service interfaces.
    */
-  protected abstract void mountServiceInterfaces(OpenAPI3RouterFactory routerFactory);
+  protected abstract void mountServiceInterfaces(RouterBuilder routerFactory);
 
   /**
    * Get the resource path to the file that contains the OpenAPI specification to load.
