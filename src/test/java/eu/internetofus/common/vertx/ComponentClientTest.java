@@ -52,11 +52,12 @@ public class ComponentClientTest {
   /**
    * Verify that can not post a {@link JsonArray} over an undefined service.
    *
+   * @param vertx       event bus to use.
    * @param client      to use.
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldNotPostJsonArrayOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotPostJsonArrayOverAnUndefinedService(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var service = new ComponentClient(client, "http://undefined/");
     testContext.assertFailure(service.post(new JsonArray(), "path")).onFailure(ignored -> testContext.completeNow());
@@ -66,11 +67,12 @@ public class ComponentClientTest {
   /**
    * Verify that can not post a {@link JsonObject} over an undefined service.
    *
+   * @param vertx       event bus to use.
    * @param client      to use.
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldNotPostJsonObjectOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotPostJsonObjectOverAnUndefinedService(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var service = new ComponentClient(client, "http://undefined/");
     testContext.assertFailure(service.post(new JsonObject(), "path")).onFailure(ignored -> testContext.completeNow());
@@ -80,11 +82,12 @@ public class ComponentClientTest {
   /**
    * Verify that can not put a {@link JsonArray} over an undefined service.
    *
+   * @param vertx       event bus to use.
    * @param client      to use.
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldNotPutJsonArrayOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotPutJsonArrayOverAnUndefinedService(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var service = new ComponentClient(client, "http://undefined/");
     testContext.assertFailure(service.put(new JsonArray(), "path")).onFailure(ignored -> testContext.completeNow());
@@ -94,11 +97,12 @@ public class ComponentClientTest {
   /**
    * Verify that can not put a {@link JsonObject} over an undefined service.
    *
+   * @param vertx       event bus to use.
    * @param client      to use.
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldNotPutJsonObjectOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotPutJsonObjectOverAnUndefinedService(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var service = new ComponentClient(client, "http://undefined/");
     testContext.assertFailure(service.put(new JsonObject(), "path")).onFailure(ignored -> testContext.completeNow());
@@ -108,11 +112,12 @@ public class ComponentClientTest {
   /**
    * Verify that can not get over an undefined service.
    *
+   * @param vertx       event bus to use.
    * @param client      to use.
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldNotGetJsonArrayOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotGetJsonArrayOverAnUndefinedService(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var service = new ComponentClient(client, "http://undefined/");
     testContext.assertFailure(service.getJsonArray("path")).onFailure(ignored -> testContext.completeNow());
@@ -122,11 +127,12 @@ public class ComponentClientTest {
   /**
    * Verify that can not get over an undefined service.
    *
+   * @param vertx       event bus to use.
    * @param client      to use.
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldNotGetJsonObjectOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotGetJsonObjectOverAnUndefinedService(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var service = new ComponentClient(client, "http://undefined/");
     testContext.assertFailure(service.getJsonObject("path")).onFailure(ignored -> testContext.completeNow());
@@ -150,13 +156,13 @@ public class ComponentClientTest {
     }).listen(0, "localhost", testContext.succeeding(server -> {
 
       final var service = new ComponentClient(client, "http://localhost:" + server.actualPort() + "/api");
-      service.post(new JsonObject(), testContext.failing(cause -> {
+      testContext.assertFailure(service.post(new JsonObject()).onFailure(cause -> testContext.verify(() -> {
 
         server.close();
         assertThat(cause).isInstanceOf(DecodeException.class);
         testContext.completeNow();
 
-      }));
+      })));
 
     }));
 
@@ -165,11 +171,12 @@ public class ComponentClientTest {
   /**
    * Verify that can not get over an undefined service.
    *
+   * @param vertx       event bus to use.
    * @param client      to use.
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldNotGetOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotGetOverAnUndefinedService(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var service = new ComponentClient(client, "http://undefined");
     testContext.assertFailure(service.getJsonObject("path")).onFailure(ignored -> testContext.completeNow());
@@ -179,11 +186,12 @@ public class ComponentClientTest {
   /**
    * Verify that can not delete over an undefined service.
    *
+   * @param vertx       event bus to use.
    * @param client      to use.
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldNotDeleteOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotDeleteOverAnUndefinedService(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var service = new ComponentClient(client, "http://undefined");
     testContext.assertFailure(service.delete("path")).onFailure(ignored -> testContext.completeNow());
@@ -196,13 +204,14 @@ public class ComponentClientTest {
    * @param componentURL url to the component.
    * @param values       paths to set it are separated by :.
    * @param expectedURL  the URL that has to create the client.
+   * @param vertx        event bus to use.
    * @param client       to use.
    * @param testContext  context that manage the test.
    */
   @ParameterizedTest(name = "Should the absolute URL for component {0} with parameters {1} be equals to {2}")
   @CsvSource({ "https://localhost:8080,     ,https://localhost:8080", "https://localhost:8080,a:b:c,https://localhost:8080/a/b/c", "https://localhost:8080,   a  :  b  : c  ,https://localhost:8080/a/b/c",
     "https://localhost:8080/,/a/:/b:c/,https://localhost:8080/a/b/c/", "https://localhost:8080/,  /a/  :  b/  :  /c  ,https://localhost:8080/a/b/c", "https://localhost:8080/,  a/  :  /b/  :  /c  ,https://localhost:8080/a/b/c" })
-  public void shouldCreateAbsoluteUrlWith(final String componentURL, final String values, final String expectedURL, final WebClient client, final VertxTestContext testContext) {
+  public void shouldCreateAbsoluteUrlWith(final String componentURL, final String values, final String expectedURL, final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var componentClient = new ComponentClient(client, componentURL);
     var paths = new Object[0];
@@ -217,11 +226,12 @@ public class ComponentClientTest {
   /**
    * Verify that can not patch a {@link JsonArray} over an undefined service.
    *
+   * @param vertx       event bus to use.
    * @param client      to use.
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldNotPatchJsonArrayOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotPatchJsonArrayOverAnUndefinedService(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var service = new ComponentClient(client, "http://undefined/");
     testContext.assertFailure(service.patch(new JsonArray(), "path")).onFailure(ignored -> testContext.completeNow());
@@ -231,11 +241,12 @@ public class ComponentClientTest {
   /**
    * Verify that can not patch a {@link JsonObject} over an undefined service.
    *
+   * @param vertx       event bus to use.
    * @param client      to use.
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldNotPatchJsonObjectOverAnUndefinedService(final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotPatchJsonObjectOverAnUndefinedService(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var service = new ComponentClient(client, "http://undefined/");
     testContext.assertFailure(service.patch(new JsonObject(), "path")).onFailure(ignored -> testContext.completeNow());

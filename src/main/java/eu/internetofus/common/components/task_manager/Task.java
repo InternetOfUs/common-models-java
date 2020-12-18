@@ -87,7 +87,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
   public String requesterId;
 
   /**
-   * The explanation of the task objective..
+   * The explanation of the task objective.
    */
   @Schema(description = "The explanation of the task objective.")
   public TaskGoal goal;

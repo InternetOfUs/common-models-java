@@ -220,7 +220,7 @@ public interface WeNetServiceSimulator {
   default Future<Void> deleteCallbacks(final String appId) {
 
     final Promise<Void> promise = Promise.promise();
-    this.deleteUsers(appId, promise);
+    this.deleteCallbacks(appId, promise);
     return promise.future();
 
   }

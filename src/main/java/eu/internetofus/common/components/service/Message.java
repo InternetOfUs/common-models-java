@@ -75,7 +75,7 @@ public class Message extends ReflectionModel implements Model {
   /**
    * The attributes of the message.
    */
-  @Schema(type = "object", description = "the attributes of the message, as key-value pairs..")
+  @Schema(type = "object", description = "the attributes of the message, as key-value pairs.")
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject attributes;
 

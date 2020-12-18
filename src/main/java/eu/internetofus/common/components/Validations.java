@@ -477,32 +477,36 @@ public interface Validations {
    */
   static <T> Future<Void> composeValidateId(final Future<Void> future, final String codePrefix, final String fieldName, final String id, final boolean exist, final Function<String, Future<T>> searcher) {
 
-    final Promise<Void> promise = Promise.promise();
-    searcher.apply(id).onComplete(search -> {
+    return future.compose(map -> {
 
-      if (search.failed()) {
+      final Promise<Void> promise = Promise.promise();
+      searcher.apply(id).onComplete(search -> {
 
-        if (exist) {
+        if (search.failed()) {
 
-          promise.fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' '" + id + "' is not defined."));
+          if (exist) {
+
+            promise.fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' '" + id + "' is not defined."));
+
+          } else {
+
+            promise.complete();
+          }
+
+        } else if (exist) {
+
+          promise.complete();
 
         } else {
 
-          promise.complete();
+          promise.fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' '" + id + "' has already defined."));
         }
 
-      } else if (exist) {
+      });
 
-        promise.complete();
-
-      } else {
-
-        promise.fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' '" + id + "' has already defined."));
-      }
+      return promise.future();
 
     });
-
-    return promise.future();
 
   }
 

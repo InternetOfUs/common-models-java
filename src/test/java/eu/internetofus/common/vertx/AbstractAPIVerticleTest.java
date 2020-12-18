@@ -71,7 +71,7 @@ public class AbstractAPIVerticleTest {
   public void shouldNotStartWithUndefinedOpenApiSpecification(final Vertx vertx, final VertxTestContext testContext) throws Exception {
 
     doReturn(vertx).when(this.verticle).getVertx();
-    doReturn(null).when(this.verticle).getOpenAPIResourcePath();
+    doReturn("http://undefined_openapi.yaml").when(this.verticle).getOpenAPIResourcePath();
     final Promise<Void> startPromise = Promise.promise();
     this.verticle.start(startPromise);
     startPromise.future().onComplete(testContext.failing(error -> testContext.completeNow()));

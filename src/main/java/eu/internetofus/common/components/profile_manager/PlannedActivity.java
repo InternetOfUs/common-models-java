@@ -132,7 +132,7 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
               }
             }
 
-            future = Validations.composeValidateId(future, codePrefix, ".attendees[" + index + "]", id, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+            future = Validations.composeValidateId(future, codePrefix, "attendees[" + index + "]", id, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
           }
 

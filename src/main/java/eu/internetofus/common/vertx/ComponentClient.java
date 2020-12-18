@@ -508,33 +508,7 @@ public class ComponentClient {
    */
   protected Future<JsonObject> getJsonObject(final Map<String, String> queryParams, final Object... paths) {
 
-    // return this.createRequestFor(method, url, queryParams).send()request(HttpMethod.GET,
-    // this.createAbsoluteUrlWith(paths), this.createArrayExtractor());
-
-    // final var url = this.createAbsoluteUrlWith(paths);
-    // final var actionId = UUID.randomUUID().toString();
-    // var request = this.client.getAbs(url);
-    // if (queryParams != null && !queryParams.isEmpty()) {
-    //
-    // Logger.trace("[{}] GET {} {}", actionId, url, queryParams);
-    //
-    // for (final var entry : queryParams.entrySet()) {
-    //
-    // final var key = entry.getKey();
-    // final var value = entry.getValue();
-    // request = request.addQueryParam(key, value);
-    //
-    // }
-    //
-    // } else {
-    //
-    // Logger.trace("[{}] GET {}", actionId, url);
-    //
-    // }
-    //
-    // request.send(response -> this.successing(response, actionId, getHandler, this.jsonObjectConsumer(actionId)));
-
-    return null;
+    return this.request(HttpMethod.GET, this.createAbsoluteUrlWith(paths), queryParams, this.createObjectExtractor());
 
   }
 
