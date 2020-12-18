@@ -52,7 +52,6 @@ import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -256,10 +255,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   @Test
   public void shouldNotBeValidWithAnExistingId(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertComplete(WeNetProfileManager.createProxy(vertx).createProfile(new JsonObject())).onSuccess(created -> {
+    StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(created -> {
 
       final var model = new WeNetUserProfile();
-      model.id = created.getString("id");
+      model.id = created.id;
       assertIsNotValid(model, "id", vertx, testContext);
 
     });

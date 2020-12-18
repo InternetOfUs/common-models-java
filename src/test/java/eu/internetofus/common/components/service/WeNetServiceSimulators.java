@@ -97,7 +97,7 @@ public interface WeNetServiceSimulators {
    */
   static void waitUntilCallbacks(final String appId, final Predicate<JsonArray> checkCallbacks, final Vertx vertx, final VertxTestContext testContext, final Promise<JsonArray> promise) {
 
-    testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).retrieveJsonCallbacks(appId)).onSuccess(callbacks -> {
+    testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).retrieveCallbacks(appId)).onSuccess(callbacks -> {
 
       if (checkCallbacks.test(callbacks)) {
 

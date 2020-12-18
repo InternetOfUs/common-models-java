@@ -52,7 +52,7 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotCreateBadProfile(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertFailure(WeNetProfileManager.createProxy(vertx).createProfile(new JsonObject().put("undefinedField", "value"))).onFailure(error -> testContext.completeNow());
+    WeNetProfileManager.createProxy(vertx).createProfile(new JsonObject().put("undefinedField", "value"), testContext.failing(error -> testContext.completeNow()));
 
   }
 
@@ -118,7 +118,8 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotCreateBadCommunity(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertFailure(WeNetProfileManager.createProxy(vertx).createCommunity(new JsonObject().put("undefinedField", "value"))).onFailure(error -> testContext.completeNow());
+    WeNetProfileManager.createProxy(vertx).createCommunity(new JsonObject().put("undefinedField", "value"), testContext.failing(error -> testContext.completeNow()));
+
   }
 
   /**

@@ -142,17 +142,17 @@ public abstract class WeNetServiceSimulatorTestCase {
     testContext.assertComplete(service.createApp(new App())).onSuccess(created -> {
 
       final var message1 = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
-      testContext.assertComplete(service.addJsonCallBack(created.appId, message1)).onSuccess(create1 -> {
+      testContext.assertComplete(service.addCallBack(created.appId, message1)).onSuccess(create1 -> {
 
         final var message2 = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
-        testContext.assertComplete(service.addJsonCallBack(created.appId, message2)).onSuccess(create2 -> {
+        testContext.assertComplete(service.addCallBack(created.appId, message2)).onSuccess(create2 -> {
 
-          testContext.assertComplete(service.retrieveJsonCallbacks(created.appId)).onSuccess(retrieve -> testContext.verify(() -> {
+          testContext.assertComplete(service.retrieveCallbacks(created.appId)).onSuccess(retrieve -> testContext.verify(() -> {
 
             assertThat(retrieve).isEqualTo(new JsonArray().add(message1).add(message2));
             testContext.assertComplete(service.deleteCallbacks(created.appId)).onSuccess(empty -> {
 
-              testContext.assertComplete(service.retrieveJsonCallbacks(created.appId)).onSuccess(retrieve2 -> testContext.verify(() -> {
+              testContext.assertComplete(service.retrieveCallbacks(created.appId)).onSuccess(retrieve2 -> testContext.verify(() -> {
 
                 assertThat(retrieve2).isEqualTo(new JsonArray());
                 testContext.assertComplete(service.deleteApp(created.appId)).onSuccess(emptyApp -> testContext.completeNow());
@@ -174,7 +174,7 @@ public abstract class WeNetServiceSimulatorTestCase {
   @Test
   public void shouldNotRetrieveCallbackForUndefinedApp(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).retrieveJsonCallbacks("undefined-app-identifier")).onFailure(handler -> testContext.completeNow());
+    testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).retrieveCallbacks("undefined-app-identifier")).onFailure(handler -> testContext.completeNow());
 
   }
 
@@ -206,7 +206,7 @@ public abstract class WeNetServiceSimulatorTestCase {
       final var client = WebClient.create(vertx);
       testContext.assertComplete(client.postAbs(created.messageCallbackUrl).sendJson(message)).onSuccess(create -> {
 
-        testContext.assertComplete(service.retrieveJsonCallbacks(created.appId)).onSuccess(retrieve -> testContext.verify(() -> {
+        testContext.assertComplete(service.retrieveCallbacks(created.appId)).onSuccess(retrieve -> testContext.verify(() -> {
 
           assertThat(retrieve).isEqualTo(new JsonArray().add(message));
 

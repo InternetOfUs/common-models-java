@@ -66,12 +66,7 @@ public interface StoreServices {
    */
   static Future<WeNetUserProfile> storeProfile(final WeNetUserProfile profile, final Vertx vertx, final VertxTestContext testContext) {
 
-    return testContext.assertComplete(WeNetProfileManager.createProxy(vertx).createProfile(profile.toJsonObject()).compose(created -> {
-
-      final var result = Model.fromJsonObject(created, WeNetUserProfile.class);
-      return Future.succeededFuture(result);
-
-    }));
+    return testContext.assertComplete(WeNetProfileManager.createProxy(vertx).createProfile(profile));
 
   }
 

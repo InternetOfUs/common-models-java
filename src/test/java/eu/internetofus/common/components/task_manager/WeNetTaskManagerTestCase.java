@@ -53,7 +53,7 @@ public abstract class WeNetTaskManagerTestCase {
   @Test
   public void shouldNotCreateBadTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertFailure(WeNetTaskManager.createProxy(vertx).createTask(new JsonObject().put("undefinedField", "value"))).onFailure(handler -> testContext.completeNow());
+    WeNetTaskManager.createProxy(vertx).createTask(new JsonObject().put("undefinedField", "value"), testContext.failing(handler -> testContext.completeNow()));
 
   }
 
@@ -156,7 +156,8 @@ public abstract class WeNetTaskManagerTestCase {
   @Test
   public void shouldNotCreateBadTaskType(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertFailure(WeNetTaskManager.createProxy(vertx).createTaskType(new JsonObject().put("undefinedField", "value"))).onFailure(handler -> testContext.completeNow());
+    WeNetTaskManager.createProxy(vertx).createTaskType(new JsonObject().put("undefinedField", "value"), testContext.failing(handler -> testContext.completeNow()));
+
   }
 
   /**

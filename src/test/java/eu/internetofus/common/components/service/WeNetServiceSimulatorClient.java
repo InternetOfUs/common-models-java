@@ -29,7 +29,10 @@ package eu.internetofus.common.components.service;
 import javax.validation.constraints.NotNull;
 
 import eu.internetofus.common.components.Model;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -54,36 +57,14 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
   }
 
   /**
-   * Call the {@link WeNetServiceSimulator} to create an application.
-   *
-   * {@inheritDoc}
-   */
-  @Override
-  public Future<JsonObject> createApp(final JsonObject app) {
-
-    return this.post(app, "/app");
-
-  }
-
-  /**
    * {@inheritDoc}
    */
   @Override
   public Future<App> retrieveApp(@NotNull final String id) {
 
-    return Model.fromFutureJsonObject(this.retrieveJsonApp(id), App.class);
-
-  }
-
-  /**
-   * Call the {@link WeNetServiceSimulator} to delete an application.
-   *
-   * {@inheritDoc}
-   */
-  @Override
-  public Future<Void> deleteApp(final String id) {
-
-    return this.delete("/app", id);
+    final Promise<JsonObject> promise = Promise.promise();
+    this.retrieveApp(id, promise);
+    return Model.fromFutureJsonObject(promise.future(), App.class);
 
   }
 
@@ -91,19 +72,11 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
    * {@inheritDoc}
    */
   @Override
-  public Future<JsonArray> retrieveJsonCallbacks(final String id) {
+  public Future<JsonArray> retrieveAppUserIds(@NotNull final String appId) {
 
-    return this.getJsonArray("/callback", id);
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Future<JsonObject> addJsonCallBack(final String appId, final JsonObject message) {
-
-    return this.post(message, "/callback", appId);
+    final Promise<JsonArray> promise = Promise.promise();
+    this.retrieveAppUserIds(appId, promise);
+    return promise.future();
 
   }
 
@@ -111,28 +84,9 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> deleteCallbacks(final String appId) {
+  public void createApp(@NotNull final JsonObject app, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
 
-    return this.delete("/callback", appId);
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Future<JsonArray> retrieveAppUserIds(final String id) {
-
-    return this.getJsonArray("/app/" + id + "/users");
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Future<JsonArray> addUsers(final String appId, final JsonArray users) {
-
-    return this.post(users, "/app/" + appId + "/users");
+    this.post(app, "/app").onComplete(handler);
 
   }
 
@@ -140,9 +94,59 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> deleteUsers(final String appId) {
+  public void deleteApp(@NotNull final String id, @NotNull final Handler<AsyncResult<Void>> handler) {
 
-    return this.delete("/app/" + appId + "/users");
+    this.delete("/app", id).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveCallbacks(@NotNull final String id, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
+
+    this.getJsonArray("/callback", id).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void addCallBack(final String appId, final JsonObject message, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(message, "/callback", appId).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteCallbacks(final String appId, @NotNull final Handler<AsyncResult<Void>> handler) {
+
+    this.delete("/callback", appId).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void addUsers(final String appId, final JsonArray users, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
+
+    this.post(users, "/app/" + appId + "/users").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteUsers(final String appId, @NotNull final Handler<AsyncResult<Void>> handler) {
+
+    this.delete("/app/" + appId + "/users").onComplete(handler);
 
   }
 

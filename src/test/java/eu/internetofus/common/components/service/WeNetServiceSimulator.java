@@ -31,7 +31,10 @@ import javax.validation.constraints.NotNull;
 import eu.internetofus.common.components.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -79,11 +82,10 @@ public interface WeNetServiceSimulator {
   /**
    * Return an {@link App} in JSON format.
    *
-   * @param id identifier of the app to get.
-   *
-   * @return the found application.
+   * @param id      identifier of the app to get.
+   * @param handler to manage the found application.
    */
-  Future<JsonObject> retrieveJsonApp(@NotNull String id);
+  void retrieveApp(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Return an application.
@@ -95,18 +97,19 @@ public interface WeNetServiceSimulator {
   @GenIgnore
   default Future<App> retrieveApp(@NotNull final String id) {
 
-    return Model.fromFutureJsonObject(this.retrieveJsonApp(id), App.class);
+    final Promise<JsonObject> promise = Promise.promise();
+    this.retrieveApp(id, promise);
+    return Model.fromFutureJsonObject(promise.future(), App.class);
 
   }
 
   /**
    * Defined method only for testing and can store an APP.
    *
-   * @param app to create.
-   *
-   * @return the created application.
+   * @param app     to create.
+   * @param handler to manage the created application.
    */
-  Future<JsonObject> createApp(@NotNull JsonObject app);
+  void createApp(@NotNull JsonObject app, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Defined method only for testing and can store an APP.
@@ -118,9 +121,19 @@ public interface WeNetServiceSimulator {
   @GenIgnore
   default Future<App> createApp(@NotNull final App app) {
 
-    return Model.fromFutureJsonObject(this.createApp(app.toJsonObject()), App.class);
+    final Promise<JsonObject> promise = Promise.promise();
+    this.createApp(app.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), App.class);
 
   }
+
+  /**
+   * Defined method only for testing and can delete an APP.
+   *
+   * @param id      identifier of the application to remove.
+   * @param handler to manage the deleted application.
+   */
+  void deleteApp(@NotNull String id, @NotNull Handler<AsyncResult<Void>> handler);
 
   /**
    * Defined method only for testing and can delete an APP.
@@ -129,7 +142,22 @@ public interface WeNetServiceSimulator {
    *
    * @return the deleted application.
    */
-  Future<Void> deleteApp(@NotNull String id);
+  @GenIgnore
+  default Future<Void> deleteApp(@NotNull final String id) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.deleteApp(id, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Return all the callbacks messages received by an {@link App}.
+   *
+   * @param id      identifier of the app to get the callback messages.
+   * @param handler to manage the callbacks.
+   */
+  void retrieveCallbacks(@NotNull String id, @NotNull Handler<AsyncResult<JsonArray>> handler);
 
   /**
    * Return all the callbacks messages received by an {@link App}.
@@ -138,7 +166,23 @@ public interface WeNetServiceSimulator {
    *
    * @return the callback messsages.
    */
-  Future<JsonArray> retrieveJsonCallbacks(@NotNull String id);
+  @GenIgnore
+  default Future<JsonArray> retrieveCallbacks(@NotNull final String id) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    this.retrieveCallbacks(id, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Add a callback message for an application.
+   *
+   * @param appId   identifier of the application to add the message.
+   * @param message callback message.
+   * @param handler for the added callback.
+   */
+  void addCallBack(String appId, JsonObject message, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Add a callback message for an application.
@@ -148,7 +192,22 @@ public interface WeNetServiceSimulator {
    *
    * @return the added callback.
    */
-  Future<JsonObject> addJsonCallBack(String appId, JsonObject message);
+  @GenIgnore
+  default Future<JsonObject> addCallBack(final String appId, final JsonObject message) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.addCallBack(appId, message, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Delete all the callbacks for an application.
+   *
+   * @param appId   identifier of the application to delete all the callbacks.
+   * @param handler to manage the deleted callbacks result.
+   */
+  void deleteCallbacks(String appId, @NotNull Handler<AsyncResult<Void>> handler);
 
   /**
    * Delete all the callbacks for an application.
@@ -157,16 +216,47 @@ public interface WeNetServiceSimulator {
    *
    * @return the deleted callbacks result.
    */
-  Future<Void> deleteCallbacks(String appId);
+  @GenIgnore
+  default Future<Void> deleteCallbacks(final String appId) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.deleteUsers(appId, promise);
+    return promise.future();
+
+  }
 
   /**
    * Return all the users users received by an {@link App}.
    *
-   * @param id identifier of the app to get the user users.
+   * @param appId   identifier of the app to get the user users.
+   * @param handler to manage the retrieved users identifiers.
+   */
+  void retrieveAppUserIds(@NotNull String appId, @NotNull Handler<AsyncResult<JsonArray>> handler);
+
+  /**
+   * Return all the users users received by an {@link App}.
+   *
+   * @param appId identifier of the app to get the user users.
    *
    * @return the appliction users.
    */
-  Future<JsonArray> retrieveAppUserIds(@NotNull String id);
+  @GenIgnore
+  default Future<JsonArray> retrieveAppUserIds(@NotNull final String appId) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    this.retrieveAppUserIds(appId, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Add users into an application.
+   *
+   * @param appId   identifier of the application to add the users.
+   * @param users   to add.
+   * @param handler to manage the added user.
+   */
+  void addUsers(String appId, JsonArray users, @NotNull Handler<AsyncResult<JsonArray>> handler);
 
   /**
    * Add users into an application.
@@ -176,7 +266,22 @@ public interface WeNetServiceSimulator {
    *
    * @return the added user.
    */
-  Future<JsonArray> addUsers(String appId, JsonArray users);
+  @GenIgnore
+  default Future<JsonArray> addUsers(final String appId, final JsonArray users) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    this.addUsers(appId, users, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Delete all the users of an application.
+   *
+   * @param appId   identifier of the application to delete all the users.
+   * @param handler to manage the removed users.
+   */
+  void deleteUsers(String appId, @NotNull Handler<AsyncResult<Void>> handler);
 
   /**
    * Delete all the users of an application.
@@ -185,6 +290,13 @@ public interface WeNetServiceSimulator {
    *
    * @return the result of the deleted users.
    */
-  Future<Void> deleteUsers(String appId);
+  @GenIgnore
+  default Future<Void> deleteUsers(final String appId) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.deleteUsers(appId, promise);
+    return promise.future();
+
+  }
 
 }
