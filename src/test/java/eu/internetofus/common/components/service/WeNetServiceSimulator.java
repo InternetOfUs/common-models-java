@@ -154,23 +154,23 @@ public interface WeNetServiceSimulator {
   /**
    * Return all the callbacks messages received by an {@link App}.
    *
-   * @param id      identifier of the app to get the callback messages.
+   * @param appId      identifier of the app to get the callback messages.
    * @param handler to manage the callbacks.
    */
-  void retrieveCallbacks(@NotNull String id, @NotNull Handler<AsyncResult<JsonArray>> handler);
+  void retrieveCallbacks(@NotNull String appId, @NotNull Handler<AsyncResult<JsonArray>> handler);
 
   /**
    * Return all the callbacks messages received by an {@link App}.
    *
-   * @param id identifier of the app to get the callback messages.
+   * @param appId identifier of the app to get the callback messages.
    *
    * @return the callback messsages.
    */
   @GenIgnore
-  default Future<JsonArray> retrieveCallbacks(@NotNull final String id) {
+  default Future<JsonArray> retrieveCallbacks(@NotNull final String appId) {
 
     final Promise<JsonArray> promise = Promise.promise();
-    this.retrieveCallbacks(id, promise);
+    this.retrieveCallbacks(appId, promise);
     return promise.future();
 
   }

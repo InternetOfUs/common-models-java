@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.vertx;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -45,7 +43,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
@@ -383,34 +380,6 @@ public class ComponentClient {
   }
 
   /**
-   * Create the component to extract from a response the specified class.
-   *
-   * @param type of model to extract.
-   *
-   * @return the extractor to obtain the model from the response.
-   *
-   */
-  protected <T> Function<HttpResponse<Buffer>, List<T>> createListModelExtractor(final Class<T> type) {
-
-    return response -> {
-
-      final List<T> models = new ArrayList<>();
-      final var array = response.bodyAsJsonArray();
-      final var max = array.size();
-      for (int i = 0; i < max; i++) {
-
-        final var element = array.getBuffer(i);
-        final T model = Json.decodeValue(element, type);
-        models.add(model);
-      }
-
-      return models;
-
-    };
-
-  }
-
-  /**
    * Create the handler to manage when the request failed.
    *
    * @param promise  to inform of the model.
@@ -446,7 +415,12 @@ public class ComponentClient {
     return response -> {
 
       final var code = response.statusCode();
-      if (Status.Family.familyOf(code) == Status.Family.SUCCESSFUL) {
+      if (Status.NO_CONTENT.getStatusCode() == code) {
+
+        Logger.trace("{} SUCCESS with code {}", actionId, code);
+        promise.complete();
+
+      } else if (Status.Family.familyOf(code) == Status.Family.SUCCESSFUL) {
 
         try {
 

@@ -150,12 +150,14 @@ public abstract class WeNetServiceSimulatorTestCase {
           testContext.assertComplete(service.retrieveCallbacks(created.appId)).onSuccess(retrieve -> testContext.verify(() -> {
 
             assertThat(retrieve).isEqualTo(new JsonArray().add(message1).add(message2));
+
             testContext.assertComplete(service.deleteCallbacks(created.appId)).onSuccess(empty -> {
 
               testContext.assertComplete(service.retrieveCallbacks(created.appId)).onSuccess(retrieve2 -> testContext.verify(() -> {
 
                 assertThat(retrieve2).isEqualTo(new JsonArray());
                 testContext.assertComplete(service.deleteApp(created.appId)).onSuccess(emptyApp -> testContext.completeNow());
+
               }));
             });
           }));
@@ -197,7 +199,7 @@ public abstract class WeNetServiceSimulatorTestCase {
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldPostMessagoToAppCallbacks(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldPostMessageToAppCallbacks(final Vertx vertx, final VertxTestContext testContext) {
 
     final var service = WeNetServiceSimulator.createProxy(vertx);
     testContext.assertComplete(service.createApp(new App())).onSuccess(created -> {

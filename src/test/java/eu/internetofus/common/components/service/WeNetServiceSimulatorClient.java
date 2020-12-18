@@ -104,9 +104,9 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
    * {@inheritDoc}
    */
   @Override
-  public void retrieveCallbacks(@NotNull final String id, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
+  public void retrieveCallbacks(@NotNull final String appId, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.getJsonArray("/callback", id).onComplete(handler);
+    this.getJsonArray("/app", appId,"/callbacks").onComplete(handler);
 
   }
 
@@ -116,7 +116,7 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
   @Override
   public void addCallBack(final String appId, final JsonObject message, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.post(message, "/callback", appId).onComplete(handler);
+    this.post(message, "/app", appId,"/callbacks").onComplete(handler);
 
   }
 
@@ -126,7 +126,7 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
   @Override
   public void deleteCallbacks(final String appId, @NotNull final Handler<AsyncResult<Void>> handler) {
 
-    this.delete("/callback", appId).onComplete(handler);
+    this.delete("/app", appId,"/callbacks").onComplete(handler);
 
   }
 
@@ -136,7 +136,7 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
   @Override
   public void addUsers(final String appId, final JsonArray users, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.post(users, "/app/" + appId + "/users").onComplete(handler);
+    this.post(users, "/app", appId, "/users").onComplete(handler);
 
   }
 
@@ -146,7 +146,7 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
   @Override
   public void deleteUsers(final String appId, @NotNull final Handler<AsyncResult<Void>> handler) {
 
-    this.delete("/app/" + appId + "/users").onComplete(handler);
+    this.delete("/app/", appId, "/users").onComplete(handler);
 
   }
 
