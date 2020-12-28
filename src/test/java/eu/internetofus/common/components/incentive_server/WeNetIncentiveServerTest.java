@@ -40,7 +40,7 @@ import io.vertx.junit5.VertxExtension;
  *
  * @see WeNetIncentiveServer
  * @see WeNetIncentiveServerClient
- * @see WeNetIncentiveServerMocker
+ * @see WeNetIncentiveServerSimulatorMocker
  *
  * @author UDT-IA, IIIA-CSIC
  */
@@ -50,7 +50,7 @@ public class WeNetIncentiveServerTest extends WeNetIncentiveServerTestCase {
   /**
    * The profile manager mocked server.
    */
-  protected static WeNetIncentiveServerMocker mocker;
+  protected static WeNetIncentiveServerSimulatorMocker mocker;
 
   /**
    * Start the mocker server.
@@ -58,7 +58,7 @@ public class WeNetIncentiveServerTest extends WeNetIncentiveServerTestCase {
   @BeforeAll
   public static void startMocker() {
 
-    mocker = WeNetIncentiveServerMocker.start();
+    mocker = WeNetIncentiveServerSimulatorMocker.start();
   }
 
   /**
@@ -67,7 +67,7 @@ public class WeNetIncentiveServerTest extends WeNetIncentiveServerTestCase {
   @AfterAll
   public static void stopMockers() {
 
-    mocker.stop();
+    mocker.stopServer();
   }
 
   /**

@@ -42,7 +42,7 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
 
 /**
- * The services to interact with the {@link WeNetServiceSimulator}.
+ * The services to interact with the mocked version of the {@link WeNetService}.
  *
  * @author UDT-IA, IIIA-CSIC
  */
@@ -55,7 +55,7 @@ public interface WeNetServiceSimulator {
   String ADDRESS = "wenet_component.ServiceSimulator";
 
   /**
-   * Create a proxy of the {@link WeNetService}.
+   * Create a proxy of the {@link WeNetServiceSimulator}.
    *
    * @param vertx where the service has to be used.
    *
@@ -67,11 +67,14 @@ public interface WeNetServiceSimulator {
   }
 
   /**
-   * Register this service.
+   * Register this service for a {@link WeNetService} and a {@link WeNetServiceSimulator}.
    *
    * @param vertx  that contains the event bus to use.
    * @param client to do HTTP requests to other services.
    * @param conf   configuration to use.
+   *
+   * @see WeNetService#ADDRESS
+   * @see WeNetServiceSimulator#ADDRESS
    */
   static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
@@ -154,7 +157,7 @@ public interface WeNetServiceSimulator {
   /**
    * Return all the callbacks messages received by an {@link App}.
    *
-   * @param appId      identifier of the app to get the callback messages.
+   * @param appId   identifier of the app to get the callback messages.
    * @param handler to manage the callbacks.
    */
   void retrieveCallbacks(@NotNull String appId, @NotNull Handler<AsyncResult<JsonArray>> handler);
@@ -238,7 +241,7 @@ public interface WeNetServiceSimulator {
    *
    * @param appId identifier of the app to get the user users.
    *
-   * @return the appliction users.
+   * @return the application users.
    */
   @GenIgnore
   default Future<JsonArray> retrieveAppUserIds(@NotNull final String appId) {

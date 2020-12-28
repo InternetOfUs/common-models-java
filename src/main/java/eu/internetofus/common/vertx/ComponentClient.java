@@ -495,18 +495,8 @@ public class ComponentClient {
    */
   protected Future<Void> delete(final Object... paths) {
 
-    return this.request(HttpMethod.DELETE, this.createAbsoluteUrlWith(paths), this.createNoContentExtractor());
+    return this.request(HttpMethod.DELETE, this.createAbsoluteUrlWith(paths), null);
 
-  }
-
-  /**
-   * Create the component to extract a {@link JsonArray} from a response.
-   *
-   * @return the extractor to obtain the array from the response.
-   */
-  protected Function<HttpResponse<Buffer>, Void> createNoContentExtractor() {
-
-    return response -> null;
   }
 
 }

@@ -37,8 +37,8 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 import org.tinylog.Logger;
 
-import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerMocker;
-import eu.internetofus.common.components.service.WeNetServiceMocker;
+import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulatorMocker;
+import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderMocker;
 import eu.internetofus.common.vertx.AbstractMain;
 import io.vertx.config.ConfigRetriever;
@@ -119,7 +119,7 @@ public class Containers {
   /**
    * The mocker of the service module.
    */
-  public WeNetServiceMocker service;
+  public WeNetServiceSimulatorMocker service;
 
   /**
    * The mocker of the social context builder module.
@@ -129,7 +129,7 @@ public class Containers {
   /**
    * The mocker of the incentive server module.
    */
-  public WeNetIncentiveServerMocker incentiveServer;
+  public WeNetIncentiveServerSimulatorMocker incentiveServer;
 
   /**
    * The port where the profile manager is exposed.
@@ -250,7 +250,7 @@ public class Containers {
     if (this.service == null) {
 
       Logger.trace("Starting Service Mocker");
-      this.service = WeNetServiceMocker.start();
+      this.service = WeNetServiceSimulatorMocker.start();
       Logger.trace("Started Service Mocker");
 
     }
@@ -284,7 +284,7 @@ public class Containers {
     if (this.incentiveServer == null) {
 
       Logger.trace("Starting Incentive server Mocker");
-      this.incentiveServer = WeNetIncentiveServerMocker.start();
+      this.incentiveServer = WeNetIncentiveServerSimulatorMocker.start();
       Logger.trace("Started Incentive server Mocker");
 
     }

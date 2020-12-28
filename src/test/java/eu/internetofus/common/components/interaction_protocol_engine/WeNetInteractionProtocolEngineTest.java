@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,8 +34,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
 import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.service.WeNetServiceMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
+import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.components.task_manager.WeNetTaskManagerMocker;
 import io.vertx.core.Vertx;
@@ -67,7 +67,7 @@ public class WeNetInteractionProtocolEngineTest extends WeNetInteractionProtocol
   /**
    * The service mocked server.
    */
-  protected static WeNetServiceMocker serviceMocker;
+  protected static WeNetServiceSimulatorMocker serviceMocker;
 
   /**
    * The interaction protocol engine mocked server.
@@ -82,7 +82,7 @@ public class WeNetInteractionProtocolEngineTest extends WeNetInteractionProtocol
 
     taskManagerMocker = WeNetTaskManagerMocker.start();
     profileManagerMocker = WeNetProfileManagerMocker.start();
-    serviceMocker = WeNetServiceMocker.start();
+    serviceMocker = WeNetServiceSimulatorMocker.start();
     interactionProtocolEngineMocker = WeNetInteractionProtocolEngineMocker.start();
   }
 

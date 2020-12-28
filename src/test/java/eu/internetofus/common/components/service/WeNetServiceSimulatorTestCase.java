@@ -28,13 +28,18 @@ package eu.internetofus.common.components.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.Test;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.serviceproxy.ServiceException;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * Test the {@link WeNetServiceSimulator}.
@@ -79,16 +84,21 @@ public abstract class WeNetServiceSimulatorTestCase {
   @Test
   public void shouldCreateRetrieveAndDeleteApp(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var service = WeNetServiceSimulator.createProxy(vertx);
-    testContext.assertComplete(service.createApp(new App())).onSuccess(create -> {
+    testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).createApp(new App())).onSuccess(create -> {
 
       final var id = create.appId;
-      testContext.assertComplete(service.retrieveApp(id)).onSuccess(retrieve -> testContext.verify(() -> {
+      testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).retrieveApp(id)).onSuccess(retrieve -> testContext.verify(() -> {
 
         assertThat(create).isEqualTo(retrieve);
-        testContext.assertComplete(service.deleteApp(id)).onSuccess(empty -> {
+        testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).deleteApp(id)).onSuccess(empty -> {
 
-          testContext.assertFailure(service.retrieveApp(id)).onFailure(handler -> testContext.completeNow());
+          testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).retrieveApp(id)).onFailure(error -> testContext.verify(() -> {
+
+            assertThat(error).isInstanceOf(ServiceException.class);
+            assertThat(((ServiceException) error).failureCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+            testContext.completeNow();
+
+          }));
 
         });
 
@@ -118,10 +128,11 @@ public abstract class WeNetServiceSimulatorTestCase {
           assertThat(retrieve).isEqualTo(users);
           testContext.assertComplete(service.deleteUsers(created.appId)).onSuccess(empty -> {
 
-            testContext.assertFailure(service.retrieveAppUserIds(created.appId)).onFailure(handler -> {
+            testContext.assertComplete(service.retrieveAppUserIds(created.appId)).onSuccess(retrieve2 -> testContext.verify(() -> {
 
+              assertThat(retrieve2).isEqualTo(new JsonArray());
               testContext.assertComplete(service.deleteApp(created.appId)).onSuccess(emptyApp -> testContext.completeNow());
-            });
+            }));
           });
         }));
       });
@@ -136,6 +147,7 @@ public abstract class WeNetServiceSimulatorTestCase {
    * @param testContext context over the tests.
    */
   @Test
+  @Timeout(value = 1, timeUnit = TimeUnit.DAYS)
   public void shouldCreateRetrieveAndDeleteAppCallbacks(final Vertx vertx, final VertxTestContext testContext) {
 
     final var service = WeNetServiceSimulator.createProxy(vertx);
@@ -144,24 +156,29 @@ public abstract class WeNetServiceSimulatorTestCase {
       final var message1 = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
       testContext.assertComplete(service.addCallBack(created.appId, message1)).onSuccess(create1 -> {
 
-        final var message2 = new JsonObject().put("action", "Name of the action").put("users", new JsonArray().add("1").add("43").add("23"));
-        testContext.assertComplete(service.addCallBack(created.appId, message2)).onSuccess(create2 -> {
+        testContext.assertComplete(service.retrieveCallbacks(created.appId)).onSuccess(retrieve -> testContext.verify(() -> {
 
-          testContext.assertComplete(service.retrieveCallbacks(created.appId)).onSuccess(retrieve -> testContext.verify(() -> {
+          assertThat(retrieve).isEqualTo(new JsonArray().add(message1));
 
-            assertThat(retrieve).isEqualTo(new JsonArray().add(message1).add(message2));
+          final var message2 = new JsonObject().put("action", "Name of the action2").put("users", new JsonArray().add("21").add("243").add("223"));
+          testContext.assertComplete(service.addCallBack(created.appId, message2)).onSuccess(create2 -> {
 
-            testContext.assertComplete(service.deleteCallbacks(created.appId)).onSuccess(empty -> {
+            testContext.assertComplete(service.retrieveCallbacks(created.appId)).onSuccess(retrieve2 -> testContext.verify(() -> {
 
-              testContext.assertComplete(service.retrieveCallbacks(created.appId)).onSuccess(retrieve2 -> testContext.verify(() -> {
+              assertThat(retrieve2).isEqualTo(new JsonArray().add(message1).add(message2));
 
-                assertThat(retrieve2).isEqualTo(new JsonArray());
-                testContext.assertComplete(service.deleteApp(created.appId)).onSuccess(emptyApp -> testContext.completeNow());
+              testContext.assertComplete(service.deleteCallbacks(created.appId)).onSuccess(empty -> {
 
-              }));
-            });
-          }));
-        });
+                testContext.assertComplete(service.retrieveCallbacks(created.appId)).onSuccess(retrieve3 -> testContext.verify(() -> {
+
+                  assertThat(retrieve3).isEqualTo(new JsonArray());
+                  testContext.assertComplete(service.deleteApp(created.appId)).onSuccess(emptyApp -> testContext.completeNow());
+
+                }));
+              });
+            }));
+          });
+        }));
       });
     });
 

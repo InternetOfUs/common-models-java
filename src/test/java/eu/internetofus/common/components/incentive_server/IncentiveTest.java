@@ -45,8 +45,8 @@ import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMock
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.service.WeNetServiceMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
+import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
@@ -71,7 +71,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   /**
    * The service mocked server.
    */
-  protected static WeNetServiceMocker serviceMocker;
+  protected static WeNetServiceSimulatorMocker serviceMocker;
 
   /**
    * Start the mocker server.
@@ -80,7 +80,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   public static void startMockers() {
 
     profileManagerMocker = WeNetProfileManagerMocker.start();
-    serviceMocker = WeNetServiceMocker.start();
+    serviceMocker = WeNetServiceSimulatorMocker.start();
   }
 
   /**
@@ -89,8 +89,8 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @AfterAll
   public static void stopMockers() {
 
-    profileManagerMocker.stop();
-    serviceMocker.stop();
+    profileManagerMocker.stopServer();
+    serviceMocker.stopServer();
   }
 
   /**

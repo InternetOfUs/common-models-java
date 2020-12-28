@@ -45,7 +45,7 @@ import io.vertx.ext.web.client.WebClient;
 public class WeNetServiceSimulatorClient extends WeNetServiceClient implements WeNetServiceSimulator, WeNetService {
 
   /**
-   * Create a new service to interact with the WeNet interaction protocol engine.
+   * Create a new service to interact with the WeNet service simulator.
    *
    * @param client to interact with the other modules.
    * @param conf   configuration.
@@ -106,7 +106,7 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
   @Override
   public void retrieveCallbacks(@NotNull final String appId, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.getJsonArray("/app", appId,"/callbacks").onComplete(handler);
+    this.getJsonArray("/app", appId, "/callbacks").onComplete(handler);
 
   }
 
@@ -116,7 +116,7 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
   @Override
   public void addCallBack(final String appId, final JsonObject message, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.post(message, "/app", appId,"/callbacks").onComplete(handler);
+    this.post(message, "/app", appId, "/callbacks").onComplete(handler);
 
   }
 
@@ -126,7 +126,7 @@ public class WeNetServiceSimulatorClient extends WeNetServiceClient implements W
   @Override
   public void deleteCallbacks(final String appId, @NotNull final Handler<AsyncResult<Void>> handler) {
 
-    this.delete("/app", appId,"/callbacks").onComplete(handler);
+    this.delete("/app", appId, "/callbacks").onComplete(handler);
 
   }
 

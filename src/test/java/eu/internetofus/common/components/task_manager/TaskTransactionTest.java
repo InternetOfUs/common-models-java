@@ -46,7 +46,7 @@ import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
 import eu.internetofus.common.components.service.MessageTest;
 import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.service.WeNetServiceMocker;
+import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -78,7 +78,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   /**
    * The service mocked server.
    */
-  protected static WeNetServiceMocker serviceMocker;
+  protected static WeNetServiceSimulatorMocker serviceMocker;
 
   /**
    * Start the mocker server.
@@ -88,7 +88,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
 
     profileManagerMocker = WeNetProfileManagerMocker.start();
     taskManagerMocker = WeNetTaskManagerMocker.start();
-    serviceMocker = WeNetServiceMocker.start();
+    serviceMocker = WeNetServiceSimulatorMocker.start();
   }
 
   /**

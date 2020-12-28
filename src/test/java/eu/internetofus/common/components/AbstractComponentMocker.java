@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,14 +27,18 @@
 package eu.internetofus.common.components;
 
 import java.net.InetAddress;
-import java.util.Map;
+import java.util.concurrent.Semaphore;
 
-import com.intuit.karate.Resource;
-import com.intuit.karate.core.Feature;
-import com.intuit.karate.core.FeatureParser;
-import com.intuit.karate.netty.FeatureServer;
+import org.tinylog.Level;
+import org.tinylog.provider.InternalLogger;
 
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Router;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * The generic component used to mock any WeNet component.
@@ -44,38 +48,91 @@ import io.vertx.core.json.JsonObject;
 public abstract class AbstractComponentMocker {
 
   /**
-   * The feature server that is mocked.
+   * The started server.
    */
-  protected FeatureServer server;
+  protected HttpServer server;
 
   /**
-   * Return the feature that mock the component. This return the feature defined in the class path with the same name of
-   * this class and with the extension {@code '.feature'}.
+   * Start the component mocker and wait until it is started.
    *
-   * @return the feature to use on the mocked server
+   * @param port to bind the mocker server or {@code 0} to find any available port.
    */
-  protected Feature createComponentFeature() {
+  public void startServerAndWait(final int port) {
 
-    final var url = this.getClass().getClassLoader().getResource(this.getClass().getName().replaceAll("\\.", "/") + ".feature");
-    final var resource = new Resource(url);
-    return FeatureParser.parse(resource);
+    final var semaphore = new Semaphore(0);
+    new Thread(() -> {
+
+      this.startServer(port).onComplete(handler -> semaphore.release());
+
+    }).start();
+
+    try {
+
+      semaphore.acquire();
+
+    } catch (final InterruptedException e) {
+
+      InternalLogger.log(Level.ERROR, e);
+    }
+
+  }
+
+  /**
+   * Check if the component is started.
+   *
+   * @return {@code true} if the component is started.
+   */
+  public boolean isServerStarted() {
+
+    return this.server != null;
 
   }
 
   /**
    * Start a new mocked server.
    *
-   * @param port      to bind the mocker server.
-   * @param variables to initialize the mocker, or {@code null} to use the default.
+   * @param port to bind the mocker server or {@code 0} to find any available port.
    *
-   * @see #createComponentFeature()
+   * @return a future completed with the start result.
    */
-  public void start(final int port, final Map<String, Object> variables) {
+  public Future<Void> startServer(final int port) {
 
-    this.stop();
-    final var feature = this.createComponentFeature();
-    this.server = new FeatureServer(feature, port, false, variables);
+    if (this.isServerStarted()) {
+
+      return Future.failedFuture("Server is already started");
+
+    } else {
+      final var vertx = Vertx.vertx();
+      final var server = vertx.createHttpServer();
+      final Router router = Router.router(vertx);
+
+      this.fillInRouterHandler(router);
+
+      router.routeWithRegex("*").handler(ctx -> {
+
+        final HttpServerResponse response = ctx.response();
+        response.putHeader("content-type", "application/json");
+        response.setStatusCode(Status.NOT_IMPLEMENTED.getStatusCode());
+        response.end();
+
+      });
+
+      return server.requestHandler(router).listen(port).compose(startedServer -> {
+
+        this.server = startedServer;
+        return Future.succeededFuture();
+
+      });
+
+    }
   }
+
+  /**
+   * Called to add the handlers for the component.
+   *
+   * @param router to add the handlers.
+   */
+  protected abstract void fillInRouterHandler(Router router);
 
   /**
    * Return the base URL to the API that the mocked service respond.
@@ -105,13 +162,22 @@ public abstract class AbstractComponentMocker {
 
   /**
    * Stop the started server.
+   *
+   * @return a future completed with the stop result.
    */
-  public void stop() {
+  public Future<Void> stopServer() {
 
-    if (this.server != null) {
+    if (this.isServerStarted()) {
 
-      this.server.stop();
-      this.server = null;
+      return this.server.close().compose(map -> {
+
+        AbstractComponentMocker.this.server = null;
+        return Future.succeededFuture();
+      });
+
+    } else {
+
+      return Future.failedFuture("Server not started");
     }
 
   }
@@ -125,7 +191,7 @@ public abstract class AbstractComponentMocker {
 
     if (this.server != null) {
 
-      return this.server.getPort();
+      return this.server.actualPort();
 
     }
 

@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.service.WeNetServiceMocker;
+import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
@@ -62,7 +62,7 @@ public class WeNetProfileManagerTest extends WeNetProfileManagerTestCase {
   /**
    * The service mocked server.
    */
-  protected static WeNetServiceMocker serviceMocker;
+  protected static WeNetServiceSimulatorMocker serviceMocker;
 
   /**
    * Start the mocker server.
@@ -71,7 +71,7 @@ public class WeNetProfileManagerTest extends WeNetProfileManagerTestCase {
   public static void startMocker() {
 
     profileManagerMocker = WeNetProfileManagerMocker.start();
-    serviceMocker = WeNetServiceMocker.start();
+    serviceMocker = WeNetServiceSimulatorMocker.start();
   }
 
   /**
@@ -97,9 +97,9 @@ public class WeNetProfileManagerTest extends WeNetProfileManagerTestCase {
     final var profileManagerConf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, profileManagerConf);
 
-    final var srviceConf = serviceMocker.getComponentConfiguration();
-    WeNetServiceSimulator.register(vertx, client, srviceConf);
-    WeNetService.register(vertx, client, srviceConf);
+    final var serviceConf = serviceMocker.getComponentConfiguration();
+    WeNetServiceSimulator.register(vertx, client, serviceConf);
+    WeNetService.register(vertx, client, serviceConf);
 
   }
 

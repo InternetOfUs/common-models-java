@@ -34,7 +34,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
 import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.service.WeNetServiceMocker;
+import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
@@ -65,7 +65,7 @@ public class WeNetTaskManagerTest extends WeNetTaskManagerTestCase {
   /**
    * The service mocked server.
    */
-  protected static WeNetServiceMocker serviceMocker;
+  protected static WeNetServiceSimulatorMocker serviceMocker;
 
   /**
    * Start the mocker servers.
@@ -75,7 +75,7 @@ public class WeNetTaskManagerTest extends WeNetTaskManagerTestCase {
 
     taskManagerMocker = WeNetTaskManagerMocker.start();
     profileManagerMocker = WeNetProfileManagerMocker.start();
-    serviceMocker = WeNetServiceMocker.start();
+    serviceMocker = WeNetServiceSimulatorMocker.start();
   }
 
   /**

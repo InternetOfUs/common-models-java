@@ -24,7 +24,7 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.social_context_builder;
+package eu.internetofus.common.components.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,6 @@ import java.util.UUID;
 import eu.internetofus.common.components.AbstractComponentMocker;
 import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.service.App;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -42,13 +41,24 @@ import io.vertx.ext.web.RoutingContext;
 import jakarta.ws.rs.core.Response.Status;
 
 /**
- * The mocked server for the {@link WeNetSocialContextBuilder}.
+ * The mocked server for the {@link WeNetService}.
  *
- * @see WeNetSocialContextBuilder
+ * @see WeNetService
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetSocialContextBuilderMocker extends AbstractComponentMocker {
+public class WeNetServiceSimulatorMocker extends AbstractComponentMocker {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see WeNetServiceClient#SERVICE_CONF_KEY
+   */
+  @Override
+  protected String getComponentConfigurationName() {
+
+    return WeNetServiceClient.SERVICE_CONF_KEY;
+  }
 
   /**
    * The data stored by this component.
@@ -121,9 +131,9 @@ public class WeNetSocialContextBuilderMocker extends AbstractComponentMocker {
   @Override
   public Future<Void> startServer(final int port) {
 
-    return super.startServer(port).compose(startped -> {
+    return super.startServer(port).compose(started -> {
 
-      WeNetSocialContextBuilderMocker.this.data = new ArrayList<>();
+      WeNetServiceSimulatorMocker.this.data = new ArrayList<>();
       return Future.succeededFuture();
     });
   }
@@ -136,7 +146,7 @@ public class WeNetSocialContextBuilderMocker extends AbstractComponentMocker {
 
     return super.stopServer().compose(stopped -> {
 
-      WeNetSocialContextBuilderMocker.this.data = null;
+      WeNetServiceSimulatorMocker.this.data = null;
       return Future.succeededFuture();
     });
   }
@@ -146,7 +156,7 @@ public class WeNetSocialContextBuilderMocker extends AbstractComponentMocker {
    *
    * @return the started mocker.
    */
-  public static WeNetSocialContextBuilderMocker start() {
+  public static WeNetServiceSimulatorMocker start() {
 
     return start(0);
 
@@ -159,20 +169,11 @@ public class WeNetSocialContextBuilderMocker extends AbstractComponentMocker {
    *
    * @return the started mocker.
    */
-  public static WeNetSocialContextBuilderMocker start(final int port) {
+  public static WeNetServiceSimulatorMocker start(final int port) {
 
-    final var mocker = new WeNetSocialContextBuilderMocker();
+    final var mocker = new WeNetServiceSimulatorMocker();
     mocker.startServerAndWait(port);
     return mocker;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected String getComponentConfigurationName() {
-
-    return WeNetSocialContextBuilderClient.SOCIAL_CONTEXT_BUILDER_CONF_KEY;
   }
 
   /**
@@ -328,7 +329,6 @@ public class WeNetSocialContextBuilderMocker extends AbstractComponentMocker {
 
     };
   }
-
 
   /**
    * Create the handler to obtain the user handlers.

@@ -51,7 +51,7 @@ import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.service.WeNetServiceMocker;
+import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import eu.internetofus.common.components.task_manager.ProtocolNormTest;
 import io.vertx.core.Future;
@@ -78,7 +78,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   /**
    * The profile manager mocked server.
    */
-  protected static WeNetServiceMocker serviceMocker;
+  protected static WeNetServiceSimulatorMocker serviceMocker;
 
   /**
    * Start the mocker server.
@@ -87,7 +87,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   public static void startMocker() {
 
     profileManagerMocker = WeNetProfileManagerMocker.start();
-    serviceMocker = WeNetServiceMocker.start();
+    serviceMocker = WeNetServiceSimulatorMocker.start();
   }
 
   /**

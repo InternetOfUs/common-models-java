@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -40,7 +40,7 @@ import io.vertx.junit5.VertxExtension;
  *
  * @see WeNetServiceSimulator
  * @see WeNetServiceSimulatorClient
- * @see WeNetServiceMocker
+ * @see WeNetServiceSimulatorMocker
  *
  * @author UDT-IA, IIIA-CSIC
  */
@@ -50,7 +50,7 @@ public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
   /**
    * The service mocked server.
    */
-  protected static WeNetServiceMocker serviceMocker;
+  protected static WeNetServiceSimulatorMocker serviceMocker;
 
   /**
    * Start the mocker servers.
@@ -58,7 +58,7 @@ public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
   @BeforeAll
   public static void startMockers() {
 
-    serviceMocker = WeNetServiceMocker.start();
+    serviceMocker = WeNetServiceSimulatorMocker.start();
   }
 
   /**
@@ -67,7 +67,7 @@ public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
   @AfterAll
   public static void stopMockers() {
 
-    serviceMocker.stop();
+    serviceMocker.stopServer();
   }
 
   /**
@@ -79,9 +79,9 @@ public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
   public void registerClient(final Vertx vertx) {
 
     final var client = WebClient.create(vertx);
-    final var conf = serviceMocker.getComponentConfiguration();
-    WeNetService.register(vertx, client, conf);
-    WeNetServiceSimulator.register(vertx, client, conf);
+    final var serviceConf = serviceMocker.getComponentConfiguration();
+    WeNetServiceSimulator.register(vertx, client, serviceConf);
+    WeNetService.register(vertx, client, serviceConf);
 
   }
 }
