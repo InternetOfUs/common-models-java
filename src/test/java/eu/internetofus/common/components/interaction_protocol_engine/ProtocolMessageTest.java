@@ -100,9 +100,9 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @AfterAll
   public static void stopMockers() {
 
-    profileManagerMocker.stop();
-    taskManagerMocker.stop();
-    serviceMocker.stop();
+    profileManagerMocker.stopServer();
+    taskManagerMocker.stopServer();
+    serviceMocker.stopServer();
   }
 
   /**
@@ -148,7 +148,8 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   }
 
   /**
-   * Create an example model that has the specified index that create any required component.
+   * Create an example model that has the specified index that create any required
+   * component.
    *
    * @param index       to use in the example.
    * @param vertx       event bus to use.
@@ -156,7 +157,8 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
    *
    * @return the created protocol message.
    */
-  public Future<ProtocolMessage> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
+  public Future<ProtocolMessage> createModelExample(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     return testContext.assertComplete(StoreServices.storeTaskExample(index, vertx, testContext).compose(task -> {
 
@@ -200,7 +202,8 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is
+   * valid.
    *
    * @param index       to verify
    * @param vertx       event bus to use.
@@ -491,7 +494,8 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   }
 
   /**
-   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext )} with multiple norms is valid.
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext )} with
+   * multiple norms is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -517,8 +521,8 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   }
 
   /**
-   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with multiple norms with the same id is not
-   * valid.
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with
+   * multiple norms with the same id is not valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.

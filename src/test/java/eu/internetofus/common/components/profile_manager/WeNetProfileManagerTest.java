@@ -35,8 +35,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
+import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
@@ -80,8 +80,8 @@ public class WeNetProfileManagerTest extends WeNetProfileManagerTestCase {
   @AfterAll
   public static void stopMockers() {
 
-    profileManagerMocker.stop();
-    serviceMocker.stop();
+    profileManagerMocker.stopServer();
+    serviceMocker.stopServer();
 
   }
 
@@ -112,20 +112,23 @@ public class WeNetProfileManagerTest extends WeNetProfileManagerTestCase {
   @Test
   public void shouldReturnEmptyCommunityProfilesPage(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null, null, null, null, 0, 100)).onSuccess(page -> testContext.verify(() -> {
+    testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(null, null, null,
+        null, null, null, 0, 100)).onSuccess(page -> testContext.verify(() -> {
 
-      assertThat(page).isNotNull();
-      assertThat(page.offset).isEqualTo(0);
-      assertThat(page.total).isEqualTo(0);
-      assertThat(page.communities).isNull();
+          assertThat(page).isNotNull();
+          assertThat(page.offset).isEqualTo(0);
+          assertThat(page.total).isEqualTo(0);
+          assertThat(page.communities).isNull();
 
-      testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage("appId", "name", "description", "keywords", "members", "order", 0, 100)).onSuccess(page2 -> testContext.verify(() -> {
+          testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage("appId",
+              "name", "description", "keywords", "members", "order", 0, 100))
+              .onSuccess(page2 -> testContext.verify(() -> {
 
-        assertThat(page).isEqualTo(page2);
-        testContext.completeNow();
+                assertThat(page).isEqualTo(page2);
+                testContext.completeNow();
 
-      }));
-    }));
+              }));
+        }));
 
   }
 

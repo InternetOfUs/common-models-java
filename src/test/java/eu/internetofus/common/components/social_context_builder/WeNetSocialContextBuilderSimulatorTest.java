@@ -24,9 +24,12 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
+package eu.internetofus.common.components.social_context_builder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+import java.util.UUID;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,21 +43,22 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 /**
- * Test the {@link WeNetServiceSimulator}.
+ * Test the {@link WeNetSocialContextBuilderSimulator}.
  *
- * @see WeNetServiceSimulator
- * @see WeNetServiceSimulatorClient
- * @see WeNetServiceSimulatorMocker
+ * @see WeNetSocialContextBuilderSimulator
+ * @see WeNetSocialContextBuilderSimulatorClient
+ * @see WeNetSocialContextBuilderSimulatorMocker
+ *
  *
  * @author UDT-IA, IIIA-CSIC
  */
 @ExtendWith(VertxExtension.class)
-public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
+public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBuilderTestCase {
 
   /**
-   * The service mocked server.
+   * The social context builder mocked server.
    */
-  protected static WeNetServiceSimulatorMocker serviceMocker;
+  protected static WeNetSocialContextBuilderSimulatorMocker socialContextBuilderMocker;
 
   /**
    * Start the mocker servers.
@@ -62,7 +66,7 @@ public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
   @BeforeAll
   public static void startMockers() {
 
-    serviceMocker = WeNetServiceSimulatorMocker.start();
+    socialContextBuilderMocker = WeNetSocialContextBuilderSimulatorMocker.start();
   }
 
   /**
@@ -71,7 +75,7 @@ public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
   @AfterAll
   public static void stopMockers() {
 
-    serviceMocker.stopServer();
+    socialContextBuilderMocker.stopServer();
   }
 
   /**
@@ -83,40 +87,45 @@ public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
   public void registerClient(final Vertx vertx) {
 
     final var client = WebClient.create(vertx);
-    final var serviceConf = serviceMocker.getComponentConfiguration();
-    WeNetServiceSimulator.register(vertx, client, serviceConf);
-    WeNetService.register(vertx, client, serviceConf);
+    final var socialContextBuilderConf = socialContextBuilderMocker.getComponentConfiguration();
+    WeNetSocialContextBuilderSimulator.register(vertx, client, socialContextBuilderConf);
+    WeNetSocialContextBuilder.register(vertx, client, socialContextBuilderConf);
 
   }
 
   /**
-   * Should create, retrieve and delete an App.
+   * Should set and get the social relations.
    *
    * @param vertx       that contains the event bus to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldCreateRetrieveDeleteApp(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldSetGetSocialRelations(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).createApp(new App()))
-        .onSuccess(app -> testContext.verify(() -> {
+    var userId = UUID.randomUUID().toString();
+    var relations = new ArrayList<UserRelation>();
+    testContext.assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx).retrieveSocialRelations(userId))
+        .onSuccess(retrieveRelations -> testContext.verify(() -> {
 
-          assertThat(app.appId).isNotNull();
-          assertThat(app.messageCallbackUrl).isNotNull().contains(app.appId);
-          testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).retrieveApp(app.appId))
-              .onSuccess(app2 -> testContext.verify(() -> {
+          assertThat(retrieveRelations).isEqualTo(relations);
+          relations.add(new UserRelationTest().createModelExample(1));
+          relations.add(new UserRelationTest().createModelExample(2));
+          relations.add(new UserRelationTest().createModelExample(3));
 
-                assertThat(app2).isEqualTo(app);
+          testContext
+              .assertComplete(
+                  WeNetSocialContextBuilderSimulator.createProxy(vertx).setSocialRelations(userId, relations))
+              .onSuccess(storedRelations -> testContext.verify(() -> {
 
-                testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).deleteApp(app.appId))
-                    .onSuccess(empty -> {
+                assertThat(storedRelations).isEqualTo(relations);
+                testContext
+                    .assertComplete(
+                        WeNetSocialContextBuilderSimulator.createProxy(vertx).retrieveSocialRelations(userId))
+                    .onSuccess(retrieveRelations2 -> testContext.verify(() -> {
 
-                      testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).retrieveApp(app.appId))
-                          .onFailure(error -> testContext.verify(() -> {
-
-                            testContext.completeNow();
-                          }));
-                    });
+                      assertThat(retrieveRelations2).isEqualTo(relations);
+                      testContext.completeNow();
+                    }));
               }));
         }));
   }

@@ -2097,7 +2097,7 @@ public class ModelResourcesTest {
    * Check found element by id.
    */
   @Test
-  public void shoudFoundElementWithId() {
+  public void shouldFoundElementWithId() {
 
     final var models = new ArrayList<DummyComplexModel>();
     final BiPredicate<DummyComplexModel, String> idComparator = (dummy, id) -> id != null && id.equals(dummy.id);
@@ -2149,7 +2149,7 @@ public class ModelResourcesTest {
    * Check found element by index.
    */
   @Test
-  public void shoudFoundElementWithIndex() {
+  public void shouldFoundElementWithIndex() {
 
     final var models = new ArrayList<>();
     for (var i = 0; i < 10; i++) {

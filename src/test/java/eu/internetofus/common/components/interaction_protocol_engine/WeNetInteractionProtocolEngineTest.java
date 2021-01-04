@@ -92,10 +92,10 @@ public class WeNetInteractionProtocolEngineTest extends WeNetInteractionProtocol
   @AfterAll
   public static void stopMockers() {
 
-    taskManagerMocker.stop();
-    profileManagerMocker.stop();
-    serviceMocker.stop();
-    interactionProtocolEngineMocker.stop();
+    taskManagerMocker.stopServer();
+    profileManagerMocker.stopServer();
+    serviceMocker.stopServer();
+    interactionProtocolEngineMocker.stopServer();
   }
 
   /**

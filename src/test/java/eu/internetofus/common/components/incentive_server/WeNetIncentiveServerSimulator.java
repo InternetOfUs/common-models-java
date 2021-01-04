@@ -32,6 +32,7 @@ import javax.validation.constraints.NotNull;
 
 import eu.internetofus.common.components.Model;
 import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -47,6 +48,7 @@ import io.vertx.serviceproxy.ServiceBinder;
  *
  * @author UDT-IA, IIIA-CSIC
  */
+@ProxyGen
 public interface WeNetIncentiveServerSimulator {
 
   /**
@@ -75,7 +77,8 @@ public interface WeNetIncentiveServerSimulator {
    */
   static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-    new ServiceBinder(vertx).setAddress(WeNetIncentiveServerSimulator.ADDRESS).register(WeNetIncentiveServerSimulator.class, new WeNetIncentiveServerSimulatorClient(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetIncentiveServerSimulator.ADDRESS)
+        .register(WeNetIncentiveServerSimulator.class, new WeNetIncentiveServerSimulatorClient(client, conf));
 
   }
 

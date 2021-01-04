@@ -57,8 +57,8 @@ import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMock
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
+import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -108,9 +108,9 @@ public class TaskTest extends ModelTestCase<Task> {
   @AfterAll
   public static void stopMockers() {
 
-    profileManagerMocker.stop();
-    taskManagerMocker.stop();
-    serviceMocker.stop();
+    profileManagerMocker.stopServer();
+    taskManagerMocker.stopServer();
+    serviceMocker.stopServer();
   }
 
   /**
@@ -159,7 +159,8 @@ public class TaskTest extends ModelTestCase<Task> {
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is
+   * valid.
    *
    * @param index       to verify
    *
@@ -238,17 +239,18 @@ public class TaskTest extends ModelTestCase<Task> {
    */
   public Future<Task> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    return testContext.assertComplete(StoreServices.storeTaskTypeExample(index, vertx, testContext).compose(taskType -> StoreServices.storeCommunityExample(index, vertx, testContext).compose(community -> {
+    return testContext.assertComplete(StoreServices.storeTaskTypeExample(index, vertx, testContext)
+        .compose(taskType -> StoreServices.storeCommunityExample(index, vertx, testContext).compose(community -> {
 
-      final var model = this.createModelExample(index);
-      model.transactions = null;
-      model.requesterId = community.members.get(0).userId;
-      model.taskTypeId = taskType.id;
-      model.appId = community.appId;
-      model.communityId = community.id;
-      return Future.succeededFuture(model);
+          final var model = this.createModelExample(index);
+          model.transactions = null;
+          model.requesterId = community.members.get(0).userId;
+          model.taskTypeId = taskType.id;
+          model.appId = community.appId;
+          model.communityId = community.id;
+          return Future.succeededFuture(model);
 
-    })));
+        })));
 
   }
 
@@ -1395,7 +1397,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
@@ -1415,7 +1417,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @see CommunityProfile#update(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 

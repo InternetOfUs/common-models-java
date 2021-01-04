@@ -84,7 +84,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   @AfterAll
   public static void stopMockers() {
 
-    profileManagerMocker.stop();
+    profileManagerMocker.stopServer();
   }
 
   /**
@@ -126,16 +126,18 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    *
    * @return the created planned activity.
    */
-  public Future<PlannedActivity> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
+  public Future<PlannedActivity> createModelExample(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
 
-    return testContext.assertComplete(StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(profile -> {
+    return testContext
+        .assertComplete(StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(profile -> {
 
-      final var activity = this.createModelExample(index);
-      activity.attendees = new ArrayList<>();
-      activity.attendees.add(profile.id);
-      return Future.succeededFuture(activity);
+          final var activity = this.createModelExample(index);
+          activity.attendees = new ArrayList<>();
+          activity.attendees.add(profile.id);
+          return Future.succeededFuture(activity);
 
-    }));
+        }));
 
   }
 
@@ -174,7 +176,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is
+   * valid.
    *
    * @param index       to verify
    * @param vertx       event bus to use.
@@ -184,7 +187,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
-  public void shouldExampleFromRepositoryBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldExampleFromRepositoryBeValid(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     this.createModelExample(index, vertx, testContext).onSuccess(model -> {
 
@@ -240,7 +244,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    */
   @ParameterizedTest(name = "Should not be valid with startTime = {0}")
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
-  public void shouldNotBeValidWithABadStartTime(final String badTime, final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWithABadStartTime(final String badTime, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     final var model = new PlannedActivity();
     model.startTime = badTime;
@@ -259,7 +264,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    */
   @ParameterizedTest(name = "Should not be valid with endTime = {0}")
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
-  public void shouldNotBeValidWithABadEndTime(final String badTime, final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWithABadEndTime(final String badTime, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     final var model = new PlannedActivity();
     model.endTime = badTime;
@@ -412,7 +418,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    */
   @ParameterizedTest(name = "Should not be valid with startTime = {0}")
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
-  public void shouldNotMergeWithABadStartTime(final String badTime, final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithABadStartTime(final String badTime, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     final var source = new PlannedActivity();
@@ -432,7 +439,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    */
   @ParameterizedTest(name = "Should not be valid with endTime = {0}")
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
-  public void shouldNotMergeWithABadEndTime(final String badTime, final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithABadEndTime(final String badTime, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     final var source = new PlannedActivity();
@@ -793,7 +801,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    */
   @ParameterizedTest(name = "Should not be valid with startTime = {0}")
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
-  public void shouldNotUpdateWithABadStartTime(final String badTime, final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithABadStartTime(final String badTime, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     final var source = new PlannedActivity();
@@ -813,7 +822,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    */
   @ParameterizedTest(name = "Should not be valid with endTime = {0}")
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
-  public void shouldNotUpdateWithABadEndTime(final String badTime, final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithABadEndTime(final String badTime, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     final var source = new PlannedActivity();

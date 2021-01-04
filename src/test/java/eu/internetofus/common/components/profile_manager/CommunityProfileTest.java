@@ -51,8 +51,8 @@ import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
+import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.task_manager.ProtocolNormTest;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -96,8 +96,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   @AfterAll
   public static void stopMockers() {
 
-    profileManagerMocker.stop();
-    serviceMocker.stop();
+    profileManagerMocker.stopServer();
+    serviceMocker.stopServer();
   }
 
   /**
@@ -166,7 +166,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    *
    * @return the community profile.
    */
-  public Future<CommunityProfile> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
+  public Future<CommunityProfile> createModelExample(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     return testContext.assertComplete(StoreServices.storeApp(new App(), vertx, testContext).compose(storedApp -> {
 
@@ -184,7 +185,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is
+   * valid.
    *
    * @param index       to verify
    * @param vertx       event bus to use.
@@ -201,7 +203,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   }
 
   /**
-   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with multiple members is valid.
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with
+   * multiple members is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -227,7 +230,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   }
 
   /**
-   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with multiple norms is valid.
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with
+   * multiple norms is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -248,7 +252,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   }
 
   /**
-   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with multiple social practices is valid.
+   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with
+   * multiple social practices is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -458,7 +463,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
@@ -478,7 +483,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudMergeExamples(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldMergeExamples(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       target._creationTs = 10000;
@@ -506,7 +511,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotMergeWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
@@ -525,7 +530,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotMergeWithBadName(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithBadName(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
@@ -544,7 +549,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotMergeWithBadDescription(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithBadDescription(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
@@ -563,7 +568,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotMergeWithBadKeywords(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithBadKeywords(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
@@ -583,7 +588,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotMergeWithBadSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithBadSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
@@ -604,7 +609,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotMergeWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
@@ -625,7 +630,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotMergeWithBadMembers(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithBadMembers(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
@@ -677,7 +682,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#update(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
@@ -697,7 +702,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#update(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudUpdateExamples(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldUpdateExamples(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       target._creationTs = 10000;
@@ -725,7 +730,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#update(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotUpdateWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
@@ -744,7 +749,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#update(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotUpdateWithBadName(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithBadName(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
@@ -763,7 +768,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#update(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotUpdateWithBadDescription(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithBadDescription(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
@@ -782,7 +787,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#update(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotUpdateWithBadKeywords(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithBadKeywords(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
@@ -802,7 +807,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#update(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotUpdateWithBadSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithBadSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
@@ -823,7 +828,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#update(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotUpdateWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
@@ -844,7 +849,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#update(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudNotUpdateWithBadMembers(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithBadMembers(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);

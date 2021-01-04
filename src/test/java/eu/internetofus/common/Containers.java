@@ -39,7 +39,7 @@ import org.tinylog.Logger;
 
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulatorMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
-import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderMocker;
+import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderSimulatorMocker;
 import eu.internetofus.common.vertx.AbstractMain;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -124,7 +124,7 @@ public class Containers {
   /**
    * The mocker of the social context builder module.
    */
-  public WeNetSocialContextBuilderMocker socialContextBuilder;
+  public WeNetSocialContextBuilderSimulatorMocker socialContextBuilder;
 
   /**
    * The mocker of the incentive server module.
@@ -267,7 +267,7 @@ public class Containers {
     if (this.socialContextBuilder == null) {
 
       Logger.trace("Starting Social Context Mocker");
-      this.socialContextBuilder = WeNetSocialContextBuilderMocker.start();
+      this.socialContextBuilder = WeNetSocialContextBuilderSimulatorMocker.start();
       Logger.trace("Started Social Context Mocker");
 
     }

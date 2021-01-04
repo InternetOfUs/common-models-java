@@ -24,37 +24,36 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.profile_manager;
+package eu.internetofus.common.components.social_context_builder;
 
 import eu.internetofus.common.components.AbstractComponentMocker;
-import eu.internetofus.common.components.CRUDContext;
+import eu.internetofus.common.components.GetSetContext;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
 /**
- * The mocked server for the {@link WeNetProfileManager}.
+ * The mocked server for the {@link WeNetSocialContextBuilder} and
+ * {@link WeNetSocialContextBuilderSimulator}.
  *
- * @see WeNetProfileManager
+ * @see WeNetSocialContextBuilder
+ * @see WeNetSocialContextBuilderSimulator
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetProfileManagerMocker extends AbstractComponentMocker {
+public class WeNetSocialContextBuilderSimulatorMocker extends AbstractComponentMocker {
 
   /**
-   * The context to do CRUD operations over the profiles.
+   * The context with the values stored on the mocker.
    */
-  protected CRUDContext profilesContext = new CRUDContext("id", "profiles", WeNetUserProfile.class);
-
-  /**
-   * The context to do CRUD operations over the communities.
-   */
-  protected CRUDContext communitiesContext = new CRUDContext("id", "communities", CommunityProfile.class);
+  protected GetSetContext context = new GetSetContext();
 
   /**
    * Start a mocker builder into a random port.
    *
    * @return the started mocker.
    */
-  public static WeNetProfileManagerMocker start() {
+  public static WeNetSocialContextBuilderSimulatorMocker start() {
 
     return start(0);
 
@@ -67,22 +66,20 @@ public class WeNetProfileManagerMocker extends AbstractComponentMocker {
    *
    * @return the started mocker.
    */
-  public static WeNetProfileManagerMocker start(final int port) {
+  public static WeNetSocialContextBuilderSimulatorMocker start(final int port) {
 
-    final var mocker = new WeNetProfileManagerMocker();
+    final var mocker = new WeNetSocialContextBuilderSimulatorMocker();
     mocker.startServerAndWait(port);
     return mocker;
   }
 
   /**
    * {@inheritDoc}
-   *
-   * @see WeNetProfileManagerClient#PROFILE_MANAGER_CONF_KEY
    */
   @Override
   protected String getComponentConfigurationName() {
 
-    return WeNetProfileManagerClient.PROFILE_MANAGER_CONF_KEY;
+    return WeNetSocialContextBuilderClient.SOCIAL_CONTEXT_BUILDER_CONF_KEY;
   }
 
   /**
@@ -91,19 +88,19 @@ public class WeNetProfileManagerMocker extends AbstractComponentMocker {
   @Override
   protected void fillInRouterHandler(final Router router) {
 
-    router.post("/profiles").handler(this.profilesContext.postHandler());
-    router.get("/profiles/:id").handler(this.profilesContext.getHandler());
-    router.get("/profiles").handler(this.profilesContext.getPageHandler());
-    router.put("/profiles/:id").handler(this.profilesContext.putHandler());
-    router.patch("/profiles/:id").handler(this.profilesContext.patchHandler());
-    router.delete("/profiles/:id").handler(this.profilesContext.deleteHandler());
+    router.get("/social/relations/:userId/")
+        .handler(this.context.createGetHandler("SOCIAL_RELATION", new JsonArray(), "userId"));
+    router.post("/social/relations/:userId/").handler(this.context.createSetHandler("SOCIAL_RELATION", "userId"));
 
-    router.post("/communities").handler(this.communitiesContext.postHandler());
-    router.get("/communities/:id").handler(this.communitiesContext.getHandler());
-    router.get("/communities").handler(this.communitiesContext.getPageHandler());
-    router.put("/communities/:id").handler(this.communitiesContext.putHandler());
-    router.patch("/communities/:id").handler(this.communitiesContext.patchHandler());
-    router.delete("/communities/:id").handler(this.communitiesContext.deleteHandler());
+    router.get("/social/preferences/:userId/:taskId/")
+        .handler(this.context.createGetHandler("SOCIAL_PREFERENCES", new JsonArray(), "userId", "taskId"));
+    router.post("/social/preferences/:userId/:taskId/")
+        .handler(this.context.createSetHandler("SOCIAL_PREFERENCES", "userId", "taskId"));
+
+    router.get("/social/explanations/:userId/:taskId/")
+        .handler(this.context.createGetHandler("SOCIAL_EXPLANATIONS", new JsonObject(), "userId", "taskId"));
+    router.post("/social/explanations/:userId/:taskId/")
+        .handler(this.context.createSetHandler("SOCIAL_EXPLANATIONS", "userId", "taskId"));
 
   }
 

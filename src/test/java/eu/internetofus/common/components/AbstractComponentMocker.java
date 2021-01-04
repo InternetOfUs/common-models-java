@@ -38,6 +38,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 import jakarta.ws.rs.core.Response.Status;
 
 /**
@@ -55,7 +56,8 @@ public abstract class AbstractComponentMocker {
   /**
    * Start the component mocker and wait until it is started.
    *
-   * @param port to bind the mocker server or {@code 0} to find any available port.
+   * @param port to bind the mocker server or {@code 0} to find any available
+   *             port.
    */
   public void startServerAndWait(final int port) {
 
@@ -91,7 +93,8 @@ public abstract class AbstractComponentMocker {
   /**
    * Start a new mocked server.
    *
-   * @param port to bind the mocker server or {@code 0} to find any available port.
+   * @param port to bind the mocker server or {@code 0} to find any available
+   *             port.
    *
    * @return a future completed with the start result.
    */
@@ -102,28 +105,35 @@ public abstract class AbstractComponentMocker {
       return Future.failedFuture("Server is already started");
 
     } else {
-      final var vertx = Vertx.vertx();
-      final var server = vertx.createHttpServer();
-      final Router router = Router.router(vertx);
+      try {
+        final var vertx = Vertx.vertx();
+        final var server = vertx.createHttpServer();
+        final Router router = Router.router(vertx);
 
-      this.fillInRouterHandler(router);
+        router.route().handler(BodyHandler.create());
 
-      router.routeWithRegex("*").handler(ctx -> {
+        this.fillInRouterHandler(router);
 
-        final HttpServerResponse response = ctx.response();
-        response.putHeader("content-type", "application/json");
-        response.setStatusCode(Status.NOT_IMPLEMENTED.getStatusCode());
-        response.end();
+        router.routeWithRegex(".*").handler(ctx -> {
 
-      });
+          final HttpServerResponse response = ctx.response();
+          response.putHeader("content-type", "application/json");
+          response.setStatusCode(Status.NOT_IMPLEMENTED.getStatusCode());
+          response.end();
 
-      return server.requestHandler(router).listen(port).compose(startedServer -> {
+        });
 
-        this.server = startedServer;
-        return Future.succeededFuture();
+        return server.requestHandler(router).listen(port).compose(startedServer -> {
 
-      });
+          this.server = startedServer;
+          return Future.succeededFuture();
 
+        });
+
+      } catch (Throwable cause) {
+
+        return Future.failedFuture(cause);
+      }
     }
   }
 
@@ -185,7 +195,8 @@ public abstract class AbstractComponentMocker {
   /**
    * Return the port that the server is bind.
    *
-   * @return the port where the server is bind or {@code 0} if the server is not started.
+   * @return the port where the server is bind or {@code 0} if the server is not
+   *         started.
    */
   public int getPort() {
 

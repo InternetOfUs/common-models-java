@@ -82,7 +82,7 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
    * @see DummyComplexModel#validate(String, Vertx)
    */
   @Test
-  public void shoudModelWithBadIdNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldModelWithBadIdNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new DummyComplexModel();
     model.id = ValidationsTest.STRING_256;
@@ -117,7 +117,7 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
    * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> {
@@ -135,7 +135,7 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
    * @see DummyComplexModel#merge(DummyComplexModel, String, Vertx)
    */
   @Test
-  public void shoudMergeExamples(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldMergeExamples(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     final var source = this.createModelExample(2);
@@ -157,7 +157,7 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
    * @see DummyComplexModel#merge(DummyComplexModel, String, Vertx)
    */
   @Test
-  public void shoudNotMergeWithBadSibling(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithBadSibling(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     final var source = new DummyComplexModel();
@@ -177,7 +177,7 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
    * @see DummyComplexModel#update(DummyComplexModel, String, Vertx)
    */
   @Test
-  public void shoudNotUpdateWithBadSibling(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithBadSibling(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     final var source = new DummyComplexModel();

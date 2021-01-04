@@ -79,7 +79,7 @@ public class ProtocolAddressTest extends ModelTestCase<ProtocolAddress> {
   @AfterAll
   public static void stopMockers() {
 
-    profileManagerMocker.stop();
+    profileManagerMocker.stopServer();
   }
 
   /**
@@ -110,7 +110,8 @@ public class ProtocolAddressTest extends ModelTestCase<ProtocolAddress> {
   }
 
   /**
-   * Create an example model that has the specified index that create any required component.
+   * Create an example model that has the specified index that create any required
+   * component.
    *
    * @param index       to use in the example.
    * @param vertx       event bus to use.
@@ -118,15 +119,17 @@ public class ProtocolAddressTest extends ModelTestCase<ProtocolAddress> {
    *
    * @return the created protocol address.
    */
-  public Future<ProtocolAddress> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
+  public Future<ProtocolAddress> createModelExample(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
 
-    return testContext.assertComplete(StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(profile -> {
+    return testContext
+        .assertComplete(StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(profile -> {
 
-      final var model = this.createModelExample(index);
-      model.userId = profile.id;
-      return Future.succeededFuture(model);
+          final var model = this.createModelExample(index);
+          model.userId = profile.id;
+          return Future.succeededFuture(model);
 
-    }));
+        }));
 
   }
 
@@ -149,7 +152,8 @@ public class ProtocolAddressTest extends ModelTestCase<ProtocolAddress> {
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is
+   * valid.
    *
    * @param index       to verify
    * @param vertx       event bus to use.

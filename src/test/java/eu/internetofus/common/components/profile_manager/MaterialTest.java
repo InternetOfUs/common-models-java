@@ -281,7 +281,7 @@ public class MaterialTest extends ModelTestCase<Material> {
    * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     assertCanMerge(target, null, vertx, testContext, merged -> {
@@ -395,7 +395,7 @@ public class MaterialTest extends ModelTestCase<Material> {
    * @see CommunityProfile#update(CommunityProfile, String, Vertx)
    */
   @Test
-  public void shoudUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     assertCanUpdate(target, null, vertx, testContext, updated -> {

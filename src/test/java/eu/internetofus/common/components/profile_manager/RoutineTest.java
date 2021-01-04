@@ -82,7 +82,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @AfterAll
   public static void stopMockers() {
 
-    profileManagerMocker.stop();
+    profileManagerMocker.stopServer();
   }
 
   /**
@@ -109,10 +109,14 @@ public class RoutineTest extends ModelTestCase<Routine> {
     model.user_id = "user_id_" + index;
     model.weekday = "weekday_" + index;
     model.label_distribution = new JsonObject();
-    model.label_distribution.put("additional_" + index, new JsonArray().add(new ScoredLabelTest().createModelExample(index).toJsonObject()).add(new ScoredLabelTest().createModelExample(index + 1).toJsonObject()));
+    model.label_distribution.put("additional_" + index,
+        new JsonArray().add(new ScoredLabelTest().createModelExample(index).toJsonObject())
+            .add(new ScoredLabelTest().createModelExample(index + 1).toJsonObject()));
     model.label_distribution.put("additional_" + (index + 1), new JsonArray());
     model.label_distribution.put("additional_" + (index + 2),
-        new JsonArray().add(new ScoredLabelTest().createModelExample(index - 1).toJsonObject()).add(new ScoredLabelTest().createModelExample(index).toJsonObject()).add(new ScoredLabelTest().createModelExample(index + 1).toJsonObject()));
+        new JsonArray().add(new ScoredLabelTest().createModelExample(index - 1).toJsonObject())
+            .add(new ScoredLabelTest().createModelExample(index).toJsonObject())
+            .add(new ScoredLabelTest().createModelExample(index + 1).toJsonObject()));
     model.confidence = 1.0 / Math.max(1.0, index + 1);
     return model;
   }
@@ -153,7 +157,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is
+   * valid.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -288,7 +293,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
   }
 
   /**
-   * Check that a {@link Routine} with a non array in the label_distribution is not valid.
+   * Check that a {@link Routine} with a non array in the label_distribution is
+   * not valid.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -296,7 +302,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @see RelevantLocation#validate(String, Vertx)
    */
   @Test
-  public void shouldRoutineWithANotArrayInLabel_distributiondNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldRoutineWithANotArrayInLabel_distributiondNotBeValid(final Vertx vertx,
+      final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
@@ -308,7 +315,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
   }
 
   /**
-   * Check that a {@link Routine} with a non scored label in the label_distribution is not valid.
+   * Check that a {@link Routine} with a non scored label in the
+   * label_distribution is not valid.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -316,7 +324,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @see RelevantLocation#validate(String, Vertx)
    */
   @Test
-  public void shouldRoutineWithANotScoredLabelArrayInLabel_distributiondNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldRoutineWithANotScoredLabelArrayInLabel_distributiondNotBeValid(final Vertx vertx,
+      final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
@@ -328,7 +337,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
   }
 
   /**
-   * Check that a {@link Routine} with a bad scored label in the label_distribution is not valid.
+   * Check that a {@link Routine} with a bad scored label in the
+   * label_distribution is not valid.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -336,11 +346,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @see RelevantLocation#validate(String, Vertx)
    */
   @Test
-  public void shouldRoutineWithABadScoredLabelArrayInLabel_distributiondNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldRoutineWithABadScoredLabelArrayInLabel_distributiondNotBeValid(final Vertx vertx,
+      final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
-      model.label_distribution.put("bad_score_label", new JsonArray().add(new ScoredLabelTest().createModelExample(1).toJsonObject()).add(new JsonObject()));
+      model.label_distribution.put("bad_score_label",
+          new JsonArray().add(new ScoredLabelTest().createModelExample(1).toJsonObject()).add(new JsonObject()));
       assertIsNotValid(model, "label_distribution.bad_score_label[1].label", vertx, testContext);
 
     });
@@ -373,8 +385,10 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldMergeTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext).onSuccess(target -> this.createModelExample(2, vertx, testContext)
-        .onSuccess(source -> assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))));
+    this.createModelExample(1, vertx, testContext)
+        .onSuccess(target -> this.createModelExample(2, vertx, testContext)
+            .onSuccess(source -> assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged)
+                .isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))));
   }
 
   /**
@@ -600,11 +614,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = new Routine();
       source.label_distribution = new JsonObject(target.label_distribution.toBuffer());
-      source.label_distribution.getJsonArray("additional_1").getJsonObject(0).clear().put("label", new JsonObject().put("name", "name_1").put("latitude", -43d)).put("score", 43d);
+      source.label_distribution.getJsonArray("additional_1").getJsonObject(0).clear()
+          .put("label", new JsonObject().put("name", "name_1").put("latitude", -43d)).put("score", 43d);
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
-        target.label_distribution.getJsonArray("additional_1").getJsonObject(0).getJsonObject("label").put("latitude", -43d);
+        target.label_distribution.getJsonArray("additional_1").getJsonObject(0).getJsonObject("label").put("latitude",
+            -43d);
         target.label_distribution.getJsonArray("additional_1").getJsonObject(0).put("score", 43d);
         assertThat(merged).isEqualTo(target);
 
@@ -639,8 +655,10 @@ public class RoutineTest extends ModelTestCase<Routine> {
   @Test
   public void shouldUpdateTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext).onSuccess(target -> this.createModelExample(2, vertx, testContext)
-        .onSuccess(source -> assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))));
+    this.createModelExample(1, vertx, testContext)
+        .onSuccess(target -> this.createModelExample(2, vertx, testContext)
+            .onSuccess(source -> assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated)
+                .isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))));
 
   }
 

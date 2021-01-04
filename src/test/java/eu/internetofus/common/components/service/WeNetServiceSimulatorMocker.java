@@ -28,7 +28,6 @@ package eu.internetofus.common.components.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import eu.internetofus.common.components.AbstractComponentMocker;
 import eu.internetofus.common.components.ErrorMessage;
@@ -110,11 +109,15 @@ public class WeNetServiceSimulatorMocker extends AbstractComponentMocker {
     element.app = app;
     if (element.app.appId == null) {
 
-      element.app.appId = UUID.randomUUID().toString();
+      var index = this.data.size() + 1;
+      while (this.indexOf(String.valueOf(index)) > -1) {
+        index++;
+      }
+      element.app.appId = String.valueOf(index);
     }
     if (element.app.messageCallbackUrl == null) {
 
-      element.app.messageCallbackUrl = this.getApiUrl();
+      element.app.messageCallbackUrl = this.getApiUrl() + "/app/" + element.app.appId + "/callbacks";
     }
 
     return element;
@@ -181,7 +184,8 @@ public class WeNetServiceSimulatorMocker extends AbstractComponentMocker {
    *
    * @param id identifier of the element to get.
    *
-   * @return the index of the element in the data or {@code -1} if it is not defined.
+   * @return the index of the element in the data or {@code -1} if it is not
+   *         defined.
    */
   protected int indexOf(final String id) {
 
@@ -203,7 +207,8 @@ public class WeNetServiceSimulatorMocker extends AbstractComponentMocker {
    *
    * @param ctx to get the identifier from the path.
    *
-   * @return the index of the element in the data or {@code -1} if it is not defined.
+   * @return the index of the element in the data or {@code -1} if it is not
+   *         defined.
    */
   protected int indexOf(final RoutingContext ctx) {
 
@@ -421,7 +426,7 @@ public class WeNetServiceSimulatorMocker extends AbstractComponentMocker {
     return (ctx, index) -> {
 
       final var response = ctx.response();
-      response.setStatusCode(Status.NO_CONTENT.getStatusCode());
+      response.setStatusCode(Status.OK.getStatusCode());
       response.end(this.data.get(index).app.toBuffer());
 
     };
@@ -446,7 +451,6 @@ public class WeNetServiceSimulatorMocker extends AbstractComponentMocker {
 
       } else if (app.appId == null || this.indexOf(app.appId) < 0) {
 
-        app.appId = UUID.randomUUID().toString();
         this.data.add(this.createDataElement(app));
         final var response = ctx.response();
         response.setStatusCode(Status.CREATED.getStatusCode());

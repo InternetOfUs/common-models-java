@@ -40,7 +40,7 @@ import io.vertx.junit5.VertxExtension;
  *
  * @see WeNetSocialContextBuilder
  * @see WeNetSocialContextBuilderClient
- * @see WeNetSocialContextBuilderMocker
+ * @see WeNetSocialContextBuilderSimulatorMocker
  *
  * @author UDT-IA, IIIA-CSIC
  */
@@ -50,7 +50,7 @@ public class WeNetSocialContextBuilderTest extends WeNetSocialContextBuilderTest
   /**
    * The profile manager mocked server.
    */
-  protected static WeNetSocialContextBuilderMocker mocker;
+  protected static WeNetSocialContextBuilderSimulatorMocker mocker;
 
   /**
    * Start the mocker server.
@@ -58,7 +58,7 @@ public class WeNetSocialContextBuilderTest extends WeNetSocialContextBuilderTest
   @BeforeAll
   public static void startMocker() {
 
-    mocker = WeNetSocialContextBuilderMocker.start();
+    mocker = WeNetSocialContextBuilderSimulatorMocker.start();
   }
 
   /**
@@ -67,7 +67,7 @@ public class WeNetSocialContextBuilderTest extends WeNetSocialContextBuilderTest
   @AfterAll
   public static void stopMockers() {
 
-    mocker.stop();
+    mocker.stopServer();
   }
 
   /**

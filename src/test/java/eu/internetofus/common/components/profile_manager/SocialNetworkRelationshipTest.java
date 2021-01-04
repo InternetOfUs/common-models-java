@@ -85,7 +85,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
   @AfterAll
   public static void stopMockers() {
 
-    profileManagerMocker.stop();
+    profileManagerMocker.stopServer();
   }
 
   /**
@@ -105,7 +105,8 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
   /**
    * Test constructor.
    *
-   * @see SocialNetworkRelationship#SocialNetworkRelationship(SocialNetworkRelationshipType, String)
+   * @see SocialNetworkRelationship#SocialNetworkRelationship(SocialNetworkRelationshipType,
+   *      String)
    */
   @Test
   public void shouldCreateARelationship() {
@@ -141,7 +142,8 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    *
    * @return the created social network relationship.
    */
-  public Future<SocialNetworkRelationship> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
+  public Future<SocialNetworkRelationship> createModelExample(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     return StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(profile -> {
 
@@ -154,7 +156,8 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is
+   * valid.
    *
    * @param index       to verify
    * @param vertx       event bus to use.
@@ -164,7 +167,8 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
-  public void shouldExampleFromRepositoryBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldExampleFromRepositoryBeValid(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     this.createModelExample(index, vertx, testContext).onSuccess(model -> {
 
@@ -190,7 +194,8 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
   @ParameterizedTest(name = "Should not be valid  a SocialNetworkRelationship with an userId = {0}")
   @NullAndEmptySource
   @ValueSource(strings = { "undefined value ", "9bec40b8-8209-4e28-b64b-1de52595ca6d", ValidationsTest.STRING_256 })
-  public void shouldNotBeValidWithBadUserIdentifier(final String userId, final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWithBadUserIdentifier(final String userId, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     final var model = new SocialNetworkRelationship();
     model.userId = userId;
@@ -249,7 +254,8 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    */
   @ParameterizedTest(name = "Should a social network relationship with a weight {0} not be valid")
   @ValueSource(doubles = { -0.00001d, 1.000001d, -23d, +23d })
-  public void shouldNotBeValidModelWithBadWeight(final double weight, final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidModelWithBadWeight(final double weight, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
@@ -411,7 +417,8 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialNetworkRelationship#merge(SocialNetworkRelationship, String, Vertx)
+   * @see SocialNetworkRelationship#merge(SocialNetworkRelationship, String,
+   *      Vertx)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
@@ -564,7 +571,8 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialNetworkRelationship#update(SocialNetworkRelationship, String, Vertx)
+   * @see SocialNetworkRelationship#update(SocialNetworkRelationship, String,
+   *      Vertx)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {

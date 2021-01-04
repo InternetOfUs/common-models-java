@@ -46,8 +46,8 @@ import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
 import eu.internetofus.common.components.service.MessageTest;
 import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
+import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -97,9 +97,9 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   @AfterAll
   public static void stopMockers() {
 
-    profileManagerMocker.stop();
-    taskManagerMocker.stop();
-    serviceMocker.stop();
+    profileManagerMocker.stopServer();
+    taskManagerMocker.stopServer();
+    serviceMocker.stopServer();
   }
 
   /**
@@ -154,7 +154,8 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @return a future with the created task transaction.
    *
    */
-  public Future<TaskTransaction> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
+  public Future<TaskTransaction> createModelExample(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     return StoreServices.storeTaskExample(index, vertx, testContext).compose(task -> {
 
@@ -185,7 +186,8 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   }
 
   /**
-   * Check that the {@link #createModelExample(int,Vertx,VertxTestContext)} is valid.
+   * Check that the {@link #createModelExample(int,Vertx,VertxTestContext)} is
+   * valid.
    *
    * @param index       to verify.
    * @param vertx       event bus to use.
@@ -197,7 +199,8 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext).onComplete(testContext.succeeding(model -> assertIsValid(model, vertx, testContext)));
+    this.createModelExample(index, vertx, testContext)
+        .onComplete(testContext.succeeding(model -> assertIsValid(model, vertx, testContext)));
 
   }
 
