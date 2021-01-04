@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -124,6 +125,81 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
                     .onSuccess(retrieveRelations2 -> testContext.verify(() -> {
 
                       assertThat(retrieveRelations2).isEqualTo(relations);
+                      testContext.completeNow();
+                    }));
+              }));
+        }));
+  }
+
+  /**
+   * Should set and get the social preferences.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldSetGetSocialPreferences(final Vertx vertx, final VertxTestContext testContext) {
+
+    var userId = UUID.randomUUID().toString();
+    var taskId = UUID.randomUUID().toString();
+    var preferences = new JsonArray();
+    testContext
+        .assertComplete(
+            WeNetSocialContextBuilderSimulator.createProxy(vertx).getPreferencesForUserOnTask(userId, taskId))
+        .onSuccess(retrievePreferences -> testContext.verify(() -> {
+
+          assertThat(retrievePreferences).isEqualTo(preferences);
+          preferences.add("1");
+          preferences.add("2");
+          preferences.add("3");
+
+          testContext
+              .assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx)
+                  .updatePreferencesForUserOnTask(userId, taskId, preferences))
+              .onSuccess(storedPreferences -> testContext.verify(() -> {
+
+                assertThat(storedPreferences).isEqualTo(preferences);
+                testContext
+                    .assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx)
+                        .getPreferencesForUserOnTask(userId, taskId))
+                    .onSuccess(retrievePreferences2 -> testContext.verify(() -> {
+
+                      assertThat(retrievePreferences2).isEqualTo(preferences);
+                      testContext.completeNow();
+                    }));
+              }));
+        }));
+  }
+
+  /**
+   * Should set and get the social explanation.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldSetGetSocialExplanation(final Vertx vertx, final VertxTestContext testContext) {
+
+    var userId = UUID.randomUUID().toString();
+    var taskId = UUID.randomUUID().toString();
+    testContext
+        .assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx).retrieveSocialExplanation(userId, taskId))
+        .onSuccess(retrieveExplanation -> testContext.verify(() -> {
+
+          assertThat(retrieveExplanation).isEqualTo(new SocialExplanation());
+          final var explanation = new SocialExplanationTest().createModelExample(1);
+
+          testContext.assertComplete(
+              WeNetSocialContextBuilderSimulator.createProxy(vertx).setSocialExplanation(userId, taskId, explanation))
+              .onSuccess(storedExplanation -> testContext.verify(() -> {
+
+                assertThat(storedExplanation).isEqualTo(explanation);
+                testContext
+                    .assertComplete(
+                        WeNetSocialContextBuilderSimulator.createProxy(vertx).retrieveSocialExplanation(userId, taskId))
+                    .onSuccess(retrieveExplanation2 -> testContext.verify(() -> {
+
+                      assertThat(retrieveExplanation2).isEqualTo(explanation);
                       testContext.completeNow();
                     }));
               }));

@@ -35,9 +35,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.serviceproxy.ServiceException;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * Test the {@link WeNetServiceSimulator}.
@@ -49,7 +53,7 @@ import io.vertx.junit5.VertxTestContext;
  * @author UDT-IA, IIIA-CSIC
  */
 @ExtendWith(VertxExtension.class)
-public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
+public class WeNetServiceSimulatorTest extends WeNetServiceTestCase {
 
   /**
    * The service mocked server.
@@ -90,35 +94,207 @@ public class WeNetServiceSimulatorTest extends WeNetServiceSimulatorTestCase {
   }
 
   /**
-   * Should create, retrieve and delete an App.
+   * Should not retrieve undefined app.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Override
+  @Test
+  public void shouldNotRetrieveUndefinedApp(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).retrieveApp("undefined-app-identifier"))
+        .onFailure(handler -> testContext.completeNow());
+
+  }
+
+  /**
+   * Should not delete undefined app.
    *
    * @param vertx       that contains the event bus to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldCreateRetrieveDeleteApp(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotDeleteUndefinedApp(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).createApp(new App()))
-        .onSuccess(app -> testContext.verify(() -> {
+    testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).deleteApp("undefined-app-identifier"))
+        .onFailure(handler -> testContext.completeNow());
+  }
 
-          assertThat(app.appId).isNotNull();
-          assertThat(app.messageCallbackUrl).isNotNull().contains(app.appId);
-          testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).retrieveApp(app.appId))
-              .onSuccess(app2 -> testContext.verify(() -> {
+  /**
+   * Should create, retrieve and delete a app.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldCreateRetrieveAndDeleteApp(final Vertx vertx, final VertxTestContext testContext) {
 
-                assertThat(app2).isEqualTo(app);
+    testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).createApp(new App())).onSuccess(create -> {
 
-                testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).deleteApp(app.appId))
-                    .onSuccess(empty -> {
+      final var id = create.appId;
+      testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).retrieveApp(id))
+          .onSuccess(retrieve -> testContext.verify(() -> {
 
-                      testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).retrieveApp(app.appId))
-                          .onFailure(error -> testContext.verify(() -> {
+            assertThat(create).isEqualTo(retrieve);
+            testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx).deleteApp(id)).onSuccess(empty -> {
 
-                            testContext.completeNow();
-                          }));
-                    });
-              }));
-        }));
+              testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).retrieveApp(id))
+                  .onFailure(error -> testContext.verify(() -> {
+
+                    assertThat(error).isInstanceOf(ServiceException.class);
+                    assertThat(((ServiceException) error).failureCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                    testContext.completeNow();
+
+                  }));
+
+            });
+
+          }));
+
+    });
+
+  }
+
+  /**
+   * Should create, retrieve and delete a app users.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldCreateRetrieveAndDeleteAppUsers(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var service = WeNetServiceSimulator.createProxy(vertx);
+    testContext.assertComplete(service.createApp(new App())).onSuccess(created -> {
+
+      final var users = new JsonArray().add("1").add("43").add("23");
+      testContext.assertComplete(service.addUsers(created.appId, users)).onSuccess(create -> {
+
+        testContext.assertComplete(service.retrieveAppUserIds(created.appId))
+            .onSuccess(retrieve -> testContext.verify(() -> {
+
+              assertThat(retrieve).isEqualTo(users);
+              testContext.assertComplete(service.deleteUsers(created.appId)).onSuccess(empty -> {
+
+                testContext.assertComplete(service.retrieveAppUserIds(created.appId))
+                    .onSuccess(retrieve2 -> testContext.verify(() -> {
+
+                      assertThat(retrieve2).isEqualTo(new JsonArray());
+                      testContext.assertComplete(service.deleteApp(created.appId))
+                          .onSuccess(emptyApp -> testContext.completeNow());
+                    }));
+              });
+            }));
+      });
+    });
+
+  }
+
+  /**
+   * Should create, retrieve and delete a app callbacks.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldCreateRetrieveAndDeleteAppCallbacks(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var service = WeNetServiceSimulator.createProxy(vertx);
+    testContext.assertComplete(service.createApp(new App())).onSuccess(created -> {
+
+      final var message1 = new JsonObject().put("action", "Name of the action").put("users",
+          new JsonArray().add("1").add("43").add("23"));
+      testContext.assertComplete(service.addCallBack(created.appId, message1)).onSuccess(create1 -> {
+
+        testContext.assertComplete(service.retrieveCallbacks(created.appId))
+            .onSuccess(retrieve -> testContext.verify(() -> {
+
+              assertThat(retrieve).isEqualTo(new JsonArray().add(message1));
+
+              final var message2 = new JsonObject().put("action", "Name of the action2").put("users",
+                  new JsonArray().add("21").add("243").add("223"));
+              testContext.assertComplete(service.addCallBack(created.appId, message2)).onSuccess(create2 -> {
+
+                testContext.assertComplete(service.retrieveCallbacks(created.appId))
+                    .onSuccess(retrieve2 -> testContext.verify(() -> {
+
+                      assertThat(retrieve2).isEqualTo(new JsonArray().add(message1).add(message2));
+
+                      testContext.assertComplete(service.deleteCallbacks(created.appId)).onSuccess(empty -> {
+
+                        testContext.assertComplete(service.retrieveCallbacks(created.appId))
+                            .onSuccess(retrieve3 -> testContext.verify(() -> {
+
+                              assertThat(retrieve3).isEqualTo(new JsonArray());
+                              testContext.assertComplete(service.deleteApp(created.appId))
+                                  .onSuccess(emptyApp -> testContext.completeNow());
+
+                            }));
+                      });
+                    }));
+              });
+            }));
+      });
+    });
+
+  }
+
+  /**
+   * Should not retrieve callbacks for an undefined app.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotRetrieveCallbackForUndefinedApp(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).retrieveCallbacks("undefined-app-identifier"))
+        .onFailure(handler -> testContext.completeNow());
+
+  }
+
+  /**
+   * Should not delete undefined app callbacks.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotDeleteUndefinedCallback(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertFailure(WeNetServiceSimulator.createProxy(vertx).deleteCallbacks("undefined-app-identifier"))
+        .onFailure(handler -> testContext.completeNow());
+  }
+
+  /**
+   * Should create, retrieve and delete a app callbacks.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldPostMessageToAppCallbacks(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var service = WeNetServiceSimulator.createProxy(vertx);
+    testContext.assertComplete(service.createApp(new App())).onSuccess(created -> {
+
+      final var message = new JsonObject().put("action", "Name of the action").put("users",
+          new JsonArray().add("1").add("43").add("23"));
+      final var client = WebClient.create(vertx);
+      testContext.assertComplete(client.postAbs(created.messageCallbackUrl).sendJson(message)).onSuccess(create -> {
+
+        testContext.assertComplete(service.retrieveCallbacks(created.appId))
+            .onSuccess(retrieve -> testContext.verify(() -> {
+
+              assertThat(retrieve).isEqualTo(new JsonArray().add(message));
+
+              testContext.assertComplete(service.deleteApp(created.appId))
+                  .onSuccess(emptyApp -> testContext.completeNow());
+            }));
+      });
+    });
+
   }
 
 }
