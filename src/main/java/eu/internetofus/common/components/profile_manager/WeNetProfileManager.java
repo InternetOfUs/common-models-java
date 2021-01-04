@@ -74,7 +74,8 @@ public interface WeNetProfileManager {
    */
   static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-    new ServiceBinder(vertx).setAddress(WeNetProfileManager.ADDRESS).register(WeNetProfileManager.class, new WeNetProfileManagerClient(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetProfileManager.ADDRESS).register(WeNetProfileManager.class,
+        new WeNetProfileManagerClient(client, conf));
 
   }
 
@@ -225,36 +226,39 @@ public interface WeNetProfileManager {
   /**
    * Return the page of the found community profiles.
    *
-   * @param appId           application identifier to match for the communities to return.
-   * @param name            to match for the communities to return.
-   * @param description     to match for the communities to return.
-   * @param keywords        to match for the communities to return.
-   * @param members         to match for the communities to return.
-   * @param order           in with the communities has to be sort.
-   * @param offset          index of the first community to return.
-   * @param limit           number maximum of communities to return.
-   * @param retrieveHandler handler to manage the retrieve process.
-   * @param handler         to the communities page.
+   * @param appId       application identifier to match for the communities to
+   *                    return.
+   * @param name        to match for the communities to return.
+   * @param description to match for the communities to return.
+   * @param keywords    to match for the communities to return.
+   * @param members     to match for the communities to return.
+   * @param order       in with the communities has to be sort.
+   * @param offset      index of the first community to return.
+   * @param limit       number maximum of communities to return.
+   * @param handler     to the communities page.
    */
-  void retrieveCommunityProfilesPage(String appId, String name, String description, String keywords, String members, String order, int offset, int limit, @NotNull Handler<AsyncResult<JsonObject>> handler);
+  void retrieveCommunityProfilesPage(String appId, String name, String description, String keywords, String members,
+      String order, int offset, int limit, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Return the found communities.
    *
-   * @param appId           application identifier to match for the communities to return.
-   * @param name            to match for the communities to return.
-   * @param description     to match for the communities to return.
-   * @param keywords        to match for the communities to return.
-   * @param members         to match for the communities to return.
-   * @param order           in with the communities has to be sort.
-   * @param offset          index of the first community to return.
-   * @param limit           number maximum of communities to return.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param appId       application identifier to match for the communities to
+   *                    return.
+   * @param name        to match for the communities to return.
+   * @param description to match for the communities to return.
+   * @param keywords    to match for the communities to return.
+   * @param members     to match for the communities to return.
+   * @param order       in with the communities has to be sort.
+   * @param offset      index of the first community to return.
+   * @param limit       number maximum of communities to return.
    *
    * @return the future with the communities page.
    */
   @GenIgnore
-  default Future<CommunityProfilesPage> retrieveCommunityProfilesPage(final String appId, final String name, final String description, final String keywords, final String members, final String order, final int offset, final int limit) {
+  default Future<CommunityProfilesPage> retrieveCommunityProfilesPage(final String appId, final String name,
+      final String description, final String keywords, final String members, final String order, final int offset,
+      final int limit) {
 
     final Promise<JsonObject> promise = Promise.promise();
     this.retrieveCommunityProfilesPage(appId, name, description, keywords, members, order, offset, limit, promise);

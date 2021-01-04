@@ -75,24 +75,23 @@ public interface WeNetService {
    */
   static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-    new ServiceBinder(vertx).setAddress(WeNetService.ADDRESS).register(WeNetService.class, new WeNetServiceClient(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetService.ADDRESS).register(WeNetService.class,
+        new WeNetServiceClient(client, conf));
 
   }
 
   /**
    * Return an {@link App} in JSON format.
    *
-   * @param id              identifier of the app to get.
-   * @param retrieveHandler handler to manage the retrieve process.
-   * @param handler         for the application.
+   * @param id      identifier of the app to get.
+   * @param handler for the application.
    */
   void retrieveApp(@NotNull String id, @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Return an application.
    *
-   * @param id              identifier of the app to get.
-   * @param retrieveHandler handler to manage the retrieve process.
+   * @param id identifier of the app to get.
    *
    * @return the application for the model.
    */
