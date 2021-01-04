@@ -27,7 +27,10 @@
 package eu.internetofus.common.components.interaction_protocol_engine;
 
 import eu.internetofus.common.components.AbstractComponentMocker;
+import io.vertx.core.Handler;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * The mocked server for the {@link WeNetInteractionProtocolEngine}.
@@ -78,6 +81,28 @@ public class WeNetInteractionProtocolEngineMocker extends AbstractComponentMocke
   @Override
   protected void fillInRouterHandler(final Router router) {
 
+    router.post("/messages").handler(this.createEchoHandler());
+    router.post("/incentives").handler(this.createEchoHandler());
+    router.post("/tasks/created").handler(this.createEchoHandler());
+    router.post("/tasks/transactions").handler(this.createEchoHandler());
+
+  }
+
+  /**
+   * Handler that do echos.
+   *
+   * @return the echo handler.
+   */
+  private Handler<RoutingContext> createEchoHandler() {
+
+    return ctx -> {
+
+      final var value = ctx.getBodyAsJson();
+      final var response = ctx.response();
+      response.setStatusCode(Status.CREATED.getStatusCode());
+      response.end(value.toBuffer());
+
+    };
   }
 
 }
