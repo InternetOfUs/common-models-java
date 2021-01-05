@@ -28,6 +28,7 @@ package eu.internetofus.common.components.profile_manager;
 
 import java.util.List;
 
+import eu.internetofus.common.components.CreateUpdateTsDetails;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Updateable;

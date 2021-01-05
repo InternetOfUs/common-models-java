@@ -30,6 +30,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import eu.internetofus.common.components.CreateUpdateTsDetails;
+import eu.internetofus.common.components.HumanDescription;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
@@ -37,7 +39,6 @@ import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
-import eu.internetofus.common.components.profile_manager.CreateUpdateTsDetails;
 import eu.internetofus.common.components.profile_manager.Norm;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.service.WeNetService;
@@ -90,10 +91,11 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
    * The explanation of the task objective.
    */
   @Schema(description = "The explanation of the task objective.")
-  public TaskGoal goal;
+  public HumanDescription goal;
 
   /**
-   * The difference, measured in seconds, between the time when the task is closed by and midnight, January 1, 1970 UTC.
+   * The difference, measured in seconds, between the time when the task is closed
+   * by and midnight, January 1, 1970 UTC.
    */
   @Schema(description = "The UTC epoch timestamp representing the time the task is closed. It its not defined the task still open.", example = "1563930000", nullable = true)
   public Long closeTs;
@@ -130,20 +132,25 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
       if (this.id != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false, WeNetTaskManager.createProxy(vertx)::retrieveTask);
+        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
+            WeNetTaskManager.createProxy(vertx)::retrieveTask);
       }
 
       this.taskTypeId = Validations.validateStringField(codePrefix, "taskTypeId", 255, this.taskTypeId);
-      future = Validations.composeValidateId(future, codePrefix, "taskTypeId", this.taskTypeId, true, WeNetTaskManager.createProxy(vertx)::retrieveTaskType);
+      future = Validations.composeValidateId(future, codePrefix, "taskTypeId", this.taskTypeId, true,
+          WeNetTaskManager.createProxy(vertx)::retrieveTaskType);
 
       this.requesterId = Validations.validateStringField(codePrefix, "requesterId", 255, this.requesterId);
-      future = Validations.composeValidateId(future, codePrefix, "requesterId", this.requesterId, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+      future = Validations.composeValidateId(future, codePrefix, "requesterId", this.requesterId, true,
+          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
       this.appId = Validations.validateStringField(codePrefix, "appId", 255, this.appId);
-      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true, WeNetService.createProxy(vertx)::retrieveApp);
+      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
+          WeNetService.createProxy(vertx)::retrieveApp);
 
       this.communityId = Validations.validateStringField(codePrefix, "communityId", 255, this.communityId);
-      future = Validations.composeValidateId(future, codePrefix, "communityId", this.communityId, true, WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
+      future = Validations.composeValidateId(future, codePrefix, "communityId", this.communityId, true,
+          WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
 
       if (this.goal == null) {
 
@@ -151,15 +158,22 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
 
       } else {
 
-        future = future.compose(mapper -> this.goal.validate(codePrefix + ".goal", vertx));
+        this.goal.name = Validations.validateStringField(codePrefix, "goal.name", 255, this.goal.name);
+        this.goal.description = Validations.validateNullableStringField(codePrefix, "goal.description", 1023,
+            this.goal.description);
+        this.goal.keywords = Validations.validateNullableListStringField(codePrefix, "goal.keywords", 255,
+            this.goal.keywords);
+
         this.closeTs = Validations.validateTimeStamp(codePrefix, "closeTs", this.closeTs, true);
         if (this.closeTs != null && this.closeTs < this._creationTs) {
 
-          promise.fail(new ValidationErrorException(codePrefix + ".closeTs", "The 'closeTs' has to be after the '_creationTs'."));
+          promise.fail(new ValidationErrorException(codePrefix + ".closeTs",
+              "The 'closeTs' has to be after the '_creationTs'."));
 
         } else {
 
-          future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+          future = future
+              .compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
 
           // TODO check the attributes fetch the attributes on the type
 
@@ -230,11 +244,33 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
         merged.transactions = this.transactions;
       }
 
-      future = future.compose(Merges.mergeField(this.goal, source.goal, codePrefix + ".goal", vertx, (model, mergedGoal) -> model.goal = mergedGoal));
+      merged.goal = source.goal;
+      if (merged.goal == null) {
 
-      future = future.compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
-        model.norms = mergedNorms;
-      }));
+        merged.goal = this.goal;
+
+      } else {
+
+        if (merged.goal.name == null) {
+
+          merged.goal.name = this.goal.name;
+        }
+        if (merged.goal.description == null) {
+
+          merged.goal.description = this.goal.description;
+        }
+
+        if (merged.goal.keywords == null) {
+
+          merged.goal.keywords = this.goal.keywords;
+        }
+
+      }
+
+      future = future
+          .compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
+            model.norms = mergedNorms;
+          }));
 
       future = future.compose(Validations.validateChain(codePrefix, vertx));
 

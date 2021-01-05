@@ -24,32 +24,33 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
+package eu.internetofus.common.components;
 
-import eu.internetofus.common.components.ModelTestCase;
-import io.vertx.core.json.JsonObject;
+import java.util.ArrayList;
 
 /**
- * Test the {@link Message}
+ * Test the {@link HumanDescription}
+ *
+ * @see HumanDescription
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class MessageTest extends ModelTestCase<Message> {
+public class HumanDescriptionTest extends ModelTestCase<HumanDescription> {
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public Message createModelExample(final int index) {
+  public HumanDescription createModelExample(int index) {
 
-    final var model = new Message();
-    model.appId = "appId_" + index;
-    model.attributes = new JsonObject().put("key", "value").put("index", index)
-        .put("communityId", "communityId_" + index).put("taskId", "taskId" + index);
-    model.label = "label_" + index;
-    model.receiverId = "receiverId_" + index;
+    var model = new HumanDescription();
+    model.name = "name_" + index;
+    model.description = "description_" + index;
+    model.keywords = new ArrayList<>();
+    model.keywords.add("keyword_" + (index - 1));
+    model.keywords.add("keyword_" + index);
+    model.keywords.add("keyword_" + (index + 1));
     return model;
-
   }
 
 }

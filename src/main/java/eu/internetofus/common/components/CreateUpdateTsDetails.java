@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,47 +24,37 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
+package eu.internetofus.common.components;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
-import eu.internetofus.common.components.JsonObjectDeserializer;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.TimeManager;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.vertx.core.json.JsonObject;
 
 /**
- * A message to send to an {@link App}.
+ * A model that has information when it is created and updated.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "Message", description = "A message that is send to the user of an application.")
-public class Message extends ReflectionModel implements Model {
+@Schema(hidden = true, description = "Generic model for the models that can be created and updated.")
+public class CreateUpdateTsDetails extends ReflectionModel implements Model {
 
   /**
-   * The identifier of the application to send the message.
+   * The instant of the creation.
    */
-  @Schema(description = "ID of the Wenet application related to the message", example = "822jhluNZP")
-  public String appId;
+  @Schema(description = "The time stamp representing the account creation instant.", example = "1563871899")
+  public long _creationTs;
 
   /**
-   * The identifier of the user to receive the message.
+   * The instant of the last update.
    */
-  @Schema(description = "The Wenet user ID of the recipient of the message", example = "a6822c47-f1b8-4c21-80bd-1d025266c3c7")
-  public String receiverId;
+  @Schema(description = "The time stamp representing the last update instant.", example = "1563898764")
+  public long _lastUpdateTs;
 
   /**
-   * The identifier of the message type.
+   * Create a new model.
    */
-  @Schema(description = "The type of the message", example = "TaskVolunteerNotification")
-  public String label;
+  public CreateUpdateTsDetails() {
 
-  /**
-   * The attributes of the message.
-   */
-  @Schema(type = "object", description = "the attributes of the message, as key-value pairs.")
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject attributes;
+    this._creationTs = this._lastUpdateTs = TimeManager.now();
 
+  }
 }

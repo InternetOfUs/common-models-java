@@ -30,12 +30,12 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import eu.internetofus.common.components.CreateUpdateTsDetails;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
-import eu.internetofus.common.components.profile_manager.CreateUpdateTsDetails;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.service.Message;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -62,19 +62,19 @@ public class TaskTransaction extends CreateUpdateTsDetails implements Model, Val
   /**
    * The identifier of the task that it refers.
    */
-  @Schema(description = "The unique identifier this transaction is associated to.", example = "b129e5509c9bb79")
+  @Schema(description = "The identifier of the WeNet task where the transaction is done.", example = "b129e5509c9bb79")
   public String taskId;
 
   /**
    * The identifier of the task type.
    */
-  @Schema(description = "The label associated to the transaction type.", example = "acceptVolunteer")
+  @Schema(description = "The label that identify the transaction to do.", example = "acceptVolunteer")
   public String label;
 
   /**
    * The attributes set to the transaction.
    */
-  @Schema(type = "object", description = "The attributes that are set in the associated transaction type.")
+  @Schema(type = "object", description = "The attributes that parameterize the transaction.")
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject attributes;
 
@@ -85,11 +85,11 @@ public class TaskTransaction extends CreateUpdateTsDetails implements Model, Val
   public String actioneerId;
 
   /**
-   * The list of messages that has provokes the execution of this task transaction.
+   * The list of messages that has provokes the execution of this task
+   * transaction.
    */
   @ArraySchema(schema = @Schema(implementation = TaskTransaction.class), arraySchema = @Schema(description = "The list of messages that has provokes the execution of this task transaction."))
   public List<Message> messages;
-
 
   /**
    * {@inheritDoc}
@@ -102,12 +102,14 @@ public class TaskTransaction extends CreateUpdateTsDetails implements Model, Val
     try {
 
       this.taskId = Validations.validateStringField(codePrefix, "taskId", 255, this.taskId);
-      future = Validations.composeValidateId(future, codePrefix, "taskId", this.taskId, true, WeNetTaskManager.createProxy(vertx)::retrieveTask);
+      future = Validations.composeValidateId(future, codePrefix, "taskId", this.taskId, true,
+          WeNetTaskManager.createProxy(vertx)::retrieveTask);
 
       this.actioneerId = Validations.validateNullableStringField(codePrefix, "actioneerId", 255, this.actioneerId);
       if (this.actioneerId != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "actioneerId", this.actioneerId, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+        future = Validations.composeValidateId(future, codePrefix, "actioneerId", this.actioneerId, true,
+            WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
       }
       this.label = Validations.validateStringField(codePrefix, "label", 255, this.label);

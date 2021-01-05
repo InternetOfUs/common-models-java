@@ -45,6 +45,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import eu.internetofus.common.components.HumanDescription;
+import eu.internetofus.common.components.HumanDescriptionTest;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
@@ -146,7 +148,7 @@ public class TaskTest extends ModelTestCase<Task> {
     model.requesterId = "requesterId" + index;
     model.appId = "appId" + index;
     model.communityId = "communityId" + index;
-    model.goal = new TaskGoalTest().createModelExample(index);
+    model.goal = new HumanDescriptionTest().createModelExample(index);
     model.norms = new ArrayList<>();
     model.norms.add(new NormTest().createModelExample(index));
     model.norms.get(0).id = "norm_id_" + index;
@@ -779,11 +781,11 @@ public class TaskTest extends ModelTestCase<Task> {
       StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = new Task();
-        source.goal = new TaskGoalTest().createModelExample(2);
+        source.goal = new HumanDescriptionTest().createModelExample(2);
         assertCanMerge(target, source, vertx, testContext, merged -> {
 
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-          target.goal = new TaskGoalTest().createModelExample(2);
+          target.goal = new HumanDescriptionTest().createModelExample(2);
           assertThat(merged).isEqualTo(target).isNotEqualTo(source);
         });
 
@@ -809,7 +811,7 @@ public class TaskTest extends ModelTestCase<Task> {
       StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = new Task();
-        source.goal = new TaskGoal();
+        source.goal = new HumanDescription();
         source.goal.name = ValidationsTest.STRING_256;
         assertCannotMerge(target, source, "goal.name", vertx, testContext);
       });
@@ -1238,11 +1240,11 @@ public class TaskTest extends ModelTestCase<Task> {
       StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
-        source.goal = new TaskGoalTest().createModelExample(2);
+        source.goal = new HumanDescriptionTest().createModelExample(2);
         assertCanUpdate(target, source, vertx, testContext, updated -> {
 
           assertThat(updated).isNotEqualTo(target).isEqualTo(source);
-          target.goal = new TaskGoalTest().createModelExample(2);
+          target.goal = new HumanDescriptionTest().createModelExample(2);
           assertThat(updated).isEqualTo(target);
         });
 
@@ -1268,7 +1270,7 @@ public class TaskTest extends ModelTestCase<Task> {
       StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
-        source.goal = new TaskGoal();
+        source.goal = new HumanDescription();
         source.goal.name = ValidationsTest.STRING_256;
         assertCannotUpdate(target, source, "goal.name", vertx, testContext);
       });

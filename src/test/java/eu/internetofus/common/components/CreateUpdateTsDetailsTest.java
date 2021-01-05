@@ -23,33 +23,27 @@
  *
  * -----------------------------------------------------------------------------
  */
-
-package eu.internetofus.common.components.service;
-
-import eu.internetofus.common.components.ModelTestCase;
-import io.vertx.core.json.JsonObject;
+package eu.internetofus.common.components;
 
 /**
- * Test the {@link Message}
+ * Test the {@link CreateUpdateTsDetails}
+ *
+ * @see CreateUpdateTsDetails
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class MessageTest extends ModelTestCase<Message> {
+public class CreateUpdateTsDetailsTest extends ModelTestCase<CreateUpdateTsDetails> {
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public Message createModelExample(final int index) {
+  public CreateUpdateTsDetails createModelExample(int index) {
 
-    final var model = new Message();
-    model.appId = "appId_" + index;
-    model.attributes = new JsonObject().put("key", "value").put("index", index)
-        .put("communityId", "communityId_" + index).put("taskId", "taskId" + index);
-    model.label = "label_" + index;
-    model.receiverId = "receiverId_" + index;
+    var model = new CreateUpdateTsDetails();
+    model._creationTs = index;
+    model._lastUpdateTs = index + 1;
     return model;
-
   }
 
 }

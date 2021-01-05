@@ -39,11 +39,11 @@ import jakarta.ws.rs.core.Response.Status;
 import org.tinylog.Logger;
 
 import eu.internetofus.common.TimeManager;
+import eu.internetofus.common.components.CreateUpdateTsDetails;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.profile_manager.CreateUpdateTsDetails;
 import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;

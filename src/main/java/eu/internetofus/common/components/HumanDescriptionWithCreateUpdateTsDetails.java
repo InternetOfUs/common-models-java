@@ -24,47 +24,37 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
+package eu.internetofus.common.components;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.util.List;
 
-import eu.internetofus.common.components.JsonObjectDeserializer;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.vertx.core.json.JsonObject;
 
 /**
- * A message to send to an {@link App}.
+ * A model that has information when it is created and updated.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "Message", description = "A message that is send to the user of an application.")
-public class Message extends ReflectionModel implements Model {
+@Schema(hidden = true, description = "The attributes used to identify and describe a model for an human with timestamp details.")
+public class HumanDescriptionWithCreateUpdateTsDetails extends CreateUpdateTsDetails {
 
   /**
-   * The identifier of the application to send the message.
+   * A name that identify the type.
    */
-  @Schema(description = "ID of the Wenet application related to the message", example = "822jhluNZP")
-  public String appId;
+  @Schema(description = "A name that identify the model.", example = "Eat together task")
+  public String name;
 
   /**
-   * The identifier of the user to receive the message.
+   * A human readable description of the task type.
    */
-  @Schema(description = "The Wenet user ID of the recipient of the message", example = "a6822c47-f1b8-4c21-80bd-1d025266c3c7")
-  public String receiverId;
+  @Schema(description = "A human readable description of the model.", example = "A task for organizing social dinners")
+  public String description;
 
   /**
-   * The identifier of the message type.
+   * A name that identify the type.
    */
-  @Schema(description = "The type of the message", example = "TaskVolunteerNotification")
-  public String label;
-
-  /**
-   * The attributes of the message.
-   */
-  @Schema(type = "object", description = "the attributes of the message, as key-value pairs.")
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject attributes;
+  @ArraySchema(schema = @Schema(implementation = String.class), arraySchema = @Schema(description = "The keywords that describe the model.", example = "[\"social interaction\",\"eat\"]"))
+  public List<String> keywords;
 
 }

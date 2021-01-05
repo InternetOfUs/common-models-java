@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,39 +24,36 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.profile_manager;
+package eu.internetofus.common.components;
 
-import eu.internetofus.common.TimeManager;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.ArrayList;
 
 /**
- * A model that has information when it is created and updated.
+ * Test the {@link HumanDescriptionWithCreateUpdateTsDetails}
+ *
+ * @see HumanDescriptionWithCreateUpdateTsDetails
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, description = "Generic model for the models that can be created and updated.")
-public class CreateUpdateTsDetails extends ReflectionModel implements Model {
+public class HumanDescriptionWithCreateUpdateTsDetailsTest
+    extends ModelTestCase<HumanDescriptionWithCreateUpdateTsDetails> {
 
   /**
-   * The instant of the creation.
+   * {@inheritDoc}
    */
-  @Schema(description = "The time stamp representing the account creation instant.", example = "1563871899")
-  public long _creationTs;
+  @Override
+  public HumanDescriptionWithCreateUpdateTsDetails createModelExample(int index) {
 
-  /**
-   * The instant of the last update.
-   */
-  @Schema(description = "The time stamp representing the last update instant.", example = "1563898764")
-  public long _lastUpdateTs;
-
-  /**
-   * Create a new model.
-   */
-  public CreateUpdateTsDetails() {
-
-    this._creationTs = this._lastUpdateTs = TimeManager.now();
-
+    var model = new HumanDescriptionWithCreateUpdateTsDetails();
+    model._creationTs = index;
+    model._lastUpdateTs = index + 1;
+    model.name = "name_" + index;
+    model.description = "description_" + index;
+    model.keywords = new ArrayList<>();
+    model.keywords.add("keyword_" + (index - 1));
+    model.keywords.add("keyword_" + index);
+    model.keywords.add("keyword_" + (index + 1));
+    return model;
   }
+
 }

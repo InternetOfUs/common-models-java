@@ -30,6 +30,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import eu.internetofus.common.components.HumanDescriptionWithCreateUpdateTsDetails;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
@@ -37,7 +38,6 @@ import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
-import eu.internetofus.common.components.profile_manager.CreateUpdateTsDetails;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
@@ -50,32 +50,15 @@ import io.vertx.core.json.JsonObject;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "TaskType", description = "The component that describe the protocol associated to a task.")
-public class TaskType extends CreateUpdateTsDetails implements Model, Validable, Mergeable<TaskType>, Updateable<TaskType> {
+@Schema(hidden = true, name = "TaskType", description = "The component that describe a possible task.")
+public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
+    implements Model, Validable, Mergeable<TaskType>, Updateable<TaskType> {
 
   /**
    * The identifier of the profile.
    */
-  @Schema(description = "The unique identifier of the task type.", example = "4a559aafceb8464")
+  @Schema(description = "The unique identifier of the task type.", example = "b129e5509c9bb79")
   public String id;
-
-  /**
-   * A name that identify the type.
-   */
-  @Schema(description = "A name that identify the type.", example = "Eat together task")
-  public String name;
-
-  /**
-   * A human readable description of the task type.
-   */
-  @Schema(description = "A human readable description of the task type.", example = "A task for organizing social dinners")
-  public String description;
-
-  /**
-   * A name that identify the type.
-   */
-  @ArraySchema(schema = @Schema(implementation = String.class), arraySchema = @Schema(description = "The keywords that describe the task type", example = "[\"social interaction\",\"eat\"]"))
-  public List<String> keywords;
 
   /**
    * The attributes that describe a task of this type.
@@ -117,7 +100,8 @@ public class TaskType extends CreateUpdateTsDetails implements Model, Validable,
       this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
       if (this.id != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false, WeNetTaskManager.createProxy(vertx)::retrieveTaskType);
+        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
+            WeNetTaskManager.createProxy(vertx)::retrieveTaskType);
       }
 
       this.name = Validations.validateStringField(codePrefix, "name", 255, this.name);
@@ -128,7 +112,8 @@ public class TaskType extends CreateUpdateTsDetails implements Model, Validable,
 
         if (this.transactions == null || this.transactions.isEmpty()) {
 
-          return Future.failedFuture(new ValidationErrorException(codePrefix + ".transactions", "You must to define at least one transaction."));
+          return Future.failedFuture(new ValidationErrorException(codePrefix + ".transactions",
+              "You must to define at least one transaction."));
 
         } else {
 
