@@ -26,7 +26,7 @@
 
 package eu.internetofus.common.vertx;
 
-import static io.reactiverse.junit5.web.TestRequest.testRequest;
+import static eu.internetofus.common.vertx.tmp.TestRequest.testRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.ws.rs.core.Response.Status;
