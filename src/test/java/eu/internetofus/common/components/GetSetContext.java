@@ -36,7 +36,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.impl.ClusterSerializable;
 import io.vertx.ext.web.RoutingContext;
-import jakarta.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Generic component to provide get/set operations.

@@ -34,7 +34,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import jakarta.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Generic component to provide CRUD operations.

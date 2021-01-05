@@ -26,8 +26,8 @@
 
 package eu.internetofus.common.vertx;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response.Status;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 
 import org.tinylog.Logger;
 

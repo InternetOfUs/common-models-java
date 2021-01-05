@@ -34,7 +34,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.openapi.RouterBuilder;
-import jakarta.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * The verticle to load the API specification and start the HTTP server.

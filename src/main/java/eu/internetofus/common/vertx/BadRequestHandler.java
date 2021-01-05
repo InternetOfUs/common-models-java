@@ -30,8 +30,8 @@ import eu.internetofus.common.components.ErrorMessage;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response.Status;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Handler when do a bad request over the API.

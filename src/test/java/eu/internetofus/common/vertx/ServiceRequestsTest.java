@@ -38,7 +38,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.api.service.ServiceRequest;
-import jakarta.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.HttpHeaders;
 
 /**
  * Test the {@link ServiceRequests}.

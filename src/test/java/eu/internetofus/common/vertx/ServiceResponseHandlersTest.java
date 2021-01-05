@@ -28,8 +28,8 @@ package eu.internetofus.common.vertx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response.Status;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

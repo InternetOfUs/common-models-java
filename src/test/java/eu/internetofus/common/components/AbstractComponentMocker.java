@@ -39,7 +39,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
-import jakarta.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * The generic component used to mock any WeNet component.

@@ -37,8 +37,8 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.api.service.ServiceResponse;
 import io.vertx.serviceproxy.ServiceException;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response.Status;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Classes used to generate handlers for an {@link ServiceResponse}.

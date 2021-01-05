@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import jakarta.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.HttpHeaders;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

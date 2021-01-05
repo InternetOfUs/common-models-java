@@ -31,7 +31,7 @@ import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.Model;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.Router;
-import jakarta.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * The mocked server for the {@link WeNetIncentiveServer}.

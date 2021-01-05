@@ -31,8 +31,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
 import eu.internetofus.common.components.Model;
 import io.vertx.core.buffer.Buffer;

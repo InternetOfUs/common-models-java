@@ -51,7 +51,7 @@
 		<io.swagger-version>2.1.6</io.swagger-version>
 		<commons-validator-version>1.7</commons-validator-version>
 		<com.googlecode.libphonenumber-version>8.12.15</com.googlecode.libphonenumber-version>
-		<jakarta.ws.rs-version>3.0.0</jakarta.ws.rs-version>
+		<jakarta.ws.rs-version>2.1.6</jakarta.ws.rs-version>
 		<org.apache.commons-lang3-version>3.11</org.apache.commons-lang3-version>
 		<org.tinylog-version>2.2.1</org.tinylog-version>
 		<commons-cli-version>1.4</commons-cli-version>
@@ -327,9 +327,20 @@
 			<plugin>
 				<artifactId>maven-pmd-plugin</artifactId>
 				<version>${maven-pmd-plugin-version}</version>
+				<executions>
+					<execution>
+						<id>named-logging-enforcement</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>check</goal>
+							<goal>cpd-check</goal>
+						</goals>
+						<configuration>
+							<verbose>true</verbose>
+						</configuration>
+					</execution>
+				</executions>
 				<configuration>
-					<failOnViolation>false</failOnViolation>
-					<printFailingErrors>true</printFailingErrors>
 					<linkXref>true</linkXref>
 					<sourceEncoding>utf-8</sourceEncoding>
 					<minimumTokens>100</minimumTokens>
@@ -343,19 +354,6 @@
 						<excludeRoot>target/generated-sources/annotations</excludeRoot>
 					</excludeRoots>
 				</configuration>
-				<executions>
-					<execution>
-						<id>pmd</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>check</goal>
-							<goal>cpd-check</goal>
-						</goals>
-						<configuration>
-							<verbose>true</verbose>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

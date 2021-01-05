@@ -30,7 +30,7 @@ import eu.internetofus.common.components.AbstractComponentMocker;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import jakarta.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * The mocked server for the {@link WeNetInteractionProtocolEngine}.

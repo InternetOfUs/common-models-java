@@ -34,7 +34,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import javax.validation.constraints.NotNull;
-import jakarta.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.Status;
 
 import org.tinylog.Logger;
 
