@@ -26,10 +26,7 @@
 
 package eu.internetofus.common.components.task_manager;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 import eu.internetofus.common.components.CreateUpdateTsDetails;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
@@ -44,6 +41,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import java.util.List;
 
 /**
  * Describe a transition to do over a task.
@@ -74,7 +72,7 @@ public class TaskTransaction extends CreateUpdateTsDetails implements Model, Val
   /**
    * The attributes set to the transaction.
    */
-  @Schema(type = "object", description = "The attributes that parameterize the transaction.")
+  @Schema(type = "object", description = "The attributes that parameterize the transaction.", implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject attributes;
 

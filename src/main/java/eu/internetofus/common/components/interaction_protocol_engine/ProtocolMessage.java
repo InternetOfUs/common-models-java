@@ -26,10 +26,7 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
@@ -45,6 +42,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import java.util.List;
 
 /**
  * A message that can be interchange in an interaction protocol.
@@ -93,16 +92,14 @@ public class ProtocolMessage extends ReflectionModel implements Model, Validable
   /**
    * The content of the message.
    */
-  @Schema(description = "The content of the message.", example = "Hi!", type = "object")
+  @Schema(description = "The content of the message.", example = "Hi!", type = "object", implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public Object content;
+  public JsonObject content;
 
   /**
    * The norms that has to be applied over the message.
    */
-  @ArraySchema(
-      schema = @Schema(ref = "https://bitbucket.org/wenet/wenet-components-documentation/raw/5c28427ce0c05596ef9001ffa8a08f8eb125611f/sources/wenet-models-openapi.yaml#/components/schemas/Norm"),
-      arraySchema = @Schema(description = "The norms to apply over the message"))
+  @ArraySchema(schema = @Schema(ref = "https://bitbucket.org/wenet/wenet-components-documentation/raw/5c28427ce0c05596ef9001ffa8a08f8eb125611f/sources/wenet-models-openapi.yaml#/components/schemas/Norm"), arraySchema = @Schema(description = "The norms to apply over the message"))
   public List<Norm> norms;
 
   /**
@@ -118,21 +115,24 @@ public class ProtocolMessage extends ReflectionModel implements Model, Validable
       this.appId = Validations.validateNullableStringField(codePrefix, "appId", 255, this.appId);
       if (this.appId != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true, WeNetService.createProxy(vertx)::retrieveApp);
+        future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
+            WeNetService.createProxy(vertx)::retrieveApp);
 
       }
 
       this.communityId = Validations.validateNullableStringField(codePrefix, "communityId", 255, this.communityId);
       if (this.communityId != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "communityId", this.communityId, true, WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
+        future = Validations.composeValidateId(future, codePrefix, "communityId", this.communityId, true,
+            WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
 
       }
 
       this.taskId = Validations.validateNullableStringField(codePrefix, "taskId", 255, this.taskId);
       if (this.taskId != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "taskId", this.taskId, true, WeNetTaskManager.createProxy(vertx)::retrieveTask);
+        future = Validations.composeValidateId(future, codePrefix, "taskId", this.taskId, true,
+            WeNetTaskManager.createProxy(vertx)::retrieveTask);
       }
 
       this.particle = Validations.validateStringField(codePrefix, "particle", 255, this.particle);
@@ -153,7 +153,8 @@ public class ProtocolMessage extends ReflectionModel implements Model, Validable
 
         future = future.compose(map -> this.sender.validate(codePrefix + ".sender", vertx));
         future = future.compose(map -> this.receiver.validate(codePrefix + ".receiver", vertx));
-        future = future.compose(Validations.validate(this.norms, (a, b) -> a.id.equals(b.id), codePrefix + ".norms", vertx));
+        future = future
+            .compose(Validations.validate(this.norms, (a, b) -> a.id.equals(b.id), codePrefix + ".norms", vertx));
         promise.complete();
 
       }

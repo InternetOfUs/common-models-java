@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.vertx;
 
-import org.tinylog.Logger;
-
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
@@ -35,6 +33,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.openapi.RouterBuilder;
 import javax.ws.rs.core.Response.Status;
+import org.tinylog.Logger;
 
 /**
  * The verticle to load the API specification and start the HTTP server.
@@ -54,7 +53,9 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
   @Override
   public void start(final Promise<Void> startPromise) throws Exception {
 
-    RouterBuilder.create(this.getVertx(), this.getOpenAPIResourcePath()).onComplete(createRouterFactory -> {
+    var vertx = this.getVertx();
+    var path = this.getOpenAPIResourcePath();
+    RouterBuilder.create(vertx, path).onComplete(createRouterFactory -> {
       if (createRouterFactory.succeeded()) {
 
         try {
@@ -119,7 +120,8 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
   protected abstract void mountServiceInterfaces(RouterBuilder routerFactory);
 
   /**
-   * Get the resource path to the file that contains the OpenAPI specification to load.
+   * Get the resource path to the file that contains the OpenAPI specification to
+   * load.
    *
    * @return the resource path to the OpenAPI specification.
    */

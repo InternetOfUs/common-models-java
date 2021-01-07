@@ -26,13 +26,7 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
@@ -47,6 +41,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 /**
  * An activity that an user do regularly.
@@ -71,7 +69,7 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
   /**
    * The time slots.
    */
-  @Schema(type = "object", description = "Time slots.")
+  @Schema(type = "object", description = "Time slots.", implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject label_distribution;
 
@@ -99,12 +97,14 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
     try {
 
       this.user_id = Validations.validateStringField(codePrefix, "user_id", 255, this.user_id);
-      future = Validations.composeValidateId(future, codePrefix, "user_id", this.user_id, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+      future = Validations.composeValidateId(future, codePrefix, "user_id", this.user_id, true,
+          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
       this.weekday = Validations.validateStringField(codePrefix, "weekday", 255, this.weekday);
       if (this.label_distribution == null) {
 
-        promise.fail(new ValidationErrorException(codePrefix + ".label_distribution", "The 'label_distribution' can not be null."));
+        promise.fail(new ValidationErrorException(codePrefix + ".label_distribution",
+            "The 'label_distribution' can not be null."));
 
       } else {
 
@@ -117,17 +117,20 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
             final var scorePrefix = codePrefix + ".label_distribution." + fieldName;
             if (labels == null) {
 
-              promise.fail(new ValidationErrorException(scorePrefix, "The '" + array + "' is not a valid array of ScoredLabel."));
+              promise.fail(new ValidationErrorException(scorePrefix,
+                  "The '" + array + "' is not a valid array of ScoredLabel."));
               return future;
 
             } else {
 
-              future = future.compose(Validations.validate(labels, (l1, l2) -> l1.label.name.equals(l2.label.name), scorePrefix, vertx));
+              future = future.compose(
+                  Validations.validate(labels, (l1, l2) -> l1.label.name.equals(l2.label.name), scorePrefix, vertx));
             }
 
           } catch (final ClassCastException cause) {
 
-            throw new ValidationErrorException(codePrefix + ".label_distribution." + fieldName, "Does not contains an array of scored labels.", cause);
+            throw new ValidationErrorException(codePrefix + ".label_distribution." + fieldName,
+                "Does not contains an array of scored labels.", cause);
           }
 
         }
@@ -196,23 +199,28 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
             final var scorePrefix = codePrefix + ".label_distribution." + fieldName;
             if (sourceLabelDistribution == null) {
 
-              promise.fail(new ValidationErrorException(scorePrefix, "The '" + sourceLabelDistributionArray + "' is not a valid array of ScoredLabel."));
+              promise.fail(new ValidationErrorException(scorePrefix,
+                  "The '" + sourceLabelDistributionArray + "' is not a valid array of ScoredLabel."));
               return future;
 
             }
             final var targetLabelDistributionArray = this.label_distribution.getJsonArray(fieldName);
             final var targetLabelDistribution = Model.fromJsonArray(targetLabelDistributionArray, ScoredLabel.class);
-            future = future.compose(Merges.mergeFieldList(targetLabelDistribution, sourceLabelDistribution, scorePrefix, vertx, (Predicate<ScoredLabel>) scoredLabel -> scoredLabel.label != null && scoredLabel.label.name != null,
-                (BiPredicate<ScoredLabel, ScoredLabel>) (l1, l2) -> l1.label.name.equals(l2.label.name), (BiConsumer<Routine, List<ScoredLabel>>) (mergedRoutine, mergedScoredLabel) -> {
+            future = future
+                .compose(Merges.mergeFieldList(targetLabelDistribution, sourceLabelDistribution, scorePrefix, vertx,
+                    (Predicate<ScoredLabel>) scoredLabel -> scoredLabel.label != null && scoredLabel.label.name != null,
+                    (BiPredicate<ScoredLabel, ScoredLabel>) (l1, l2) -> l1.label.name.equals(l2.label.name),
+                    (BiConsumer<Routine, List<ScoredLabel>>) (mergedRoutine, mergedScoredLabel) -> {
 
-                  final var value = Model.toJsonArray(mergedScoredLabel);
-                  mergedRoutine.label_distribution.put(fieldName, value);
+                      final var value = Model.toJsonArray(mergedScoredLabel);
+                      mergedRoutine.label_distribution.put(fieldName, value);
 
-                }));
+                    }));
 
           } catch (final ClassCastException cause) {
 
-            promise.fail(new ValidationErrorException(codePrefix + ".label_distribution." + fieldName, "Does not contains an array of scored labels.", cause));
+            promise.fail(new ValidationErrorException(codePrefix + ".label_distribution." + fieldName,
+                "Does not contains an array of scored labels.", cause));
             return future;
           }
 

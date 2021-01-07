@@ -23,35 +23,31 @@
  *
  * -----------------------------------------------------------------------------
  */
+package eu.internetofus.wenet_dummy.service;
 
-package eu.internetofus.common.components.social_context_builder;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.JsonObjectDeserializer;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
+import eu.internetofus.common.components.ModelTestCase;
 import io.vertx.core.json.JsonObject;
 
 /**
- * The calculated user relation by the social context builder.
+ * Test the {@link Dummy}.
+ *
+ * @see Dummy
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "social_explanation", description = "A social explanation.")
-public class SocialExplanation extends ReflectionModel implements Model {
+public class DummyTest extends ModelTestCase<Dummy> {
 
   /**
-   * The description of the social explanation.
+   * {@inheritDoc}
    */
-  @Schema(example = "Social explanation")
-  public String description;
+  @Override
+  public Dummy createModelExample(int index) {
 
-  /**
-   * The description of the social explanation.
-   */
-  @Schema(type = "object", implementation = Object.class)
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject Summary;
+    var model = new Dummy();
+    model.id = "Id_" + index;
+    model.value = "Value_" + index;
+    model.extra = new JsonObject().put("index", index);
+    return model;
+  }
 
 }

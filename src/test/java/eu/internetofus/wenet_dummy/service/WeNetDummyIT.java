@@ -24,34 +24,42 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.social_context_builder;
+package eu.internetofus.wenet_dummy.service;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.JsonObjectDeserializer;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.vertx.core.json.JsonObject;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import eu.internetofus.wenet_dummy.WeNetDummyIntegrationExtension;
+import io.vertx.core.Vertx;
+import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * The calculated user relation by the social context builder.
+ * Integration test over the {@link WeNetDummy}.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "social_explanation", description = "A social explanation.")
-public class SocialExplanation extends ReflectionModel implements Model {
+@ExtendWith(WeNetDummyIntegrationExtension.class)
+public class WeNetDummyIT {
 
   /**
-   * The description of the social explanation.
+   * Should post dummy model.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
    */
-  @Schema(example = "Social explanation")
-  public String description;
+  @Test
+  public void shouldPostDummy(final Vertx vertx, final VertxTestContext testContext) {
 
-  /**
-   * The description of the social explanation.
-   */
-  @Schema(type = "object", implementation = Object.class)
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject Summary;
+    final var model = new DummyTest().createModelExample(1);
+    testContext.assertComplete(WeNetDummy.createProxy(vertx).createDummy(model))
+        .onSuccess(posted -> testContext.verify(() -> {
+
+          assertThat(posted).isEqualTo(model);
+          testContext.completeNow();
+
+        }));
+
+  }
 
 }

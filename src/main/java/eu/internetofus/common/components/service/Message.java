@@ -27,7 +27,6 @@
 package eu.internetofus.common.components.service;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
@@ -63,7 +62,7 @@ public class Message extends ReflectionModel implements Model {
   /**
    * The attributes of the message.
    */
-  @Schema(type = "object", description = "the attributes of the message, as key-value pairs.")
+  @Schema(type = "object", description = "the attributes of the message, as key-value pairs.", implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject attributes;
 

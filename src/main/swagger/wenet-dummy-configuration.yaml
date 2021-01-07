@@ -1,0 +1,20 @@
+resourcePackages:
+- eu.internetofus.wenet_dummy.api
+prettyPrint: true
+cacheTTL: 0
+openAPI:
+  tags:
+    - name: Dummies
+      description: API actions over the dummies.
+  info:
+    # The verion of the API has to be synchonized with the 'api-version' property of the 'pom.xml'
+    version: '0.3.0'
+    title: WeNet - Dummy APi for testing common components
+    description:  >-
+      The API used to test the common components.
+    contact:
+      name: Bruno Rosell i Gui (UDT-IA, IIIA-CSIC)
+      email: rosell@iiia.csic.es
+    license:
+      name: MIT
+      url: https://opensource.org/licenses/MIT

@@ -24,34 +24,37 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.social_context_builder;
+package eu.internetofus.wenet_dummy.api;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.JsonObjectDeserializer;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
+import eu.internetofus.common.vertx.AbstractAPIVerticleIntegrationTestCase;
+import eu.internetofus.wenet_dummy.WeNetDummyIntegrationExtension;
+import eu.internetofus.wenet_dummy.api.dummies.Dummies;
 import io.vertx.core.json.JsonObject;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * The calculated user relation by the social context builder.
+ * Integration tests of the {@link APIVerticle}.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "social_explanation", description = "A social explanation.")
-public class SocialExplanation extends ReflectionModel implements Model {
+@ExtendWith(WeNetDummyIntegrationExtension.class)
+public class APIVerticleIT extends AbstractAPIVerticleIntegrationTestCase {
 
   /**
-   * The description of the social explanation.
+   * {@inheritDoc}
    */
-  @Schema(example = "Social explanation")
-  public String description;
+  @Override
+  protected String getBadRequestPostPath() {
+
+    return Dummies.PATH;
+  }
 
   /**
-   * The description of the social explanation.
+   * {@inheritDoc}
    */
-  @Schema(type = "object", implementation = Object.class)
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject Summary;
+  @Override
+  protected JsonObject createBadRequestPostBody() {
 
+    return new JsonObject().put("id", new JsonObject().put("key", "value"));
+  }
 }

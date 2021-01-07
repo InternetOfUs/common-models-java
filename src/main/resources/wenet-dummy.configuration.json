@@ -1,0 +1,32 @@
+{
+	"help": {
+		"info": {
+			"name": "wenet/dummy",
+			"apiVersion": "${project.version}",
+			"softwareVersion": "${project.version} (${maven.build.timestamp})",
+			"vendor": "UDT-IA, IIIA-CSIC",
+			"license": "MIT"
+		}
+	},
+	"api": {
+		"host": "localhost",
+		"port": 8080
+	},
+	"persistence": {
+		"db_name": "wenetDummyDB",
+		"host": "localhost",
+		"port": 27017,
+		"username": "wenetDummy",
+		"password": "password"
+	},
+	"webClient": {
+		"defaultHost": "wenet.iiia.csic.es",
+		"defaultPort": 80
+	},
+	"wenetComponents": {
+		"profileManager": "https://wenet.u-hopper.com/prod/profile_manager",
+		"taskManager": "https://wenet.u-hopper.com/prod/task_manager",
+		"interactionProtocolEngine": "https://wenet.u-hopper.com/prod/interaction_protocol_engine",
+		"service": "https://wenet.u-hopper.com/prod/service"
+	}
+}

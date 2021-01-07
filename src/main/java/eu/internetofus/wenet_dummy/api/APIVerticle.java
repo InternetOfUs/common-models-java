@@ -23,35 +23,56 @@
  *
  * -----------------------------------------------------------------------------
  */
+package eu.internetofus.wenet_dummy.api;
 
-package eu.internetofus.common.components.social_context_builder;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.JsonObjectDeserializer;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
+import eu.internetofus.common.components.interaction_protocol_engine.WeNetInteractionProtocolEngine;
+import eu.internetofus.common.vertx.AbstractAPIVerticle;
+import eu.internetofus.wenet_dummy.api.dummies.Dummies;
+import eu.internetofus.wenet_dummy.api.dummies.DummiesResources;
+import eu.internetofus.wenet_dummy.service.WeNetDummiesClient;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.openapi.RouterBuilder;
+import io.vertx.serviceproxy.ServiceBinder;
 
 /**
- * The calculated user relation by the social context builder.
+ * The dummy API services.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "social_explanation", description = "A social explanation.")
-public class SocialExplanation extends ReflectionModel implements Model {
+public class APIVerticle extends AbstractAPIVerticle {
 
   /**
-   * The description of the social explanation.
+   * {@inheritDoc}
    */
-  @Schema(example = "Social explanation")
-  public String description;
+  @Override
+  protected void startedServerAt(String host, int port) {
+
+    final var conf = new JsonObject();
+    conf.put(WeNetDummiesClient.DUMMY_CONF_KEY, "http://" + host + ":" + port);
+    final var client = WebClient.create(this.vertx);
+    WeNetInteractionProtocolEngine.register(this.vertx, client, conf);
+
+  }
 
   /**
-   * The description of the social explanation.
+   * {@inheritDoc}
    */
-  @Schema(type = "object", implementation = Object.class)
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject Summary;
+  @Override
+  protected void mountServiceInterfaces(RouterBuilder routerFactory) {
+
+    routerFactory.mountServiceInterface(Dummies.class, Dummies.ADDRESS);
+    new ServiceBinder(this.vertx).setAddress(Dummies.ADDRESS).register(Dummies.class, new DummiesResources(this.vertx));
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected String getOpenAPIResourcePath() {
+
+    return "wenet-dummy-openapi.yaml";
+  }
 
 }

@@ -26,10 +26,7 @@
 
 package eu.internetofus.common.components.task_manager;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 import eu.internetofus.common.components.HumanDescriptionWithCreateUpdateTsDetails;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Mergeable;
@@ -44,6 +41,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import java.util.List;
 
 /**
  * Describe a type of task that can be done by the users.
@@ -63,21 +61,21 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
   /**
    * The attributes that describe a task of this type.
    */
-  @Schema(type = "object", description = "OpenAPI description of the attributes that can have a task.")
+  @Schema(type = "object", description = "OpenAPI description of the attributes that can have a task.", implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject attributes;
 
   /**
    * The transaction that can be done in a task of this type.
    */
-  @Schema(type = "object", description = "OpenAPI description of the transaction actions that can be done on the task.")
+  @Schema(type = "object", description = "OpenAPI description of the transaction actions that can be done on the task.", implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject transactions;
 
   /**
    * The callbacks messages that the user that plays in this task can receive.
    */
-  @Schema(type = "object", description = "OpenAPI description of the callbacks messages that can be send to the participants of the task.")
+  @Schema(type = "object", description = "OpenAPI description of the callbacks messages that can be send to the participants of the task.", implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject callbacks;
 

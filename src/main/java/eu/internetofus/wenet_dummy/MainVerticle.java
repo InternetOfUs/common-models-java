@@ -24,34 +24,27 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.social_context_builder;
+package eu.internetofus.wenet_dummy;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.JsonObjectDeserializer;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.vertx.core.json.JsonObject;
+import eu.internetofus.common.vertx.AbstractMainVerticle;
+import eu.internetofus.wenet_dummy.api.APIVerticle;
+import io.vertx.core.AbstractVerticle;
 
 /**
- * The calculated user relation by the social context builder.
+ * The dummy verticle.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "social_explanation", description = "A social explanation.")
-public class SocialExplanation extends ReflectionModel implements Model {
+public class MainVerticle extends AbstractMainVerticle {
 
   /**
-   * The description of the social explanation.
+   * {@inheritDoc}
    */
-  @Schema(example = "Social explanation")
-  public String description;
+  @SuppressWarnings("unchecked")
+  @Override
+  protected Class<? extends AbstractVerticle>[] getVerticleClassesToDeploy() {
 
-  /**
-   * The description of the social explanation.
-   */
-  @Schema(type = "object", implementation = Object.class)
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject Summary;
+    return new Class[] { APIVerticle.class };
+  }
 
 }

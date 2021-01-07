@@ -24,34 +24,58 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.social_context_builder;
+package eu.internetofus.wenet_dummy;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.JsonObjectDeserializer;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.vertx.core.json.JsonObject;
+import eu.internetofus.common.vertx.AbstractMain;
+import io.vertx.core.Verticle;
+import org.tinylog.Level;
+import org.tinylog.provider.InternalLogger;
 
 /**
- * The calculated user relation by the social context builder.
+ * The main class to provide the dummy services.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "social_explanation", description = "A social explanation.")
-public class SocialExplanation extends ReflectionModel implements Model {
+public class Main extends AbstractMain {
 
   /**
-   * The description of the social explanation.
+   * Start the verticles.
+   *
+   * @param args arguments to configure the main process.
+   *
+   * @see MainVerticle
    */
-  @Schema(example = "Social explanation")
-  public String description;
+  public static void main(final String... args) {
+
+    final var main = new Main();
+    main.startWith(args).onComplete(result -> {
+
+      if (!result.succeeded()) {
+
+        InternalLogger.log(Level.ERROR, result.cause(),
+            "Can not start the WeNet dummy!\n Check the Logs to known why.");
+      }
+
+    });
+
+  }
 
   /**
-   * The description of the social explanation.
+   * {@inheritDoc}
    */
-  @Schema(type = "object", implementation = Object.class)
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject Summary;
+  @Override
+  protected Verticle createMainVerticle() {
+
+    return new MainVerticle();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected String getModuleName() {
+
+    return "wenet-dummy";
+  }
 
 }

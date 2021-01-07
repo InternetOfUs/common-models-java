@@ -23,8 +23,7 @@
  *
  * -----------------------------------------------------------------------------
  */
-
-package eu.internetofus.common.components.social_context_builder;
+package eu.internetofus.wenet_dummy.service;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import eu.internetofus.common.components.JsonObjectDeserializer;
@@ -34,24 +33,30 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.json.JsonObject;
 
 /**
- * The calculated user relation by the social context builder.
+ * The dummy value that is interchnaged on the API.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "social_explanation", description = "A social explanation.")
-public class SocialExplanation extends ReflectionModel implements Model {
+@Schema(name = "Dummy", description = "A dummy model to interchange to test the common classes")
+public class Dummy extends ReflectionModel implements Model {
 
   /**
-   * The description of the social explanation.
+   * The identifier of the model.
    */
-  @Schema(example = "Social explanation")
-  public String description;
+  @Schema(description = "The identifier of the model", example = "1")
+  public String id;
 
   /**
-   * The description of the social explanation.
+   * The value associated to the model.
    */
-  @Schema(type = "object", implementation = Object.class)
+  @Schema(description = "The value associated to the model", example = "value")
+  public String value;
+
+  /**
+   * The extra information associated to the model.
+   */
+  @Schema(type = "object", description = "Extra information associated to the model", implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject Summary;
+  public JsonObject extra;
 
 }

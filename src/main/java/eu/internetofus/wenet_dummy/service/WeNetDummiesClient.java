@@ -24,34 +24,45 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.social_context_builder;
+package eu.internetofus.wenet_dummy.service;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.JsonObjectDeserializer;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
+import eu.internetofus.common.vertx.ComponentClient;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
+import javax.validation.constraints.NotNull;
 
 /**
- * The calculated user relation by the social context builder.
+ * The implementation of the {@link WeNetDummy}.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "social_explanation", description = "A social explanation.")
-public class SocialExplanation extends ReflectionModel implements Model {
+public class WeNetDummiesClient extends ComponentClient implements WeNetDummy {
 
   /**
-   * The description of the social explanation.
+   * The name of the configuration property that contains the URL to the profile
+   * manager API.
    */
-  @Schema(example = "Social explanation")
-  public String description;
+  public static final String DUMMY_CONF_KEY = "dummy";
 
   /**
-   * The description of the social explanation.
+   * Create a new service to interact with the WeNet profile manager.
+   *
+   * @param client to interact with the other modules.
+   * @param conf   configuration.
    */
-  @Schema(type = "object", implementation = Object.class)
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject Summary;
+  public WeNetDummiesClient(final WebClient client, final JsonObject conf) {
+
+    super(client, conf.getString(DUMMY_CONF_KEY, "http://localhost:8080"));
+
+  }
+
+  @Override
+  public void createDummy(@NotNull JsonObject dummy, @NotNull Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(dummy, "/dummies").onComplete(handler);
+
+  }
 
 }

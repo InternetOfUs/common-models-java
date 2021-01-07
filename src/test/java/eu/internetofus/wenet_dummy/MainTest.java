@@ -24,34 +24,57 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.social_context_builder;
+package eu.internetofus.wenet_dummy;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.JsonObjectDeserializer;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.vertx.core.json.JsonObject;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import eu.internetofus.common.vertx.AbstractMain;
+import org.itsallcode.io.Capturable;
+import org.itsallcode.junit.sysextensions.SystemErrGuard;
+import org.itsallcode.junit.sysextensions.SystemOutGuard;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * The calculated user relation by the social context builder.
+ * Test the {@link Main}
+ *
+ * @see Main
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "social_explanation", description = "A social explanation.")
-public class SocialExplanation extends ReflectionModel implements Model {
+public class MainTest {
 
   /**
-   * The description of the social explanation.
+   * Verify show help message from calling main.
+   *
+   * @param stream captured system output stream.
    */
-  @Schema(example = "Social explanation")
-  public String description;
+  @ExtendWith(SystemOutGuard.class)
+  @Test
+  public void shouldShowHelpMessageFromMain(final Capturable stream) {
+
+    stream.capture();
+    Main.main("-" + AbstractMain.HELP_OPTION);
+    final var data = stream.getCapturedData();
+    assertThat(data).contains("-" + AbstractMain.HELP_OPTION, "-" + AbstractMain.VERSION_OPTION,
+        "-" + AbstractMain.CONF_DIR_OPTION, "-" + AbstractMain.PROPERTY_OPTION);
+
+  }
 
   /**
-   * The description of the social explanation.
+   * Verify not start form main.
+   *
+   * @param stream captured system output stream.
    */
-  @Schema(type = "object", implementation = Object.class)
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject Summary;
+  @ExtendWith(SystemErrGuard.class)
+  @Test
+  public void shouldNotStartFromMainFunction(final Capturable stream) {
+
+    stream.capture();
+    Main.main("-undefined");
+    final var data = stream.getCapturedData();
+    assertThat(data).contains("Can not start the WeNet dummy!");
+
+  }
 
 }

@@ -23,35 +23,58 @@
  *
  * -----------------------------------------------------------------------------
  */
+package eu.internetofus.wenet_dummy.api.dummies;
 
-package eu.internetofus.common.components.social_context_builder;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
+import eu.internetofus.common.vertx.ServiceResponseHandlers;
+import eu.internetofus.wenet_dummy.service.Dummy;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.api.service.ServiceRequest;
+import io.vertx.ext.web.api.service.ServiceResponse;
+import javax.ws.rs.core.Response.Status;
 
 /**
- * The calculated user relation by the social context builder.
+ * The implementation of the {@link Dummies}.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "social_explanation", description = "A social explanation.")
-public class SocialExplanation extends ReflectionModel implements Model {
+public class DummiesResources implements Dummies {
 
   /**
-   * The description of the social explanation.
+   * The event bus that is using.
    */
-  @Schema(example = "Social explanation")
-  public String description;
+  protected Vertx vertx;
 
   /**
-   * The description of the social explanation.
+   * Create a new instance to provide the services of the {@link Dummies}.
+   *
+   * @param vertx where resource is defined.
    */
-  @Schema(type = "object", implementation = Object.class)
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject Summary;
+  public DummiesResources(final Vertx vertx) {
+
+    this.vertx = vertx;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void postDummy(JsonObject body, ServiceRequest context, Handler<AsyncResult<ServiceResponse>> resultHandler) {
+
+    var model = Model.fromJsonObject(body, Dummy.class);
+    if (model == null) {
+
+      ServiceResponseHandlers.responseWithErrorMessage(resultHandler, Status.BAD_REQUEST, "bad_model",
+          "The content body does not contains a valid Dummy model.");
+
+    } else {
+
+      ServiceResponseHandlers.responseWith(resultHandler, Status.CREATED, body);
+    }
+
+  }
 
 }

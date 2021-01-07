@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,15 +26,14 @@
 
 package eu.internetofus.common.components.service;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.vertx.core.json.JsonObject;
+import java.util.List;
 
 /**
  * The application of a WeNet use case scenario.
@@ -77,15 +76,15 @@ public class App extends ReflectionModel implements Model {
   /**
    * The metadata of the application.
    */
-  @Schema(type = "object", description = "App metadata (such as its name and description).")
+  @Schema(type = "object", description = "App metadata (such as its name and description).", implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public Object metadata;
+  public JsonObject metadata;
 
   /**
    * The platform that the application is allowed to use.
    */
-  @ArraySchema(schema = @Schema(type = "object"), arraySchema = @Schema(description = "The allowed platform for the application."))
+  @ArraySchema(schema = @Schema(type = "object"), arraySchema = @Schema(description = "The allowed platform for the application.", implementation = Object.class))
   @JsonDeserialize(contentUsing = JsonObjectDeserializer.class)
-  public List<Object> allowedPlatforms;
+  public List<JsonObject> allowedPlatforms;
 
 }

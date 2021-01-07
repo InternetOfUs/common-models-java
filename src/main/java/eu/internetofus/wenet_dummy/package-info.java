@@ -24,34 +24,12 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.social_context_builder;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.JsonObjectDeserializer;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.vertx.core.json.JsonObject;
-
 /**
- * The calculated user relation by the social context builder.
+ * The component to test the common components.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "social_explanation", description = "A social explanation.")
-public class SocialExplanation extends ReflectionModel implements Model {
+@ModuleGen(name = "wenet-dummy", groupPackage = "eu.internetofus")
+package eu.internetofus.wenet_dummy;
 
-  /**
-   * The description of the social explanation.
-   */
-  @Schema(example = "Social explanation")
-  public String description;
-
-  /**
-   * The description of the social explanation.
-   */
-  @Schema(type = "object", implementation = Object.class)
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject Summary;
-
-}
+import io.vertx.codegen.annotations.ModuleGen;

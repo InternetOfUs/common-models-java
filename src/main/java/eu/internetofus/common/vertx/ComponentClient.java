@@ -26,15 +26,6 @@
 
 package eu.internetofus.common.vertx;
 
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
-import javax.validation.constraints.NotNull;
-
-import org.tinylog.Logger;
-
 import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.Model;
 import io.vertx.core.AsyncResult;
@@ -49,7 +40,13 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceException;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Response.Status;
+import org.tinylog.Logger;
 
 /**
  * A HTTP client to interact with a WeNet platform components.
@@ -140,7 +137,8 @@ public class ComponentClient {
    *
    * @return the consumer for the no content.
    */
-  protected BiConsumer<Handler<AsyncResult<Void>>, HttpResponse<Buffer>> noContentConsumer(@NotNull final String actionId) {
+  protected BiConsumer<Handler<AsyncResult<Void>>, HttpResponse<Buffer>> noContentConsumer(
+      @NotNull final String actionId) {
 
     return (handler, response) -> {
 
@@ -169,7 +167,8 @@ public class ComponentClient {
    */
   protected Future<JsonObject> post(@NotNull final JsonObject content, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), content.toBuffer(), this.createObjectExtractor());
+    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), content.toBuffer(),
+        this.createObjectExtractor());
 
   }
 
@@ -183,7 +182,8 @@ public class ComponentClient {
    */
   protected Future<JsonArray> post(@NotNull final JsonArray content, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), content.toBuffer(), this.createArrayExtractor());
+    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), content.toBuffer(),
+        this.createArrayExtractor());
 
   }
 
@@ -197,7 +197,8 @@ public class ComponentClient {
    */
   protected Future<JsonObject> put(@NotNull final JsonObject content, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.PUT, this.createAbsoluteUrlWith(paths), content.toBuffer(), this.createObjectExtractor());
+    return this.request(HttpMethod.PUT, this.createAbsoluteUrlWith(paths), content.toBuffer(),
+        this.createObjectExtractor());
 
   }
 
@@ -211,7 +212,8 @@ public class ComponentClient {
    */
   protected Future<JsonArray> put(@NotNull final JsonArray content, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.PUT, this.createAbsoluteUrlWith(paths), content.toBuffer(), this.createArrayExtractor());
+    return this.request(HttpMethod.PUT, this.createAbsoluteUrlWith(paths), content.toBuffer(),
+        this.createArrayExtractor());
 
   }
 
@@ -225,7 +227,8 @@ public class ComponentClient {
    */
   protected Future<JsonObject> patch(@NotNull final JsonObject content, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.PATCH, this.createAbsoluteUrlWith(paths), content.toBuffer(), this.createObjectExtractor());
+    return this.request(HttpMethod.PATCH, this.createAbsoluteUrlWith(paths), content.toBuffer(),
+        this.createObjectExtractor());
 
   }
 
@@ -239,7 +242,8 @@ public class ComponentClient {
    */
   protected Future<JsonArray> patch(@NotNull final JsonArray content, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.PATCH, this.createAbsoluteUrlWith(paths), content.toBuffer(), this.createArrayExtractor());
+    return this.request(HttpMethod.PATCH, this.createAbsoluteUrlWith(paths), content.toBuffer(),
+        this.createArrayExtractor());
 
   }
 
@@ -252,7 +256,8 @@ public class ComponentClient {
    *
    * @return the request to call.
    */
-  protected HttpRequest<Buffer> createRequestFor(final HttpMethod method, @NotNull final String url, final Map<String, String> queryParams) {
+  protected HttpRequest<Buffer> createRequestFor(final HttpMethod method, @NotNull final String url,
+      final Map<String, String> queryParams) {
 
     var request = this.client.requestAbs(method, url);
     for (final var entry : queryParams.entrySet()) {
@@ -288,7 +293,8 @@ public class ComponentClient {
    *
    * @return the action identifier.
    */
-  protected String createActionId(@NotNull final HttpMethod method, @NotNull final String url, @NotNull final Map<String, String> queryParams) {
+  protected String createActionId(@NotNull final HttpMethod method, @NotNull final String url,
+      @NotNull final Map<String, String> queryParams) {
 
     return this.createActionId(method, url) + "?" + queryParams;
 
@@ -305,12 +311,15 @@ public class ComponentClient {
    *
    * @return the future with the received model as response.
    */
-  protected <T> Future<T> request(final HttpMethod method, @NotNull final String url, @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
+  protected <T> Future<T> request(final HttpMethod method, @NotNull final String url,
+      @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
 
     final Promise<T> promise = Promise.promise();
     final var actionId = this.createActionId(method, url);
     Logger.trace("{} STARTED", actionId);
-    this.client.requestAbs(method, url).send().onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId)).onFailure(this.createRequestFailureHandler(promise, actionId));
+    this.client.requestAbs(method, url).send()
+        .onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId))
+        .onFailure(this.createRequestFailureHandler(promise, actionId));
     return promise.future();
 
   }
@@ -327,12 +336,15 @@ public class ComponentClient {
    *
    * @return the future with the received model as response.
    */
-  protected <T> Future<T> request(final HttpMethod method, @NotNull final String url, final Map<String, String> queryParams, @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
+  protected <T> Future<T> request(final HttpMethod method, @NotNull final String url,
+      final Map<String, String> queryParams, @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
 
     final Promise<T> promise = Promise.promise();
     final var actionId = this.createActionId(method, url, queryParams);
     Logger.trace("{} STARTED", actionId);
-    this.createRequestFor(method, url, queryParams).send().onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId)).onFailure(this.createRequestFailureHandler(promise, actionId));
+    this.createRequestFor(method, url, queryParams).send()
+        .onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId))
+        .onFailure(this.createRequestFailureHandler(promise, actionId));
     return promise.future();
 
   }
@@ -349,12 +361,15 @@ public class ComponentClient {
    *
    * @return the future with the received model as response.
    */
-  protected <T> Future<T> request(final HttpMethod method, @NotNull final String url, final Buffer content, @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
+  protected <T> Future<T> request(final HttpMethod method, @NotNull final String url, final Buffer content,
+      @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
 
     final Promise<T> promise = Promise.promise();
     final var actionId = this.createActionId(method, url);
     Logger.trace("{} with {} STARTED", actionId, content);
-    this.client.requestAbs(method, url).sendBuffer(content).onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId)).onFailure(this.createRequestFailureHandler(promise, actionId));
+    this.client.requestAbs(method, url).sendJson(content)
+        .onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId))
+        .onFailure(this.createRequestFailureHandler(promise, actionId));
     return promise.future();
 
   }
@@ -410,7 +425,8 @@ public class ComponentClient {
    *
    * @return the handler for the response object.
    */
-  protected <T> Handler<HttpResponse<Buffer>> createHandlerThatExtractBodyFromSuccessResponse(final Function<HttpResponse<Buffer>, T> extractor, final Promise<T> promise, final String actionId) {
+  protected <T> Handler<HttpResponse<Buffer>> createHandlerThatExtractBodyFromSuccessResponse(
+      final Function<HttpResponse<Buffer>, T> extractor, final Promise<T> promise, final String actionId) {
 
     return response -> {
 
@@ -430,13 +446,15 @@ public class ComponentClient {
 
         } catch (final Throwable cause) {
 
-          Logger.trace(cause, "{} FAILED with code {} and unexpected content {}", () -> actionId, () -> code, () -> response.bodyAsString());
+          Logger.trace(cause, "{} FAILED with code {} and unexpected content {}", () -> actionId, () -> code,
+              () -> response.bodyAsString());
           promise.fail(cause);
         }
 
       } else {
 
-        Logger.trace("{} FAILED with code {} and content {}", () -> actionId, () -> code, () -> response.bodyAsString());
+        Logger.trace("{} FAILED with code {} and content {}", () -> actionId, () -> code,
+            () -> response.bodyAsString());
         final var cause = this.toServiceException(response);
         promise.fail(cause);
 

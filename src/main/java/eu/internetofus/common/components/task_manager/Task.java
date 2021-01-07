@@ -26,10 +26,7 @@
 
 package eu.internetofus.common.components.task_manager;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 import eu.internetofus.common.components.CreateUpdateTsDetails;
 import eu.internetofus.common.components.HumanDescription;
 import eu.internetofus.common.components.JsonObjectDeserializer;
@@ -48,6 +45,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import java.util.List;
 
 /**
  * The profile of a WeNet user.
@@ -109,7 +107,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
   /**
    * The set of norms that define the interaction of the user when do the task.
    */
-  @Schema(type = "object", description = "The set of norms that define the interaction of the user when do the task.")
+  @Schema(type = "object", description = "The set of norms that define the interaction of the user when do the task.", implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject attributes;
 
