@@ -24,28 +24,27 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.wenet_dummy;
+package eu.internetofus.wenet_dummy.persistence;
 
-import eu.internetofus.common.vertx.AbstractMainVerticle;
-import eu.internetofus.wenet_dummy.api.APIVerticle;
-import eu.internetofus.wenet_dummy.persistence.PersistenceVerticle;
-import io.vertx.core.AbstractVerticle;
+import eu.internetofus.common.vertx.AbstractPersistenceVerticle;
+import io.vertx.core.Future;
 
 /**
- * The dummy verticle.
+ * The verticle that provide the persistence services.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class MainVerticle extends AbstractMainVerticle {
+
+public class PersistenceVerticle extends AbstractPersistenceVerticle {
 
   /**
    * {@inheritDoc}
    */
-  @SuppressWarnings("unchecked")
   @Override
-  protected Class<? extends AbstractVerticle>[] getVerticleClassesToDeploy() {
+  protected Future<Void> registerRepositoriesFor(final String schemaVersion) {
 
-    return new Class[] { PersistenceVerticle.class, APIVerticle.class };
+    return DummiesRepository.register(this.vertx, this.pool, schemaVersion);
+
   }
 
 }

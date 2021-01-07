@@ -24,28 +24,7 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.wenet_dummy;
-
-import eu.internetofus.common.vertx.AbstractMainVerticle;
-import eu.internetofus.wenet_dummy.api.APIVerticle;
-import eu.internetofus.wenet_dummy.persistence.PersistenceVerticle;
-import io.vertx.core.AbstractVerticle;
-
 /**
- * The dummy verticle.
- *
- * @author UDT-IA, IIIA-CSIC
+ * The components to store {@link eu.internetofus.wenet_dummy.service.Dummy}.
  */
-public class MainVerticle extends AbstractMainVerticle {
-
-  /**
-   * {@inheritDoc}
-   */
-  @SuppressWarnings("unchecked")
-  @Override
-  protected Class<? extends AbstractVerticle>[] getVerticleClassesToDeploy() {
-
-    return new Class[] { PersistenceVerticle.class, APIVerticle.class };
-  }
-
-}
+package eu.internetofus.wenet_dummy.persistence;
