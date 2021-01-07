@@ -23,42 +23,67 @@
  *
  * -----------------------------------------------------------------------------
  */
+package eu.internetofus.wenet_dummy.api.dummies;
 
-package eu.internetofus.wenet_dummy.service;
-
+import static eu.internetofus.common.vertx.HttpResponses.assertThatBodyIs;
+import static eu.internetofus.common.vertx.ext.TestRequest.testRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.wenet_dummy.WeNetDummyIntegrationExtension;
+import eu.internetofus.wenet_dummy.service.Dummy;
+import eu.internetofus.wenet_dummy.service.DummyTest;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxTestContext;
+import javax.ws.rs.core.Response.Status;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * Integration test over the {@link WeNetDummy}.
+ * Integration test over the {@link Dummies}.
  *
  * @author UDT-IA, IIIA-CSIC
  */
 @ExtendWith(WeNetDummyIntegrationExtension.class)
-public class WeNetDummyIT {
+public class DummiesIT {
 
   /**
-   * Should create dummy model.
+   * Should post dummy model.
    *
    * @param vertx       that contains the event bus to use.
+   * @param client      to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldCreateDummy(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldPostDummy(Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var model = new DummyTest().createModelExample(1);
-    testContext.assertComplete(WeNetDummy.createProxy(vertx).createDummy(model))
-        .onSuccess(posted -> testContext.verify(() -> {
+    testRequest(client, HttpMethod.POST, Dummies.PATH).expect(res -> {
+      assertThat(res.statusCode()).isEqualTo(Status.CREATED.getStatusCode());
+      final var posted = assertThatBodyIs(Dummy.class, res);
+      assertThat(posted).isNotNull().isEqualTo(model);
+    }).sendJson(model, testContext);
 
-          assertThat(posted).isEqualTo(model);
-          testContext.completeNow();
+  }
 
-        }));
+  /**
+   * Should fail post dummy model.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param client      to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldFailPostDummy(Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    testRequest(client, HttpMethod.POST, Dummies.PATH).expect(res -> {
+      assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+      final var error = assertThatBodyIs(ErrorMessage.class, res);
+      assertThat(error).isNotNull();
+    }).sendJson(new JsonObject().put("undefined", "undefined"), testContext);
 
   }
 
