@@ -27,6 +27,7 @@ package eu.internetofus.wenet_dummy.api.dummies;
 
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.vertx.ServiceResponseHandlers;
+import eu.internetofus.wenet_dummy.persistence.DummiesRepository;
 import eu.internetofus.wenet_dummy.service.Dummy;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -72,7 +73,10 @@ public class DummiesResources implements Dummies {
 
     } else {
 
-      ServiceResponseHandlers.responseWith(resultHandler, Status.CREATED, body);
+      DummiesRepository.createProxy(this.vertx).storeDummy(model)
+          .onSuccess(stored -> ServiceResponseHandlers.responseWith(resultHandler, Status.CREATED, stored))
+          .onFailure(error -> ServiceResponseHandlers.responseWithErrorMessage(resultHandler, Status.BAD_REQUEST,
+              "duplicated_id", "The identifier of the new dummy is already defined"));
     }
 
   }

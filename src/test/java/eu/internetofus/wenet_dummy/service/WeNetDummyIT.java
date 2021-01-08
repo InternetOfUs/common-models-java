@@ -52,9 +52,12 @@ public class WeNetDummyIT {
   public void shouldCreateDummy(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new DummyTest().createModelExample(1);
+    model.id = null;
     testContext.assertComplete(WeNetDummy.createProxy(vertx).createDummy(model))
         .onSuccess(posted -> testContext.verify(() -> {
 
+          assertThat(posted).isNotEqualTo(model);
+          model.id = posted.id;
           assertThat(posted).isEqualTo(model);
           testContext.completeNow();
 

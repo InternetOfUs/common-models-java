@@ -61,29 +61,62 @@ public class DummiesIT {
   public void shouldPostDummy(Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var model = new DummyTest().createModelExample(1);
+    model.id = null;
     testRequest(client, HttpMethod.POST, Dummies.PATH).expect(res -> {
       assertThat(res.statusCode()).isEqualTo(Status.CREATED.getStatusCode());
       final var posted = assertThatBodyIs(Dummy.class, res);
-      assertThat(posted).isNotNull().isEqualTo(model);
+      assertThat(posted).isNotNull().isNotEqualTo(model);
+      model.id = posted.id;
+      assertThat(posted).isEqualTo(model);
     }).sendJson(model, testContext);
 
   }
 
   /**
-   * Should fail post dummy model.
+   * Should fail post bad dummy model.
    *
    * @param vertx       that contains the event bus to use.
    * @param client      to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldFailPostDummy(Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldFailPostBadDummymodel(Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     testRequest(client, HttpMethod.POST, Dummies.PATH).expect(res -> {
       assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
       final var error = assertThatBodyIs(ErrorMessage.class, res);
       assertThat(error).isNotNull();
     }).sendJson(new JsonObject().put("undefined", "undefined"), testContext);
+
+  }
+
+  /**
+   * Should not post dummy model with an existing identifier.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param client      to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldFailPostDummyIdDefined(Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    var checkpoint = testContext.checkpoint(2);
+    final var model = new DummyTest().createModelExample(1);
+    model.id = null;
+    testRequest(client, HttpMethod.POST, Dummies.PATH).expect(res -> {
+
+      assertThat(res.statusCode()).isEqualTo(Status.CREATED.getStatusCode());
+      final var posted = assertThatBodyIs(Dummy.class, res);
+      assertThat(posted).isNotNull();
+      testRequest(client, HttpMethod.POST, Dummies.PATH).expect(res2 -> {
+
+        assertThat(res2.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+        final var error = assertThatBodyIs(ErrorMessage.class, res2);
+        assertThat(error).isNotNull();
+
+      }).sendJson(posted.toJsonObject(), testContext, checkpoint);
+
+    }).sendJson(model, testContext, checkpoint);
 
   }
 
