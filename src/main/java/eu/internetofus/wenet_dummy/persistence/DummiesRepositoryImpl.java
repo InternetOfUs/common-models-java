@@ -86,7 +86,7 @@ public class DummiesRepositoryImpl extends Repository implements DummiesReposito
       final var _id = (String) stored.remove("_id");
       return stored.put("id", _id);
 
-    }, storeHandler);
+    }).onComplete(storeHandler);
 
   }
 

@@ -26,16 +26,8 @@
 
 package eu.internetofus.common.components;
 
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.io.IOUtils;
-import org.tinylog.Logger;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
@@ -43,6 +35,12 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.client.HttpResponse;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import javax.validation.constraints.NotNull;
+import org.apache.commons.io.IOUtils;
+import org.tinylog.Logger;
 
 /**
  * Define a data model.
@@ -119,18 +117,26 @@ public interface Model {
    *
    * @return the future model defined on the object.
    */
-  public static <T extends Model> Future<T> fromFutureJsonObject(final Future<JsonObject> futureObject, final Class<T> type) {
+  public static <T extends Model> Future<T> fromFutureJsonObject(@NotNull final Future<JsonObject> futureObject,
+      @NotNull final Class<T> type) {
 
     return futureObject.compose(object -> {
 
-      try {
+      if (object == null) {
 
-        final var value = Json.decodeValue(object.toBuffer(), type);
-        return Future.succeededFuture(value);
+        return Future.failedFuture("No object to get the value");
 
-      } catch (final Throwable throwable) {
+      } else {
 
-        return Future.failedFuture(throwable);
+        try {
+
+          final var value = Json.decodeValue(object.toBuffer(), type);
+          return Future.succeededFuture(value);
+
+        } catch (final Throwable throwable) {
+
+          return Future.failedFuture(throwable);
+        }
       }
 
     });
@@ -147,28 +153,32 @@ public interface Model {
    *
    * @return the future model defined on the array.
    */
-  public static <T extends Model> Future<List<T>> fromFutureJsonArray(final Future<JsonArray> futureArray, final Class<T> type) {
+  public static <T extends Model> Future<List<T>> fromFutureJsonArray(@NotNull final Future<JsonArray> futureArray,
+      @NotNull final Class<T> type) {
 
     return futureArray.compose(array -> {
 
-      try {
+      final var values = new ArrayList<T>();
+      if (array != null) {
 
-        final var values = new ArrayList<T>();
-        final var max = array.size();
-        for (var i = 0; i < max; i++) {
+        try {
 
-          final var element = array.getJsonObject(i);
-          final var value = Json.decodeValue(element.toBuffer(), type);
-          values.add(value);
+          final var max = array.size();
+          for (var i = 0; i < max; i++) {
 
+            final var element = array.getJsonObject(i);
+            final var value = Json.decodeValue(element.toBuffer(), type);
+            values.add(value);
+
+          }
+
+        } catch (final Throwable throwable) {
+
+          return Future.failedFuture(throwable);
         }
-
-        return Future.succeededFuture(values);
-
-      } catch (final Throwable throwable) {
-
-        return Future.failedFuture(throwable);
       }
+
+      return Future.succeededFuture(values);
 
     });
 
@@ -177,7 +187,8 @@ public interface Model {
   /**
    * Convert a model to JSON string.
    *
-   * @return the string representation of this model in JSON or {@code null} if it can not convert it.
+   * @return the string representation of this model in JSON or {@code null} if it
+   *         can not convert it.
    */
   default public String toJsonString() {
 
@@ -215,7 +226,8 @@ public interface Model {
   /**
    * Convert this model to a buffer.
    *
-   * @return the buffer that contains the JSON encoding of this model or {@code null} if can not convert it.
+   * @return the buffer that contains the JSON encoding of this model or
+   *         {@code null} if can not convert it.
    */
   default public Buffer toBuffer() {
 
@@ -259,7 +271,8 @@ public interface Model {
    * @param type         of model to obtain
    * @param <T>          model to obtain
    *
-   * @return the model defined on the resource or {@code null} if can not obtain it.
+   * @return the model defined on the resource or {@code null} if can not obtain
+   *         it.
    */
   public static <T extends Model> T loadFromResource(final String resourceName, final Class<T> type) {
 
@@ -284,7 +297,8 @@ public interface Model {
    * @param type     of model to obtain
    * @param <T>      to obtain
    *
-   * @return the model defined on the response or {@code null} if can not obtain it.
+   * @return the model defined on the response or {@code null} if can not obtain
+   *         it.
    */
   public static <T extends Model> T fromResponse(final HttpResponse<Buffer> response, final Class<T> type) {
 
@@ -335,7 +349,8 @@ public interface Model {
    * @param type  of model to obtain
    * @param <T>   to obtain
    *
-   * @return the models of the array, or {@code null} if it can not obtain all the models.
+   * @return the models of the array, or {@code null} if it can not obtain all the
+   *         models.
    */
   public static <T extends Model> List<T> fromJsonArray(final JsonArray array, final Class<T> type) {
 
@@ -377,7 +392,8 @@ public interface Model {
    * @param type   of model to obtain
    * @param <T>    to obtain
    *
-   * @return the models of the array, or {@code null} if it can not obtain all the models.
+   * @return the models of the array, or {@code null} if it can not obtain all the
+   *         models.
    */
   public static <T extends Model> List<T> fromJsonArray(final Buffer buffer, final Class<T> type) {
 
@@ -404,7 +420,8 @@ public interface Model {
   }
 
   /**
-   * Convert a model to a {@link JsonObject} with all the {@code null} and empty values.
+   * Convert a model to a {@link JsonObject} with all the {@code null} and empty
+   * values.
    *
    * @return the object of the model or {@code null} if can not convert it.
    *

@@ -64,7 +64,7 @@ public interface Dummies {
   /**
    * The address of this service.
    */
-  String ADDRESS = "wenet_interaction_protocol_engine.api.incentives";
+  String ADDRESS = "wenet_dummy.api.dummies";
 
   /**
    * Post a {@link Dummy}.

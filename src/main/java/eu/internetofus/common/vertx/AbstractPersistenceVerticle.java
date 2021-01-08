@@ -26,13 +26,12 @@
 
 package eu.internetofus.common.vertx;
 
-import org.tinylog.Logger;
-
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
+import org.tinylog.Logger;
 
 /**
  * The common verticle that provide the persistence services.
@@ -69,7 +68,7 @@ public abstract class AbstractPersistenceVerticle extends AbstractVerticle {
       if (registered.failed()) {
         // Cannot registered repositories
         final var cause = registered.cause();
-        Logger.error(cause,"Cannot register the repositories");
+        Logger.error(cause, "Cannot register the repositories");
         startPromise.fail(cause);
 
       } else {
@@ -114,7 +113,8 @@ public abstract class AbstractPersistenceVerticle extends AbstractVerticle {
    */
   protected String apiVersion() {
 
-    return this.config().getJsonObject("help", new JsonObject()).getJsonObject("info", new JsonObject()).getString("apiVersion", "Undefined");
+    return this.config().getJsonObject("help", new JsonObject()).getJsonObject("info", new JsonObject())
+        .getString("apiVersion", "Undefined");
 
   }
 

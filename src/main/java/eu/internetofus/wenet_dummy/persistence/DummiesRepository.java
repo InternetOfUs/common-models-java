@@ -49,7 +49,7 @@ public interface DummiesRepository {
   /**
    * The address of this service.
    */
-  String ADDRESS = "wenet_dummy_manager.persistence.dummies";
+  String ADDRESS = "wenet_dummy.persistence.dummies";
 
   /**
    * Create a proxy of the {@link DummiesRepository}.
@@ -99,6 +99,7 @@ public interface DummiesRepository {
     } else {
 
       this.storeDummy(object, promise);
+
     }
 
     return Model.fromFutureJsonObject(promise.future(), Dummy.class);

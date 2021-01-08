@@ -26,16 +26,8 @@
 
 package eu.internetofus.common.vertx;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import javax.validation.constraints.NotNull;
-
-import org.tinylog.Logger;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ValidationErrorException;
 import io.vertx.core.AsyncResult;
@@ -47,6 +39,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import javax.validation.constraints.NotNull;
+import org.tinylog.Logger;
 
 /**
  * A component that manage the persistence of a component.
@@ -90,51 +86,61 @@ public class Repository {
    * @param query          to obtain the components of the page.
    * @param options        to apply to the search.
    * @param resultKey      to store the found models.
-   * @param map            function to apply to each found object or {@code null} to not modify the components.
+   * @param map            function to apply to each found object or {@code null}
+   *                       to not modify the components.
    * @param searchHandler  handler to manage the result action.
+   *
+   * @deprecated Use
+   *             {@link #searchPageObject(String, JsonObject, FindOptions, String, Consumer)}
+   *             instead.
    */
-  protected void searchPageObject(final String collectionName, final JsonObject query, final FindOptions options, final String resultKey, final Consumer<JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
+  @Deprecated
+  protected void searchPageObject(final String collectionName, final JsonObject query, final FindOptions options,
+      final String resultKey, final Consumer<JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
 
-    this.pool.count(collectionName, query, count -> {
+    this.searchPageObject(collectionName, query, options, resultKey, map).onComplete(searchHandler);
 
-      if (count.failed()) {
+  }
 
-        searchHandler.handle(Future.failedFuture(count.cause()));
+  /**
+   * Search for a page.
+   *
+   * @param collectionName of the collections that contains the models.
+   * @param query          to obtain the components of the page.
+   * @param options        to apply to the search.
+   * @param resultKey      to store the found models.
+   * @param map            function to apply to each found object or {@code null}
+   *                       to not modify the components.
+   *
+   * @return the future found page.
+   */
+  protected Future<JsonObject> searchPageObject(final String collectionName, final JsonObject query,
+      final FindOptions options, final String resultKey, final Consumer<JsonObject> map) {
+
+    return this.pool.count(collectionName, query).compose(countResult -> {
+
+      final var total = countResult.longValue();
+      final var offset = options.getSkip();
+      final var page = new JsonObject().put("offset", offset).put("total", total);
+      if (total == 0 || offset >= total) {
+
+        return Future.succeededFuture(page);
 
       } else {
 
-        final var total = count.result().longValue();
-        final var offset = options.getSkip();
-        final var page = new JsonObject().put("offset", offset).put("total", total);
-        if (total == 0 || offset >= total) {
+        options.getFields().put(SCHEMA_VERSION, false);
+        return this.pool.findWithOptions(collectionName, query, options).compose(foundObjects -> {
 
-          searchHandler.handle(Future.succeededFuture(page));
+          if (map != null) {
 
-        } else {
+            foundObjects.stream().forEach(map);
+          }
+          page.put(resultKey, foundObjects);
+          return Future.succeededFuture(page);
 
-          options.getFields().put(SCHEMA_VERSION, false);
-          this.pool.findWithOptions(collectionName, query, options, find -> {
-
-            if (find.failed()) {
-
-              searchHandler.handle(Future.failedFuture(find.cause()));
-
-            } else {
-
-              final var objects = find.result();
-              if (map != null) {
-
-                objects.stream().forEach(map);
-              }
-              page.put(resultKey, objects);
-              searchHandler.handle(Future.succeededFuture(page));
-            }
-
-          });
-
-        }
-
+        });
       }
+
     });
   }
 
@@ -144,23 +150,38 @@ public class Repository {
    * @param collectionName of the collections that contains the model to delete.
    * @param query          to to match the document to delete.
    * @param deleteHandler  handler to manage the delete action.
+   *
+   * @deprecated Use {@link #deleteOneDocument(String, JsonObject)} instead.
    */
-  protected void deleteOneDocument(final String collectionName, final JsonObject query, final Handler<AsyncResult<Void>> deleteHandler) {
+  @Deprecated
+  protected void deleteOneDocument(final String collectionName, final JsonObject query,
+      final Handler<AsyncResult<Void>> deleteHandler) {
 
-    this.pool.removeDocument(collectionName, query, remove -> {
+    this.deleteOneDocument(collectionName, query).onComplete(deleteHandler);
 
-      if (remove.failed()) {
+  }
 
-        deleteHandler.handle(Future.failedFuture(remove.cause()));
+  /**
+   * Delete one document.
+   *
+   * @param collectionName of the collections that contains the model to delete.
+   * @param query          to to match the document to delete.
+   *
+   * @return the future result of the delete action.
+   */
+  protected Future<Void> deleteOneDocument(final String collectionName, final JsonObject query) {
 
-      } else if (remove.result().getRemovedCount() != 1) {
+    return this.pool.removeDocument(collectionName, query).compose(result -> {
 
-        deleteHandler.handle(Future.failedFuture("Not found document to delete"));
+      if (result.getRemovedCount() != 1) {
+
+        return Future.failedFuture("Not found document to delete");
 
       } else {
 
-        deleteHandler.handle(Future.succeededFuture());
+        return Future.succeededFuture();
       }
+
     });
 
   }
@@ -172,12 +193,33 @@ public class Repository {
    * @param query          to to match the document to update.
    * @param updateModel    the new values of the model.
    * @param updateHandler  handler to manage the update action.
+   *
+   * @deprecated Use {@link #updateOneDocument(String, JsonObject, JsonObject)}
+   *             instead.
    */
-  protected void updateOneDocument(@NotNull final String collectionName, @NotNull final JsonObject query, final JsonObject updateModel, final Handler<AsyncResult<Void>> updateHandler) {
+  @Deprecated
+  protected void updateOneDocument(@NotNull final String collectionName, @NotNull final JsonObject query,
+      final JsonObject updateModel, final Handler<AsyncResult<Void>> updateHandler) {
+
+    this.updateOneDocument(collectionName, query, updateModel).onComplete(updateHandler);
+
+  }
+
+  /**
+   * Update one document.
+   *
+   * @param collectionName of the collections that contains the model to update.
+   * @param query          to to match the document to update.
+   * @param updateModel    the new values of the model.
+   *
+   * @return the future result of the update action.
+   */
+  protected Future<Void> updateOneDocument(@NotNull final String collectionName, @NotNull final JsonObject query,
+      final JsonObject updateModel) {
 
     if (updateModel == null) {
 
-      updateHandler.handle(Future.failedFuture("Not found document to update"));
+      return Future.failedFuture("Not found document to update");
 
     } else {
 
@@ -210,20 +252,16 @@ public class Repository {
       }
 
       final var options = new UpdateOptions().setMulti(false);
-      this.pool.updateCollectionWithOptions(collectionName, query, updateQuery, options, update -> {
+      return this.pool.updateCollectionWithOptions(collectionName, query, updateQuery, options).compose(result -> {
+        if (result.getDocModified() != 1) {
 
-        if (update.failed()) {
-
-          updateHandler.handle(Future.failedFuture(update.cause()));
-
-        } else if (update.result().getDocModified() != 1) {
-
-          updateHandler.handle(Future.failedFuture("Not found document to update"));
+          return Future.failedFuture("Not found document to update");
 
         } else {
 
-          updateHandler.handle(Future.succeededFuture());
+          return Future.succeededFuture();
         }
+
       });
 
     }
@@ -234,54 +272,73 @@ public class Repository {
    *
    * @param collectionName of the collections that contains the model to store.
    * @param model          to store.
-   * @param map            function to modify the stored document. If it is {@code null} no modification is applied.
+   * @param map            function to modify the stored document. If it is
+   *                       {@code null} no modification is applied.
    *
    * @param storeHandler   handler to manage the store action.
+   *
+   * @deprecated Use {@link #storeOneDocument(String, JsonObject, Function)}
+   *             instead.
    */
-  protected void storeOneDocument(@NotNull final String collectionName, @NotNull final JsonObject model, final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> storeHandler) {
+  @Deprecated
+  protected void storeOneDocument(@NotNull final String collectionName, @NotNull final JsonObject model,
+      final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> storeHandler) {
+
+    this.storeOneDocument(collectionName, model, map).onComplete(storeHandler);
+
+  }
+
+  /**
+   * Store one document.
+   *
+   * @param collectionName of the collections that contains the model to store.
+   * @param model          to store.
+   * @param map            function to modify the stored document. If it is
+   *                       {@code null} no modification is applied.
+   *
+   * @return the future stored model.
+   */
+  protected Future<JsonObject> storeOneDocument(@NotNull final String collectionName, @NotNull final JsonObject model,
+      final Function<JsonObject, JsonObject> map) {
 
     model.put(SCHEMA_VERSION, this.schemaVersion);
-    this.pool.insert(collectionName, model, store -> {
+    return this.pool.insert(collectionName, model).compose(id -> {
 
       model.remove(SCHEMA_VERSION);
-      if (store.failed()) {
-
-        storeHandler.handle(Future.failedFuture(store.cause()));
-
-      } else {
-
-        this.applyMap(model, map, storeHandler);
-      }
+      return this.applyMap(model, map);
 
     });
+
   }
 
   /**
    * Apply a map before return a model.
    *
-   * @param model   to return.
-   * @param map     function to modify the model. If it is {@code null} no modification is applied.
-   * @param handler to manage the model to return.
+   * @param model to return.
+   * @param map   function to modify the model. If it is {@code null} no
+   *              modification is applied.
+   *
+   * @return the future with the mapped result.
    *
    */
-  protected void applyMap(final JsonObject model, final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> handler) {
+  protected Future<JsonObject> applyMap(final JsonObject model, final Function<JsonObject, JsonObject> map) {
 
     if (map != null) {
 
       try {
 
         final var adaptedModel = map.apply(model);
-        handler.handle(Future.succeededFuture(adaptedModel));
+        return Future.succeededFuture(adaptedModel);
 
       } catch (final Throwable throwable) {
 
-        handler.handle(Future.failedFuture(throwable));
+        return Future.failedFuture(throwable);
 
       }
 
     } else {
 
-      handler.handle(Future.succeededFuture(model));
+      return Future.succeededFuture(model);
     }
   }
 
@@ -291,10 +348,35 @@ public class Repository {
    * @param collectionName of the collections that contains the model to find.
    * @param query          of the document to find.
    * @param fields         to return.
-   * @param map            function to modify the found document. If it is {@code null} no modification is applied.
+   * @param map            function to modify the found document. If it is
+   *                       {@code null} no modification is applied.
    * @param searchHandler  handler to manage the find action.
+   *
+   * @deprecated Use
+   *             {@link #findOneDocument(String, JsonObject, JsonObject, Function)}
+   *             instead.
    */
-  protected void findOneDocument(@NotNull final String collectionName, final JsonObject query, final JsonObject fields, final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
+  @Deprecated
+  protected void findOneDocument(@NotNull final String collectionName, final JsonObject query, final JsonObject fields,
+      final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
+
+    this.findOneDocument(collectionName, query, fields, map).onComplete(searchHandler);
+
+  }
+
+  /**
+   * Find one document.
+   *
+   * @param collectionName of the collections that contains the model to find.
+   * @param query          of the document to find.
+   * @param fields         to return.
+   * @param map            function to modify the found document. If it is
+   *                       {@code null} no modification is applied.
+   *
+   * @return the found document.
+   */
+  protected Future<JsonObject> findOneDocument(@NotNull final String collectionName, final JsonObject query,
+      final JsonObject fields, final Function<JsonObject, JsonObject> map) {
 
     JsonObject fieldWithoutSchema;
     if (fields == null) {
@@ -306,43 +388,41 @@ public class Repository {
       fieldWithoutSchema = fields;
     }
     fieldWithoutSchema.put(SCHEMA_VERSION, false);
-    this.pool.findOne(collectionName, query, fieldWithoutSchema, search -> {
+    return this.pool.findOne(collectionName, query, fieldWithoutSchema).compose(foundObject -> {
 
-      if (search.failed()) {
+      if (foundObject == null) {
 
-        searchHandler.handle(Future.failedFuture(search.cause()));
+        return Future.failedFuture("Does not exist a document that match '" + query + "'.");
 
       } else {
 
-        final JsonObject value = search.result();
-        if (value == null) {
-
-          searchHandler.handle(Future.failedFuture("Does not exist a document that match '" + query + "'."));
-
-        } else {
-
-          this.applyMap(value, map, searchHandler);
-        }
+        return this.applyMap(foundObject, map);
       }
+
     });
 
   }
 
   /**
-   * Convert a set of values to an object that represents the order to the models to return.
+   * Convert a set of values to an object that represents the order to the models
+   * to return.
    *
-   * @param values     to extract how the query has to be sorted. If has to be formed by the name by the key with a prefix
-   *                   than can be {@code +} or {-} to order in ascending or descending. If you set the key without prefix
-   *                   is order in ascending.
+   * @param values     to extract how the query has to be sorted. If has to be
+   *                   formed by the name by the key with a prefix than can be
+   *                   {@code +} or {-} to order in ascending or descending. If
+   *                   you set the key without prefix is order in ascending.
    * @param codePrefix prefix to append to the error code.
-   * @param checkKey   function to validate that the key is possible. It receive the fields and return the key to sort the
-   *                   field or {@code null} if the value is not valid. If it is {@code null} it used the current key.
+   * @param checkKey   function to validate that the key is possible. It receive
+   *                   the fields and return the key to sort the field or
+   *                   {@code null} if the value is not valid. If it is
+   *                   {@code null} it used the current key.
    *
    * @return the object that can be used to sort a query.
    *
    * @throws ValidationErrorException If the values are not right.
    */
-  public static JsonObject queryParamToSort(final Iterable<String> values, final String codePrefix, final Function<String, String> checkKey) throws ValidationErrorException {
+  public static JsonObject queryParamToSort(final Iterable<String> values, final String codePrefix,
+      final Function<String, String> checkKey) throws ValidationErrorException {
 
     if (values == null) {
 
@@ -381,7 +461,8 @@ public class Repository {
 
             if (value.length() == 0) {
 
-              throw new ValidationErrorException(codePrefix + "[" + i + "]", "You must to define a field in '" + value + "'.");
+              throw new ValidationErrorException(codePrefix + "[" + i + "]",
+                  "You must to define a field in '" + value + "'.");
 
             } else {
 
@@ -391,14 +472,16 @@ public class Repository {
                 key = checkKey.apply(value);
                 if (key == null) {
 
-                  throw new ValidationErrorException(codePrefix + "[" + i + "]", "The field '" + value + "' is not valid.");
+                  throw new ValidationErrorException(codePrefix + "[" + i + "]",
+                      "The field '" + value + "' is not valid.");
 
                 }
               }
 
               if (sort.containsKey(key)) {
 
-                throw new ValidationErrorException(codePrefix + "[" + i + "]", "The '" + value + "' that represents the fields '" + key + "' is already defined.");
+                throw new ValidationErrorException(codePrefix + "[" + i + "]",
+                    "The '" + value + "' that represents the fields '" + key + "' is already defined.");
 
               } else {
 
@@ -424,7 +507,8 @@ public class Repository {
   protected JsonObject createQueryToReturnDocumentsThatNotMatchSchemaVersion() {
 
     final var notExists = new JsonObject().put(SCHEMA_VERSION, new JsonObject().put("$exists", false));
-    final var notEq = new JsonObject().put(SCHEMA_VERSION, new JsonObject().put("$not", new JsonObject().put("$eq", this.schemaVersion)));
+    final var notEq = new JsonObject().put(SCHEMA_VERSION,
+        new JsonObject().put("$not", new JsonObject().put("$eq", this.schemaVersion)));
     return new JsonObject().put("$or", new JsonArray().add(notExists).add(notEq));
 
   }
@@ -433,7 +517,8 @@ public class Repository {
    * Migrate the documents of a collection to the current schema.
    *
    * @param collectionName name of the collection to migrate.
-   * @param type           of the documents on the collection. {@code null} use the found element.
+   * @param type           of the documents on the collection. {@code null} use
+   *                       the found element.
    *
    * @param <T>            type of the documents.
    *
@@ -441,34 +526,20 @@ public class Repository {
    */
   protected <T extends Model> Future<Void> migrateCollection(final String collectionName, final Class<T> type) {
 
-    final Promise<Void> promise = Promise.promise();
     final JsonObject query = this.createQueryToReturnDocumentsThatNotMatchSchemaVersion();
-    this.pool.count(collectionName, query, count -> {
+    return this.pool.count(collectionName, query).compose(maxDocuments -> {
 
-      if (count.failed()) {
+      if (maxDocuments > 0) {
 
-        final var cause = count.cause();
-        Logger.error(cause, "Cannot obtain the number of document to migrate");
-        promise.fail(cause);
+        Logger.trace("Start to migrate {} documents", maxDocuments);
+        return this.migrateOneDocument(collectionName, type, query, maxDocuments);
 
       } else {
-
-        final long maxDocuments = count.result();
-        if (maxDocuments > 0) {
-
-          Logger.trace("Start to migrate {} documents", maxDocuments);
-          this.migrateOneDocument(collectionName, type, query, maxDocuments, promise);
-
-        } else {
-          // nothing to migrate
-          promise.complete();
-        }
-
+        // nothing to migrate
+        return Future.succeededFuture();
       }
 
     });
-
-    return promise.future();
 
   }
 
@@ -479,70 +550,55 @@ public class Repository {
    * @param type           of the documents on the collection.
    * @param query          to obtain the documents to migrate.
    * @param maxDocuments   number of document that has to migrate.
-   * @param promise        to inform of the migration process.
    *
-   * @param <T>            type of the documents.
+   * @return the future result of the migration process.
+   *
+   * @param <T> type of the documents.
    */
-  protected <T extends Model> void migrateOneDocument(final String collectionName, final Class<T> type, final JsonObject query, final long maxDocuments, final Promise<Void> promise) {
+  protected <T extends Model> Future<Void> migrateOneDocument(final String collectionName, final Class<T> type,
+      final JsonObject query, final long maxDocuments) {
 
-    this.findOneDocument(collectionName, query, null, null, search -> {
+    return this.findOneDocument(collectionName, query, null, null).compose(foundObject -> {
 
-      if (search.failed()) {
+      try {
 
-        final var cause = search.cause();
-        Logger.error(cause, "Cannot obtain a document to migrate");
-        promise.fail(cause);
+        final var mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
+        mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        final var reader = mapper.readerFor(type);
+        final T value = reader.readValue(foundObject.encode());
+        final var id = foundObject.remove("_id");
+        final JsonObject updateQuery = new JsonObject().put("_id", id);
+        final JsonObject model = value.toJsonObject();
+        for (final var key : foundObject.fieldNames()) {
 
-      } else {
+          if (!model.containsKey(key)) {
 
-        final var result = search.result();
-        final var id = result.remove("_id");
-        try {
-
-          final var mapper = new ObjectMapper();
-          mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
-          mapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
-          mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
-          mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-          final var reader = mapper.readerFor(type);
-          final T value = reader.readValue(result.encode());
-          final JsonObject updateQuery = new JsonObject().put("_id", id);
-          final JsonObject model = value.toJsonObject();
-          for (final var key : result.fieldNames()) {
-
-            if (!model.containsKey(key)) {
-
-              model.putNull(key);
-            }
+            model.putNull(key);
           }
-          this.updateOneDocument(collectionName, updateQuery, model, update -> {
-
-            if (update.failed()) {
-
-              final var cause = update.cause();
-              Logger.error(cause, "Cannot update a migrated document.\nCurrent:{}\nNew:{}\n", () -> result.encodePrettily(), () -> value);
-              promise.fail(cause);
-
-            } else if (maxDocuments == 1) {
-              // migrated all the documents
-              Logger.trace("Migrated all document");
-              promise.complete();
-
-            } else {
-
-              final var documentsToMigrate = maxDocuments - 1;
-              Logger.trace("Migrated a document. There are {} documents to migrate.", documentsToMigrate);
-              this.migrateOneDocument(collectionName, type, query, documentsToMigrate, promise);
-            }
-
-          });
-
-        } catch (final Throwable cause) {
-
-          Logger.error(cause, "Cannot migrate {}", () -> result.encodePrettily());
-          promise.fail(cause);
-
         }
+        return this.updateOneDocument(collectionName, updateQuery, model).compose(update -> {
+
+          if (maxDocuments == 1) {
+            // migrated all the documents
+            Logger.trace("Migrated all document");
+            return Future.succeededFuture();
+
+          } else {
+
+            final var documentsToMigrate = maxDocuments - 1;
+            Logger.trace("Migrated a document. There are {} documents to migrate.", documentsToMigrate);
+            return this.migrateOneDocument(collectionName, type, query, documentsToMigrate);
+          }
+
+        });
+
+      } catch (final Throwable cause) {
+
+        Logger.error(cause, "Cannot migrate {}", () -> foundObject.encodePrettily());
+        return Future.failedFuture(cause);
 
       }
 
@@ -568,7 +624,8 @@ public class Repository {
    *
    * @param collectionName name of the collection to update.
    *
-   * @return a future that inform if the documents of the collections are updated or not.
+   * @return a future that inform if the documents of the collections are updated
+   *         or not.
    *
    */
   protected Future<Void> updateSchemaVersionOnCollection(final String collectionName) {
@@ -586,10 +643,12 @@ public class Repository {
    * @param query          to the documents to update.
    * @param update         query that specify how to update the documents.
    *
-   * @return a future that inform if the documents of the collections are updated or not.
+   * @return a future that inform if the documents of the collections are updated
+   *         or not.
    *
    */
-  protected Future<Void> updateCollection(final String collectionName, final JsonObject query, final JsonObject update) {
+  protected Future<Void> updateCollection(final String collectionName, final JsonObject query,
+      final JsonObject update) {
 
     final Promise<Void> promise = Promise.promise();
     final var options = new UpdateOptions();
@@ -599,12 +658,14 @@ public class Repository {
       if (updated.failed()) {
 
         final var cause = updated.cause();
-        Logger.error(cause, "Cannot update the documents on '{}' to have the schema version '{}'.", collectionName, this.schemaVersion);
+        Logger.error(cause, "Cannot update the documents on '{}' to have the schema version '{}'.", collectionName,
+            this.schemaVersion);
         promise.fail(cause);
 
       } else {
 
-        Logger.trace("Updated {} documents on '{}' to have the schema version '{}'.", () -> updated.result().getDocModified(), () -> collectionName, () -> this.schemaVersion);
+        Logger.trace("Updated {} documents on '{}' to have the schema version '{}'.",
+            () -> updated.result().getDocModified(), () -> collectionName, () -> this.schemaVersion);
         promise.complete();
       }
 

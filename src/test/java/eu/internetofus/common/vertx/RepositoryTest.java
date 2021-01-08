@@ -31,36 +31,27 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doReturn;
 
+import eu.internetofus.common.components.DummyModel;
+import eu.internetofus.common.components.ValidationErrorException;
+import io.vertx.core.Future;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.FindOptions;
+import io.vertx.ext.mongo.MongoClient;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import eu.internetofus.common.components.DummyModel;
-import eu.internetofus.common.components.ValidationErrorException;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.FindOptions;
-import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.mongo.MongoClientUpdateResult;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
 
 /**
  * Test {@link Repository}
@@ -80,25 +71,20 @@ public class RepositoryTest {
    * @param testContext test context.
    */
   @Test
-  public void shouldSearchPageObjectFailedByMongoClientFind(@Mock final MongoClient pool, final VertxTestContext testContext) {
+  public void shouldSearchPageObjectFailedByMongoClientFind(@Mock final MongoClient pool,
+      final VertxTestContext testContext) {
 
     final var repository = new Repository(pool, "version");
-    repository.searchPageObject(null, null, new FindOptions(), null, null, testContext.failing(search -> {
-      testContext.completeNow();
-    }));
-    @SuppressWarnings("unchecked")
-    final ArgumentCaptor<Handler<AsyncResult<Long>>> handler = ArgumentCaptor.forClass(Handler.class);
-    verify(pool, times(1)).count(any(), any(), handler.capture());
-    handler.getValue().handle(Future.succeededFuture(100L));
-    @SuppressWarnings("unchecked")
-    final ArgumentCaptor<Handler<AsyncResult<List<JsonObject>>>> findHandler = ArgumentCaptor.forClass(Handler.class);
-    verify(pool, times(1)).findWithOptions(any(), any(), any(), findHandler.capture());
-    findHandler.getValue().handle(Future.failedFuture("Internal error"));
+    doReturn(Future.succeededFuture(100L)).when(pool).count(any(), any());
+    doReturn(Future.failedFuture("Internal error")).when(pool).findWithOptions(any(), any(), any());
+    testContext.assertFailure(repository.searchPageObject(null, null, new FindOptions(), null, null))
+        .onFailure(error -> testContext.completeNow());
 
   }
 
   /**
-   * Verify that the sort object is null when an empty or {@code null} value is converted.
+   * Verify that the sort object is null when an empty or {@code null} value is
+   * converted.
    *
    * @param values to convert.
    *
@@ -123,7 +109,9 @@ public class RepositoryTest {
    * @see Repository#queryParamToSort(Iterable, String,Function)
    */
   @ParameterizedTest(name = "Should sort {0}")
-  @ValueSource(strings = { "key;{\"KEY\":1}", "+KeY;{\"KEY\":1}", " -key ;{\"KEY\":-1}", "key1 , key2 , key3;{\"KEY1\":1,\"KEY2\":1,\"KEY3\":1}", " key1 , +key2 , -key3 ;{\"KEY1\":1,\"KEY2\":1,\"KEY3\":-1}" })
+  @ValueSource(strings = { "key;{\"KEY\":1}", "+KeY;{\"KEY\":1}", " -key ;{\"KEY\":-1}",
+      "key1 , key2 , key3;{\"KEY1\":1,\"KEY2\":1,\"KEY3\":1}",
+      " key1 , +key2 , -key3 ;{\"KEY1\":1,\"KEY2\":1,\"KEY3\":-1}" })
   public void shouldSort(final String param) {
 
     assertThatCode(() -> {
@@ -157,40 +145,45 @@ public class RepositoryTest {
    * @see Repository#queryParamToSort(Iterable, String,Function)
    */
   @ParameterizedTest(name = "Should {0} can not converted to sort")
-  @ValueSource(strings = { ",key;[0]", "key, ;[1]", "key1,-key2,+key3, ;[3]", "+key1,-key1;[1]", "+key1,-KeY1;[1]", "key1,key2,value3;[2]" })
+  @ValueSource(strings = { ",key;[0]", "key, ;[1]", "key1,-key2,+key3, ;[3]", "+key1,-key1;[1]", "+key1,-KeY1;[1]",
+      "key1,key2,value3;[2]" })
   public void shouldSortThrowException(final String param) {
 
     final var endIndex = param.indexOf(';');
     final var values = param.substring(0, endIndex).split(",");
     final var expected = param.substring(endIndex + 1).trim();
 
-    final var error = catchThrowableOfType(() -> Repository.queryParamToSort(Arrays.asList(values), "codePrefix", (value) -> {
+    final var error = catchThrowableOfType(
+        () -> Repository.queryParamToSort(Arrays.asList(values), "codePrefix", (value) -> {
 
-      final String key = value.toLowerCase();
-      if (!key.startsWith("key")) {
+          final String key = value.toLowerCase();
+          if (!key.startsWith("key")) {
 
-        return null;
+            return null;
 
-      } else {
+          } else {
 
-        return key;
-      }
+            return key;
+          }
 
-    }), ValidationErrorException.class);
+        }), ValidationErrorException.class);
     assertThat(error).isNotNull();
     assertThat(error.getCode()).isEqualTo("codePrefix" + expected);
 
   }
 
   /**
-   * Verify that the sort object is null when an empty or {@code null} value is converted.
+   * Verify that the sort object is null when an empty or {@code null} value is
+   * converted.
    *
    * @see Repository#queryParamToSort(Iterable, String,Function)
    */
   @Test
   public void shouldSortThrowExceptionWhenValueIsNull() {
 
-    final var error = catchThrowableOfType(() -> Repository.queryParamToSort(Arrays.asList("key1", "-key2", null), "codePrefix", null), ValidationErrorException.class);
+    final var error = catchThrowableOfType(
+        () -> Repository.queryParamToSort(Arrays.asList("key1", "-key2", null), "codePrefix", null),
+        ValidationErrorException.class);
     assertThat(error).isNotNull();
     assertThat(error.getCode()).isEqualTo("codePrefix[2]");
 
@@ -203,24 +196,16 @@ public class RepositoryTest {
    * @param testContext test context.
    */
   @Test
-  public void shouldNotMigrateOneDocumentBecauseUpdateFailed(@Mock final MongoClient pool, final VertxTestContext testContext) {
+  public void shouldNotMigrateOneDocumentBecauseUpdateFailed(@Mock final MongoClient pool,
+      final VertxTestContext testContext) {
 
     final var repository = new Repository(pool, "version");
-    final Promise<Void> promise = Promise.promise();
     final var collection = "collectionName";
-    repository.migrateOneDocument(collection, DummyModel.class, new JsonObject(), 10l, promise);
-
-    @SuppressWarnings("unchecked")
-    final ArgumentCaptor<Handler<AsyncResult<JsonObject>>> searchHandler = ArgumentCaptor.forClass(Handler.class);
-    verify(pool, timeout(30000).times(1)).findOne(eq(collection), any(), any(), searchHandler.capture());
-    searchHandler.getValue().handle(Future.succeededFuture(new JsonObject()));
-
-    @SuppressWarnings("unchecked")
-    final ArgumentCaptor<Handler<AsyncResult<MongoClientUpdateResult>>> updateHandler = ArgumentCaptor.forClass(Handler.class);
-    verify(pool, timeout(30000).times(1)).updateCollectionWithOptions(eq(collection), any(), any(), any(), updateHandler.capture());
-    updateHandler.getValue().handle(Future.failedFuture("Cannot update"));
-
-    promise.future().onComplete(testContext.failing(migrated -> testContext.completeNow()));
+    doReturn(Future.succeededFuture(new JsonObject())).when(pool).findOne(eq(collection), any(), any());
+    doReturn(Future.failedFuture("Cannot update")).when(pool).updateCollectionWithOptions(eq(collection), any(), any(),
+        any());
+    testContext.assertFailure(repository.migrateOneDocument(collection, DummyModel.class, new JsonObject(), 10l))
+        .onFailure(error -> testContext.completeNow());
 
   }
 

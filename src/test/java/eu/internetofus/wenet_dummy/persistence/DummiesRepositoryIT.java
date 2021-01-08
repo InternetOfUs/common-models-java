@@ -84,6 +84,7 @@ public class DummiesRepositoryIT {
     testContext.assertComplete(DummiesRepository.createProxy(vertx).storeDummy(dummy))
         .onSuccess(storedDummy -> testContext.verify(() -> {
 
+          assertThat(storedDummy).isNotNull();
           assertThat(storedDummy.id).isEqualTo(id);
           testContext.completeNow();
         }));
@@ -105,9 +106,12 @@ public class DummiesRepositoryIT {
     final var dummy = new Dummy();
     dummy.id = id;
     final var repository = DummiesRepository.createProxy(vertx);
-    testContext.assertFailure(repository.storeDummy(dummy).compose(stored -> repository.storeDummy(stored)))
-        .onFailure(error -> testContext.completeNow());
+    testContext.assertComplete(repository.storeDummy(dummy)).onSuccess(stored -> testContext.verify(() -> {
 
+      assertThat(stored).isNotNull();
+      testContext.assertFailure(repository.storeDummy(stored)).onFailure(error -> testContext.completeNow());
+
+    }));
   }
 
 }
