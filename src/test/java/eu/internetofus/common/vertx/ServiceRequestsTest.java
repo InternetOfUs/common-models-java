@@ -28,17 +28,15 @@ package eu.internetofus.common.vertx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.api.service.ServiceRequest;
 import java.util.Arrays;
-
+import javax.ws.rs.core.HttpHeaders;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.api.service.ServiceRequest;
-import javax.ws.rs.core.HttpHeaders;
 
 /**
  * Test the {@link ServiceRequests}.
@@ -108,7 +106,8 @@ public class ServiceRequestsTest {
   @Test
   public void shouldArrayBeConvertedToListString() {
 
-    assertThat(ServiceRequests.toListString(new JsonArray().add("value").add("true").add("3"))).isEqualTo(Arrays.asList("value", "true", "3"));
+    assertThat(ServiceRequests.toListString(new JsonArray().add("value").add("true").add("3")))
+        .isEqualTo(Arrays.asList("value", "true", "3"));
 
   }
 
@@ -120,6 +119,67 @@ public class ServiceRequestsTest {
 
     final var context = new ServiceRequest(new JsonObject());
     assertThat(ServiceRequests.getQueryParamters(context)).isEqualTo(new JsonObject());
+
+  }
+
+  /**
+   * Check that can extract an array from a {@code null} value.
+   *
+   * @see ServiceRequests#extractQueryArray(String)
+   */
+  @Test
+  public void shouldExtractQueryArrayFromNullValue() {
+
+    assertThat(ServiceRequests.extractQueryArray(null)).isNull();
+
+  }
+
+  /**
+   * Check that can extract an array from an empty value.
+   *
+   * @see ServiceRequests#extractQueryArray(String)
+   */
+  @Test
+  public void shouldExtractQueryArrayFromEmptyValue() {
+
+    assertThat(ServiceRequests.extractQueryArray("")).isNull();
+
+  }
+
+  /**
+   * Check that can extract an array from multiple empty value.
+   *
+   * @see ServiceRequests#extractQueryArray(String)
+   */
+  @Test
+  public void shouldExtractQueryArrayFromMultipleEmptyValue() {
+
+    assertThat(ServiceRequests.extractQueryArray("  ,   ,, , ")).isNull();
+
+  }
+
+  /**
+   * Check that can extract an array from a value.
+   *
+   * @see ServiceRequests#extractQueryArray(String)
+   */
+  @Test
+  public void shouldExtractQueryArrayFromOneValueArray() {
+
+    assertThat(ServiceRequests.extractQueryArray(" value ")).isNotEmpty().containsExactly("value");
+
+  }
+
+  /**
+   * Check that can extract an array from multiple value.
+   *
+   * @see ServiceRequests#extractQueryArray(String)
+   */
+  @Test
+  public void shouldExtractQueryArray() {
+
+    assertThat(ServiceRequests.extractQueryArray(" value1 ,    , value2  ,,value3,   value4  ,value5")).isNotEmpty()
+        .containsExactly("value1", "value2", "value3", "value4", "value5");
 
   }
 

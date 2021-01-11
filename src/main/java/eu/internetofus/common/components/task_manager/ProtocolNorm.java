@@ -44,7 +44,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "ProtocolNorm", description = "The description of a rule that has to follow by the wenet users.")
-public class ProtocolNorm extends ReflectionModel implements Model, Validable, Mergeable<ProtocolNorm>, Updateable<ProtocolNorm> {
+public class ProtocolNorm extends ReflectionModel
+    implements Model, Validable, Mergeable<ProtocolNorm>, Updateable<ProtocolNorm> {
 
   /**
    * The conditions that fires the norms.
@@ -137,9 +138,18 @@ public class ProtocolNorm extends ReflectionModel implements Model, Validable, M
     try {
 
       this.whenever = Validations.validateStringField(codePrefix, "whenever", Integer.MAX_VALUE, this.whenever);
-      this.thenceforth = Validations.validateStringField(codePrefix, "thenceforth", Integer.MAX_VALUE, this.thenceforth);
+      this.thenceforth = Validations.validateStringField(codePrefix, "thenceforth", Integer.MAX_VALUE,
+          this.thenceforth);
       this.ontology = Validations.validateNullableStringField(codePrefix, "ontology", Integer.MAX_VALUE, this.ontology);
-      promise.complete();
+      if (this.whenever.equals(this.thenceforth)) {
+
+        promise.fail(new ValidationErrorException(codePrefix + ".thenceforth",
+            "The 'thenceforth' can not be equals to the  'whenever'."));
+
+      } else {
+
+        promise.complete();
+      }
 
     } catch (final ValidationErrorException validationError) {
 

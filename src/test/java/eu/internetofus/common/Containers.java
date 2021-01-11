@@ -26,17 +26,6 @@
 
 package eu.internetofus.common;
 
-import java.net.ServerSocket;
-import java.nio.file.FileSystems;
-
-import org.testcontainers.Testcontainers;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
-import org.tinylog.Logger;
-
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulatorMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderSimulatorMocker;
@@ -48,6 +37,15 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import java.net.ServerSocket;
+import java.nio.file.FileSystems;
+import org.testcontainers.Testcontainers;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
+import org.tinylog.Logger;
 
 /**
  * Maintains the information of the started containers.
@@ -89,7 +87,7 @@ public class Containers {
   /**
    * The name of the WeNet profile manager docker container to use.
    */
-  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:0.15.0";
+  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:0.16.0";
 
   /**
    * The name of the WeNet task manager docker container to use.
@@ -208,10 +206,15 @@ public class Containers {
     if (this.mongoContainer == null) {
 
       Logger.trace("Starting MongoDB container");
-      this.mongoContainer = new GenericContainer<>(DockerImageName.parse(MONGO_DOCKER_NAME)).withStartupAttempts(1).withEnv("MONGO_INITDB_ROOT_USERNAME", "root").withEnv("MONGO_INITDB_ROOT_PASSWORD", "password")
+      this.mongoContainer = new GenericContainer<>(DockerImageName.parse(MONGO_DOCKER_NAME)).withStartupAttempts(1)
+          .withEnv("MONGO_INITDB_ROOT_USERNAME", "root").withEnv("MONGO_INITDB_ROOT_PASSWORD", "password")
           .withEnv("MONGO_INITDB_DATABASE", MONGODB_NAME)
-          .withCopyFileToContainer(MountableFile.forClasspathResource(Containers.class.getPackageName().replaceAll("\\.", "/") + "/initialize-wenetDB.js"), "/docker-entrypoint-initdb.d/init-mongo.js").withExposedPorts(EXPORT_MONGODB_PORT)
-          .withNetwork(this.network).withNetworkAliases(MONGODB_NAME).waitingFor(Wait.forListeningPort());
+          .withCopyFileToContainer(
+              MountableFile.forClasspathResource(
+                  Containers.class.getPackageName().replaceAll("\\.", "/") + "/initialize-wenetDB.js"),
+              "/docker-entrypoint-initdb.d/init-mongo.js")
+          .withExposedPorts(EXPORT_MONGODB_PORT).withNetwork(this.network).withNetworkAliases(MONGODB_NAME)
+          .waitingFor(Wait.forListeningPort());
       this.mongoContainer.start();
       Logger.trace("Started MongoDB container");
     }
@@ -303,7 +306,8 @@ public class Containers {
       this.profileManagerApiPort = Containers.nextFreePort();
       this.taskManagerApiPort = Containers.nextFreePort();
       this.interactionProtocolEngineApiPort = Containers.nextFreePort();
-      Testcontainers.exposeHostPorts(this.profileManagerApiPort, this.taskManagerApiPort, this.interactionProtocolEngineApiPort);
+      Testcontainers.exposeHostPorts(this.profileManagerApiPort, this.taskManagerApiPort,
+          this.interactionProtocolEngineApiPort);
     }
 
     return this;
@@ -394,8 +398,12 @@ public class Containers {
     if (this.profileManagerContainer == null) {
 
       Logger.trace("Starting Profile Manager");
-      this.profileManagerContainer = this.createContainerFor(WENET_PROFILE_MANAGER_DOCKER_NAME, this.profileManagerApiPort).withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi()).withEnv("WENET_SERVICE_API", this.service.getApiUrl())
-          .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl()).waitingFor(Wait.forListeningPort());
+      this.profileManagerContainer = this
+          .createContainerFor(WENET_PROFILE_MANAGER_DOCKER_NAME, this.profileManagerApiPort)
+          .withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi())
+          .withEnv("WENET_SERVICE_API", this.service.getApiUrl())
+          .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl())
+          .waitingFor(Wait.forListeningPort());
       this.profileManagerContainer.start();
       Logger.trace("Started Profile Manager");
     }
@@ -427,8 +435,10 @@ public class Containers {
     if (this.taskManagerContainer == null) {
 
       Logger.trace("Starting Task Manager");
-      this.taskManagerContainer = this.createContainerFor(WENET_TASK_MANAGER_DOCKER_NAME, this.taskManagerApiPort).withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
-          .withEnv("WENET_INTERACTION_PROTOCOL_ENGINE_API", this.getInteractionProtocolEngineApi()).withEnv("WENET_SERVICE_API", this.service.getApiUrl()).waitingFor(Wait.forListeningPort());
+      this.taskManagerContainer = this.createContainerFor(WENET_TASK_MANAGER_DOCKER_NAME, this.taskManagerApiPort)
+          .withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
+          .withEnv("WENET_INTERACTION_PROTOCOL_ENGINE_API", this.getInteractionProtocolEngineApi())
+          .withEnv("WENET_SERVICE_API", this.service.getApiUrl()).waitingFor(Wait.forListeningPort());
       this.taskManagerContainer.start();
       Logger.trace("Started Task Manager");
     }
@@ -446,8 +456,12 @@ public class Containers {
     if (this.interactionProtocolEngineContainer == null) {
 
       Logger.trace("Starting Interaction Protocol Engine");
-      this.interactionProtocolEngineContainer = this.createContainerFor(WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME, this.interactionProtocolEngineApiPort).withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
-          .withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi()).withEnv("WENET_SERVICE_API", this.service.getApiUrl()).withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl())
+      this.interactionProtocolEngineContainer = this
+          .createContainerFor(WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME, this.interactionProtocolEngineApiPort)
+          .withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
+          .withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi())
+          .withEnv("WENET_SERVICE_API", this.service.getApiUrl())
+          .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl())
           .withEnv("WENET_INCENTIVE_SERVER_API", this.incentiveServer.getApiUrl()).waitingFor(Wait.forListeningPort());
       this.interactionProtocolEngineContainer.start();
       Logger.trace("Started Interaction Protocol Engine");
@@ -462,10 +476,12 @@ public class Containers {
    * @param vertx                event bus to use to load the configurations.
    * @param configurationHandler the handler of the effective configuration
    */
-  static void defaultEffectiveConfiguration(final Vertx vertx, final Handler<AsyncResult<JsonObject>> configurationHandler) {
+  static void defaultEffectiveConfiguration(final Vertx vertx,
+      final Handler<AsyncResult<JsonObject>> configurationHandler) {
 
     final var effectiveConfigurationFile = new ConfigStoreOptions().setType("file").setFormat("json")
-        .setConfig(new JsonObject().put("path", FileSystems.getDefault().getPath(AbstractMain.DEFAULT_EFFECTIVE_CONFIGURATION_PATH).toFile().getAbsolutePath()));
+        .setConfig(new JsonObject().put("path", FileSystems.getDefault()
+            .getPath(AbstractMain.DEFAULT_EFFECTIVE_CONFIGURATION_PATH).toFile().getAbsolutePath()));
 
     final var options = new ConfigRetrieverOptions().addStore(effectiveConfigurationFile);
     ConfigRetriever.create(vertx, options).getConfig(configurationHandler);
@@ -499,7 +515,9 @@ public class Containers {
    */
   public JsonObject getMongoDBConfig() {
 
-    return new JsonObject().put("db_name", Containers.MONGODB_NAME).put("host", this.getMongoDBHost()).put("port", this.getMongoDBPort()).put("username", Containers.MONGODB_USER).put("password", Containers.MONGODB_PASSWORD);
+    return new JsonObject().put("db_name", Containers.MONGODB_NAME).put("host", this.getMongoDBHost())
+        .put("port", this.getMongoDBPort()).put("username", Containers.MONGODB_USER)
+        .put("password", Containers.MONGODB_PASSWORD);
   }
 
 }

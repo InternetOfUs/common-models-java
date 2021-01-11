@@ -31,24 +31,21 @@ import static eu.internetofus.common.vertx.HttpResponses.assertThatBodyIsArrayOf
 import static eu.internetofus.common.vertx.ext.TestRequest.testRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
-import javax.ws.rs.core.Response.Status;
-
-import org.junit.jupiter.api.Test;
-
 import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.Model;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxTestContext;
+import java.util.List;
+import javax.ws.rs.core.Response.Status;
+import org.junit.jupiter.api.Test;
 
 /**
- * Generic test over a resource that implements CRUD operation over a {@link Model} field.
+ * Generic test over a resource that implements CRUD operation over a
+ * {@link Model} field.
  *
  * @param <T>  type of model that contains the field.
  * @param <IT> type of the identifier for a model.
@@ -88,9 +85,11 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param index       of the example to store.
    * @param vertx       event bus to use.
    * @param testContext context to test.
-   * @param succeeding  to inform of the stored model.
+   *
+   * @return the future stored model.
    */
-  protected abstract void storeValidExampleModelWithFieldElements(int index, Vertx vertx, VertxTestContext testContext, Handler<AsyncResult<T>> succeeding);
+  protected abstract Future<T> storeValidExampleModelWithFieldElements(int index, Vertx vertx,
+      VertxTestContext testContext);
 
   /**
    * Return the path to an undefined identifier of the model.
@@ -105,12 +104,14 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
   /**
    * Create an example of an element field model that has the specified index.
    *
-   * @param index         to use in the example.
-   * @param vertx         event bus to use.
-   * @param testContext   test context to use.
-   * @param createHandler the component that will manage the created model.
+   * @param index       to use in the example.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the future with the field element.
    */
-  protected abstract void createValidModelFieldElementExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<E>> createHandler);
+  protected abstract Future<E> createValidModelFieldElementExample(final int index, final Vertx vertx,
+      final VertxTestContext testContext);
 
   /**
    * Should not create an element if the model is not defined.
@@ -120,24 +121,27 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotCreateElementOverUndefinedModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotCreateElementOverUndefinedModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelFieldElementExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelFieldElementExample(1, vertx, testContext)).onSuccess(source -> {
 
-      testRequest(client, HttpMethod.POST, this.modelPath() + this.undefinedModelIdPath() + this.fieldPath()).expect(res -> {
+      testRequest(client, HttpMethod.POST, this.modelPath() + this.undefinedModelIdPath() + this.fieldPath())
+          .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+            assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+            final var error = assertThatBodyIs(ErrorMessage.class, res);
+            assertThat(error.code).isNotEmpty();
+            assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).sendJson(source.toJsonObject(), testContext);
+          }).sendJson(source.toJsonObject(), testContext);
 
-    }));
+    });
   }
 
   /**
-   * Create a {@link JsonObject} that can not be converted to a {@link Model} field element to test.
+   * Create a {@link JsonObject} that can not be converted to a {@link Model}
+   * field element to test.
    *
    * @return a {@link JsonObject} that not represents a model field element.
    */
@@ -154,20 +158,23 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotCreateElementWithBadJsonObject(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotCreateElementWithBadJsonObject(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(1, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(1, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath()).expect(res -> {
+      testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
+          .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+            assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+            final var error = assertThatBodyIs(ErrorMessage.class, res);
+            assertThat(error.code).isNotEmpty();
+            assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).sendJson(this.createBadJsonObjectModelFieldElement(), testContext);
+          }).sendJson(this.createBadJsonObjectModelFieldElement(), testContext);
 
-    }));
+    });
+
   }
 
   /**
@@ -185,20 +192,22 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotCreateElementWithInvalidOne(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotCreateElementWithInvalidOne(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(1, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(1, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath()).expect(res -> {
+      testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
+          .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+            assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+            final var error = assertThatBodyIs(ErrorMessage.class, res);
+            assertThat(error.code).isNotEmpty();
+            assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).sendJson(this.createInvalidModelFieldElement().toJsonObject(), testContext);
+          }).sendJson(this.createInvalidModelFieldElement().toJsonObject(), testContext);
 
-    }));
+    });
   }
 
   /**
@@ -218,21 +227,23 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotCreateElementWithExistingOne(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotCreateElementWithExistingOne(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(1, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(1, vertx, testContext)).onSuccess(model -> {
 
       final var element = this.fieldOf(model).get(0);
-      testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath()).expect(res -> {
+      testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
+          .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+            assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+            final var error = assertThatBodyIs(ErrorMessage.class, res);
+            assertThat(error.code).isNotEmpty();
+            assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).sendJson(element.toJsonObject(), testContext);
+          }).sendJson(element.toJsonObject(), testContext);
 
-    }));
+    });
   }
 
   /**
@@ -241,9 +252,11 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param index       of the example to store.
    * @param vertx       event bus to use.
    * @param testContext context to test.
-   * @param succeeding  to inform of the stored model.
+   *
+   * @return the future the stored model.
    */
-  protected abstract void storeValidExampleModelWithNullField(int index, Vertx vertx, VertxTestContext testContext, Handler<AsyncResult<T>> succeeding);
+  protected abstract Future<T> storeValidExampleModelWithNullField(int index, Vertx vertx,
+      VertxTestContext testContext);
 
   /**
    * Should create an element over a {@code null} field.
@@ -253,35 +266,39 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldCreateElementOverNullField(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldCreateElementOverNullField(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithNullField(1, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithNullField(1, vertx, testContext)).onSuccess(model -> {
 
-      this.createValidModelFieldElementExample(100, vertx, testContext, testContext.succeeding(element -> {
+      testContext.assertComplete(this.createValidModelFieldElementExample(100, vertx, testContext))
+          .onSuccess(element -> {
 
-        final var checkpoint = testContext.checkpoint(2);
-        testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath()).expect(res -> {
+            final var checkpoint = testContext.checkpoint(2);
+            testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
+                .expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
-          @SuppressWarnings("unchecked")
-          final E created = (E) assertThatBodyIs(element.getClass(), res);
-          this.assertEqualsAdded(element, created);
+                  assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
+                  @SuppressWarnings("unchecked")
+                  final E created = (E) assertThatBodyIs(element.getClass(), res);
+                  this.assertEqualsAdded(element, created);
 
-          testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model)).expect(resRetrieve -> {
+                  testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model))
+                      .expect(resRetrieve -> {
 
-            assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
-            @SuppressWarnings("unchecked")
-            final T updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
-            final var updatedField = this.fieldOf(updatedModel);
-            assertThat(updatedField).isNotEmpty().contains(created);
+                        assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
+                        @SuppressWarnings("unchecked")
+                        final T updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
+                        final var updatedField = this.fieldOf(updatedModel);
+                        assertThat(updatedField).isNotEmpty().contains(created);
 
-          }).sendJson(element.toJsonObject(), testContext, checkpoint);
+                      }).sendJson(element.toJsonObject(), testContext, checkpoint);
 
-        }).sendJson(element.toJsonObject(), testContext, checkpoint);
+                }).sendJson(element.toJsonObject(), testContext, checkpoint);
 
-      }));
+          });
 
-    }));
+    });
 
   }
 
@@ -303,33 +320,36 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
   @Test
   public void shouldCreateElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(2, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(2, vertx, testContext)).onSuccess(model -> {
 
-      this.createValidModelFieldElementExample(200, vertx, testContext, testContext.succeeding(element -> {
+      testContext.assertComplete(this.createValidModelFieldElementExample(200, vertx, testContext))
+          .onSuccess(element -> {
 
-        final var checkpoint = testContext.checkpoint(2);
-        testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath()).expect(res -> {
+            final var checkpoint = testContext.checkpoint(2);
+            testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
+                .expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
-          @SuppressWarnings("unchecked")
-          final E created = (E) assertThatBodyIs(element.getClass(), res);
-          this.assertEqualsAdded(element, created);
+                  assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
+                  @SuppressWarnings("unchecked")
+                  final E created = (E) assertThatBodyIs(element.getClass(), res);
+                  this.assertEqualsAdded(element, created);
 
-          testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model)).expect(resRetrieve -> {
+                  testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model))
+                      .expect(resRetrieve -> {
 
-            assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
-            @SuppressWarnings("unchecked")
-            final T updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
-            final var updatedField = this.fieldOf(updatedModel);
-            assertThat(updatedField).isNotEmpty().contains(created);
+                        assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
+                        @SuppressWarnings("unchecked")
+                        final T updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
+                        final var updatedField = this.fieldOf(updatedModel);
+                        assertThat(updatedField).isNotEmpty().contains(created);
 
-          }).sendJson(element.toJsonObject(), testContext, checkpoint);
+                      }).sendJson(element.toJsonObject(), testContext, checkpoint);
 
-        }).sendJson(element.toJsonObject(), testContext, checkpoint);
+                }).sendJson(element.toJsonObject(), testContext, checkpoint);
 
-      }));
+          });
 
-    }));
+    });
 
   }
 
@@ -341,16 +361,18 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotRetrieveFieldOverUndefinedModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotRetrieveFieldOverUndefinedModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    testRequest(client, HttpMethod.GET, this.modelPath() + this.undefinedModelIdPath() + this.fieldPath()).expect(res -> {
+    testRequest(client, HttpMethod.GET, this.modelPath() + this.undefinedModelIdPath() + this.fieldPath())
+        .expect(res -> {
 
-      assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-      final var error = assertThatBodyIs(ErrorMessage.class, res);
-      assertThat(error.code).isNotEmpty();
-      assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+          final var error = assertThatBodyIs(ErrorMessage.class, res);
+          assertThat(error.code).isNotEmpty();
+          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-    }).send(testContext);
+        }).send(testContext);
 
   }
 
@@ -362,19 +384,21 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldRetrieveEmptyFieldIfItIsNullOnModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldRetrieveEmptyFieldIfItIsNullOnModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithNullField(1, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithNullField(1, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath()).expect(res -> {
+      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
+          .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
-        final List<E> field = assertThatBodyIsArrayOf(this.fieldElementClass(), res);
-        assertThat(field).isNotNull().isEmpty();
+            assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
+            final List<E> field = assertThatBodyIsArrayOf(this.fieldElementClass(), res);
+            assertThat(field).isNotNull().isEmpty();
 
-      }).send(testContext);
+          }).send(testContext);
 
-    }));
+    });
   }
 
   /**
@@ -398,17 +422,18 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
   @Test
   public void shouldRetrieveField(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(3, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(3, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath()).expect(res -> {
+      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
+          .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
-        final List<E> field = assertThatBodyIsArrayOf(this.fieldElementClass(), res);
-        assertThat(field).isNotNull().isEqualTo(this.fieldOf(model));
+            assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
+            final List<E> field = assertThatBodyIsArrayOf(this.fieldElementClass(), res);
+            assertThat(field).isNotNull().isEqualTo(this.fieldOf(model));
 
-      }).send(testContext);
+          }).send(testContext);
 
-    }));
+    });
   }
 
   /**
@@ -419,16 +444,19 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotRetrieveElementOverUndefinedModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotRetrieveElementOverUndefinedModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    testRequest(client, HttpMethod.GET, this.modelPath() + this.undefinedModelIdPath() + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+    testRequest(client, HttpMethod.GET,
+        this.modelPath() + this.undefinedModelIdPath() + this.fieldPath() + this.undefinedElementIdPath())
+            .expect(res -> {
 
-      assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-      final var error = assertThatBodyIs(ErrorMessage.class, res);
-      assertThat(error.code).isNotEmpty();
-      assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+              assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+              final var error = assertThatBodyIs(ErrorMessage.class, res);
+              assertThat(error.code).isNotEmpty();
+              assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-    }).send(testContext);
+            }).send(testContext);
 
   }
 
@@ -450,20 +478,23 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotRetrieveElementOverUndefinedElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotRetrieveElementOverUndefinedElement(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+      testRequest(client, HttpMethod.GET,
+          this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
+              .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                final var error = assertThatBodyIs(ErrorMessage.class, res);
+                assertThat(error.code).isNotEmpty();
+                assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).send(testContext);
+              }).send(testContext);
 
-    }));
+    });
 
   }
 
@@ -475,20 +506,23 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotRetrieveElementOverNullField(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotRetrieveElementOverNullField(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithNullField(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithNullField(4, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+      testRequest(client, HttpMethod.GET,
+          this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
+              .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                final var error = assertThatBodyIs(ErrorMessage.class, res);
+                assertThat(error.code).isNotEmpty();
+                assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).send(testContext);
+              }).send(testContext);
 
-    }));
+    });
 
   }
 
@@ -510,30 +544,33 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotRetrieveElementOverDeletedElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotRetrieveElementOverDeletedElement(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
       final var modelId = this.idOfModel(model);
       final var checkpoint = testContext.checkpoint(2);
       final var field = this.fieldOf(model);
-      final var elementId = this.idOfElementIn(model, field.get(field.size()-1));
-      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(resDelete -> {
+      final var elementId = this.idOfElementIn(model, field.get(field.size() - 1));
+      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+          .expect(resDelete -> {
 
-        assertThat(resDelete.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
+            assertThat(resDelete.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
 
-        testRequest(client, HttpMethod.GET, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+            testRequest(client, HttpMethod.GET, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+                .expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-          final var error = assertThatBodyIs(ErrorMessage.class, res);
-          assertThat(error.code).isNotEmpty();
-          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                  assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                  final var error = assertThatBodyIs(ErrorMessage.class, res);
+                  assertThat(error.code).isNotEmpty();
+                  assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-        }).send(testContext, checkpoint);
+                }).send(testContext, checkpoint);
 
-      }).send(testContext, checkpoint);
+          }).send(testContext, checkpoint);
 
-    }));
+    });
 
   }
 
@@ -547,22 +584,23 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
   @Test
   public void shouldRetrieveElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
       final var modelId = this.idOfModel(model);
       final var field = this.fieldOf(model);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
 
-      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+          .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
-        final var retrievedElement = assertThatBodyIs(this.fieldElementClass(), res);
-        assertThat(retrievedElement).isNotNull().isEqualTo(element);
+            assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
+            final var retrievedElement = assertThatBodyIs(this.fieldElementClass(), res);
+            assertThat(retrievedElement).isNotNull().isEqualTo(element);
 
-      }).send(testContext);
+          }).send(testContext);
 
-    }));
+    });
 
   }
 
@@ -574,16 +612,19 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotDeleteElementOverUndefinedModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotDeleteElementOverUndefinedModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    testRequest(client, HttpMethod.DELETE, this.modelPath() + this.undefinedModelIdPath() + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+    testRequest(client, HttpMethod.DELETE,
+        this.modelPath() + this.undefinedModelIdPath() + this.fieldPath() + this.undefinedElementIdPath())
+            .expect(res -> {
 
-      assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-      final var error = assertThatBodyIs(ErrorMessage.class, res);
-      assertThat(error.code).isNotEmpty();
-      assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+              assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+              final var error = assertThatBodyIs(ErrorMessage.class, res);
+              assertThat(error.code).isNotEmpty();
+              assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-    }).send(testContext);
+            }).send(testContext);
 
   }
 
@@ -595,20 +636,23 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotDeleteElementOverUndefinedElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotDeleteElementOverUndefinedElement(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+      testRequest(client, HttpMethod.DELETE,
+          this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
+              .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                final var error = assertThatBodyIs(ErrorMessage.class, res);
+                assertThat(error.code).isNotEmpty();
+                assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).send(testContext);
+              }).send(testContext);
 
-    }));
+    });
 
   }
 
@@ -620,20 +664,23 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotDeleteElementOverNullField(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotDeleteElementOverNullField(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithNullField(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithNullField(4, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+      testRequest(client, HttpMethod.DELETE,
+          this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
+              .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                final var error = assertThatBodyIs(ErrorMessage.class, res);
+                assertThat(error.code).isNotEmpty();
+                assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).send(testContext);
+              }).send(testContext);
 
-    }));
+    });
 
   }
 
@@ -647,29 +694,31 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
   @Test
   public void shouldDeleteElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
       final var modelId = this.idOfModel(model);
       final var field = this.fieldOf(model);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
       final var checkpoint = testContext.checkpoint(2);
-      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+          .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
+            assertThat(res.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
 
-        testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res2 -> {
+            testRequest(client, HttpMethod.DELETE,
+                this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res2 -> {
 
-          assertThat(res2.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-          final var error = assertThatBodyIs(ErrorMessage.class, res2);
-          assertThat(error.code).isNotEmpty();
-          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                  assertThat(res2.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                  final var error = assertThatBodyIs(ErrorMessage.class, res2);
+                  assertThat(error.code).isNotEmpty();
+                  assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-        }).send(testContext, checkpoint);
+                }).send(testContext, checkpoint);
 
-      }).send(testContext, checkpoint);
+          }).send(testContext, checkpoint);
 
-    }));
+    });
 
   }
 
@@ -681,20 +730,23 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotUpdateElementOverUndefinedModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotUpdateElementOverUndefinedModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelFieldElementExample(4, vertx, testContext, testContext.succeeding(element -> {
+    testContext.assertComplete(this.createValidModelFieldElementExample(4, vertx, testContext)).onSuccess(element -> {
 
-      testRequest(client, HttpMethod.PUT, this.modelPath() + this.undefinedModelIdPath() + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+      testRequest(client, HttpMethod.PUT,
+          this.modelPath() + this.undefinedModelIdPath() + this.fieldPath() + this.undefinedElementIdPath())
+              .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                final var error = assertThatBodyIs(ErrorMessage.class, res);
+                assertThat(error.code).isNotEmpty();
+                assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).sendJson(element.toJsonObject(), testContext);
+              }).sendJson(element.toJsonObject(), testContext);
 
-    }));
+    });
 
   }
 
@@ -706,24 +758,27 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotUpdateElementOverUndefinedElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotUpdateElementOverUndefinedElement(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      this.createValidModelFieldElementExample(4, vertx, testContext, testContext.succeeding(element -> {
+      testContext.assertComplete(this.createValidModelFieldElementExample(4, vertx, testContext)).onSuccess(element -> {
 
-        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+        testRequest(client, HttpMethod.PUT,
+            this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
+                .expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-          final var error = assertThatBodyIs(ErrorMessage.class, res);
-          assertThat(error.code).isNotEmpty();
-          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                  assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                  final var error = assertThatBodyIs(ErrorMessage.class, res);
+                  assertThat(error.code).isNotEmpty();
+                  assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-        }).sendJson(element.toJsonObject(), testContext);
+                }).sendJson(element.toJsonObject(), testContext);
 
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -735,24 +790,27 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotUpdateElementOverNullField(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotUpdateElementOverNullField(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithNullField(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithNullField(4, vertx, testContext)).onSuccess(model -> {
 
-      this.createValidModelFieldElementExample(4, vertx, testContext, testContext.succeeding(element -> {
+      testContext.assertComplete(this.createValidModelFieldElementExample(4, vertx, testContext)).onSuccess(element -> {
 
-        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+        testRequest(client, HttpMethod.PUT,
+            this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
+                .expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-          final var error = assertThatBodyIs(ErrorMessage.class, res);
-          assertThat(error.code).isNotEmpty();
-          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                  assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                  final var error = assertThatBodyIs(ErrorMessage.class, res);
+                  assertThat(error.code).isNotEmpty();
+                  assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-        }).sendJson(element.toJsonObject(), testContext);
+                }).sendJson(element.toJsonObject(), testContext);
 
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -764,31 +822,34 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotUpdateElementOverDeletedElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotUpdateElementOverDeletedElement(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
       final var modelId = this.idOfModel(model);
       final var checkpoint = testContext.checkpoint(2);
       final var field = this.fieldOf(model);
-      final var element = field.get(field.size()-1);
+      final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
-      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(resDelete -> {
+      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+          .expect(resDelete -> {
 
-        assertThat(resDelete.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
+            assertThat(resDelete.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
 
-        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+            testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+                .expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-          final var error = assertThatBodyIs(ErrorMessage.class, res);
-          assertThat(error.code).isNotEmpty();
-          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                  assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                  final var error = assertThatBodyIs(ErrorMessage.class, res);
+                  assertThat(error.code).isNotEmpty();
+                  assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-        }).sendJson(element.toJsonObject(), testContext, checkpoint);
+                }).sendJson(element.toJsonObject(), testContext, checkpoint);
 
-      }).send(testContext, checkpoint);
+          }).send(testContext, checkpoint);
 
-    }));
+    });
 
   }
 
@@ -800,25 +861,27 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotUpdateWithBadJsonElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithBadJsonElement(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
       final var modelId = this.idOfModel(model);
       final var field = this.fieldOf(model);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
 
-      testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+      testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+          .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+            assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+            final var error = assertThatBodyIs(ErrorMessage.class, res);
+            assertThat(error.code).isNotEmpty();
+            assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).sendJson(this.createBadJsonObjectModelFieldElement(), testContext);
+          }).sendJson(this.createBadJsonObjectModelFieldElement(), testContext);
 
-    }));
+    });
 
   }
 
@@ -830,25 +893,27 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotUpdateWithInvalidElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithInvalidElement(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
       final var modelId = this.idOfModel(model);
       final var field = this.fieldOf(model);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
 
-      testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+      testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+          .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+            assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+            final var error = assertThatBodyIs(ErrorMessage.class, res);
+            assertThat(error.code).isNotEmpty();
+            assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).sendJson(this.createInvalidModelFieldElement().toJsonObject(), testContext);
+          }).sendJson(this.createInvalidModelFieldElement().toJsonObject(), testContext);
 
-    }));
+    });
 
   }
 
@@ -862,35 +927,38 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
   @Test
   public void shouldUpdateElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      this.createValidModelFieldElementExample(11, vertx, testContext, testContext.succeeding(element -> {
-        final var modelId = this.idOfModel(model);
-        final var field = this.fieldOf(model);
-        final var elementId = this.idOfElementIn(model, field.get(field.size() - 1));
-        final var checkpoint = testContext.checkpoint(2);
-        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+      testContext.assertComplete(this.createValidModelFieldElementExample(11, vertx, testContext))
+          .onSuccess(element -> {
+            final var modelId = this.idOfModel(model);
+            final var field = this.fieldOf(model);
+            final var elementId = this.idOfElementIn(model, field.get(field.size() - 1));
+            final var checkpoint = testContext.checkpoint(2);
+            testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+                .expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
-          @SuppressWarnings("unchecked")
-          final E updated = (E) assertThatBodyIs(element.getClass(), res);
-          this.assertEqualsAdded(element, updated);
+                  assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
+                  @SuppressWarnings("unchecked")
+                  final E updated = (E) assertThatBodyIs(element.getClass(), res);
+                  this.assertEqualsAdded(element, updated);
 
-          testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model)).expect(resRetrieve -> {
+                  testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model))
+                      .expect(resRetrieve -> {
 
-            assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
-            @SuppressWarnings("unchecked")
-            final T updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
-            final var updatedField = this.fieldOf(updatedModel);
-            assertThat(updatedField).isNotEmpty().contains(updated);
+                        assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
+                        @SuppressWarnings("unchecked")
+                        final T updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
+                        final var updatedField = this.fieldOf(updatedModel);
+                        assertThat(updatedField).isNotEmpty().contains(updated);
 
-          }).sendJson(element.toJsonObject(), testContext, checkpoint);
+                      }).sendJson(element.toJsonObject(), testContext, checkpoint);
 
-        }).sendJson(element.toJsonObject(), testContext, checkpoint);
+                }).sendJson(element.toJsonObject(), testContext, checkpoint);
 
-      }));
+          });
 
-    }));
+    });
   }
 
   /**
@@ -901,20 +969,23 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotMergeElementOverUndefinedModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotMergeElementOverUndefinedModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelFieldElementExample(4, vertx, testContext, testContext.succeeding(element -> {
+    testContext.assertComplete(this.createValidModelFieldElementExample(4, vertx, testContext)).onSuccess(element -> {
 
-      testRequest(client, HttpMethod.PATCH, this.modelPath() + this.undefinedModelIdPath() + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+      testRequest(client, HttpMethod.PATCH,
+          this.modelPath() + this.undefinedModelIdPath() + this.fieldPath() + this.undefinedElementIdPath())
+              .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                final var error = assertThatBodyIs(ErrorMessage.class, res);
+                assertThat(error.code).isNotEmpty();
+                assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).sendJson(element.toJsonObject(), testContext);
+              }).sendJson(element.toJsonObject(), testContext);
 
-    }));
+    });
 
   }
 
@@ -926,24 +997,27 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotMergeElementOverUndefinedElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotMergeElementOverUndefinedElement(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      this.createValidModelFieldElementExample(4, vertx, testContext, testContext.succeeding(element -> {
+      testContext.assertComplete(this.createValidModelFieldElementExample(4, vertx, testContext)).onSuccess(element -> {
 
-        testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+        testRequest(client, HttpMethod.PATCH,
+            this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
+                .expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-          final var error = assertThatBodyIs(ErrorMessage.class, res);
-          assertThat(error.code).isNotEmpty();
-          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                  assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                  final var error = assertThatBodyIs(ErrorMessage.class, res);
+                  assertThat(error.code).isNotEmpty();
+                  assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-        }).sendJson(element.toJsonObject(), testContext);
+                }).sendJson(element.toJsonObject(), testContext);
 
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -955,24 +1029,27 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotMergeElementOverNullField(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotMergeElementOverNullField(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithNullField(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithNullField(4, vertx, testContext)).onSuccess(model -> {
 
-      this.createValidModelFieldElementExample(4, vertx, testContext, testContext.succeeding(element -> {
+      testContext.assertComplete(this.createValidModelFieldElementExample(4, vertx, testContext)).onSuccess(element -> {
 
-        testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
+        testRequest(client, HttpMethod.PATCH,
+            this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
+                .expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-          final var error = assertThatBodyIs(ErrorMessage.class, res);
-          assertThat(error.code).isNotEmpty();
-          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                  assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                  final var error = assertThatBodyIs(ErrorMessage.class, res);
+                  assertThat(error.code).isNotEmpty();
+                  assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-        }).sendJson(element.toJsonObject(), testContext);
+                }).sendJson(element.toJsonObject(), testContext);
 
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -984,31 +1061,34 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotMergeElementOverDeletedElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotMergeElementOverDeletedElement(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
       final var modelId = this.idOfModel(model);
       final var checkpoint = testContext.checkpoint(2);
       final var field = this.fieldOf(model);
-      final var element = field.get(field.size()-1);
+      final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
-      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(resDelete -> {
+      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+          .expect(resDelete -> {
 
-        assertThat(resDelete.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
+            assertThat(resDelete.statusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
 
-        testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+            testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+                .expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-          final var error = assertThatBodyIs(ErrorMessage.class, res);
-          assertThat(error.code).isNotEmpty();
-          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+                  assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                  final var error = assertThatBodyIs(ErrorMessage.class, res);
+                  assertThat(error.code).isNotEmpty();
+                  assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-        }).sendJson(element.toJsonObject(), testContext, checkpoint);
+                }).sendJson(element.toJsonObject(), testContext, checkpoint);
 
-      }).send(testContext, checkpoint);
+          }).send(testContext, checkpoint);
 
-    }));
+    });
 
   }
 
@@ -1020,25 +1100,27 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotMergeWithBadJsonElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotMergeWithBadJsonElement(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
       final var modelId = this.idOfModel(model);
       final var field = this.fieldOf(model);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
 
-      testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+      testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+          .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+            assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+            final var error = assertThatBodyIs(ErrorMessage.class, res);
+            assertThat(error.code).isNotEmpty();
+            assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).sendJson(this.createBadJsonObjectModelFieldElement(), testContext);
+          }).sendJson(this.createBadJsonObjectModelFieldElement(), testContext);
 
-    }));
+    });
 
   }
 
@@ -1050,25 +1132,27 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotMergeWithInvalidElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotMergeWithInvalidElement(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
       final var modelId = this.idOfModel(model);
       final var field = this.fieldOf(model);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
 
-      testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+      testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+          .expect(res -> {
 
-        assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-        final var error = assertThatBodyIs(ErrorMessage.class, res);
-        assertThat(error.code).isNotEmpty();
-        assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+            assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
+            final var error = assertThatBodyIs(ErrorMessage.class, res);
+            assertThat(error.code).isNotEmpty();
+            assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-      }).sendJson(this.createInvalidModelFieldElement().toJsonObject(), testContext);
+          }).sendJson(this.createInvalidModelFieldElement().toJsonObject(), testContext);
 
-    }));
+    });
 
   }
 
@@ -1082,34 +1166,37 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
   @Test
   public void shouldMergeElement(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
-    this.storeValidExampleModelWithFieldElements(4, vertx, testContext, testContext.succeeding(model -> {
+    testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      this.createValidModelFieldElementExample(11, vertx, testContext, testContext.succeeding(element -> {
-        final var modelId = this.idOfModel(model);
-        final var field = this.fieldOf(model);
-        final var elementId = this.idOfElementIn(model, field.get(field.size() - 1));
-        final var checkpoint = testContext.checkpoint(2);
-        testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId).expect(res -> {
+      testContext.assertComplete(this.createValidModelFieldElementExample(11, vertx, testContext))
+          .onSuccess(element -> {
+            final var modelId = this.idOfModel(model);
+            final var field = this.fieldOf(model);
+            final var elementId = this.idOfElementIn(model, field.get(field.size() - 1));
+            final var checkpoint = testContext.checkpoint(2);
+            testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
+                .expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
-          @SuppressWarnings("unchecked")
-          final E merged = (E) assertThatBodyIs(element.getClass(), res);
-          this.assertEqualsAdded(element, merged);
+                  assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
+                  @SuppressWarnings("unchecked")
+                  final E merged = (E) assertThatBodyIs(element.getClass(), res);
+                  this.assertEqualsAdded(element, merged);
 
-          testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model)).expect(resRetrieve -> {
+                  testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model))
+                      .expect(resRetrieve -> {
 
-            assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
-            @SuppressWarnings("unchecked")
-            final T mergedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
-            final var mergedField = this.fieldOf(mergedModel);
-            assertThat(mergedField).isNotEmpty().contains(merged);
+                        assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
+                        @SuppressWarnings("unchecked")
+                        final T mergedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
+                        final var mergedField = this.fieldOf(mergedModel);
+                        assertThat(mergedField).isNotEmpty().contains(merged);
 
-          }).sendJson(element.toJsonObject(), testContext, checkpoint);
+                      }).sendJson(element.toJsonObject(), testContext, checkpoint);
 
-        }).sendJson(element.toJsonObject(), testContext, checkpoint);
+                }).sendJson(element.toJsonObject(), testContext, checkpoint);
 
-      }));
+          });
 
-    }));
+    });
   }
 }

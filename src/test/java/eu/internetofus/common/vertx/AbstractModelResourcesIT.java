@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,22 +30,20 @@ import static eu.internetofus.common.vertx.HttpResponses.assertThatBodyIs;
 import static eu.internetofus.common.vertx.ext.TestRequest.testRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.ws.rs.core.Response.Status;
-
-import org.junit.jupiter.api.Test;
-
 import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.Model;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxTestContext;
+import javax.ws.rs.core.Response.Status;
+import org.junit.jupiter.api.Test;
 
 /**
- * Generic test over a resource that implements CRUD operation over a {@link Model}.
+ * Generic test over a resource that implements CRUD operation over a
+ * {@link Model}.
  *
  * @param <T> type of model to do the CRUD operations.
  * @param <I> type of identifier of the model.
@@ -82,7 +80,8 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
   }
 
   /**
-   * Create a {@link JsonObject} that can not be converted to the {@link Model} to test.
+   * Create a {@link JsonObject} that can not be converted to the {@link Model} to
+   * test.
    *
    * @return a {@link JsonObject} that not represents a model.
    */
@@ -121,12 +120,14 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
   /**
    * Create an example model that has the specified index.
    *
-   * @param index         to use in the example.
-   * @param vertx         event bus to use.
-   * @param testContext   test context to use.
-   * @param createHandler the component that will manage the created model.
+   * @param index       to use in the example.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the future created model.
    */
-  protected abstract void createValidModelExample(final int index, final Vertx vertx, final VertxTestContext testContext, final Handler<AsyncResult<T>> createHandler);
+  protected abstract Future<T> createValidModelExample(final int index, final Vertx vertx,
+      final VertxTestContext testContext);
 
   /**
    * Should not create a model that is invalid.
@@ -138,7 +139,7 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
   @Test
   public void shouldCreateModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
       testRequest(client, HttpMethod.POST, this.modelPath()).expect(res -> {
 
@@ -149,7 +150,7 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
       }).sendJson(source.toJsonObject(), testContext);
 
-    }));
+    });
 
   }
 
@@ -161,11 +162,12 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotCreateModelWithDefinedId(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotCreateModelWithDefinedId(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
-      this.storeModel(source, vertx, testContext, testContext.succeeding(stored -> {
+      testContext.assertComplete(this.storeModel(source, vertx, testContext)).onSuccess(stored -> {
 
         testRequest(client, HttpMethod.POST, this.modelPath()).expect(res -> {
 
@@ -176,9 +178,9 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
         }).sendJson(stored.toJsonObject(), testContext);
 
-      }));
+      });
 
-    }));
+    });
 
   }
 
@@ -188,9 +190,10 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param source      model to store.
    * @param vertx       event bus to use.
    * @param testContext context to test.
-   * @param succeeding  to inform of the stored model.
+   *
+   * @return the future stored model.
    */
-  protected abstract void storeModel(T source, Vertx vertx, VertxTestContext testContext, Handler<AsyncResult<T>> succeeding);
+  protected abstract Future<T> storeModel(T source, Vertx vertx, VertxTestContext testContext);
 
   /**
    * Verify created model is equals to the created.
@@ -240,9 +243,9 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
   @Test
   public void shouldRetrieveModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
-      this.storeModel(source, vertx, testContext, testContext.succeeding(stored -> {
+      testContext.assertComplete(this.storeModel(source, vertx, testContext)).onSuccess(stored -> {
 
         testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOf(stored)).expect(res -> {
 
@@ -253,8 +256,8 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
         }).send(testContext);
 
-      }));
-    }));
+      });
+    });
   }
 
   /**
@@ -274,9 +277,10 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotUpdateUndefinedModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotUpdateUndefinedModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
       testRequest(client, HttpMethod.PUT, this.modelPath() + this.undefinedModelIdPath()).expect(res -> {
 
         assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
@@ -286,7 +290,7 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
       }).sendJson(source.toJsonObject(), testContext);
 
-    }));
+    });
   }
 
   /**
@@ -297,11 +301,12 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotUpdateBadJsonModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotUpdateBadJsonModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
-      this.storeModel(source, vertx, testContext, testContext.succeeding(stored -> {
+      testContext.assertComplete(this.storeModel(source, vertx, testContext)).onSuccess(stored -> {
 
         testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOf(stored)).expect(res -> {
 
@@ -312,9 +317,9 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
         }).sendJson(this.createBadJsonObjectModel(), testContext);
 
-      }));
+      });
 
-    }));
+    });
   }
 
   /**
@@ -325,11 +330,12 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotUpdateWithInvalidModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithInvalidModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
-      this.storeModel(source, vertx, testContext, testContext.succeeding(stored -> {
+      testContext.assertComplete(this.storeModel(source, vertx, testContext)).onSuccess(stored -> {
 
         final var invalid = this.createInvalidModel();
         testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOf(stored)).expect(res -> {
@@ -341,9 +347,9 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
         }).sendJson(invalid.toJsonObject(), testContext);
 
-      }));
+      });
 
-    }));
+    });
   }
 
   /**
@@ -354,11 +360,12 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotUpdateWithSameModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotUpdateWithSameModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
-      this.storeModel(source, vertx, testContext, testContext.succeeding(stored -> {
+      testContext.assertComplete(this.storeModel(source, vertx, testContext)).onSuccess(stored -> {
 
         testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOf(stored)).expect(res -> {
 
@@ -369,9 +376,9 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
         }).sendJson(stored.toJsonObject(), testContext);
 
-      }));
+      });
 
-    }));
+    });
   }
 
   /**
@@ -384,11 +391,11 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
   @Test
   public void shouldUpdateModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
-      this.createValidModelExample(2, vertx, testContext, testContext.succeeding(target -> {
+      testContext.assertComplete(this.createValidModelExample(2, vertx, testContext)).onSuccess(target -> {
 
-        this.storeModel(target, vertx, testContext, testContext.succeeding(stored -> {
+        testContext.assertComplete(this.storeModel(target, vertx, testContext)).onSuccess(stored -> {
 
           testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOf(stored)).expect(res -> {
 
@@ -400,11 +407,11 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
           }).sendJson(source.toJsonObject(), testContext);
 
-        }));
+        });
 
-      }));
+      });
 
-    }));
+    });
   }
 
   /**
@@ -415,9 +422,10 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotMergeUndefinedModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotMergeUndefinedModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
       testRequest(client, HttpMethod.PATCH, this.modelPath() + this.undefinedModelIdPath()).expect(res -> {
 
         assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
@@ -427,7 +435,7 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
       }).sendJson(source.toJsonObject(), testContext);
 
-    }));
+    });
   }
 
   /**
@@ -438,11 +446,12 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotMergeBadJsonModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotMergeBadJsonModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
-      this.storeModel(source, vertx, testContext, testContext.succeeding(stored -> {
+      testContext.assertComplete(this.storeModel(source, vertx, testContext)).onSuccess(stored -> {
 
         testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + this.idOf(stored)).expect(res -> {
 
@@ -453,9 +462,9 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
         }).sendJson(this.createBadJsonObjectModel(), testContext);
 
-      }));
+      });
 
-    }));
+    });
   }
 
   /**
@@ -466,11 +475,12 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotMergeWithInvalidModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotMergeWithInvalidModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
-      this.storeModel(source, vertx, testContext, testContext.succeeding(stored -> {
+      testContext.assertComplete(this.storeModel(source, vertx, testContext)).onSuccess(stored -> {
 
         final var invalid = this.createInvalidModel();
         testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + this.idOf(stored)).expect(res -> {
@@ -482,9 +492,9 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
         }).sendJson(invalid.toJsonObject(), testContext);
 
-      }));
+      });
 
-    }));
+    });
   }
 
   /**
@@ -495,11 +505,12 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotMergeWithSameModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotMergeWithSameModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
-      this.storeModel(source, vertx, testContext, testContext.succeeding(stored -> {
+      testContext.assertComplete(this.storeModel(source, vertx, testContext)).onSuccess(stored -> {
 
         testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + this.idOf(stored)).expect(res -> {
 
@@ -510,9 +521,9 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
         }).sendJson(stored.toJsonObject(), testContext);
 
-      }));
+      });
 
-    }));
+    });
   }
 
   /**
@@ -525,11 +536,11 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
   @Test
   public void shouldMergeModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
-      this.createValidModelExample(2, vertx, testContext, testContext.succeeding(target -> {
+      testContext.assertComplete(this.createValidModelExample(2, vertx, testContext)).onSuccess(target -> {
 
-        this.storeModel(target, vertx, testContext, testContext.succeeding(stored -> {
+        testContext.assertComplete(this.storeModel(target, vertx, testContext)).onSuccess(stored -> {
 
           testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + this.idOf(stored)).expect(res -> {
 
@@ -541,11 +552,11 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
           }).sendJson(source.toJsonObject(), testContext);
 
-        }));
+        });
 
-      }));
+      });
 
-    }));
+    });
   }
 
   /**
@@ -556,9 +567,10 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotDeleteUndefinedModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldNotDeleteUndefinedModel(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
       testRequest(client, HttpMethod.DELETE, this.modelPath() + this.undefinedModelIdPath()).expect(res -> {
 
         assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
@@ -568,7 +580,7 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
       }).send(testContext);
 
-    }));
+    });
   }
 
   /**
@@ -581,9 +593,9 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
   @Test
   public void shouldDeleteModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
-    this.createValidModelExample(1, vertx, testContext, testContext.succeeding(source -> {
+    testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
-      this.storeModel(source, vertx, testContext, testContext.succeeding(stored -> {
+      testContext.assertComplete(this.storeModel(source, vertx, testContext)).onSuccess(stored -> {
 
         testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + this.idOf(stored)).expect(res -> {
 
@@ -591,9 +603,9 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
         }).send(testContext);
 
-      }));
+      });
 
-    }));
+    });
   }
 
 }

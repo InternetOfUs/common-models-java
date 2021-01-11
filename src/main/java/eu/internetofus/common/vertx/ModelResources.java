@@ -945,26 +945,36 @@ public interface ModelResources {
 
     toModel(valueToCreate, element, context, () -> {
 
-      retrieveModelChain(element.model, searcher, context, () -> {
+      validate(vertx, element, context, () -> {
 
-        element.model.source = (T) Model.fromJsonObject(element.model.target.toJsonObject(),
-            element.model.target.getClass());
-        element.field = getField.apply(element.model.source);
-        if (element.field == null) {
+        if (element.value instanceof CreateUpdateTsDetails) {
 
-          element.field = new ArrayList<E>();
-          setField.accept(element.model.source, element.field);
+          final var now = TimeManager.now();
+          ((CreateUpdateTsDetails) element.value)._creationTs = now;
+          ((CreateUpdateTsDetails) element.value)._lastUpdateTs = now;
         }
 
-        element.index = element.field.size();
-        element.field.add(element.source);
-        update(vertx, element.model, context, () -> {
+        retrieveModelChain(element.model, searcher, context, () -> {
 
-          element.value = getField.apply(element.model.value).get(element.index);
-          updateModelChain(element.model, storerCreatedModel, context, success);
+          element.model.source = (T) Model.fromJsonObject(element.model.target.toJsonObject(),
+              element.model.target.getClass());
+          element.field = getField.apply(element.model.source);
+          if (element.field == null) {
+
+            element.field = new ArrayList<E>();
+            setField.accept(element.model.source, element.field);
+          }
+
+          element.index = element.field.size();
+          element.field.add(element.value);
+          update(vertx, element.model, context, () -> {
+
+            element.value = getField.apply(element.model.value).get(element.index);
+            updateModelChain(element.model, storerCreatedModel, context, success);
+
+          });
 
         });
-
       });
     });
 

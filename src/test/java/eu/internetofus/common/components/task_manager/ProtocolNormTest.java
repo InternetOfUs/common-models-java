@@ -32,16 +32,15 @@ import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Test the {@link ProtocolNorm}.
@@ -121,6 +120,23 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
   }
 
   /**
+   * Check that the model is not valid with thenceforth equals to whenever.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithThenceforthEqualsToWhenever(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var model = this.createModelExample(1);
+    model.thenceforth = model.whenever;
+    assertIsNotValid(model, "thenceforth", vertx, testContext);
+
+  }
+
+  /**
    * Check that merge two models.
    *
    * @param vertx       event bus to use.
@@ -133,7 +149,8 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
 
     final var target = this.createModelExample(1);
     final var source = this.createModelExample(23);
-    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
+    assertCanMerge(target, source, vertx, testContext,
+        merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
 
   }
 
@@ -166,7 +183,8 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
 
     final var target = this.createModelExample(1);
     final var source = this.createModelExample(23);
-    assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated).isNotEqualTo(target).isEqualTo(source));
+    assertCanUpdate(target, source, vertx, testContext,
+        updated -> assertThat(updated).isNotEqualTo(target).isEqualTo(source));
 
   }
 
