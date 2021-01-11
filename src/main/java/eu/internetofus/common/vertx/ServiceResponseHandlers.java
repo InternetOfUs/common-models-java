@@ -39,6 +39,7 @@ import io.vertx.ext.web.api.service.ServiceResponse;
 import io.vertx.serviceproxy.ServiceException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
+import org.tinylog.Logger;
 
 /**
  * Classes used to generate handlers for an {@link ServiceResponse}.
@@ -56,7 +57,8 @@ public interface ServiceResponseHandlers {
    * @param status        HTTP status code.
    * @param throwable     cause that explains why has failed the request.
    */
-  static void responseFailedWith(final Handler<AsyncResult<ServiceResponse>> resultHandler, final Status status, final Throwable throwable) {
+  static void responseFailedWith(final Handler<AsyncResult<ServiceResponse>> resultHandler, final Status status,
+      final Throwable throwable) {
 
     var code = "undefined";
     var message = "Unexpected failure";
@@ -104,7 +106,8 @@ public interface ServiceResponseHandlers {
    * @param code          of the error.
    * @param message       of the error.
    */
-  static void responseWithErrorMessage(final Handler<AsyncResult<ServiceResponse>> resultHandler, final Status status, final String code, final String message) {
+  static void responseWithErrorMessage(final Handler<AsyncResult<ServiceResponse>> resultHandler, final Status status,
+      final String code, final String message) {
 
     responseWith(resultHandler, status, new ErrorMessage(code, message));
 
@@ -129,7 +132,8 @@ public interface ServiceResponseHandlers {
    */
   static void responseOk(final Handler<AsyncResult<ServiceResponse>> resultHandler) {
 
-    resultHandler.handle(Future.succeededFuture(new ServiceResponse().setStatusCode(Status.NO_CONTENT.getStatusCode()).putHeader(HttpHeaders.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON)));
+    resultHandler.handle(Future.succeededFuture(new ServiceResponse().setStatusCode(Status.NO_CONTENT.getStatusCode())
+        .putHeader(HttpHeaders.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON)));
 
   }
 
@@ -140,7 +144,8 @@ public interface ServiceResponseHandlers {
    * @param status        HTTP status code.
    * @param model         to send.
    */
-  static void responseWith(final Handler<AsyncResult<ServiceResponse>> resultHandler, final Status status, final Object model) {
+  static void responseWith(final Handler<AsyncResult<ServiceResponse>> resultHandler, final Status status,
+      final Object model) {
 
     Buffer buffer;
     if (model instanceof Model) {
@@ -155,7 +160,10 @@ public interface ServiceResponseHandlers {
 
       buffer = Buffer.buffer(String.valueOf(model));
     }
-    resultHandler.handle(Future.succeededFuture(new ServiceResponse().setStatusCode(status.getStatusCode()).putHeader(HttpHeaders.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON).setPayload(buffer)));
+
+    Logger.trace("Response {} with {}", status, model);
+    resultHandler.handle(Future.succeededFuture(new ServiceResponse().setStatusCode(status.getStatusCode())
+        .putHeader(HttpHeaders.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON).setPayload(buffer)));
 
   }
 
