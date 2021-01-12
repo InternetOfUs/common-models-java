@@ -185,3 +185,5 @@ nbdist/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+/.pmd
+/.pmdruleset.xml

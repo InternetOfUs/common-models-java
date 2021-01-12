@@ -26,10 +26,6 @@
 
 package eu.internetofus.common.components;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-
 import eu.internetofus.common.components.profile_manager.CommunityProfile;
 import eu.internetofus.common.components.profile_manager.CommunityProfileTest;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
@@ -47,6 +43,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * Generic methods used to store models by the services.
@@ -64,7 +63,8 @@ public interface StoreServices {
    *
    * @return the stored profile.
    */
-  static Future<WeNetUserProfile> storeProfile(final WeNetUserProfile profile, final Vertx vertx, final VertxTestContext testContext) {
+  static Future<WeNetUserProfile> storeProfile(final WeNetUserProfile profile, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     return testContext.assertComplete(WeNetProfileManager.createProxy(vertx).createProfile(profile));
 
@@ -79,9 +79,11 @@ public interface StoreServices {
    *
    * @return the stored profile.
    */
-  static Future<WeNetUserProfile> storeProfileExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
+  static Future<WeNetUserProfile> storeProfileExample(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
 
-    return testContext.assertComplete(new WeNetUserProfileTest().createModelExample(index, vertx, testContext).compose(example -> storeProfile(example, vertx, testContext)));
+    return testContext.assertComplete(new WeNetUserProfileTest().createModelExample(index, vertx, testContext)
+        .compose(example -> storeProfile(example, vertx, testContext)));
 
   }
 
@@ -94,7 +96,8 @@ public interface StoreServices {
    *
    * @return the stored model.
    */
-  static Future<TaskType> storeTaskType(final TaskType taskType, final Vertx vertx, final VertxTestContext testContext) {
+  static Future<TaskType> storeTaskType(final TaskType taskType, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     return testContext.assertComplete(WeNetTaskManager.createProxy(vertx).createTaskType(taskType));
 
@@ -142,7 +145,8 @@ public interface StoreServices {
    */
   static Future<Task> storeTaskExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    return testContext.assertComplete(new TaskTest().createModelExample(index, vertx, testContext).compose(example -> storeTask(example, vertx, testContext)));
+    return testContext.assertComplete(new TaskTest().createModelExample(index, vertx, testContext)
+        .compose(example -> storeTask(example, vertx, testContext)));
 
   }
 
@@ -183,34 +187,63 @@ public interface StoreServices {
    * @param max         number of tasks to create.
    * @param vertx       event bus to use.
    * @param testContext test context to use.
-   * @param change      function to modify the pattern before to store it. The first argument is the index and the second
-   *                    the created task.
+   * @param change      function to modify the pattern before to store it. The
+   *                    first argument is the index and the second the created
+   *                    task.
    *
    * @return the future with the created tasks.
    */
-  static Future<List<Task>> storeSomeTask(final int max, final Vertx vertx, final VertxTestContext testContext, final BiConsumer<Integer, Task> change) {
+  static Future<List<Task>> storeSomeTask(final int max, final Vertx vertx, final VertxTestContext testContext,
+      final BiConsumer<Integer, Task> change) {
 
-    final Promise<List<Task>> promise = Promise.promise();
-    var future = promise.future();
-    promise.complete(new ArrayList<Task>());
+    return storeSomeTask(max, 0l, vertx, testContext, change);
+  }
+
+  /**
+   * Store some tasks.
+   *
+   * @param max         number of tasks to create.
+   * @param delay       in the creation of the tasks.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   * @param change      function to modify the pattern before to store it. The
+   *                    first argument is the index and the second the created
+   *                    task.
+   *
+   * @return the future with the created tasks.
+   */
+  static Future<List<Task>> storeSomeTask(final int max, long delay, final Vertx vertx,
+      final VertxTestContext testContext, final BiConsumer<Integer, Task> change) {
+
+    Future<List<Task>> future = Future.succeededFuture(new ArrayList<Task>());
     for (var i = 0; i < max; i++) {
 
       final var exampleIndex = i;
-      future = future.compose(tasks -> new TaskTest().createModelExample(exampleIndex, vertx, testContext).compose(task -> {
+      future = future
+          .compose(tasks -> new TaskTest().createModelExample(exampleIndex, vertx, testContext).compose(task -> {
 
-        if (change != null) {
+            if (change != null) {
 
-          change.accept(exampleIndex, task);
-        }
+              change.accept(exampleIndex, task);
+            }
 
-        return storeTask(task, vertx, testContext).compose(storedTask -> {
+            return storeTask(task, vertx, testContext).compose(storedTask -> {
 
-          tasks.add(storedTask);
-          return Future.succeededFuture(tasks);
+              tasks.add(storedTask);
+              Promise<List<Task>> promise = Promise.promise();
+              if (delay > 0) {
 
-        });
+                vertx.setTimer(delay, id -> promise.complete(tasks));
 
-      }));
+              } else {
+                promise.complete(tasks);
+              }
+
+              return promise.future();
+
+            });
+
+          }));
 
     }
 
@@ -226,7 +259,8 @@ public interface StoreServices {
    *
    * @return the stored profile.
    */
-  static Future<CommunityProfile> storeCommunity(final CommunityProfile community, final Vertx vertx, final VertxTestContext testContext) {
+  static Future<CommunityProfile> storeCommunity(final CommunityProfile community, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     return testContext.assertComplete(WeNetProfileManager.createProxy(vertx).createCommunity(community));
 
@@ -241,14 +275,16 @@ public interface StoreServices {
    *
    * @return the stored profile.
    */
-  static Future<CommunityProfile> storeCommunityExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
+  static Future<CommunityProfile> storeCommunityExample(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
 
-    return testContext.assertComplete(new CommunityProfileTest().createModelExample(index, vertx, testContext).compose(example -> {
+    return testContext
+        .assertComplete(new CommunityProfileTest().createModelExample(index, vertx, testContext).compose(example -> {
 
-      example.id = null;
-      return storeCommunity(example, vertx, testContext);
+          example.id = null;
+          return storeCommunity(example, vertx, testContext);
 
-    }));
+        }));
 
   }
 }
