@@ -26,14 +26,13 @@
 
 package eu.internetofus.common.components;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 import io.vertx.core.Handler;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import java.util.Map;
+import java.util.TreeMap;
 import javax.ws.rs.core.Response.Status;
 
 /**
@@ -46,12 +45,12 @@ public class CRUDContext {
   /**
    * The values stored on the context.
    */
-  protected Map<String, JsonObject> values;
+  public Map<String, JsonObject> values;
 
   /**
    * The type of models that can be accepted.
    */
-  protected Class<?> modelType;
+  public Class<?> modelType;
 
   /**
    * The name of the property that contains the identifier of the values.
@@ -103,7 +102,7 @@ public class CRUDContext {
    *
    * @return the handler to manage an element.
    */
-  protected Handler<RoutingContext> toRoutingContextHandler(final ValueHandler handler) {
+  public Handler<RoutingContext> toRoutingContextHandler(final ValueHandler handler) {
 
     return ctx -> {
 
@@ -152,7 +151,7 @@ public class CRUDContext {
    *         integer.
    *
    */
-  protected int queryIntParam(RoutingContext ctx, String key, int defaultValue) {
+  public int queryIntParam(RoutingContext ctx, String key, int defaultValue) {
 
     try {
 
@@ -229,14 +228,29 @@ public class CRUDContext {
    * @return the value defined on the body or {@code null} if not value is
    *         defined.
    */
-  protected JsonObject getNewValueFrom(RoutingContext ctx) {
+  public JsonObject getNewValueFrom(RoutingContext ctx) {
+
+    return this.getBodyOf(ctx, this.modelType);
+
+  }
+
+  /**
+   * Obtain the body of the specified type.
+   *
+   * @param ctx  routing context to get value form the body.
+   * @param type of the body.
+   *
+   * @return the value defined on the body or {@code null} if the body is not of
+   *         the specified type.
+   */
+  public JsonObject getBodyOf(RoutingContext ctx, Class<?> type) {
 
     try {
 
       var newValue = ctx.getBodyAsJson();
       if (newValue != null) {
 
-        var model = Json.decodeValue(newValue.toBuffer(), this.modelType);
+        var model = Json.decodeValue(newValue.toBuffer(), type);
         if (model != null) {
 
           return newValue;
@@ -250,7 +264,7 @@ public class CRUDContext {
 
     final var response = ctx.response();
     response.setStatusCode(Status.BAD_REQUEST.getStatusCode());
-    response.end(new ErrorMessage("bad_value", "The value is not valid").toBuffer());
+    response.end(new ErrorMessage("bad_value", "The value is not a " + type).toBuffer());
     return null;
 
   }

@@ -26,9 +26,8 @@
 
 package eu.internetofus.common.components.task_manager;
 
-import javax.validation.constraints.NotNull;
-
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.service.Message;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
@@ -39,6 +38,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
+import javax.validation.constraints.NotNull;
 
 /**
  * The class used to interact with the WeNet task manager.
@@ -74,7 +74,8 @@ public interface WeNetTaskManager {
    */
   static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-    new ServiceBinder(vertx).setAddress(WeNetTaskManager.ADDRESS).register(WeNetTaskManager.class, new WeNetTaskManagerClient(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetTaskManager.ADDRESS).register(WeNetTaskManager.class,
+        new WeNetTaskManagerClient(client, conf));
 
   }
 
@@ -269,6 +270,66 @@ public interface WeNetTaskManager {
     final Promise<JsonObject> promise = Promise.promise();
     this.doTaskTransaction(taskTransaction.toJsonObject(), promise);
     return Model.fromFutureJsonObject(promise.future(), TaskTransaction.class);
+
+  }
+
+  /**
+   * Do a transaction over a task.
+   *
+   * @param taskId          identifier of the task.
+   * @param taskTransaction to do.
+   * @param handler         for the added transaction.
+   */
+  void addTransactionIntoTask(@NotNull String taskId, @NotNull JsonObject taskTransaction,
+      @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Add a transaction into a task.
+   *
+   * @param taskId          identifier of the task.
+   * @param taskTransaction to add.
+   *
+   * @return the future with the added transaction.
+   */
+  @GenIgnore
+  default Future<TaskTransaction> addTransactionIntoTask(@NotNull String taskId,
+      @NotNull TaskTransaction taskTransaction) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.addTransactionIntoTask(taskId, taskTransaction.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), TaskTransaction.class);
+
+  }
+
+  /**
+   * Do a transaction over a task.
+   *
+   * @param taskId            identifier of the task where is the transaction.
+   * @param taskTransactionId identifier of the task transaction to add the
+   *                          message.
+   * @param message           to do.
+   * @param handler           for the added transaction.
+   */
+  void addMessageIntoTransaction(@NotNull String taskId, @NotNull String taskTransactionId, @NotNull JsonObject message,
+      @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Add a transaction into a task.
+   *
+   * @param taskId            identifier of the task where is the transaction.
+   * @param taskTransactionId identifier of the task transaction to add the
+   *                          message.
+   * @param message           to add.
+   *
+   * @return the future with the added transaction.
+   */
+  @GenIgnore
+  default Future<Message> addMessageIntoTransaction(@NotNull String taskId, @NotNull String taskTransactionId,
+      @NotNull Message message) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.addMessageIntoTransaction(taskId, taskTransactionId, message.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), Message.class);
 
   }
 

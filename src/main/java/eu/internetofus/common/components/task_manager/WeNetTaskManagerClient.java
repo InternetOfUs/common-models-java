@@ -31,6 +31,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import javax.validation.constraints.NotNull;
 
 /**
  * The implementation of the {@link WeNetTaskManager}.
@@ -48,7 +49,8 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
   public static final String DEFAULT_TASK_MANAGER_API_URL = "https://wenet.u-hopper.com/prod/task_manager";
 
   /**
-   * The name of the configuration property that contains the URL to the task manager API.
+   * The name of the configuration property that contains the URL to the task
+   * manager API.
    */
   public static final String TASK_MANAGER_CONF_KEY = "taskManager";
 
@@ -141,6 +143,28 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
   public void doTaskTransaction(final JsonObject taskTransaction, final Handler<AsyncResult<JsonObject>> handler) {
 
     this.post(taskTransaction, "/tasks/transactions").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void addTransactionIntoTask(@NotNull String taskId, @NotNull JsonObject taskTransaction,
+      @NotNull Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(taskTransaction, "/tasks", taskId, "/transactions").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void addMessageIntoTransaction(@NotNull String taskId, @NotNull String taskTransactionId,
+      @NotNull JsonObject message, @NotNull Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(message, "/tasks", taskId, "/transactions", taskTransactionId, "/messages").onComplete(handler);
 
   }
 

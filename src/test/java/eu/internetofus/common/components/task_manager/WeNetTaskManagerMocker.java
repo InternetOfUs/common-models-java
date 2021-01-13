@@ -28,7 +28,13 @@ package eu.internetofus.common.components.task_manager;
 
 import eu.internetofus.common.components.AbstractComponentMocker;
 import eu.internetofus.common.components.CRUDContext;
+import eu.internetofus.common.components.ErrorMessage;
+import eu.internetofus.common.components.service.Message;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * The mocked server for the {@link WeNetTaskManager}.
@@ -111,6 +117,92 @@ public class WeNetTaskManagerMocker extends AbstractComponentMocker {
     router.put("/tasks/:id").handler(this.tasksContext.putHandler());
     router.patch("/tasks/:id").handler(this.tasksContext.patchHandler());
     router.delete("/tasks/:id").handler(this.tasksContext.deleteHandler());
+
+    router.post("/tasks/:id/transactions").handler(this.createAddTransactionIntoTaskHandler());
+
+    router.post("/tasks/:id/transactions/:transactionId/messages")
+        .handler(this.createAddMessageIntoTransactionHandler());
+
+  }
+
+  /**
+   * Return the handler to add a transaction into a task.
+   *
+   * @return the handler to add a transaction into a task.
+   */
+  protected Handler<RoutingContext> createAddTransactionIntoTaskHandler() {
+
+    return this.tasksContext.toRoutingContextHandler((ctx, id, task) -> {
+
+      var transactions = task.getJsonArray("transactions", null);
+      if (transactions == null) {
+
+        transactions = new JsonArray();
+        task.put("transactions", transactions);
+      }
+
+      var transaction = this.tasksContext.getBodyOf(ctx, TaskTransaction.class);
+      if (transaction != null) {
+
+        transaction.put("id", String.valueOf(transactions.size()));
+        transactions.add(transaction);
+        final var response = ctx.response();
+        response.setStatusCode(Status.CREATED.getStatusCode());
+        response.end(transaction.toBuffer());
+
+      }
+
+    });
+
+  }
+
+  /**
+   * Return the handler to add a message into a transaction.
+   *
+   * @return the handler to add a message into a transaction.
+   */
+  protected Handler<RoutingContext> createAddMessageIntoTransactionHandler() {
+
+    return this.tasksContext.toRoutingContextHandler((ctx, id, task) -> {
+
+      var message = this.tasksContext.getBodyOf(ctx, Message.class);
+      if (message != null) {
+
+        final var response = ctx.response();
+        var transactions = task.getJsonArray("transactions", null);
+        final var transactionId = ctx.pathParam("transactionId");
+        if (transactions != null && transactionId != null) {
+
+          for (var i = 0; i < transactions.size(); i++) {
+
+            var transaction = transactions.getJsonObject(i);
+
+            if (transactionId.equals(transaction.getString("id"))) {
+
+              var messages = transaction.getJsonArray("messages");
+              if (messages == null) {
+
+                messages = new JsonArray();
+                transaction.put("messages", messages);
+              }
+              messages.add(message);
+              response.setStatusCode(Status.CREATED.getStatusCode());
+              response.end(message.toBuffer());
+              return;
+            }
+
+          }
+
+        }
+
+        response.setStatusCode(Status.NOT_FOUND.getStatusCode());
+        response
+            .end(new ErrorMessage("bad_task_transaction_id", "Not found task transaction associated to the identifier")
+                .toBuffer());
+
+      }
+
+    });
 
   }
 

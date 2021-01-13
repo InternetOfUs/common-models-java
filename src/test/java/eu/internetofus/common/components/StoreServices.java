@@ -82,8 +82,13 @@ public interface StoreServices {
   static Future<WeNetUserProfile> storeProfileExample(final int index, final Vertx vertx,
       final VertxTestContext testContext) {
 
-    return testContext.assertComplete(new WeNetUserProfileTest().createModelExample(index, vertx, testContext)
-        .compose(example -> storeProfile(example, vertx, testContext)));
+    return testContext
+        .assertComplete(new WeNetUserProfileTest().createModelExample(index, vertx, testContext).compose(example -> {
+
+          example.id = null;
+          return storeProfile(example, vertx, testContext);
+
+        }));
 
   }
 
@@ -115,6 +120,7 @@ public interface StoreServices {
   static Future<TaskType> storeTaskTypeExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var example = new TaskTypeTest().createModelExample(index);
+    example.id = null;
     return storeTaskType(example, vertx, testContext);
 
   }
@@ -145,8 +151,12 @@ public interface StoreServices {
    */
   static Future<Task> storeTaskExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    return testContext.assertComplete(new TaskTest().createModelExample(index, vertx, testContext)
-        .compose(example -> storeTask(example, vertx, testContext)));
+    return testContext.assertComplete(new TaskTest().createModelExample(index, vertx, testContext).compose(example -> {
+
+      example.id = null;
+      return storeTask(example, vertx, testContext);
+
+    }));
 
   }
 
@@ -177,6 +187,7 @@ public interface StoreServices {
   static Future<App> storeAppExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var example = new AppTest().createModelExample(index);
+    example.appId = null;
     return testContext.assertComplete(storeApp(example, vertx, testContext));
 
   }
@@ -226,6 +237,7 @@ public interface StoreServices {
 
               change.accept(exampleIndex, task);
             }
+            task.id = null;
 
             return storeTask(task, vertx, testContext).compose(storedTask -> {
 

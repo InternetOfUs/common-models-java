@@ -30,7 +30,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.components.Validable;
+import eu.internetofus.common.components.ValidationErrorException;
+import eu.internetofus.common.components.Validations;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -39,7 +46,7 @@ import io.vertx.core.json.JsonObject;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Message", description = "A message that is send to the user of an application.")
-public class Message extends ReflectionModel implements Model {
+public class Message extends ReflectionModel implements Model, Validable {
 
   /**
    * The identifier of the application to send the message.
@@ -65,5 +72,33 @@ public class Message extends ReflectionModel implements Model {
   @Schema(type = "object", description = "the attributes of the message, as key-value pairs.", implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject attributes;
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> validate(String codePrefix, Vertx vertx) {
+
+    final Promise<Void> promise = Promise.promise();
+    var future = promise.future();
+    try {
+
+      this.appId = Validations.validateStringField(codePrefix, "appId", 255, this.appId);
+      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
+          WeNetService.createProxy(vertx)::retrieveApp);
+
+      this.receiverId = Validations.validateStringField(codePrefix, "receiverId", 255, this.receiverId);
+      future = Validations.composeValidateId(future, codePrefix, "receiverId", this.receiverId, true,
+          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+
+      promise.complete();
+
+    } catch (final ValidationErrorException validationError) {
+
+      promise.fail(validationError);
+    }
+
+    return future;
+  }
 
 }
