@@ -897,7 +897,7 @@ public class RepositoryIT {
 
       this.createAndInsertDummyModelsWithSchemaVersionsTo(collection, 100, testContext, () -> {
 
-        final var version = UUID.randomUUID().toString();
+        final var version = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
         final Repository repository = new Repository(pool, version);
         repository.updateSchemaVersionOnCollection(collection).onComplete(testContext.succeeding(empty -> {
 
