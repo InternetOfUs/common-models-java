@@ -628,7 +628,7 @@ public class RepositoryIT {
        * {@inheritDoc}
        */
       @Override
-      protected JsonObject createQueryToReturnDocumentsThatNotMatchSchemaVersion() {
+      protected JsonObject createQueryToReturnDocumentsWithAVersionLessThan(String version) {
 
         return new JsonObject().put(Repository.SCHEMA_VERSION, new JsonObject().put("$undefinedOperator", "value"));
       }
@@ -945,7 +945,7 @@ public class RepositoryIT {
        * {@inheritDoc}
        */
       @Override
-      protected JsonObject createQueryToReturnDocumentsThatNotMatchSchemaVersion() {
+      protected JsonObject createQueryToReturnDocumentsWithAVersionLessThan(String version) {
 
         return new JsonObject().put(Repository.SCHEMA_VERSION, new JsonObject().put("$undefinedOperator", "value"));
       }

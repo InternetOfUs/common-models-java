@@ -498,18 +498,23 @@ public class Repository {
   }
 
   /**
-   * Create a query that return
+   * Create a query to return the document that has a schema version less than the
+   * specified.
+   *
+   * @param version that the document has to be less than.
    *
    * @return the query to return the models that has a different schema version.
    *
    * @see #schemaVersion
    */
-  protected JsonObject createQueryToReturnDocumentsThatNotMatchSchemaVersion() {
+  protected JsonObject createQueryToReturnDocumentsWithAVersionLessThan(String version) {
 
     final var notExists = new JsonObject().put(SCHEMA_VERSION, new JsonObject().put("$exists", false));
-    final var notEq = new JsonObject().put(SCHEMA_VERSION,
-        new JsonObject().put("$not", new JsonObject().put("$eq", this.schemaVersion)));
-    return new JsonObject().put("$or", new JsonArray().add(notExists).add(notEq));
+    final var notString = new JsonObject().put(SCHEMA_VERSION,
+        new JsonObject().put("$not", new JsonObject().put("$type", "string")));
+    final var notEq = new JsonObject().put(SCHEMA_VERSION, new JsonObject().put("$lt", version));
+    final var query = new JsonObject().put("$or", new JsonArray().add(notExists).add(notString).add(notEq));
+    return query;
 
   }
 
@@ -526,7 +531,7 @@ public class Repository {
    */
   protected <T extends Model> Future<Void> migrateCollection(final String collectionName, final Class<T> type) {
 
-    final JsonObject query = this.createQueryToReturnDocumentsThatNotMatchSchemaVersion();
+    final JsonObject query = this.createQueryToReturnDocumentsWithAVersionLessThan(this.schemaVersion);
     return this.pool.count(collectionName, query).compose(maxDocuments -> {
 
       if (maxDocuments > 0) {
@@ -630,7 +635,7 @@ public class Repository {
    */
   protected Future<Void> updateSchemaVersionOnCollection(final String collectionName) {
 
-    final var query = this.createQueryToReturnDocumentsThatNotMatchSchemaVersion();
+    final var query = this.createQueryToReturnDocumentsWithAVersionLessThan(this.schemaVersion);
     final var update = this.createUpdateForSchemaVersion();
     return this.updateCollection(collectionName, query, update);
 
