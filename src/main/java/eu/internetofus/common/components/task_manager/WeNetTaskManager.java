@@ -128,6 +128,32 @@ public interface WeNetTaskManager {
   }
 
   /**
+   * Update a {@link Task} in Json format.
+   *
+   * @param id      identifier of the task to get.
+   * @param task    the new values for the task.
+   * @param handler to the updated task.
+   */
+  void updateTask(@NotNull String id, @NotNull JsonObject task, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Update a task.
+   *
+   * @param id   identifier of the task to get.
+   * @param task the new values for the task.
+   *
+   * @return the future updated task.
+   */
+  @GenIgnore
+  default Future<Task> updateTask(@NotNull final String id, @NotNull final Task task) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.updateTask(id, task.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), Task.class);
+
+  }
+
+  /**
    * Merge a {@link Task} in Json format.
    *
    * @param id      identifier of the task to get.

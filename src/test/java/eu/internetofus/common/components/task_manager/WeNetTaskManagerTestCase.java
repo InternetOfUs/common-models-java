@@ -87,6 +87,19 @@ public abstract class WeNetTaskManagerTestCase {
   }
 
   /**
+   * Should not update undefined task.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotUpdateUndefinedTask(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertFailure(WeNetTaskManager.createProxy(vertx).updateTask("undefined-task-identifier", new Task()))
+        .onFailure(handler -> testContext.completeNow());
+  }
+
+  /**
    * Should not merge undefined task.
    *
    * @param vertx       that contains the event bus to use.
@@ -284,7 +297,7 @@ public abstract class WeNetTaskManagerTestCase {
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldNotAddTransactiuonAndMessageIntoTask(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldAddTransactionAndMessageIntoTask(final Vertx vertx, final VertxTestContext testContext) {
 
     new TaskTransactionTest().createModelExample(1, vertx, testContext).onSuccess(taskTransaction -> {
 
@@ -301,17 +314,16 @@ public abstract class WeNetTaskManagerTestCase {
                   message.appId = retrieve.appId;
                   message.receiverId = retrieve.requesterId;
                   testContext
-                      .assertComplete(
-                          service.addMessageIntoTransaction(taskTransaction.taskId, addedTransaction.id, message))
+                      .assertComplete(service.addMessageIntoTransaction(retrieve.id, addedTransaction.id, message))
                       .onSuccess(addedMessage -> {
 
-                        testContext.assertComplete(service.retrieveTask(taskTransaction.taskId))
+                        testContext.assertComplete(service.retrieveTask(addedTransaction.taskId))
                             .onSuccess(retrieve2 -> testContext.verify(() -> {
 
                               assertThat(retrieve2.transactions).isNotEmpty();
                               var transaction2 = retrieve2.transactions.get(0);
                               assertThat(transaction2.messages).isNotEmpty().contains(addedMessage);
-                              testContext.assertComplete(service.deleteTask(taskTransaction.taskId))
+                              testContext.assertComplete(service.deleteTask(addedTransaction.taskId))
                                   .onSuccess(empty -> testContext.completeNow());
                             }));
                       });

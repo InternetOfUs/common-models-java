@@ -130,6 +130,15 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
    * {@inheritDoc}
    */
   @Override
+  public void updateTask(final String id, final JsonObject task, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.put(task, "/tasks", id).onComplete(handler);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public void mergeTask(final String id, final JsonObject task, final Handler<AsyncResult<JsonObject>> handler) {
 
     this.patch(task, "/tasks", id).onComplete(handler);
