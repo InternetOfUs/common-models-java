@@ -33,17 +33,14 @@ import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
-import eu.internetofus.common.components.profile_manager.Norm;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import java.util.List;
 
 /**
  * A message that can be interchange in an interaction protocol.
@@ -56,20 +53,26 @@ public class ProtocolMessage extends ReflectionModel implements Model, Validable
   /**
    * The identifier of the application that the user has used to send the message.
    */
-  @Schema(description = "The identifier of the application that has used the sender to send this message.", example = "E34jhg78tbgh")
+  @Schema(description = "The identifier of the application associated to the message.", example = "E34jhg78tbgh")
   public String appId;
 
   /**
    * The identifier of the community where the message will be said.
    */
-  @Schema(description = "The identifier of the application that has used the sender to send this message.", example = "ceb846439eba-645a-9aaf-4a55-15837028")
+  @Schema(description = "The identifier of the community associated to the message.", example = "ceb846439eba-645a-9aaf-4a55-15837028")
   public String communityId;
 
   /**
    * The identifier of the task that the message is related.
    */
-  @Schema(description = "The identifier of the application that has used the sender to send this message.", example = "b129e5509c9bb79")
+  @Schema(description = "The identifier of the task associated to the message.", example = "b129e5509c9bb79")
   public String taskId;
+
+  /**
+   * The identifier of the task that the message is related.
+   */
+  @Schema(description = "The identifier of the transaction associated to the message.", example = "b129e5509c9bb79")
+  public String transactionId;
 
   /**
    * The identifier of the user that is sending the message.
@@ -95,12 +98,6 @@ public class ProtocolMessage extends ReflectionModel implements Model, Validable
   @Schema(description = "The content of the message.", example = "Hi!", type = "object", implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject content;
-
-  /**
-   * The norms that has to be applied over the message.
-   */
-  @ArraySchema(schema = @Schema(ref = "https://bitbucket.org/wenet/wenet-components-documentation/raw/5c28427ce0c05596ef9001ffa8a08f8eb125611f/sources/wenet-models-openapi.yaml#/components/schemas/Norm"), arraySchema = @Schema(description = "The norms to apply over the message"))
-  public List<Norm> norms;
 
   /**
    * {@inheritDoc}
@@ -135,6 +132,9 @@ public class ProtocolMessage extends ReflectionModel implements Model, Validable
             WeNetTaskManager.createProxy(vertx)::retrieveTask);
       }
 
+      this.transactionId = Validations.validateNullableStringField(codePrefix, "transactionId", 255,
+          this.transactionId);
+
       this.particle = Validations.validateStringField(codePrefix, "particle", 255, this.particle);
 
       if (this.sender == null) {
@@ -153,8 +153,6 @@ public class ProtocolMessage extends ReflectionModel implements Model, Validable
 
         future = future.compose(map -> this.sender.validate(codePrefix + ".sender", vertx));
         future = future.compose(map -> this.receiver.validate(codePrefix + ".receiver", vertx));
-        future = future
-            .compose(Validations.validate(this.norms, (a, b) -> a.id.equals(b.id), codePrefix + ".norms", vertx));
         promise.complete();
 
       }

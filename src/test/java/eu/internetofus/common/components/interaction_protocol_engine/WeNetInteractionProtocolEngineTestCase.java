@@ -28,16 +28,16 @@ package eu.internetofus.common.components.interaction_protocol_engine;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
-
 import eu.internetofus.common.components.incentive_server.IncentiveTest;
 import eu.internetofus.common.components.task_manager.TaskTest;
 import eu.internetofus.common.components.task_manager.TaskTransactionTest;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.Test;
 
 /**
- * General test over the classes that implements the {@link WeNetInteractionProtocolEngine}.
+ * General test over the classes that implements the
+ * {@link WeNetInteractionProtocolEngine}.
  *
  * @see WeNetInteractionProtocolEngine
  *
@@ -56,13 +56,13 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
 
     new ProtocolMessageTest().createModelExample(1, vertx, testContext).onSuccess(message -> {
 
-      message.norms = null;
-      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).sendMessage(message)).onSuccess(sent -> testContext.verify(() -> {
+      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).sendMessage(message))
+          .onSuccess(sent -> testContext.verify(() -> {
 
-        assertThat(message).isEqualTo(sent);
-        testContext.completeNow();
+            assertThat(message).isEqualTo(sent);
+            testContext.completeNow();
 
-      }));
+          }));
 
     });
 
@@ -79,12 +79,13 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
 
     new IncentiveTest().createModelExample(1, vertx, testContext).onSuccess(incentive -> {
 
-      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).sendIncentive(incentive)).onSuccess(sent -> testContext.verify(() -> {
+      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).sendIncentive(incentive))
+          .onSuccess(sent -> testContext.verify(() -> {
 
-        assertThat(incentive).isEqualTo(sent);
-        testContext.completeNow();
+            assertThat(incentive).isEqualTo(sent);
+            testContext.completeNow();
 
-      }));
+          }));
 
     });
 
@@ -101,12 +102,13 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
 
     new TaskTest().createModelExample(1, vertx, testContext).onSuccess(task -> {
 
-      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).createdTask(task)).onSuccess(created -> testContext.verify(() -> {
+      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).createdTask(task))
+          .onSuccess(created -> testContext.verify(() -> {
 
-        assertThat(task).isEqualTo(created);
-        testContext.completeNow();
+            assertThat(task).isEqualTo(created);
+            testContext.completeNow();
 
-      }));
+          }));
 
     });
 
@@ -121,16 +123,18 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
   @Test
   public void shouldDoTaskTransaction(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertComplete(new TaskTransactionTest().createModelExample(1, vertx, testContext)).onSuccess(taskTransaction -> {
+    testContext.assertComplete(new TaskTransactionTest().createModelExample(1, vertx, testContext))
+        .onSuccess(taskTransaction -> {
 
-      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).doTransaction(taskTransaction)).onSuccess(done -> testContext.verify(() -> {
+          testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).doTransaction(taskTransaction))
+              .onSuccess(done -> testContext.verify(() -> {
 
-        assertThat(taskTransaction).isEqualTo(done);
-        testContext.completeNow();
+                assertThat(taskTransaction).isEqualTo(done);
+                testContext.completeNow();
 
-      }));
+              }));
 
-    });
+        });
 
   }
 

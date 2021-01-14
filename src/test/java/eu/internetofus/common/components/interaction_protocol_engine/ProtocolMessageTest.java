@@ -29,21 +29,9 @@ package eu.internetofus.common.components.interaction_protocol_engine;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 
-import java.util.ArrayList;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
-import eu.internetofus.common.components.profile_manager.Norm;
-import eu.internetofus.common.components.profile_manager.NormTest;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
 import eu.internetofus.common.components.service.WeNetService;
@@ -57,6 +45,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Test the {@link ProtocolMessage}
@@ -139,8 +134,7 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
     model.receiver = new ProtocolAddressTest().createModelExample(index);
     model.particle = "particle_" + index;
     model.taskId = "taskId_" + index;
-    model.norms = new ArrayList<>();
-    model.norms.add(new NormTest().createModelExample(index));
+    model.transactionId = "transactionId_" + index;
     model.content = new JsonObject().put("index", index);
 
     return model;
@@ -441,6 +435,23 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   }
 
   /**
+   * Check that not accept a large transactionId.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see ProtocolMessage#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithALargeTransactionId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
+      model.transactionId = ValidationsTest.STRING_256;
+      assertIsNotValid(model, "transactionId", vertx, testContext);
+    });
+  }
+
+  /**
    * Check that not accept an undefined taskId.
    *
    * @param vertx       event bus to use.
@@ -472,79 +483,6 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
       model.content = null;
       assertIsNotValid(model, "content", vertx, testContext);
     });
-  }
-
-  /**
-   * Check that not accept with a bad norm.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see ProtocolMessage#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithABadNorm(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-      final var badNorm = new Norm();
-      badNorm.attribute = ValidationsTest.STRING_256;
-      model.norms.add(badNorm);
-      assertIsNotValid(model, "norms[1].attribute", vertx, testContext);
-    });
-  }
-
-  /**
-   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext )} with
-   * multiple norms is valid.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see ProtocolMessage#validate(String, Vertx)
-   */
-  @Test
-  public void shouldExampleWithMultipleNormsBeValid(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-
-      model.norms.add(new NormTest().createModelExample(2));
-      model.norms.add(new NormTest().createModelExample(3));
-      for (var i = 0; i < model.norms.size(); i++) {
-
-        model.norms.get(i).id = String.valueOf(i);
-      }
-
-      assertIsValid(model, vertx, testContext);
-
-    });
-
-  }
-
-  /**
-   * Check that a {@link #createModelExample(int, Vertx, VertxTestContext)} with
-   * multiple norms with the same id is not valid.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see ProtocolMessage#validate(String, Vertx)
-   */
-  @Test
-  public void shouldExampleWithDuplicatedNormIdsNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-
-      model.norms.add(new NormTest().createModelExample(2));
-      model.norms.add(new NormTest().createModelExample(3));
-      for (var i = 0; i < model.norms.size(); i++) {
-
-        model.norms.get(i).id = "1";
-      }
-
-      assertIsNotValid(model, "norms[1]", vertx, testContext);
-
-    });
-
   }
 
 }
