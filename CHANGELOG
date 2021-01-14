@@ -3,7 +3,7 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
-## Version 0.3.0 (2020-12-15)
+## Version 0.3.0 (2021-01-14)
 
  * Migrate to new common models.
  * Migrate to Vertx 4.
