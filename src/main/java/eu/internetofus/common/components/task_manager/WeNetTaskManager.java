@@ -65,16 +65,10 @@ public interface WeNetTaskManager {
   String DINNER_TASK_TYPE_ID = "wenet-eat-2.0.0";
 
   /**
-   * The identifier of the task type that contains the hardcoded version of the
-   * question and answer protocol.
-   */
-  String HARDCODED_Q_AND_A_R_TASK_TYPE_ID = "ask4help";
-
-  /**
    * The identifier of the task type that contains the question and answer
    * protocol.
    */
-  String Q_AND_A_TASK_TYPE_ID = "wenet-Q&A-1.0.0";
+  String QUESTION_AND_ANSWER_TASK_TYPE_ID = "ask4help";
 
   /**
    * The identifier of the task type that contains the echo protocol.
