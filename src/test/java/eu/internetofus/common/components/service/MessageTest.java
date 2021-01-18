@@ -57,6 +57,7 @@ import org.junit.jupiter.params.provider.ValueSource;
  */
 @ExtendWith(VertxExtension.class)
 public class MessageTest extends ModelTestCase<Message> {
+
   /**
    * The profile manager mocked server.
    */

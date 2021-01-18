@@ -99,24 +99,17 @@ public class WeNetTaskManagerMocker extends AbstractComponentMocker {
 
     router.post("/tasks").handler(this.tasksContext.postHandler());
     router.get("/tasks/:id").handler(this.tasksContext.getHandler());
-    router.get("/tasks").handler(this.tasksContext.getPageHandler());
+    router.get("/tasks").handler(this.tasksContext.getPageHandler("appId", "requesterId", "taskTypeId"));
     router.put("/tasks/:id").handler(this.tasksContext.putHandler());
     router.patch("/tasks/:id").handler(this.tasksContext.patchHandler());
     router.delete("/tasks/:id").handler(this.tasksContext.deleteHandler());
 
     router.post("/taskTypes").handler(this.taskTypesContext.postHandler());
     router.get("/taskTypes/:id").handler(this.taskTypesContext.getHandler());
-    router.get("/taskTypes").handler(this.taskTypesContext.getPageHandler());
+    router.get("/taskTypes").handler(this.taskTypesContext.getPageHandler("name", "description"));
     router.put("/taskTypes/:id").handler(this.taskTypesContext.putHandler());
     router.patch("/taskTypes/:id").handler(this.taskTypesContext.patchHandler());
     router.delete("/taskTypes/:id").handler(this.taskTypesContext.deleteHandler());
-
-    router.post("/tasks").handler(this.tasksContext.postHandler());
-    router.get("/tasks/:id").handler(this.tasksContext.getHandler());
-    router.get("/tasks").handler(this.tasksContext.getPageHandler());
-    router.put("/tasks/:id").handler(this.tasksContext.putHandler());
-    router.patch("/tasks/:id").handler(this.tasksContext.patchHandler());
-    router.delete("/tasks/:id").handler(this.tasksContext.deleteHandler());
 
     router.post("/tasks/:id/transactions").handler(this.createAddTransactionIntoTaskHandler());
 

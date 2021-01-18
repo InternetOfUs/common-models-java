@@ -30,9 +30,16 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.components.profile_manager.CommunityMember;
+import eu.internetofus.common.components.profile_manager.CommunityProfile;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -86,5 +93,69 @@ public class App extends ReflectionModel implements Model {
   @ArraySchema(schema = @Schema(type = "object"), arraySchema = @Schema(description = "The allowed platform for the application.", implementation = Object.class))
   @JsonDeserialize(contentUsing = JsonObjectDeserializer.class)
   public List<JsonObject> allowedPlatforms;
+
+  /**
+   * Obtain or create the community
+   *
+   * @param id    identifier of the application to get or create the default
+   *              community.
+   * @param vertx event bus to use.
+   *
+   * @return the default community of an application, if it does not exist try to
+   *         create it.
+   */
+  public static Future<CommunityProfile> getOrCreateDefaultCommunityFor(String id, Vertx vertx) {
+
+    Promise<CommunityProfile> promise = Promise.promise();
+    WeNetProfileManager.createProxy(vertx)
+        .retrieveCommunityProfilesPage(id, null, null, null, null, "-_creationTs", 0, 1).onComplete(retrieve -> {
+
+          final var page = retrieve.result();
+          if (retrieve.failed() || page.communities == null || page.communities.isEmpty()) {
+
+            WeNetService.createProxy(vertx).retrieveAppUserIds(id).onComplete(retrieveUsers -> {
+
+              final var newCommunity = new CommunityProfile();
+              newCommunity.appId = id;
+              newCommunity.name = "Community of " + id;
+              final var value = retrieveUsers.result();
+              if (value != null) {
+
+                newCommunity.members = new ArrayList<>();
+                for (var i = 0; i < value.size(); i++) {
+
+                  final var member = new CommunityMember();
+                  member.userId = value.getString(i);
+                  newCommunity.members.add(member);
+
+                }
+              }
+              WeNetProfileManager.createProxy(vertx).createCommunity(newCommunity).onComplete(createHandler -> {
+
+                final var community = createHandler.result();
+                if (community != null) {
+
+                  promise.complete(community);
+
+                } else {
+
+                  promise.fail(createHandler.cause());
+                }
+
+              });
+
+            });
+
+          } else {
+
+            promise.complete(page.communities.get(0));
+
+          }
+
+        });
+
+    return promise.future();
+
+  }
 
 }

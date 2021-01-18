@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,10 +26,24 @@
 
 package eu.internetofus.common.components.service;
 
-import java.util.ArrayList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.ModelTestCase;
+import eu.internetofus.common.components.StoreServices;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
+import java.util.ArrayList;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test the {@link App}.
@@ -38,7 +52,56 @@ import io.vertx.core.json.JsonObject;
  *
  * @author UDT-IA, IIIA-CSIC
  */
+@ExtendWith(VertxExtension.class)
 public class AppTest extends ModelTestCase<App> {
+
+  /**
+   * The profile manager mocked server.
+   */
+  protected static WeNetProfileManagerMocker profileManagerMocker;
+
+  /**
+   * The service mocked server.
+   */
+  protected static WeNetServiceSimulatorMocker serviceMocker;
+
+  /**
+   * Start the mocker server.
+   */
+  @BeforeAll
+  public static void startMockers() {
+
+    profileManagerMocker = WeNetProfileManagerMocker.start();
+    serviceMocker = WeNetServiceSimulatorMocker.start();
+  }
+
+  /**
+   * Stop the mocker server.
+   */
+  @AfterAll
+  public static void stopMockers() {
+
+    profileManagerMocker.stopServer();
+    serviceMocker.stopServer();
+  }
+
+  /**
+   * Register the necessary services before to test.
+   *
+   * @param vertx event bus to register the necessary services.
+   */
+  @BeforeEach
+  public void registerServices(final Vertx vertx) {
+
+    final var client = WebClient.create(vertx);
+    final var profileConf = profileManagerMocker.getComponentConfiguration();
+    WeNetProfileManager.register(vertx, client, profileConf);
+
+    final var conf = serviceMocker.getComponentConfiguration();
+    WeNetService.register(vertx, client, conf);
+    WeNetServiceSimulator.register(vertx, client, conf);
+
+  }
 
   /**
    * {@inheritDoc}
@@ -54,6 +117,98 @@ public class AppTest extends ModelTestCase<App> {
     model.allowedPlatforms = new ArrayList<>();
     model.allowedPlatforms.add(new JsonObject().put("platform", index));
     return model;
+
+  }
+
+  /**
+   * Check that should create a community for an application without members.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see App#getOrCreateDefaultCommunityFor(String, Vertx)
+   */
+  @Test
+  public void shouldCreateCommunityWithoutMembers(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(StoreServices.storeApp(new App(), vertx, testContext))
+        .onSuccess(app -> testContext.assertComplete(App.getOrCreateDefaultCommunityFor(app.appId, vertx))
+            .onSuccess(createdCommunity -> testContext.verify(() -> {
+
+              assertThat(createdCommunity.members).isNull();
+              assertThat(createdCommunity.name).contains(app.appId);
+              assertThat(createdCommunity.appId).isEqualTo(app.appId);
+              testContext.assertComplete(App.getOrCreateDefaultCommunityFor(app.appId, vertx))
+                  .onSuccess(getCommunity -> testContext.verify(() -> {
+
+                    assertThat(createdCommunity).isEqualTo(getCommunity);
+                    testContext.completeNow();
+
+                  }));
+
+            })));
+
+  }
+
+  /**
+   * Check that should create a community for an application.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see App#getOrCreateDefaultCommunityFor(String, Vertx)
+   */
+  @Test
+  public void shouldCreateCommunityWithMembers(final Vertx vertx, final VertxTestContext testContext) {
+
+    JsonArray users = new JsonArray().add("1").add("2").add("3").add("4");
+    testContext.assertComplete(StoreServices.storeApp(new App(), vertx, testContext)).onSuccess(app -> testContext
+        .assertComplete(
+
+            WeNetServiceSimulator.createProxy(vertx).addUsers(app.appId, users)
+                .compose(empty -> App.getOrCreateDefaultCommunityFor(app.appId, vertx)))
+        .onSuccess(createdCommunity -> testContext.verify(() -> {
+
+          assertThat(createdCommunity.members).isNotEmpty();
+          for (var member : createdCommunity.members) {
+
+            assertThat(users.remove(member.userId)).isTrue();
+          }
+          assertThat(users).isEmpty();
+          assertThat(createdCommunity.name).contains(app.appId);
+          assertThat(createdCommunity.appId).isEqualTo(app.appId);
+          testContext.assertComplete(App.getOrCreateDefaultCommunityFor(app.appId, vertx))
+              .onSuccess(getCommunity -> testContext.verify(() -> {
+
+                assertThat(createdCommunity).isEqualTo(getCommunity);
+                testContext.completeNow();
+
+              }));
+
+        })));
+
+  }
+
+  /**
+   * Check that should get default community of an application.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see App#getOrCreateDefaultCommunityFor(String, Vertx)
+   */
+  @Test
+  public void shouldGetDefaultCommunityForApp(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(StoreServices.storeCommunityExample(1, vertx, testContext))
+        .onSuccess(defaultCommunity -> testContext
+            .assertComplete(App.getOrCreateDefaultCommunityFor(defaultCommunity.appId, vertx))
+            .onSuccess(getCommunity -> testContext.verify(() -> {
+
+              assertThat(defaultCommunity).isEqualTo(getCommunity);
+              testContext.completeNow();
+
+            })));
 
   }
 

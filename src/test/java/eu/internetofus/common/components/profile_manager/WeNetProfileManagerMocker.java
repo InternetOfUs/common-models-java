@@ -93,14 +93,13 @@ public class WeNetProfileManagerMocker extends AbstractComponentMocker {
 
     router.post("/profiles").handler(this.profilesContext.postHandler());
     router.get("/profiles/:id").handler(this.profilesContext.getHandler());
-    router.get("/profiles").handler(this.profilesContext.getPageHandler());
     router.put("/profiles/:id").handler(this.profilesContext.putHandler());
     router.patch("/profiles/:id").handler(this.profilesContext.patchHandler());
     router.delete("/profiles/:id").handler(this.profilesContext.deleteHandler());
 
     router.post("/communities").handler(this.communitiesContext.postHandler());
     router.get("/communities/:id").handler(this.communitiesContext.getHandler());
-    router.get("/communities").handler(this.communitiesContext.getPageHandler());
+    router.get("/communities").handler(this.communitiesContext.getPageHandler("appId", "name", "description"));
     router.put("/communities/:id").handler(this.communitiesContext.putHandler());
     router.patch("/communities/:id").handler(this.communitiesContext.patchHandler());
     router.delete("/communities/:id").handler(this.communitiesContext.deleteHandler());

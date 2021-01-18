@@ -33,6 +33,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.BiPredicate;
 import javax.ws.rs.core.Response.Status;
 
 /**
@@ -165,12 +166,13 @@ public class CRUDContext {
   }
 
   /**
-   * Return the handler to get all the value with the identifier defined on the
-   * path.
+   * Return the handler to get all the value with the values that pass the filter.
+   *
+   * @param filter to apply over the element to return.
    *
    * @return the handler to obtain a value by its identifier.
    */
-  public Handler<RoutingContext> getPageHandler() {
+  public Handler<RoutingContext> getPageHandler(BiPredicate<RoutingContext, JsonObject> filter) {
 
     return ctx -> {
 
@@ -180,15 +182,25 @@ public class CRUDContext {
       var array = new JsonArray();
       var max = this.values.size();
       var iter = this.values.keySet().iterator();
-      for (int i = 0; i < offset && iter.hasNext(); i++) {
-
-        iter.next();
-      }
-      for (int i = 0; i < limit && iter.hasNext(); i++) {
+      for (int i = 0; i < offset && iter.hasNext();) {
 
         var id = iter.next();
         var value = this.values.get(id);
-        array = array.add(value);
+        if (filter == null || filter.test(ctx, value)) {
+
+          i++;
+        }
+
+      }
+      for (int i = 0; i < limit && iter.hasNext();) {
+
+        var id = iter.next();
+        var value = this.values.get(id);
+        if (filter == null || filter.test(ctx, value)) {
+          array = array.add(value);
+          i++;
+        }
+
       }
       if (array.size() == 0) {
 
@@ -200,6 +212,48 @@ public class CRUDContext {
 
     };
 
+  }
+
+  /**
+   * Create a filter to filter the values requested by a query.
+   *
+   * @param paramNames names of the parameters to filter the values.
+   *
+   * @return the filter with the specified query parameters with the same value on
+   *         the model.
+   */
+  public BiPredicate<RoutingContext, JsonObject> createValueFilter(String... paramNames) {
+
+    return (ctx, value) -> {
+
+      if (paramNames != null) {
+
+        for (var paramName : paramNames) {
+
+          var paramValue = ctx.queryParams().get(paramName);
+          if (paramValue != null && !paramValue.equals(value.getString(paramName))) {
+
+            return false;
+
+          }
+        }
+      }
+
+      return true;
+    };
+
+  }
+
+  /**
+   * Return the handler to get all the value with the values defined on the path.
+   *
+   * @param paramNames names of the parameters to filter the values.
+   *
+   * @return the handler to obtain a value by its identifier.
+   */
+  public Handler<RoutingContext> getPageHandler(String... paramNames) {
+
+    return this.getPageHandler(this.createValueFilter(paramNames));
   }
 
   /**
