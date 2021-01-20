@@ -26,7 +26,7 @@
 package eu.internetofus.wenet_dummy.api.dummies;
 
 import static eu.internetofus.common.vertx.HttpResponses.assertThatBodyIs;
-import static eu.internetofus.common.vertx.ext.TestRequest.testRequest;
+import static io.reactiverse.junit5.web.TestRequest.testRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.ErrorMessage;
