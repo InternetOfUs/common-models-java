@@ -73,6 +73,11 @@ public class RepositoryIT {
   private static final String TEN_DUMMY_COLLECTION = "TEN_DUMMY_COLLECTION";
 
   /**
+   * Name of the collection with 10 complex models used to test the aggregate.
+   */
+  private static final String TEN_AGGREGATIOMN_COLLECTION = "TEN_AGGREGATION_COLLECTION";
+
+  /**
    * The pool to use on the test.
    */
   protected static MongoClient pool;
@@ -88,27 +93,51 @@ public class RepositoryIT {
 
     final var persitenceConf = Containers.status().startMongoContainer().getMongoDBConfig();
     pool = MongoClient.createShared(vertx, persitenceConf, "repository_pool_name");
-    pool.createCollection(EMPTY_COLLECTION, testContext.succeeding(empty -> {
+    testContext
+        .assertComplete(pool.createCollection(EMPTY_COLLECTION).compose(empty -> pool.createCollection(TEST_COLLECTION))
+            .compose(test -> pool.createCollection(TEN_DUMMY_COLLECTION)).compose(tem -> {
+              Future<String> future = Future.succeededFuture();
+              for (var i = 0; i < 10; i++) {
 
-      pool.createCollection(TEST_COLLECTION, testContext.succeeding(test -> {
+                final DummyModel model = new DummyModel();
+                model.index = i;
+                future = future.compose(stored -> pool.insert(TEN_DUMMY_COLLECTION, model.toJsonObject()));
 
-        pool.createCollection(TEN_DUMMY_COLLECTION, testContext.succeeding(ten -> {
+              }
+              return future;
+            }).compose(test -> pool.createCollection(TEN_AGGREGATIOMN_COLLECTION)).compose(tem -> {
+              Future<String> future = Future.succeededFuture();
+              for (var i = 0; i < 10; i++) {
 
-          Future<String> future = Future.succeededFuture();
-          for (var i = 0; i < 10; i++) {
+                var children = new JsonArray();
+                for (var j = 0; j < 10; j++) {
 
-            final DummyModel model = new DummyModel();
-            model.index = i;
-            future = future.compose(stored -> pool.insert(TEN_DUMMY_COLLECTION, model.toJsonObject()));
+                  var grandChildren = new JsonArray();
+                  for (var k = 0; k < 10; k++) {
 
-          }
-          testContext.assertComplete(future).onSuccess(stored -> testContext.completeNow());
+                    var elders = new JsonArray();
+                    for (var l = 0; l < 10; l++) {
 
-        }));
+                      var elder = new JsonObject().put("i", i).put("j", j).put("k", k).put("l", l);
+                      elders.add(elder);
 
-      }));
+                    }
+                    var grandChild = new JsonObject().put("i", i).put("j", j).put("k", k).put("elders", elders);
+                    grandChildren.add(grandChild);
 
-    }));
+                  }
+                  var child = new JsonObject().put("i", i).put("j", j).put("grandChildren", grandChildren);
+                  children.add(child);
+
+                }
+                final var model = new JsonObject().put("index", i).put("children", children);
+                future = future.compose(stored -> pool.insert(TEN_AGGREGATIOMN_COLLECTION, model));
+
+              }
+              return future;
+            })
+
+        ).onSuccess(stored -> testContext.completeNow());
 
   }
 
@@ -1030,6 +1059,137 @@ public class RepositoryIT {
                     }));
 
               }));
+
+        }));
+
+  }
+
+  /**
+   * Should by empty aggregate page because query is wrong.
+   *
+   * @param testContext context for the test.
+   */
+  @Test
+  public void shouldCountAggregationByZero(final VertxTestContext testContext) {
+
+    final Repository repository = new Repository(pool, "schemaVersion");
+    testContext.assertComplete(repository.countAggregation(EMPTY_COLLECTION, null, null))
+        .onSuccess(total -> testContext.verify(() -> {
+
+          assertThat(total).isEqualTo(0l);
+          testContext.completeNow();
+
+        }));
+
+  }
+
+  /**
+   * Should not aggregate page because query is wrong.
+   *
+   * @param testContext context for the test.
+   */
+  @Test
+  public void shouldNotAggregatePageObjectBecauseQueryIsNotValid(final VertxTestContext testContext) {
+
+    final Repository repository = new Repository(pool, "schemaVersion");
+    var query = new JsonObject().put("$undefinedAction", -1);
+    var order = new JsonObject();
+    testContext.assertFailure(repository.aggregatePageObject(EMPTY_COLLECTION, query, order, 0, 10, "models"))
+        .onFailure(error -> testContext.completeNow());
+
+  }
+
+  /**
+   * Should not aggregate page because order is wrong.
+   *
+   * @param testContext context for the test.
+   */
+  @Test
+  public void shouldNotAggregatePageObjectBecauseOrderIsNotValid(final VertxTestContext testContext) {
+
+    final Repository repository = new Repository(pool, "schemaVersion");
+    var query = new JsonObject();
+    var order = new JsonObject().put("$undefinedAction", new JsonObject().put("key", 1));
+    testContext.assertFailure(repository.aggregatePageObject(EMPTY_COLLECTION, query, order, 0, 10, "models"))
+        .onFailure(error -> testContext.completeNow());
+
+  }
+
+  /**
+   * Should return an empty page if no documents on collection.
+   *
+   * @param testContext context for the test.
+   */
+  @Test
+  public void shouldAggregatePageObjectIsEmpty(final VertxTestContext testContext) {
+
+    final Repository repository = new Repository(pool, "schemaVersion");
+    testContext
+        .assertComplete(
+            repository.aggregatePageObject(EMPTY_COLLECTION, new JsonObject(), new JsonObject(), 0, 10, "models"))
+        .onSuccess(page -> testContext.verify(() -> {
+
+          assertThat(page).isNotNull();
+          assertThat(page.getInteger("offset")).isNotNull().isEqualTo(0);
+          assertThat(page.getInteger("total")).isNotNull().isEqualTo(0);
+          assertThat(page.containsKey("models")).isFalse();
+          testContext.completeNow();
+
+        }));
+
+  }
+
+  /**
+   * Should return an empty page because the offset is greater than the total.
+   *
+   * @param testContext context for the test.
+   */
+  @Test
+  public void shouldAggregatePageObjectIsEmptyWhenOffsetIsGreaterTotal(final VertxTestContext testContext) {
+
+    final Repository repository = new Repository(pool, "schemaVersion");
+    var query = new JsonObject();
+    var order = new JsonObject();
+    testContext
+        .assertComplete(repository.aggregatePageObject(TEN_AGGREGATIOMN_COLLECTION, query, order, 200, 100, "children"))
+        .onSuccess(page -> testContext.verify(() -> {
+
+          assertThat(page).isNotNull();
+          assertThat(page.getInteger("offset")).isNotNull().isEqualTo(200);
+          assertThat(page.getInteger("total")).isNotNull().isEqualTo(100);
+          assertThat(page.containsKey("models")).isFalse();
+          testContext.completeNow();
+
+        }));
+
+  }
+
+  /**
+   * Should return a page of models.
+   *
+   * @param testContext context for the test.
+   */
+  @Test
+  public void shouldAggregatePageObjectModels(final VertxTestContext testContext) {
+
+    final Repository repository = new Repository(pool, "schemaVersion");
+    var query = new JsonObject().put("index", new JsonObject().put("$mod", new JsonArray().add(2).add(0)));
+    var order = new JsonObject().put("index", -1).put("children.j", 1).put("children.grandChildren.k", -1)
+        .put("children.grandChildren.elders.l", 1);
+    testContext.assertComplete(repository.aggregatePageObject(TEN_AGGREGATIOMN_COLLECTION, query, order, 10, 5,
+        "children.grandChildren.elders")).onSuccess(page -> testContext.verify(() -> {
+
+          assertThat(page).isNotNull();
+          assertThat(page.getInteger("offset")).isNotNull().isEqualTo(10);
+          assertThat(page.getInteger("total")).isNotNull().isEqualTo(5000);
+          final var elders = page.getJsonArray("elders");
+          assertThat(elders).isNotNull().hasSize(5).containsExactly(
+              new JsonObject().put("i", 8).put("j", 0).put("k", 8).put("l", 0),
+              new JsonObject().put("i", 8).put("j", 0).put("k", 8).put("l", 1),
+              new JsonObject().put("i", 8).put("j", 0).put("k", 8).put("l", 2),
+              new JsonObject().put("i", 8).put("j", 0).put("k", 8).put("l", 3),
+              new JsonObject().put("i", 8).put("j", 0).put("k", 8).put("l", 4));
+          testContext.completeNow();
 
         }));
 

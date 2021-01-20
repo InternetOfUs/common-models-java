@@ -30,9 +30,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ValidationErrorException;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -88,29 +86,6 @@ public class Repository {
    * @param resultKey      to store the found models.
    * @param map            function to apply to each found object or {@code null}
    *                       to not modify the components.
-   * @param searchHandler  handler to manage the result action.
-   *
-   * @deprecated Use
-   *             {@link #searchPageObject(String, JsonObject, FindOptions, String, Consumer)}
-   *             instead.
-   */
-  @Deprecated
-  protected void searchPageObject(final String collectionName, final JsonObject query, final FindOptions options,
-      final String resultKey, final Consumer<JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
-
-    this.searchPageObject(collectionName, query, options, resultKey, map).onComplete(searchHandler);
-
-  }
-
-  /**
-   * Search for a page.
-   *
-   * @param collectionName of the collections that contains the models.
-   * @param query          to obtain the components of the page.
-   * @param options        to apply to the search.
-   * @param resultKey      to store the found models.
-   * @param map            function to apply to each found object or {@code null}
-   *                       to not modify the components.
    *
    * @return the future found page.
    */
@@ -149,23 +124,6 @@ public class Repository {
    *
    * @param collectionName of the collections that contains the model to delete.
    * @param query          to to match the document to delete.
-   * @param deleteHandler  handler to manage the delete action.
-   *
-   * @deprecated Use {@link #deleteOneDocument(String, JsonObject)} instead.
-   */
-  @Deprecated
-  protected void deleteOneDocument(final String collectionName, final JsonObject query,
-      final Handler<AsyncResult<Void>> deleteHandler) {
-
-    this.deleteOneDocument(collectionName, query).onComplete(deleteHandler);
-
-  }
-
-  /**
-   * Delete one document.
-   *
-   * @param collectionName of the collections that contains the model to delete.
-   * @param query          to to match the document to delete.
    *
    * @return the future result of the delete action.
    */
@@ -183,25 +141,6 @@ public class Repository {
       }
 
     });
-
-  }
-
-  /**
-   * Update one document.
-   *
-   * @param collectionName of the collections that contains the model to update.
-   * @param query          to to match the document to update.
-   * @param updateModel    the new values of the model.
-   * @param updateHandler  handler to manage the update action.
-   *
-   * @deprecated Use {@link #updateOneDocument(String, JsonObject, JsonObject)}
-   *             instead.
-   */
-  @Deprecated
-  protected void updateOneDocument(@NotNull final String collectionName, @NotNull final JsonObject query,
-      final JsonObject updateModel, final Handler<AsyncResult<Void>> updateHandler) {
-
-    this.updateOneDocument(collectionName, query, updateModel).onComplete(updateHandler);
 
   }
 
@@ -275,27 +214,6 @@ public class Repository {
    * @param map            function to modify the stored document. If it is
    *                       {@code null} no modification is applied.
    *
-   * @param storeHandler   handler to manage the store action.
-   *
-   * @deprecated Use {@link #storeOneDocument(String, JsonObject, Function)}
-   *             instead.
-   */
-  @Deprecated
-  protected void storeOneDocument(@NotNull final String collectionName, @NotNull final JsonObject model,
-      final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> storeHandler) {
-
-    this.storeOneDocument(collectionName, model, map).onComplete(storeHandler);
-
-  }
-
-  /**
-   * Store one document.
-   *
-   * @param collectionName of the collections that contains the model to store.
-   * @param model          to store.
-   * @param map            function to modify the stored document. If it is
-   *                       {@code null} no modification is applied.
-   *
    * @return the future stored model.
    */
   protected Future<JsonObject> storeOneDocument(@NotNull final String collectionName, @NotNull final JsonObject model,
@@ -340,28 +258,6 @@ public class Repository {
 
       return Future.succeededFuture(model);
     }
-  }
-
-  /**
-   * Find one document.
-   *
-   * @param collectionName of the collections that contains the model to find.
-   * @param query          of the document to find.
-   * @param fields         to return.
-   * @param map            function to modify the found document. If it is
-   *                       {@code null} no modification is applied.
-   * @param searchHandler  handler to manage the find action.
-   *
-   * @deprecated Use
-   *             {@link #findOneDocument(String, JsonObject, JsonObject, Function)}
-   *             instead.
-   */
-  @Deprecated
-  protected void findOneDocument(@NotNull final String collectionName, final JsonObject query, final JsonObject fields,
-      final Function<JsonObject, JsonObject> map, final Handler<AsyncResult<JsonObject>> searchHandler) {
-
-    this.findOneDocument(collectionName, query, fields, map).onComplete(searchHandler);
-
   }
 
   /**
@@ -673,6 +569,95 @@ public class Repository {
             () -> updated.result().getDocModified(), () -> collectionName, () -> this.schemaVersion);
         promise.complete();
       }
+
+    });
+
+    return promise.future();
+
+  }
+
+  /**
+   * Search for a page.
+   *
+   * @param collectionName of the collections that contains the models.
+   * @param query          to obtain the components of the page.
+   * @param order          to provide the results.
+   * @param offset         the index of the first elements to return.
+   * @param limit          the number maximum of elements to return.
+   * @param elementPath    the name of the element to unwind. It has to be the
+   *                       values to access to component on the document.
+   *
+   * @return the future found page.
+   */
+  protected Future<JsonObject> aggregatePageObject(@NotNull final String collectionName,
+      @NotNull final JsonObject query, @NotNull final JsonObject order, int offset, int limit,
+      @NotNull final String elementPath) {
+
+    var splitted = AggregationBuilder.splitElementPath(elementPath);
+    return this.countAggregation(collectionName, splitted, query).compose(total -> {
+
+      Promise<JsonObject> promise = Promise.promise();
+      var retrievePipeline = new AggregationBuilder().unwindPath(splitted).match(query).sort(order, offset, limit)
+          .build();
+      var elements = new JsonArray();
+      var resultKey = splitted[splitted.length - 1];
+      var page = new JsonObject().put("offset", offset).put("total", total).put(resultKey, elements);
+      this.pool.aggregate(collectionName, retrievePipeline).handler(value -> {
+
+        var element = value.getJsonObject(splitted[0]);
+        for (var i = 1; i < splitted.length; i++) {
+
+          element = element.getJsonObject(splitted[i]);
+        }
+        elements.add(element);
+
+      }).exceptionHandler(cause -> {
+
+        promise.fail(cause);
+
+      }).endHandler(finishedRetrieve -> {
+
+        if (elements.isEmpty()) {
+
+          page.remove(resultKey);
+        }
+        promise.complete(page);
+
+      });
+
+      return promise.future();
+
+    });
+
+  }
+
+  /**
+   * Count the aggregated documents that match the query.
+   *
+   * @param collectionName of the collections that contains the models.
+   * @param elementPath    the splitted path of the elements.
+   * @param query          to satisfy.
+   *
+   * @return the future of the total documents that match.
+   */
+  protected Future<Long> countAggregation(@NotNull String collectionName, @NotNull String[] elementPath,
+      @NotNull JsonObject query) {
+
+    Promise<Long> promise = Promise.promise();
+    var countPipeline = new AggregationBuilder().unwindPath(elementPath).match(query).build()
+        .add(new JsonObject().put("$count", "total"));
+    this.pool.aggregate(collectionName, countPipeline).handler(element -> {
+
+      var total = element.getLong("total", 0l);
+      promise.complete(total);
+
+    }).exceptionHandler(cause -> {
+
+      promise.fail(cause);
+
+    }).endHandler(empty -> {
+      // Use this complete when no documents match
+      promise.tryComplete(0l);
 
     });
 
