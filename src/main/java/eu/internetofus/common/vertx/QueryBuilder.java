@@ -98,8 +98,10 @@ public class QueryBuilder {
    * Add a the restrictions to mark the field to be in the specified range.
    *
    * @param fieldName name of the field.
-   * @param from      the value, inclusive, that mark the lowest value of the range.
-   * @param to        the value, inclusive, that mark the highest value of the range.
+   * @param from      the value, inclusive, that mark the lowest value of the
+   *                  range.
+   * @param to        the value, inclusive, that mark the highest value of the
+   *                  range.
    *
    * @return the factory that is using.
    */
@@ -127,11 +129,13 @@ public class QueryBuilder {
   }
 
   /**
-   * Add a the restrictions to mark the field exist, thus that it is defined and not {@code null}.
+   * Add a the restrictions to mark the field exist, thus that it is defined and
+   * not {@code null}.
    *
    * @param fieldName  name of the field.
-   * @param hasToExist is {@code true} is the field has to exist, {@code false} if has to no exist, or {@code null} to
-   *                   ignore this restriction.
+   * @param hasToExist is {@code true} is the field has to exist, {@code false} if
+   *                   has to no exist, or {@code null} to ignore this
+   *                   restriction.
    *
    * @return the factory that is using.
    */
@@ -180,11 +184,12 @@ public class QueryBuilder {
   }
 
   /**
-   * Add a the restrictions to mark the field with an specific value or a regular expression. It it is a regular
-   * expression it has to be between {@code /}.
+   * Add a the restrictions to mark the field with an specific value or a regular
+   * expression. It it is a regular expression it has to be between {@code /}.
    *
    * @param fieldName name of the field.
-   * @param value     or regular expression for the field. If it is {@code null} the field is ignored.
+   * @param value     or regular expression for the field. If it is {@code null}
+   *                  the field is ignored.
    *
    * @return the factory that is using.
    */
@@ -233,11 +238,13 @@ public class QueryBuilder {
   }
 
   /**
-   * Add a the restrictions to mark an array field that contains some elements that match a value or a regular expression.
-   * It it is a regular expression it has to be between {@code /}.
+   * Add a the restrictions to mark an array field that contains some elements
+   * that match a value or a regular expression. It it is a regular expression it
+   * has to be between {@code /}.
    *
    * @param fieldName name of the field that contains an array.
-   * @param values    or regular expression for the field. If it is {@code null} the field is ignored.
+   * @param values    or regular expression for the field. If it is {@code null}
+   *                  the field is ignored.
    *
    * @return the factory that is using.
    */
@@ -297,16 +304,19 @@ public class QueryBuilder {
   }
 
   /**
-   * Add a the restrictions to mark an array field that contains some elements where a field matches a value or a regular expression.
-   * It it is a regular expression it has to be between {@code /}.
+   * Add a the restrictions to mark an array field that contains some elements
+   * where a field matches a value or a regular expression. It it is a regular
+   * expression it has to be between {@code /}.
    *
    * @param fieldName    name of the field that contains an array.
    * @param subFieldName name of the field for the element on the elements.
-   * @param values       or regular expression for the field. If it is {@code null} the field is ignored.
+   * @param values       or regular expression for the field. If it is
+   *                     {@code null} the field is ignored.
    *
    * @return the factory that is using.
    */
-  public QueryBuilder withElementEqOrRegex(final String fieldName, final String subFieldName, final Iterable<String> values) {
+  public QueryBuilder withElementEqOrRegex(final String fieldName, final String subFieldName,
+      final Iterable<String> values) {
 
     if (values != null) {
 
@@ -316,7 +326,8 @@ public class QueryBuilder {
         if (value != null) {
 
           final var elementMatch = this.elementMatch(value);
-          patternsElementsMatch.add(new JsonObject().put("$elemMatch", new JsonObject().put(subFieldName, elementMatch)));
+          patternsElementsMatch
+              .add(new JsonObject().put("$elemMatch", new JsonObject().put(subFieldName, elementMatch)));
         }
 
       }
@@ -329,4 +340,33 @@ public class QueryBuilder {
     return this;
   }
 
+  /**
+   * Add a the restrictions to mark the field with an specific value or a regular
+   * expression. If the value is {@code null} it check if the field not exist or
+   * it is {@code null}. it is a regular expression it has to be between
+   * {@code /}.
+   *
+   * @param fieldName name of the field.
+   * @param value     or regular expression for the field, or {@code null} if the
+   *                  filed has to no exist or be {@code null}.
+   *
+   *
+   * @return the factory that is using.
+   */
+  public QueryBuilder withNoExistNullEqOrRegex(final String fieldName, final String value) {
+
+    if (value != null) {
+
+      return this.withEqOrRegex(fieldName, value);
+
+    } else {
+
+      this.query.put(fieldName, new JsonObject().put("$or",
+          new JsonArray().add(new JsonObject().putNull("$eq")).add(new JsonObject().put("$exists", false))));
+
+    }
+
+    return this;
+
+  }
 }

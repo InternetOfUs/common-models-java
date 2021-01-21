@@ -28,16 +28,14 @@ package eu.internetofus.common.vertx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.Arrays;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 /**
  * Test the {@link QueryBuilder}.
@@ -236,7 +234,8 @@ public class QueryBuilderTest {
 
     final var builder = new QueryBuilder();
     assertThat(builder.withRange("fieldName", 1, 2)).isSameAs(builder);
-    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$gte", 1).put("$lte", 2)));
+    assertThat(builder.build())
+        .isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$gte", 1).put("$lte", 2)));
 
   }
 
@@ -278,7 +277,8 @@ public class QueryBuilderTest {
 
     final var builder = new QueryBuilder();
     assertThat(builder.withExist("fieldName", true)).isSameAs(builder);
-    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$exists", true).putNull("$ne")));
+    assertThat(builder.build())
+        .isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$exists", true).putNull("$ne")));
 
   }
 
@@ -292,8 +292,11 @@ public class QueryBuilderTest {
 
     final var builder = new QueryBuilder();
     assertThat(builder.withRegex("fieldName", Arrays.asList("key1", "key2", "key3"))).isSameAs(builder);
-    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$all", new JsonArray().add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key1")))
-        .add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key2"))).add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key3"))))));
+    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName",
+        new JsonObject().put("$all",
+            new JsonArray().add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key1")))
+                .add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key2")))
+                .add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key3"))))));
 
   }
 
@@ -328,7 +331,8 @@ public class QueryBuilderTest {
 
     final var builder = new QueryBuilder();
     assertThat(builder.withEqOrRegex("fieldName", value)).isSameAs(builder);
-    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$regex", builder.extractPattern(value))));
+    assertThat(builder.build())
+        .isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$regex", builder.extractPattern(value))));
 
   }
 
@@ -357,12 +361,15 @@ public class QueryBuilderTest {
     final var builder = new QueryBuilder();
     assertThat(builder.withEqOrRegex("fieldName", Arrays.asList("value", null, "/key.+/"))).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName",
-        new JsonObject().put("$all", new JsonArray().add(new JsonObject().put("$elemMatch", new JsonObject().put("$eq", "value"))).add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key.+"))))));
+        new JsonObject().put("$all",
+            new JsonArray().add(new JsonObject().put("$elemMatch", new JsonObject().put("$eq", "value")))
+                .add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key.+"))))));
 
   }
 
   /**
-   * Should create query with element equals or with regexp with {@code null} values.
+   * Should create query with element equals or with regexp with {@code null}
+   * values.
    *
    * @see QueryBuilder#withEqOrRegex(String, Iterable)
    */
@@ -398,9 +405,58 @@ public class QueryBuilderTest {
   public void shouldCreateQueryWithElementEqOrRegex() {
 
     final var builder = new QueryBuilder();
-    assertThat(builder.withElementEqOrRegex("fieldName", "subFieldName", Arrays.asList("value", "/re.*xp/", null))).isSameAs(builder);
-    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$all", new JsonArray().add(new JsonObject().put("$elemMatch", new JsonObject().put("subFieldName", new JsonObject().put("$eq", "value"))))
-        .add(new JsonObject().put("$elemMatch", new JsonObject().put("subFieldName", new JsonObject().put("$regex", "re.*xp")))))));
+    assertThat(builder.withElementEqOrRegex("fieldName", "subFieldName", Arrays.asList("value", "/re.*xp/", null)))
+        .isSameAs(builder);
+    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName",
+        new JsonObject().put("$all",
+            new JsonArray()
+                .add(new JsonObject().put("$elemMatch",
+                    new JsonObject().put("subFieldName", new JsonObject().put("$eq", "value"))))
+                .add(new JsonObject().put("$elemMatch",
+                    new JsonObject().put("subFieldName", new JsonObject().put("$regex", "re.*xp")))))));
+
+  }
+
+  /**
+   * Should create a regexp.
+   *
+   * @see QueryBuilder#withNoExistNullEqOrRegex(String, String)
+   */
+  @Test
+  public void shouldWithNoExistNullEqOrRegexMatchRegexp() {
+
+    final var builder = new QueryBuilder();
+    assertThat(builder.withNoExistNullEqOrRegex("fieldName", "/re.*xp/")).isSameAs(builder);
+    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$regex", "re.*xp")));
+
+  }
+
+  /**
+   * Should create an equals value.
+   *
+   * @see QueryBuilder#withNoExistNullEqOrRegex(String, String)
+   */
+  @Test
+  public void shouldWithNoExistNullEqOrRegexMatchEq() {
+
+    final var builder = new QueryBuilder();
+    assertThat(builder.withNoExistNullEqOrRegex("fieldName", "value")).isSameAs(builder);
+    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", "value"));
+
+  }
+
+  /**
+   * Should create an equals value.
+   *
+   * @see QueryBuilder#withNoExistNullEqOrRegex(String, String)
+   */
+  @Test
+  public void shouldWithNoExistNullEqOrRegexMatchNoExsitOrNull() {
+
+    final var builder = new QueryBuilder();
+    assertThat(builder.withNoExistNullEqOrRegex("fieldName", null)).isSameAs(builder);
+    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$or",
+        new JsonArray().add(new JsonObject().putNull("$eq")).add(new JsonObject().put("$exists", false)))));
 
   }
 
