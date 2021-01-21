@@ -29,6 +29,8 @@ import eu.internetofus.common.components.interaction_protocol_engine.WeNetIntera
 import eu.internetofus.common.vertx.AbstractAPIVerticle;
 import eu.internetofus.wenet_dummy.api.dummies.Dummies;
 import eu.internetofus.wenet_dummy.api.dummies.DummiesResources;
+import eu.internetofus.wenet_dummy.api.echo.Echo;
+import eu.internetofus.wenet_dummy.api.echo.EchoResources;
 import eu.internetofus.wenet_dummy.service.WeNetDummiesClient;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -63,6 +65,9 @@ public class APIVerticle extends AbstractAPIVerticle {
 
     routerFactory.mountServiceInterface(Dummies.class, Dummies.ADDRESS);
     new ServiceBinder(this.vertx).setAddress(Dummies.ADDRESS).register(Dummies.class, new DummiesResources(this.vertx));
+
+    routerFactory.mountServiceInterface(Echo.class, Echo.ADDRESS);
+    new ServiceBinder(this.vertx).setAddress(Echo.ADDRESS).register(Echo.class, new EchoResources(this.vertx));
 
   }
 

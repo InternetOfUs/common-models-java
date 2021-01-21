@@ -150,7 +150,7 @@ public interface ServiceResponseHandlers {
     Buffer buffer;
     if (model instanceof Model) {
 
-      buffer = ((Model) model).toBuffer();
+      buffer = ((Model) model).toJsonObjectWithEmptyValues().toBuffer();
 
     } else if (model instanceof JsonObject) {
 
