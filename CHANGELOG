@@ -5,7 +5,7 @@ All notable changes to `wenet-common` will be documented in this file
 
 ## Version 0.5.0 (2021- )
 
- *
+ * Fix problem service response to include null fields for models.
 
 
 ## Version 0.4.0 (2021-01-22)
