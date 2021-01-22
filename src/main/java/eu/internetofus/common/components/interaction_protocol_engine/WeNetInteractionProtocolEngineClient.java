@@ -26,13 +26,12 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
-import javax.validation.constraints.NotNull;
-
 import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import javax.validation.constraints.NotNull;
 
 /**
  * The implementation of the {@link WeNetInteractionProtocolEngine}.
@@ -49,7 +48,8 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
   public static final String DEFAULT_INTERACTION_PROTOCOL_ENGINE_API_URL = "https://wenet.u-hopper.com/prod/interaction_protocol_engine";
 
   /**
-   * The name of the configuration property that contains the URL to the incentive server API.
+   * The name of the configuration property that contains the URL to the incentive
+   * server API.
    */
   public static final String INTERACTION_PROTOCOL_ENGINE_CONF_KEY = "interactionProtocolEngine";
 
@@ -101,6 +101,28 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
   public void doTransaction(@NotNull final JsonObject transaction, final Handler<AsyncResult<JsonObject>> handler) {
 
     this.post(transaction, "/tasks/transactions").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveCommunityUserState(@NotNull String communityId, @NotNull String userId,
+      Handler<AsyncResult<JsonObject>> handler) {
+
+    this.getJsonObject("/states/communities", communityId, "/users", userId).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void mergeCommunityUserState(@NotNull String communityId, @NotNull String userId, @NotNull JsonObject newState,
+      Handler<AsyncResult<JsonObject>> handler) {
+
+    this.patch(newState, "/states/communities", communityId, "/users", userId).onComplete(handler);
 
   }
 

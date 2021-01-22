@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
-import javax.validation.constraints.NotNull;
-
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.incentive_server.Incentive;
 import eu.internetofus.common.components.task_manager.Task;
@@ -42,6 +40,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
+import javax.validation.constraints.NotNull;
 
 /**
  * The class used to interact with the WeNet interaction protocol engine.
@@ -77,7 +76,8 @@ public interface WeNetInteractionProtocolEngine {
    */
   static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-    new ServiceBinder(vertx).setAddress(WeNetInteractionProtocolEngine.ADDRESS).register(WeNetInteractionProtocolEngine.class, new WeNetInteractionProtocolEngineClient(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetInteractionProtocolEngine.ADDRESS)
+        .register(WeNetInteractionProtocolEngine.class, new WeNetInteractionProtocolEngineClient(client, conf));
 
   }
 
@@ -175,5 +175,62 @@ public interface WeNetInteractionProtocolEngine {
     return Model.fromFutureJsonObject(promise.future(), TaskTransaction.class);
 
   }
+
+  /**
+   * Obtain the status of an user in a community.
+   *
+   * @param communityId identifier of the community where is the user.
+   * @param userId      identifier of the user to get the state.
+   *
+   * @return the future community user state.
+   */
+  @GenIgnore
+  default Future<State> retrieveCommunityUserState(@NotNull final String communityId, @NotNull final String userId) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.retrieveCommunityUserState(communityId, userId, promise);
+    return Model.fromFutureJsonObject(promise.future(), State.class);
+
+  }
+
+  /**
+   * Obtain the status of an user in a community.
+   *
+   * @param communityId identifier of the community where is the user.
+   * @param userId      identifier of the user to get the state.
+   * @param handler     for the obtained community user state.
+   */
+  void retrieveCommunityUserState(@NotNull final String communityId, @NotNull final String userId,
+      Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Merge the state of the user on a community.
+   *
+   * @param communityId identifier of the community where is the user.
+   * @param userId      identifier of the user to get the state.
+   * @param newState    for the user in the community.
+   *
+   * @return the future community user state.
+   */
+  @GenIgnore
+  default Future<State> mergeCommunityUserState(@NotNull final String communityId, @NotNull final String userId,
+      @NotNull final State newState) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.mergeCommunityUserState(communityId, userId, newState.toJsonObjectWithEmptyValues(), promise);
+    return Model.fromFutureJsonObject(promise.future(), State.class);
+
+  }
+
+  /**
+   * Merge the state of the user on a community.
+   *
+   * @param communityId identifier of the community where is the user.
+   * @param userId      identifier of the user to get the state.
+   * @param newState    for the user in the community.
+   * @param handler     for the merged community user state.
+   */
+  void mergeCommunityUserState(@NotNull final String communityId, @NotNull final String userId,
+      @NotNull final JsonObject newState, Handler<AsyncResult<JsonObject>> handler);
 
 }
