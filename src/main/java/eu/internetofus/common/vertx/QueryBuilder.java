@@ -361,8 +361,7 @@ public class QueryBuilder {
 
     } else {
 
-      this.query.put(fieldName, new JsonObject().put("$or",
-          new JsonArray().add(new JsonObject().putNull("$eq")).add(new JsonObject().put("$exists", false))));
+      this.query.putNull(fieldName);
 
     }
 

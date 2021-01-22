@@ -455,8 +455,7 @@ public class QueryBuilderTest {
 
     final var builder = new QueryBuilder();
     assertThat(builder.withNoExistNullEqOrRegex("fieldName", null)).isSameAs(builder);
-    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$or",
-        new JsonArray().add(new JsonObject().putNull("$eq")).add(new JsonObject().put("$exists", false)))));
+    assertThat(builder.build()).isEqualTo(new JsonObject().putNull("fieldName"));
 
   }
 
