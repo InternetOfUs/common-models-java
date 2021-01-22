@@ -33,6 +33,7 @@ import eu.internetofus.common.components.task_manager.TaskTest;
 import eu.internetofus.common.components.task_manager.TaskTransactionTest;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -135,6 +136,54 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
               }));
 
         });
+
+  }
+
+  /**
+   * Should retrieve community user state.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldRetrieveCommunityUserState(final Vertx vertx, final VertxTestContext testContext) {
+
+    var state = new State();
+    state.communityId = UUID.randomUUID().toString();
+    state.userId = UUID.randomUUID().toString();
+
+    testContext.assertComplete(
+        WeNetInteractionProtocolEngine.createProxy(vertx).retrieveCommunityUserState(state.communityId, state.userId))
+        .onSuccess(done -> testContext.verify(() -> {
+
+          state._creationTs = done._creationTs;
+          state._lastUpdateTs = done._lastUpdateTs;
+          assertThat(done).isEqualTo(state);
+          testContext.completeNow();
+
+        }));
+
+  }
+
+  /**
+   * Should merge community user state.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldMergeCommunityUserState(final Vertx vertx, final VertxTestContext testContext) {
+
+    var state = new State();
+    state.communityId = UUID.randomUUID().toString();
+    state.userId = UUID.randomUUID().toString();
+    testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx)
+        .mergeCommunityUserState(state.communityId, state.userId, state)).onSuccess(done -> testContext.verify(() -> {
+
+          assertThat(done).isEqualTo(state);
+          testContext.completeNow();
+
+        }));
 
   }
 

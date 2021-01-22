@@ -28,10 +28,9 @@ package eu.internetofus.common.components;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
-
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import org.junit.jupiter.api.Test;
 
 /**
  * Generic test over the classes that extends the {@link Model}.
@@ -130,7 +129,27 @@ public abstract class ModelTestCase<T extends Model> {
     @SuppressWarnings("unchecked")
     final var emptyModel = (T) Model.fromString("{}", model.getClass());
     assertThat(emptyModel).isNotNull();
-    assertThat(emptyModel.toJsonObjectWithEmptyValues()).isNotEqualTo(new JsonObject());
+    var emptyObject = emptyModel.toJsonObjectWithEmptyValues();
+    assertThat(emptyObject).isNotNull().isNotEqualTo(new JsonObject());
+    assertThat(emptyObject.fieldNames()).isNotEmpty();
+
+  }
+
+  /**
+   * Check that is converted with the empty values buffer.
+   */
+  @Test
+  public void shouldToBufferWithEmptyValues() {
+
+    final var model = this.createModelExample(1);
+    @SuppressWarnings("unchecked")
+    final var emptyModel = (T) Model.fromString("{}", model.getClass());
+    assertThat(emptyModel).isNotNull();
+    var emptyBuffer = emptyModel.toBufferWithEmptyValues();
+    assertThat(emptyBuffer).isNotNull();
+    var emptyObject = new JsonObject(emptyBuffer);
+    assertThat(emptyObject).isNotNull().isNotEqualTo(new JsonObject());
+    assertThat(emptyObject.fieldNames()).isNotEmpty();
 
   }
 

@@ -60,9 +60,12 @@ public class EchoIT {
     final var model = new JsonObject().put("key", "value").putNull("nullField").put("emptyField", new JsonArray()).put(
         "child", new JsonObject().put("child", "1").putNull("nullChildField").put("emptyChildField", new JsonArray()));
     testRequest(client, HttpMethod.POST, Echo.PATH).expect(res -> {
+
       assertThat(res.statusCode()).isEqualTo(Status.CREATED.getStatusCode());
       final var posted = res.bodyAsJsonObject();
       assertThat(posted).isNotNull().isEqualTo(model);
+      assertThat(posted.fieldNames()).isEqualTo(model.fieldNames());
+
     }).sendJson(model, testContext);
 
   }
@@ -80,9 +83,12 @@ public class EchoIT {
     final var model = new JsonObject().put("key", "value").putNull("nullField").put("emptyField", new JsonArray()).put(
         "child", new JsonObject().put("child", "1").putNull("nullChildField").put("emptyChildField", new JsonArray()));
     testRequest(client, HttpMethod.PATCH, Echo.PATH).expect(res -> {
+
       assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
       final var patched = res.bodyAsJsonObject();
       assertThat(patched).isNotNull().isEqualTo(model);
+      assertThat(patched.fieldNames()).isEqualTo(model.fieldNames());
+
     }).sendJson(model, testContext);
 
   }
@@ -100,9 +106,12 @@ public class EchoIT {
     final var model = new JsonObject().put("key", "value").putNull("nullField").put("emptyField", new JsonArray()).put(
         "child", new JsonObject().put("child", "1").putNull("nullChildField").put("emptyChildField", new JsonArray()));
     testRequest(client, HttpMethod.PUT, Echo.PATH).expect(res -> {
+
       assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
       final var puted = res.bodyAsJsonObject();
       assertThat(puted).isNotNull().isEqualTo(model);
+      assertThat(puted.fieldNames()).isEqualTo(model.fieldNames());
+
     }).sendJson(model, testContext);
 
   }

@@ -86,6 +86,8 @@ public class WeNetInteractionProtocolEngineMocker extends AbstractComponentMocke
     router.post("/tasks/created").handler(this.createEchoHandler());
     router.post("/tasks/transactions").handler(this.createEchoHandler());
 
+    router.get("/states/communities/:communityId/users/:userId").handler(this.createEmptyStateHandler());
+    router.patch("/states/communities/:communityId/users/:userId").handler(this.createEchoHandler());
   }
 
   /**
@@ -101,6 +103,26 @@ public class WeNetInteractionProtocolEngineMocker extends AbstractComponentMocke
       final var response = ctx.response();
       response.setStatusCode(Status.CREATED.getStatusCode());
       response.end(value.toBuffer());
+
+    };
+  }
+
+  /**
+   * Handler that return an empty state.
+   *
+   * @return the empty state handler.
+   */
+  private Handler<RoutingContext> createEmptyStateHandler() {
+
+    return ctx -> {
+
+      var state = new State();
+      state.communityId = ctx.pathParam("communityId");
+      state.taskId = ctx.pathParam("taskId");
+      state.userId = ctx.pathParam("userId");
+      final var response = ctx.response();
+      response.setStatusCode(Status.OK.getStatusCode());
+      response.end(state.toBufferWithEmptyValues());
 
     };
   }

@@ -432,9 +432,35 @@ public interface Model {
     try {
 
       final var mapper = DatabindCodec.mapper().copy();
-      mapper.addMixIn(this.getClass(), ModelForJsonObjectWithEmptyValues.class);
+      mapper.addMixIn(Model.class, ModelForJsonObjectWithEmptyValues.class);
       final var json = mapper.writeValueAsString(this);
+      Buffer.buffer(json);
       return new JsonObject(json);
+
+    } catch (final Throwable throwable) {
+
+      Logger.trace(throwable);
+      return null;
+    }
+
+  }
+
+  /**
+   * Convert a model to a {@link Buffer} with all the {@code null} and empty
+   * values.
+   *
+   * @return the buffer of the model or {@code null} if can not convert it.
+   *
+   * @see ModelForJsonObjectWithEmptyValues
+   */
+  default public Buffer toBufferWithEmptyValues() {
+
+    try {
+
+      final var mapper = DatabindCodec.mapper().copy();
+      mapper.addMixIn(Model.class, ModelForJsonObjectWithEmptyValues.class);
+      final var json = mapper.writeValueAsString(this);
+      return Buffer.buffer(json);
 
     } catch (final Throwable throwable) {
 

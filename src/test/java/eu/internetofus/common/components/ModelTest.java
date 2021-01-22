@@ -28,14 +28,12 @@ package eu.internetofus.common.components;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test the {@link Model}
@@ -92,7 +90,7 @@ public class ModelTest {
   @Test
   public void shouldNotObtainModelFromNullClass() {
 
-    assertThat(Model.fromJsonObject(new JsonObject(), (Class<Model>)null)).isNull();
+    assertThat(Model.fromJsonObject(new JsonObject(), (Class<Model>) null)).isNull();
 
   }
 
@@ -172,7 +170,8 @@ public class ModelTest {
   @Test
   public void shoulBadModelOnArrayNotConvertedToList() {
 
-    assertThat(Model.fromJsonArray(new JsonArray().add(new JsonObject().put("undefined", "value")), DummyModel.class)).isNull();
+    assertThat(Model.fromJsonArray(new JsonArray().add(new JsonObject().put("undefined", "value")), DummyModel.class))
+        .isNull();
 
   }
 
@@ -267,7 +266,8 @@ public class ModelTest {
   }
 
   /**
-   * Check not convert to JSON with empty values object the {@link UnconvertedToJsonModel}.
+   * Check not convert to JSON with empty values object the
+   * {@link UnconvertedToJsonModel}.
    */
   @Test
   public void shouldNotConvertToJsonObjectWithEmptyValues() {
@@ -283,6 +283,17 @@ public class ModelTest {
   public void shouldCaptureExceptionWhenGetFromResponse() {
 
     assertThat(Model.fromResponse(null, DummyModel.class)).isNull();
+
+  }
+
+  /**
+   * Check not convert to Buffer with empty values object the
+   * {@link UnconvertedToJsonModel}.
+   */
+  @Test
+  public void shouldNotConvertToBufferWithEmptyValues() {
+
+    assertThat(new UnconvertedToJsonModel().toBufferWithEmptyValues()).isNull();
 
   }
 

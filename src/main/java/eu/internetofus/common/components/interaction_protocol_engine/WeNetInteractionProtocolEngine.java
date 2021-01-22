@@ -217,7 +217,7 @@ public interface WeNetInteractionProtocolEngine {
       @NotNull final State newState) {
 
     final Promise<JsonObject> promise = Promise.promise();
-    this.mergeCommunityUserState(communityId, userId, newState.toJsonObjectWithEmptyValues(), promise);
+    this.mergeCommunityUserState(communityId, userId, newState.toJsonObject(), promise);
     return Model.fromFutureJsonObject(promise.future(), State.class);
 
   }
