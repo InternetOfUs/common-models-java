@@ -26,6 +26,7 @@
 
 package eu.internetofus.common.vertx;
 
+import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulator;
@@ -119,7 +120,7 @@ public abstract class AbstractWeNetComponentIntegrationExtension
   protected void afterStarted(final WeNetModuleContext context) {
 
     final var vertx = context.vertx;
-    final var client = WebClient.create(vertx);
+    final var client = createClientWithDefaultSession(vertx);
     final var conf = context.configuration.getJsonObject("wenetComponents", new JsonObject());
     WeNetServiceSimulator.register(vertx, client, conf);
     WeNetIncentiveServerSimulator.register(vertx, client, conf);

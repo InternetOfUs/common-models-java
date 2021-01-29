@@ -64,7 +64,8 @@ public abstract class AbstractServicesVerticle extends AbstractVerticle {
       final var options = new WebClientOptions(webClientConf);
 
       this.client = WebClientSession.create(WebClient.create(this.getVertx(), options));
-      this.client.addHeader(WENET_COMPONENT_APIKEY_HEADER, webClientConf.getString("wenetComponentApikey", "UDEFINED"));
+      final var apiKey = webClientConf.getString("wenetComponentApikey", "UDEFINED");
+      this.client.addHeader(WENET_COMPONENT_APIKEY_HEADER, apiKey);
 
       final var serviceConf = this.config().getJsonObject("wenetComponents", new JsonObject());
       this.registerServices(serviceConf);

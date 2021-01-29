@@ -26,6 +26,7 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
+import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 
@@ -42,7 +43,6 @@ import eu.internetofus.common.components.task_manager.WeNetTaskManagerMocker;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.AfterAll;
@@ -108,7 +108,7 @@ public class ProtocolMessageTest extends ModelTestCase<ProtocolMessage> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final var client = WebClient.create(vertx);
+    final var client = createClientWithDefaultSession(vertx);
     final var profileConf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, profileConf);
 

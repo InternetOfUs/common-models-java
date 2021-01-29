@@ -26,22 +26,20 @@
 
 package eu.internetofus.common.components.social_context_builder;
 
+import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
 import java.util.UUID;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
 
 /**
  * Test the {@link WeNetSocialContextBuilderSimulator}.
@@ -87,7 +85,7 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
   @BeforeEach
   public void registerClient(final Vertx vertx) {
 
-    final var client = WebClient.create(vertx);
+    final var client = createClientWithDefaultSession(vertx);
     final var socialContextBuilderConf = socialContextBuilderMocker.getComponentConfiguration();
     WeNetSocialContextBuilderSimulator.register(vertx, client, socialContextBuilderConf);
     WeNetSocialContextBuilder.register(vertx, client, socialContextBuilderConf);
@@ -103,8 +101,8 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
   @Test
   public void shouldSetGetSocialRelations(final Vertx vertx, final VertxTestContext testContext) {
 
-    var userId = UUID.randomUUID().toString();
-    var relations = new ArrayList<UserRelation>();
+    final var userId = UUID.randomUUID().toString();
+    final var relations = new ArrayList<UserRelation>();
     testContext.assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx).retrieveSocialRelations(userId))
         .onSuccess(retrieveRelations -> testContext.verify(() -> {
 
@@ -140,9 +138,9 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
   @Test
   public void shouldSetGetSocialPreferences(final Vertx vertx, final VertxTestContext testContext) {
 
-    var userId = UUID.randomUUID().toString();
-    var taskId = UUID.randomUUID().toString();
-    var preferences = new JsonArray();
+    final var userId = UUID.randomUUID().toString();
+    final var taskId = UUID.randomUUID().toString();
+    final var preferences = new JsonArray();
     testContext
         .assertComplete(
             WeNetSocialContextBuilderSimulator.createProxy(vertx).getPreferencesForUserOnTask(userId, taskId))
@@ -180,8 +178,8 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
   @Test
   public void shouldSetGetSocialExplanation(final Vertx vertx, final VertxTestContext testContext) {
 
-    var userId = UUID.randomUUID().toString();
-    var taskId = UUID.randomUUID().toString();
+    final var userId = UUID.randomUUID().toString();
+    final var taskId = UUID.randomUUID().toString();
     testContext
         .assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx).retrieveSocialExplanation(userId, taskId))
         .onSuccess(retrieveExplanation -> testContext.verify(() -> {

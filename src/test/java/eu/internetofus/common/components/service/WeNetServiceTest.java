@@ -26,14 +26,14 @@
 
 package eu.internetofus.common.components.service;
 
+import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
+
+import io.vertx.core.Vertx;
+import io.vertx.junit5.VertxExtension;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import io.vertx.core.Vertx;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.junit5.VertxExtension;
 
 /**
  * Test the {@link WeNetService}.
@@ -78,7 +78,7 @@ public class WeNetServiceTest extends WeNetServiceTestCase {
   @BeforeEach
   public void registerClient(final Vertx vertx) {
 
-    final var client = WebClient.create(vertx);
+    final var client = createClientWithDefaultSession(vertx);
     final var conf = serviceMocker.getComponentConfiguration();
     WeNetService.register(vertx, client, conf);
 

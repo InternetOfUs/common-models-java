@@ -26,11 +26,15 @@
 
 package eu.internetofus.common.components;
 
+import eu.internetofus.common.Containers;
+import eu.internetofus.common.vertx.AbstractServicesVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientSession;
 import io.vertx.ext.web.handler.BodyHandler;
 import java.net.InetAddress;
 import java.util.concurrent.Semaphore;
@@ -102,12 +106,31 @@ public abstract class AbstractComponentMocker {
       return Future.failedFuture("Server is already started");
 
     } else {
+
       try {
+
         final var vertx = Vertx.vertx();
         final var server = vertx.createHttpServer();
         final var router = Router.router(vertx);
 
         router.route().handler(BodyHandler.create());
+
+        router.route().handler(ctx -> {
+
+          final var apiKey = ctx.request().getHeader(AbstractServicesVerticle.WENET_COMPONENT_APIKEY_HEADER);
+          if (Containers.DEFAULT_WENET_COMPONENT_APIKEY.equals(apiKey)) {
+
+            ctx.next();
+
+          } else {
+
+            final var response = ctx.response();
+            response.setStatusCode(Status.UNAUTHORIZED.getStatusCode());
+            response
+                .end(new ErrorMessage("bad_wenet_component_apikey", "Invalid authentication credentials").toBuffer());
+
+          }
+        });
 
         this.fillInRouterHandler(router);
 
@@ -224,5 +247,20 @@ public abstract class AbstractComponentMocker {
    * @return the name of the component on the configuration.
    */
   protected abstract String getComponentConfigurationName();
+
+  /**
+   * Create client with the default session headers.
+   *
+   * @param vertx event bus to use.
+   *
+   * @return the client with the default session headers.
+   */
+  public static WebClient createClientWithDefaultSession(final Vertx vertx) {
+
+    final var client = WebClientSession.create(WebClient.create(vertx));
+    client.addHeader(AbstractServicesVerticle.WENET_COMPONENT_APIKEY_HEADER, Containers.DEFAULT_WENET_COMPONENT_APIKEY);
+    return client;
+
+  }
 
 }

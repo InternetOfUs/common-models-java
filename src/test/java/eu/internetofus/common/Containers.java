@@ -39,6 +39,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import java.net.ServerSocket;
 import java.nio.file.FileSystems;
+import java.util.UUID;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -98,6 +99,11 @@ public class Containers {
    * The name of the WeNet interaction manager docker container to use.
    */
   public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:0.16.0";
+
+  /**
+   * The default wenet component apikey.
+   */
+  public static final String DEFAULT_WENET_COMPONENT_APIKEY = UUID.randomUUID().toString();
 
   /**
    * The current implementation of the containers.
@@ -387,7 +393,7 @@ public class Containers {
           .withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi())
           .withEnv("WENET_SERVICE_API", this.service.getApiUrl())
           .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl())
-          .waitingFor(Wait.forListeningPort());
+          .withEnv("COMP_AUTH_KEY", DEFAULT_WENET_COMPONENT_APIKEY).waitingFor(Wait.forListeningPort());
       this.profileManagerContainer.start();
       Logger.trace("Started Profile Manager");
     }
@@ -422,7 +428,8 @@ public class Containers {
       this.taskManagerContainer = this.createContainerFor(WENET_TASK_MANAGER_DOCKER_NAME, this.taskManagerApiPort)
           .withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
           .withEnv("WENET_INTERACTION_PROTOCOL_ENGINE_API", this.getInteractionProtocolEngineApi())
-          .withEnv("WENET_SERVICE_API", this.service.getApiUrl()).waitingFor(Wait.forListeningPort());
+          .withEnv("WENET_SERVICE_API", this.service.getApiUrl())
+          .withEnv("COMP_AUTH_KEY", DEFAULT_WENET_COMPONENT_APIKEY).waitingFor(Wait.forListeningPort());
       this.taskManagerContainer.start();
       Logger.trace("Started Task Manager");
     }
@@ -446,7 +453,8 @@ public class Containers {
           .withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi())
           .withEnv("WENET_SERVICE_API", this.service.getApiUrl())
           .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl())
-          .withEnv("WENET_INCENTIVE_SERVER_API", this.incentiveServer.getApiUrl()).waitingFor(Wait.forListeningPort());
+          .withEnv("WENET_INCENTIVE_SERVER_API", this.incentiveServer.getApiUrl())
+          .withEnv("COMP_AUTH_KEY", DEFAULT_WENET_COMPONENT_APIKEY).waitingFor(Wait.forListeningPort());
       this.interactionProtocolEngineContainer.start();
       Logger.trace("Started Interaction Protocol Engine");
     }

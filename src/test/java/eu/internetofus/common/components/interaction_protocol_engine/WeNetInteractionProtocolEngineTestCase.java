@@ -28,12 +28,12 @@ package eu.internetofus.common.components.interaction_protocol_engine;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.incentive_server.IncentiveTest;
 import eu.internetofus.common.components.task_manager.TaskTest;
 import eu.internetofus.common.components.task_manager.TaskTransactionTest;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -148,21 +148,25 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
   @Test
   public void shouldRetrieveCommunityUserState(final Vertx vertx, final VertxTestContext testContext) {
 
-    var state = new State();
-    state.communityId = UUID.randomUUID().toString();
-    state.userId = UUID.randomUUID().toString();
+    StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
 
-    testContext.assertComplete(
-        WeNetInteractionProtocolEngine.createProxy(vertx).retrieveCommunityUserState(state.communityId, state.userId))
-        .onSuccess(done -> testContext.verify(() -> {
+      final var userId = community.members.get(0).userId;
+      testContext
+          .assertComplete(
+              WeNetInteractionProtocolEngine.createProxy(vertx).retrieveCommunityUserState(community.id, userId))
+          .onSuccess(done -> testContext.verify(() -> {
 
-          state._creationTs = done._creationTs;
-          state._lastUpdateTs = done._lastUpdateTs;
-          assertThat(done).isEqualTo(state);
-          testContext.completeNow();
+            final var state = new State();
+            state.communityId = community.id;
+            state.userId = userId;
+            state._creationTs = done._creationTs;
+            state._lastUpdateTs = done._lastUpdateTs;
+            assertThat(done).isEqualTo(state);
+            assertThat(done._creationTs).isEqualTo(done._lastUpdateTs);
+            testContext.completeNow();
 
-        }));
-
+          }));
+    });
   }
 
   /**
@@ -174,16 +178,32 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
   @Test
   public void shouldMergeCommunityUserState(final Vertx vertx, final VertxTestContext testContext) {
 
-    var state = new State();
-    state.communityId = UUID.randomUUID().toString();
-    state.userId = UUID.randomUUID().toString();
-    testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx)
-        .mergeCommunityUserState(state.communityId, state.userId, state)).onSuccess(done -> testContext.verify(() -> {
+    StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
+      final var state = new StateTest().createModelExample(1);
+      state.communityId = community.id;
+      state.taskId = null;
+      state.userId = community.members.get(0).userId;
+      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx)
+          .mergeCommunityUserState(state.communityId, state.userId, state)).onSuccess(done -> testContext.verify(() -> {
 
-          assertThat(done).isEqualTo(state);
-          testContext.completeNow();
+            state._creationTs = done._creationTs;
+            state._lastUpdateTs = done._lastUpdateTs;
+            assertThat(done).isEqualTo(state);
 
-        }));
+            state.attributes.put("newKey", "testContext");
+            testContext
+                .assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx)
+                    .mergeCommunityUserState(state.communityId, state.userId, state))
+                .onSuccess(done2 -> testContext.verify(() -> {
+
+                  state._lastUpdateTs = done2._lastUpdateTs;
+                  assertThat(done2).isEqualTo(state);
+                  testContext.completeNow();
+
+                }));
+
+          }));
+    });
 
   }
 

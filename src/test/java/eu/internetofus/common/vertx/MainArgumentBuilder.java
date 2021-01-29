@@ -114,6 +114,18 @@ public class MainArgumentBuilder {
   }
 
   /**
+   * Specify the key of the API.
+   *
+   * @param key of the API.
+   *
+   * @return the argument builder.
+   */
+  public MainArgumentBuilder withApikey(final String key) {
+
+    return this.with("webClient.wenetComponentApikey", key);
+  }
+
+  /**
    * Specify the api URL for a wenet component.
    *
    * @param name   of the component.
@@ -147,6 +159,7 @@ public class MainArgumentBuilder {
     this.withWeNetComponent("service", containers.service.getApiUrl());
     this.withWeNetComponent("socialContextBuilder", containers.socialContextBuilder.getApiUrl());
     this.withWeNetComponent("incentiveServer", containers.incentiveServer.getApiUrl());
+    this.withApikey(Containers.DEFAULT_WENET_COMPONENT_APIKEY);
 
     return this;
   }

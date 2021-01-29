@@ -26,22 +26,21 @@
 
 package eu.internetofus.common.components.service;
 
+import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
+import io.vertx.serviceproxy.ServiceException;
+import javax.ws.rs.core.Response.Status;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
-import io.vertx.serviceproxy.ServiceException;
-import javax.ws.rs.core.Response.Status;
 
 /**
  * Test the {@link WeNetServiceSimulator}.
@@ -86,7 +85,7 @@ public class WeNetServiceSimulatorTest extends WeNetServiceTestCase {
   @BeforeEach
   public void registerClient(final Vertx vertx) {
 
-    final var client = WebClient.create(vertx);
+    final var client = createClientWithDefaultSession(vertx);
     final var serviceConf = serviceMocker.getComponentConfiguration();
     WeNetServiceSimulator.register(vertx, client, serviceConf);
     WeNetService.register(vertx, client, serviceConf);
@@ -281,7 +280,7 @@ public class WeNetServiceSimulatorTest extends WeNetServiceTestCase {
 
       final var message = new JsonObject().put("action", "Name of the action").put("users",
           new JsonArray().add("1").add("43").add("23"));
-      final var client = WebClient.create(vertx);
+      final var client = createClientWithDefaultSession(vertx);
       testContext.assertComplete(client.postAbs(created.messageCallbackUrl).sendJson(message)).onSuccess(create -> {
 
         testContext.assertComplete(service.retrieveCallbacks(created.appId))

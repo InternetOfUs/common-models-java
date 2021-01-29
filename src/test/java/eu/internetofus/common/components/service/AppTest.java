@@ -26,6 +26,7 @@
 
 package eu.internetofus.common.components.service;
 
+import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.ModelTestCase;
@@ -35,7 +36,6 @@ import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMock
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
@@ -93,7 +93,7 @@ public class AppTest extends ModelTestCase<App> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final var client = WebClient.create(vertx);
+    final var client = createClientWithDefaultSession(vertx);
     final var profileConf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, profileConf);
 
@@ -161,7 +161,7 @@ public class AppTest extends ModelTestCase<App> {
   @Test
   public void shouldCreateCommunityWithMembers(final Vertx vertx, final VertxTestContext testContext) {
 
-    JsonArray users = new JsonArray().add("1").add("2").add("3").add("4");
+    final var users = new JsonArray().add("1").add("2").add("3").add("4");
     testContext.assertComplete(StoreServices.storeApp(new App(), vertx, testContext)).onSuccess(app -> testContext
         .assertComplete(
 
@@ -170,7 +170,7 @@ public class AppTest extends ModelTestCase<App> {
         .onSuccess(createdCommunity -> testContext.verify(() -> {
 
           assertThat(createdCommunity.members).isNotEmpty();
-          for (var member : createdCommunity.members) {
+          for (final var member : createdCommunity.members) {
 
             assertThat(users.remove(member.userId)).isTrue();
           }

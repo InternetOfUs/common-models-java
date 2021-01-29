@@ -26,6 +26,7 @@
 
 package eu.internetofus.common.components.service;
 
+import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 
@@ -39,7 +40,6 @@ import eu.internetofus.common.components.task_manager.Task;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.AfterAll;
@@ -96,7 +96,7 @@ public class MessageTest extends ModelTestCase<Message> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final var client = WebClient.create(vertx);
+    final var client = createClientWithDefaultSession(vertx);
     final var profileConf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, profileConf);
 
@@ -162,7 +162,7 @@ public class MessageTest extends ModelTestCase<Message> {
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldSimpleExampleBeInValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    var model = this.createModelExample(index);
+    final var model = this.createModelExample(index);
     assertIsNotValid(model, vertx, testContext);
 
   }

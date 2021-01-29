@@ -26,16 +26,9 @@
 
 package eu.internetofus.common.components.incentive_server;
 
+import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
@@ -49,9 +42,15 @@ import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Test the {@link Incentive}.
@@ -101,7 +100,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   @BeforeEach
   public void registerServices(final Vertx vertx) {
 
-    final var client = WebClient.create(vertx);
+    final var client = createClientWithDefaultSession(vertx);
     final var profileConf = profileManagerMocker.getComponentConfiguration();
     WeNetProfileManager.register(vertx, client, profileConf);
 
@@ -138,18 +137,19 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
    */
   public Future<Incentive> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    return testContext.assertComplete(StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(profile -> {
+    return testContext
+        .assertComplete(StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(profile -> {
 
-      return StoreServices.storeApp(new App(), vertx, testContext).compose(app -> {
+          return StoreServices.storeApp(new App(), vertx, testContext).compose(app -> {
 
-        final var model = this.createModelExample(index);
-        model.UserId = profile.id;
-        model.AppID = app.appId;
-        return Future.succeededFuture(model);
+            final var model = this.createModelExample(index);
+            model.UserId = profile.id;
+            model.AppID = app.appId;
+            return Future.succeededFuture(model);
 
-      });
+          });
 
-    }));
+        }));
 
   }
 
@@ -172,7 +172,8 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
   }
 
   /**
-   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is valid.
+   * Check that the {@link #createModelExample(int, Vertx, VertxTestContext)} is
+   * valid.
    *
    * @param index       to verify
    *
