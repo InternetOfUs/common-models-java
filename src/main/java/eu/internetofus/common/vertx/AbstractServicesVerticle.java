@@ -31,18 +31,25 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.ext.web.client.WebClientSession;
 
 /**
- * Abstract verticle to start the services to interact with the other WeNet modules.
+ * Abstract verticle to start the services to interact with the other WeNet
+ * modules.
  *
  * @author UDT-IA, IIIA-CSIC
  */
 public abstract class AbstractServicesVerticle extends AbstractVerticle {
 
   /**
+   * The name of the header with the component api key.
+   */
+  public static final String WENET_COMPONENT_APIKEY_HEADER = "x-wenet-component-apikey";
+
+  /**
    * The client to do the HTTP request to other components.
    */
-  protected WebClient client;
+  protected WebClientSession client;
 
   /**
    * {@inheritDoc}
@@ -55,7 +62,9 @@ public abstract class AbstractServicesVerticle extends AbstractVerticle {
       // configure the web client
       final var webClientConf = this.config().getJsonObject("webClient", new JsonObject());
       final var options = new WebClientOptions(webClientConf);
-      this.client = WebClient.create(this.getVertx(), options);
+
+      this.client = WebClientSession.create(WebClient.create(this.getVertx(), options));
+      this.client.addHeader(WENET_COMPONENT_APIKEY_HEADER, webClientConf.getString("wenetComponentApikey", "UDEFINED"));
 
       final var serviceConf = this.config().getJsonObject("wenetComponents", new JsonObject());
       this.registerServices(serviceConf);

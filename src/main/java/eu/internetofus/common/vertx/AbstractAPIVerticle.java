@@ -53,8 +53,8 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
   @Override
   public void start(final Promise<Void> startPromise) throws Exception {
 
-    var vertx = this.getVertx();
-    var path = this.getOpenAPIResourcePath();
+    final var vertx = this.getVertx();
+    final var path = this.getClass().getClassLoader().getResource(this.getOpenAPIResourcePath()).toURI().toString();
     RouterBuilder.create(vertx, path).onComplete(createRouterFactory -> {
       if (createRouterFactory.succeeded()) {
 

@@ -23,30 +23,38 @@
  *
  * -----------------------------------------------------------------------------
  */
+package eu.internetofus.wenet_dummy.api.echo;
 
-package eu.internetofus.wenet_dummy;
-
-import eu.internetofus.common.vertx.AbstractMainVerticle;
-import eu.internetofus.wenet_dummy.api.APIVerticle;
-import eu.internetofus.wenet_dummy.persistence.PersistenceVerticle;
-import eu.internetofus.wenet_dummy.services.ServicesVerticle;
-import io.vertx.core.AbstractVerticle;
+import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 
 /**
- * The dummy verticle.
+ * A model to check the echo service.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class MainVerticle extends AbstractMainVerticle {
+@Schema(name = "Dummy", description = "A dummy model to check the echo.")
+public class DummyModel extends ReflectionModel implements Model {
 
   /**
-   * {@inheritDoc}
+   * The name of the dummy.
    */
-  @SuppressWarnings("unchecked")
-  @Override
-  protected Class<? extends AbstractVerticle>[] getVerticleClassesToDeploy() {
+  @Schema(description = "The name of the dummy.", example = "Mc Fly")
+  public String name;
 
-    return new Class[] { PersistenceVerticle.class, ServicesVerticle.class, APIVerticle.class };
-  }
+  /**
+   * The parent of the dummy.
+   */
+  @Schema(description = "The parent of the dummy.")
+  public DummyModel parent;
+
+  /**
+   * The list of historical transactions that has been done in this task.
+   */
+  @ArraySchema(schema = @Schema(implementation = DummyModel.class), arraySchema = @Schema(description = "Children of the dummy."))
+  public List<DummyModel> children;
 
 }

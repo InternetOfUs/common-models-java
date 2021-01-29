@@ -25,6 +25,7 @@
  */
 package eu.internetofus.wenet_dummy.api.echo;
 
+import eu.internetofus.common.components.Model;
 import eu.internetofus.common.vertx.ServiceResponseHandlers;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -60,7 +61,8 @@ public class EchoResources implements Echo {
    * {@inheritDoc}
    */
   @Override
-  public void post(JsonObject body, ServiceRequest context, Handler<AsyncResult<ServiceResponse>> resultHandler) {
+  public void post(final JsonObject body, final ServiceRequest context,
+      final Handler<AsyncResult<ServiceResponse>> resultHandler) {
 
     ServiceResponseHandlers.responseWith(resultHandler, Status.CREATED, body);
 
@@ -70,7 +72,8 @@ public class EchoResources implements Echo {
    * {@inheritDoc}
    */
   @Override
-  public void patch(JsonObject body, ServiceRequest context, Handler<AsyncResult<ServiceResponse>> resultHandler) {
+  public void patch(final JsonObject body, final ServiceRequest context,
+      final Handler<AsyncResult<ServiceResponse>> resultHandler) {
 
     ServiceResponseHandlers.responseOk(resultHandler, body);
 
@@ -80,9 +83,22 @@ public class EchoResources implements Echo {
    * {@inheritDoc}
    */
   @Override
-  public void put(JsonObject body, ServiceRequest context, Handler<AsyncResult<ServiceResponse>> resultHandler) {
+  public void put(final JsonObject body, final ServiceRequest context,
+      final Handler<AsyncResult<ServiceResponse>> resultHandler) {
 
     ServiceResponseHandlers.responseOk(resultHandler, body);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void postDummyComplex(final JsonObject body, final ServiceRequest context,
+      final Handler<AsyncResult<ServiceResponse>> resultHandler) {
+
+    final var model = Model.fromJsonObject(body, DummyModel.class);
+    ServiceResponseHandlers.responseWith(resultHandler, Status.CREATED, model);
 
   }
 

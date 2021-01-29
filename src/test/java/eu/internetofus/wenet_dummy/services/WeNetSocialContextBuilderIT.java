@@ -24,29 +24,19 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.wenet_dummy;
+package eu.internetofus.wenet_dummy.services;
 
-import eu.internetofus.common.vertx.AbstractMainVerticle;
-import eu.internetofus.wenet_dummy.api.APIVerticle;
-import eu.internetofus.wenet_dummy.persistence.PersistenceVerticle;
-import eu.internetofus.wenet_dummy.services.ServicesVerticle;
-import io.vertx.core.AbstractVerticle;
+import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilder;
+import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderTestCase;
+import eu.internetofus.wenet_dummy.WeNetDummyIntegrationExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * The dummy verticle.
+ * Test the interaction with the {@link WeNetSocialContextBuilder}
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class MainVerticle extends AbstractMainVerticle {
-
-  /**
-   * {@inheritDoc}
-   */
-  @SuppressWarnings("unchecked")
-  @Override
-  protected Class<? extends AbstractVerticle>[] getVerticleClassesToDeploy() {
-
-    return new Class[] { PersistenceVerticle.class, ServicesVerticle.class, APIVerticle.class };
-  }
+@ExtendWith(WeNetDummyIntegrationExtension.class)
+public class WeNetSocialContextBuilderIT extends WeNetSocialContextBuilderTestCase {
 
 }

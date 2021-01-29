@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,17 +33,17 @@ import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.profile_manager.CommunityProfile;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import eu.internetofus.common.components.profile_manager.CommunityProfile;
-import io.vertx.core.Vertx;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
 
 /**
  * Test the {@link DummyComplexModel}
@@ -186,6 +186,28 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
     source.siblings.get(0).id = ValidationsTest.STRING_256;
     assertCannotUpdate(target, source, "siblings[0].id", vertx, testContext);
 
+  }
+
+  /**
+   * Should to convert to buffer with empty values.
+   *
+   * @see DummyComplexModel#toBufferWithEmptyValues()
+   */
+  @Override
+  @Test
+  public void shouldToBufferWithEmptyValues() {
+
+    final var source = new DummyComplexModel();
+    source.siblings = new ArrayList<>();
+    source.siblings.add(new DummyComplexModel());
+    final var expected = new JsonObject().put("index", 0).putNull("id").put("siblings",
+        new JsonArray().add(new JsonObject().put("index", 0).putNull("id").putNull("siblings")));
+    final var target = new JsonObject(source.toBufferWithEmptyValues());
+    assertThat(target).isEqualTo(expected);
+    assertThat(target.fieldNames()).isEqualTo(expected.fieldNames());
+    assertThat(target.getJsonArray("siblings").getJsonObject(0).fieldNames())
+        .isEqualTo(expected.getJsonArray("siblings").getJsonObject(0).fieldNames());
+    super.shouldToBufferWithEmptyValues();
   }
 
 }

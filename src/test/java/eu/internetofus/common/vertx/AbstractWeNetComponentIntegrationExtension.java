@@ -28,9 +28,18 @@ package eu.internetofus.common.vertx;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulator;
+import eu.internetofus.common.components.service.WeNetServiceSimulator;
+import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderSimulator;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import java.util.List;
 import java.util.concurrent.Semaphore;
-
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
@@ -45,20 +54,15 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 import org.tinylog.Level;
 import org.tinylog.provider.InternalLogger;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
-
 /**
- * Common extension to can run the integration test over a WeNet module component.
+ * Common extension to can run the integration test over a WeNet module
+ * component.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class AbstractWeNetComponentIntegrationExtension implements ParameterResolver, BeforeTestExecutionCallback, AfterTestExecutionCallback, BeforeEachCallback, AfterEachCallback, BeforeAllCallback, AfterAllCallback {
+public abstract class AbstractWeNetComponentIntegrationExtension
+    implements ParameterResolver, BeforeTestExecutionCallback, AfterTestExecutionCallback, BeforeEachCallback,
+    AfterEachCallback, BeforeAllCallback, AfterAllCallback {
 
   /**
    * The started WeNet interaction protocol engine for do the integration tests.
@@ -97,7 +101,8 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
 
       } catch (final Throwable throwable) {
 
-        InternalLogger.log(Level.ERROR, throwable, "Cannot create the Main class to start the WeNet component to run the integration tests");
+        InternalLogger.log(Level.ERROR, throwable,
+            "Cannot create the Main class to start the WeNet component to run the integration tests");
       }
 
     }
@@ -107,11 +112,18 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
   }
 
   /**
-   * Empty method called after the containers has been started.
+   * Start the simulator services.
    *
    * @param context that has been started.
    */
   protected void afterStarted(final WeNetModuleContext context) {
+
+    final var vertx = context.vertx;
+    final var client = WebClient.create(vertx);
+    final var conf = context.configuration.getJsonObject("wenetComponents", new JsonObject());
+    WeNetServiceSimulator.register(vertx, client, conf);
+    WeNetIncentiveServerSimulator.register(vertx, client, conf);
+    WeNetSocialContextBuilderSimulator.register(vertx, client, conf);
 
   }
 
@@ -125,7 +137,8 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
   protected abstract String[] createMainStartArguments();
 
   /**
-   * Create the context to start the WeNet module and return the arguments that are necessary to start it.
+   * Create the context to start the WeNet module and return the arguments that
+   * are necessary to start it.
    *
    * @return the arguments necessaries to start the module.
    *
@@ -169,7 +182,7 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
   public void afterEach(final ExtensionContext context) throws Exception {
 
     @SuppressWarnings("unchecked")
-    final List<VertxTestContext> contexts = (List<VertxTestContext>) context.getStore(Namespace.GLOBAL).get("VertxTestContext");
+    final var contexts = (List<VertxTestContext>) context.getStore(Namespace.GLOBAL).get("VertxTestContext");
     try {
 
       this.vertxExtension.afterEach(context);
@@ -210,13 +223,15 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
   protected void closeClientsIn(final ExtensionContext context) {
 
     // close client and pool after the test context has been completed.
-    final var client = context.getStore(ExtensionContext.Namespace.create(this.getClass().getName())).remove(WebClient.class.getName(), WebClient.class);
+    final var client = context.getStore(ExtensionContext.Namespace.create(this.getClass().getName()))
+        .remove(WebClient.class.getName(), WebClient.class);
     if (client != null) {
 
       client.close();
     }
 
-    final var pool = context.getStore(ExtensionContext.Namespace.create(this.getClass().getName())).remove(MongoClient.class.getName(), MongoClient.class);
+    final var pool = context.getStore(ExtensionContext.Namespace.create(this.getClass().getName()))
+        .remove(MongoClient.class.getName(), MongoClient.class);
     if (pool != null) {
 
       pool.close();
@@ -241,7 +256,7 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
   public void afterTestExecution(final ExtensionContext context) throws Exception {
 
     @SuppressWarnings("unchecked")
-    final List<VertxTestContext> contexts = (List<VertxTestContext>) context.getStore(Namespace.GLOBAL).get("VertxTestContext");
+    final var contexts = (List<VertxTestContext>) context.getStore(Namespace.GLOBAL).get("VertxTestContext");
     try {
 
       this.vertxExtension.afterTestExecution(context);
@@ -269,10 +284,12 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
    * {@inheritDoc}
    */
   @Override
-  public boolean supportsParameter(final ParameterContext parameterContext, final ExtensionContext extensionContext) throws ParameterResolutionException {
+  public boolean supportsParameter(final ParameterContext parameterContext, final ExtensionContext extensionContext)
+      throws ParameterResolutionException {
 
     final Class<?> type = parameterContext.getParameter().getType();
-    return type == WebClient.class || type == WeNetModuleContext.class || type == MongoClient.class || this.vertxExtension.supportsParameter(parameterContext, extensionContext);
+    return type == WebClient.class || type == WeNetModuleContext.class || type == MongoClient.class
+        || this.vertxExtension.supportsParameter(parameterContext, extensionContext);
 
   }
 
@@ -280,37 +297,40 @@ public abstract class AbstractWeNetComponentIntegrationExtension implements Para
    * {@inheritDoc}
    */
   @Override
-  public Object resolveParameter(final ParameterContext parameterContext, final ExtensionContext extensionContext) throws ParameterResolutionException {
+  public Object resolveParameter(final ParameterContext parameterContext, final ExtensionContext extensionContext)
+      throws ParameterResolutionException {
 
     final Class<?> type = parameterContext.getParameter().getType();
-    if (type == Vertx.class) {
+    if (type == WebClient.class) {
 
-      return this.getContext().vertx;
+      return extensionContext.getStore(ExtensionContext.Namespace.create(this.getClass().getName()))
+          .getOrComputeIfAbsent(WebClient.class.getName(), key -> {
 
-    } else if (type == WebClient.class) {
-
-      return extensionContext.getStore(ExtensionContext.Namespace.create(this.getClass().getName())).getOrComputeIfAbsent(WebClient.class.getName(), key -> {
-
-        final var context = this.getContext();
-        final var options = new WebClientOptions();
-        options.setDefaultHost(context.configuration.getJsonObject("api").getString("host"));
-        options.setDefaultPort(context.configuration.getJsonObject("api").getInteger("port"));
-        return WebClient.create(context.vertx, options);
-      }, WebClient.class);
+            final var context = this.getContext();
+            final var options = new WebClientOptions();
+            options.setDefaultHost(context.configuration.getJsonObject("api").getString("host"));
+            options.setDefaultPort(context.configuration.getJsonObject("api").getInteger("port"));
+            return WebClient.create(context.vertx, options);
+          }, WebClient.class);
 
     } else if (type == MongoClient.class) {
 
-      final var pool = extensionContext.getStore(ExtensionContext.Namespace.create(this.getClass().getName())).getOrComputeIfAbsent(MongoClient.class.getName(), key -> {
+      final var pool = extensionContext.getStore(ExtensionContext.Namespace.create(this.getClass().getName()))
+          .getOrComputeIfAbsent(MongoClient.class.getName(), key -> {
 
-        final WeNetModuleContext context = this.getContext();
-        final JsonObject persitenceConf = context.configuration.getJsonObject("persistence", new JsonObject());
-        return MongoClient.create(context.vertx, persitenceConf);
-      }, MongoClient.class);
+            final var context = this.getContext();
+            final var persitenceConf = context.configuration.getJsonObject("persistence", new JsonObject());
+            return MongoClient.create(context.vertx, persitenceConf);
+          }, MongoClient.class);
       return pool;
 
     } else if (type == WeNetModuleContext.class) {
 
       return this.getContext();
+
+    } else if (type == Vertx.class) {
+
+      return this.getContext().vertx;
 
     } else {
 

@@ -57,7 +57,7 @@ public class Containers {
   /**
    * The name of the mongo docker container to use.
    */
-  public static final String MONGO_DOCKER_NAME = "mongo:4.4.1";
+  public static final String MONGO_DOCKER_NAME = "mongo:4.4.3";
 
   /**
    * The port for the MongoDB that has to be exported.
@@ -340,7 +340,7 @@ public class Containers {
    */
   protected String createApiFor(final WeNetComponentContainer<?> container, final int port) {
 
-    final StringBuilder builder = new StringBuilder();
+    final var builder = new StringBuilder();
     builder.append("http://");
     if (container != null) {
 
@@ -348,7 +348,7 @@ public class Containers {
 
     } else {
 
-      builder.append("host.testcontainers.internal");
+      builder.append("localhost");
     }
     builder.append(":");
     builder.append(port);
@@ -509,6 +509,25 @@ public class Containers {
   }
 
   /**
+   * Start the basic containers.
+   *
+   * @return this containers instance.
+   *
+   * @see #startBasic()
+   * @see #startProfileManagerContainer()
+   * @see #startTaskManagerContainer()
+   * @see #startInteractionProtocolEngineContainer()
+   */
+  public Containers startAll() {
+
+    this.startBasic();
+    this.startProfileManagerContainer();
+    this.startTaskManagerContainer();
+    this.startInteractionProtocolEngineContainer();
+    return this;
+  }
+
+  /**
    * Return the configuration to interact with the database.
    *
    * @return the configuration to interact with the MongoDB.
@@ -518,6 +537,13 @@ public class Containers {
     return new JsonObject().put("db_name", Containers.MONGODB_NAME).put("host", this.getMongoDBHost())
         .put("port", this.getMongoDBPort()).put("username", Containers.MONGODB_USER)
         .put("password", Containers.MONGODB_PASSWORD);
+  }
+
+  /**
+   * Create the main arguments to start a component.
+   */
+  protected class MainStartArgumentBuilder {
+
   }
 
 }

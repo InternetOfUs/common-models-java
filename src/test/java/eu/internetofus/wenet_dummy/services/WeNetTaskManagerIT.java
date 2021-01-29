@@ -24,29 +24,19 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.wenet_dummy;
+package eu.internetofus.wenet_dummy.services;
 
-import eu.internetofus.common.vertx.AbstractMainVerticle;
-import eu.internetofus.wenet_dummy.api.APIVerticle;
-import eu.internetofus.wenet_dummy.persistence.PersistenceVerticle;
-import eu.internetofus.wenet_dummy.services.ServicesVerticle;
-import io.vertx.core.AbstractVerticle;
+import eu.internetofus.common.components.task_manager.WeNetTaskManager;
+import eu.internetofus.common.components.task_manager.WeNetTaskManagerTestCase;
+import eu.internetofus.wenet_dummy.WeNetDummyIntegrationExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * The dummy verticle.
+ * Test the interaction with the {@link WeNetTaskManager}
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class MainVerticle extends AbstractMainVerticle {
-
-  /**
-   * {@inheritDoc}
-   */
-  @SuppressWarnings("unchecked")
-  @Override
-  protected Class<? extends AbstractVerticle>[] getVerticleClassesToDeploy() {
-
-    return new Class[] { PersistenceVerticle.class, ServicesVerticle.class, APIVerticle.class };
-  }
+@ExtendWith(WeNetDummyIntegrationExtension.class)
+public class WeNetTaskManagerIT extends WeNetTaskManagerTestCase {
 
 }

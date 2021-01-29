@@ -26,13 +26,14 @@
 
 package eu.internetofus.common.components.profile_manager;
 
+import static eu.internetofus.common.vertx.ComponentClientAsserts.assertStatusError;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.jupiter.api.Test;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
+import javax.ws.rs.core.Response.Status;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test the {@link WeNetProfileManager}.
@@ -52,7 +53,8 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotCreateBadProfile(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManager.createProxy(vertx).createProfile(new JsonObject().put("undefinedField", "value"), testContext.failing(error -> testContext.completeNow()));
+    WeNetProfileManager.createProxy(vertx).createProfile(new JsonObject().put("undefinedField", "value"),
+        testContext.failing(error -> testContext.completeNow()));
 
   }
 
@@ -65,7 +67,8 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotRetrieveUndefinedProfile(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertFailure(WeNetProfileManager.createProxy(vertx).retrieveProfile("undefined-profile-identifier")).onFailure(error -> testContext.completeNow());
+    testContext.assertFailure(WeNetProfileManager.createProxy(vertx).retrieveProfile("undefined-profile-identifier"))
+        .onFailure(error -> testContext.completeNow());
   }
 
   /**
@@ -77,7 +80,8 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotDeleteUndefinedProfile(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertFailure(WeNetProfileManager.createProxy(vertx).deleteProfile("undefined-profile-identifier")).onFailure(error -> testContext.completeNow());
+    testContext.assertFailure(WeNetProfileManager.createProxy(vertx).deleteProfile("undefined-profile-identifier"))
+        .onFailure(error -> testContext.completeNow());
 
   }
 
@@ -118,7 +122,8 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotCreateBadCommunity(final Vertx vertx, final VertxTestContext testContext) {
 
-    WeNetProfileManager.createProxy(vertx).createCommunity(new JsonObject().put("undefinedField", "value"), testContext.failing(error -> testContext.completeNow()));
+    WeNetProfileManager.createProxy(vertx).createCommunity(new JsonObject().put("undefinedField", "value"),
+        testContext.failing(error -> testContext.completeNow()));
 
   }
 
@@ -131,7 +136,9 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotRetrieveUndefinedCommunity(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertFailure(WeNetProfileManager.createProxy(vertx).retrieveCommunity("undefined-community-identifier")).onFailure(error -> testContext.completeNow());
+    testContext
+        .assertFailure(WeNetProfileManager.createProxy(vertx).retrieveCommunity("undefined-community-identifier"))
+        .onFailure(error -> testContext.completeNow());
   }
 
   /**
@@ -143,7 +150,9 @@ public abstract class WeNetProfileManagerTestCase {
   @Test
   public void shouldNotDeleteUndefinedCommunity(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertFailure(WeNetProfileManager.createProxy(vertx).deleteCommunity("undefined-community-identifier")).onFailure(error -> testContext.completeNow());
+    assertStatusError(WeNetProfileManager.createProxy(vertx).deleteCommunity("undefined-community-identifier"),
+        testContext, Status.NOT_FOUND).onComplete(error -> testContext.completeNow());
+
   }
 
   /**

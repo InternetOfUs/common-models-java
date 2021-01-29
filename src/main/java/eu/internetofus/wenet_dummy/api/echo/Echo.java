@@ -26,7 +26,6 @@
 package eu.internetofus.wenet_dummy.api.echo;
 
 import eu.internetofus.common.components.ErrorMessage;
-import eu.internetofus.wenet_dummy.service.Dummy;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -79,7 +78,7 @@ public interface Echo {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @Operation(summary = "Send a dummy model.", description = "Post a dummy model.")
-  @RequestBody(description = "The model to post", required = true, content = @Content(schema = @Schema(implementation = Dummy.class)))
+  @RequestBody(description = "The model to post", required = true, content = @Content(schema = @Schema(type = "object")))
   @ApiResponse(responseCode = "201", description = "If the dummy model is stored")
   @ApiResponse(responseCode = "400", description = "Bad model", content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
   void post(@Parameter(hidden = true, required = false) JsonObject body,
@@ -97,7 +96,7 @@ public interface Echo {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @Operation(summary = "Send a dummy model.", description = "Patch a dummy model.")
-  @RequestBody(description = "The model to patch", required = true, content = @Content(schema = @Schema(implementation = Dummy.class)))
+  @RequestBody(description = "The model to patch", required = true, content = @Content(schema = @Schema(type = "object")))
   @ApiResponse(responseCode = "201", description = "If the dummy model is stored")
   @ApiResponse(responseCode = "400", description = "Bad model", content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
   void patch(@Parameter(hidden = true, required = false) JsonObject body,
@@ -115,10 +114,29 @@ public interface Echo {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @Operation(summary = "Send a dummy model.", description = "Put a dummy model.")
-  @RequestBody(description = "The model to put", required = true, content = @Content(schema = @Schema(implementation = Dummy.class)))
+  @RequestBody(description = "The model to put", required = true, content = @Content(schema = @Schema(type = "object")))
   @ApiResponse(responseCode = "201", description = "If the dummy model is stored")
   @ApiResponse(responseCode = "400", description = "Bad model", content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
   void put(@Parameter(hidden = true, required = false) JsonObject body,
+      @Parameter(hidden = true, required = false) ServiceRequest context,
+      @Parameter(hidden = true, required = false) Handler<AsyncResult<ServiceResponse>> resultHandler);
+
+  /**
+   * Post a body.
+   *
+   * @param body          with the model.
+   * @param context       where is the model.
+   * @param resultHandler the respond to the post action.
+   */
+  @POST
+  @Path("/dummy")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Operation(summary = "Send a dummy model.", description = "Post a dummy model.")
+  @RequestBody(description = "The model to post", required = true, content = @Content(schema = @Schema(implementation = DummyModel.class)))
+  @ApiResponse(responseCode = "201", description = "If the dummy model is stored")
+  @ApiResponse(responseCode = "400", description = "Bad model", content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+  void postDummyComplex(@Parameter(hidden = true, required = false) JsonObject body,
       @Parameter(hidden = true, required = false) ServiceRequest context,
       @Parameter(hidden = true, required = false) Handler<AsyncResult<ServiceResponse>> resultHandler);
 

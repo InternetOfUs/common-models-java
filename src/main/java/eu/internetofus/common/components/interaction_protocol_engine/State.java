@@ -42,25 +42,25 @@ public class State extends CreateUpdateTsDetails {
   /**
    * The identifier of the community.
    */
-  @Schema(description = "The identifier of the community associated to the state.", example = "1")
+  @Schema(description = "The identifier of the community associated to the state.", example = "1", nullable = true)
   public String communityId;
 
   /**
    * The identifier of the community.
    */
-  @Schema(description = "The identifier of the task associated to the state.", example = "1")
+  @Schema(description = "The identifier of the task associated to the state.", example = "1", nullable = true)
   public String taskId;
 
   /**
    * The identifier of the community.
    */
-  @Schema(description = "The identifier of the user associated to the state.", example = "1")
+  @Schema(description = "The identifier of the user associated to the state.", example = "1", nullable = true)
   public String userId;
 
   /**
    * The attributes that define the state.
    */
-  @Schema(type = "object", description = "The attributes that define the state.", implementation = Object.class)
+  @Schema(type = "object", description = "The attributes that define the state.", implementation = Object.class, nullable = true)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject attributes;
 

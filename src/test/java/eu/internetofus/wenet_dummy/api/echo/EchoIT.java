@@ -28,6 +28,7 @@ package eu.internetofus.wenet_dummy.api.echo;
 import static io.reactiverse.junit5.web.TestRequest.testRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.Model;
 import eu.internetofus.wenet_dummy.WeNetDummyIntegrationExtension;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -35,6 +36,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxTestContext;
+import java.util.ArrayList;
 import javax.ws.rs.core.Response.Status;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,7 +57,7 @@ public class EchoIT {
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldPost(Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldPost(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var model = new JsonObject().put("key", "value").putNull("nullField").put("emptyField", new JsonArray()).put(
         "child", new JsonObject().put("child", "1").putNull("nullChildField").put("emptyChildField", new JsonArray()));
@@ -65,6 +67,7 @@ public class EchoIT {
       final var posted = res.bodyAsJsonObject();
       assertThat(posted).isNotNull().isEqualTo(model);
       assertThat(posted.fieldNames()).isEqualTo(model.fieldNames());
+      assertThat(posted.getJsonObject("child").fieldNames()).isEqualTo(model.getJsonObject("child").fieldNames());
 
     }).sendJson(model, testContext);
 
@@ -78,7 +81,7 @@ public class EchoIT {
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldPatch(Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldPatch(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var model = new JsonObject().put("key", "value").putNull("nullField").put("emptyField", new JsonArray()).put(
         "child", new JsonObject().put("child", "1").putNull("nullChildField").put("emptyChildField", new JsonArray()));
@@ -88,6 +91,7 @@ public class EchoIT {
       final var patched = res.bodyAsJsonObject();
       assertThat(patched).isNotNull().isEqualTo(model);
       assertThat(patched.fieldNames()).isEqualTo(model.fieldNames());
+      assertThat(patched.getJsonObject("child").fieldNames()).isEqualTo(model.getJsonObject("child").fieldNames());
 
     }).sendJson(model, testContext);
 
@@ -101,7 +105,7 @@ public class EchoIT {
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldPut(Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldPut(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     final var model = new JsonObject().put("key", "value").putNull("nullField").put("emptyField", new JsonArray()).put(
         "child", new JsonObject().put("child", "1").putNull("nullChildField").put("emptyChildField", new JsonArray()));
@@ -111,9 +115,41 @@ public class EchoIT {
       final var puted = res.bodyAsJsonObject();
       assertThat(puted).isNotNull().isEqualTo(model);
       assertThat(puted.fieldNames()).isEqualTo(model.fieldNames());
+      assertThat(puted.getJsonObject("child").fieldNames()).isEqualTo(model.getJsonObject("child").fieldNames());
 
     }).sendJson(model, testContext);
 
   }
 
+  /**
+   * Should post dummy model.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param client      to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldPostDummyModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    final var model = new DummyModel();
+    model.children = new ArrayList<>();
+    model.children.add(new DummyModel());
+    model.children.add(new DummyModel());
+    model.children.add(new DummyModel());
+    model.children.get(1).name = "Name";
+    model.children.get(1).parent = new DummyModel();
+    model.children.get(1).parent.name = "Parent";
+    final var modelObject = new JsonObject(model.toBufferWithEmptyValues());
+
+    testRequest(client, HttpMethod.POST, Echo.PATH + "/dummy").expect(res -> {
+
+      assertThat(res.statusCode()).isEqualTo(Status.CREATED.getStatusCode());
+      final var posted = res.bodyAsJsonObject();
+      assertThat(posted).isNotNull().isEqualTo(modelObject);
+      final var postedModel = Model.fromJsonObject(posted, DummyModel.class);
+      assertThat(postedModel).isEqualTo(model);
+
+    }).sendJson(modelObject, testContext);
+
+  }
 }

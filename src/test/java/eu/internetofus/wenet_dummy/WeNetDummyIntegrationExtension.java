@@ -29,6 +29,7 @@ package eu.internetofus.wenet_dummy;
 import eu.internetofus.common.Containers;
 import eu.internetofus.common.vertx.AbstractMain;
 import eu.internetofus.common.vertx.AbstractWeNetComponentIntegrationExtension;
+import eu.internetofus.common.vertx.MainArgumentBuilder;
 import eu.internetofus.common.vertx.WeNetModuleContext;
 import eu.internetofus.wenet_dummy.service.WeNetDummy;
 import io.vertx.core.json.JsonObject;
@@ -51,6 +52,7 @@ public class WeNetDummyIntegrationExtension extends AbstractWeNetComponentIntegr
     final var client = WebClient.create(vertx);
     final var conf = context.configuration.getJsonObject("wenetComponents", new JsonObject());
     WeNetDummy.register(vertx, client, conf);
+    super.afterStarted(context);
 
   }
 
@@ -60,18 +62,10 @@ public class WeNetDummyIntegrationExtension extends AbstractWeNetComponentIntegr
   @Override
   protected String[] createMainStartArguments() {
 
-    final var containers = Containers.status().startBasic();
-    var dummyApiPort = Containers.nextFreePort();
-    return new String[] { "-papi.port=" + dummyApiPort, "-ppersistence.db_name=" + Containers.MONGODB_NAME,
-        "-ppersistence.host=" + containers.getMongoDBHost(), "-ppersistence.port=" + containers.getMongoDBPort(),
-        "-ppersistence.username=" + Containers.MONGODB_USER, "-ppersistence.password=" + Containers.MONGODB_PASSWORD,
-        "-pwenetComponents.dummy=\"http://localhost:" + dummyApiPort + "\"",
-        "-pwenetComponents.profileManager=\"" + containers.getProfileManagerApi() + "\"",
-        "-pwenetComponents.taskManager=\"" + containers.getTaskManagerApi() + "\"",
-        "-pwenetComponents.interactionProtocolEngine=\"" + containers.getInteractionProtocolEngineApi() + "\"",
-        "-pwenetComponents.service=\"" + containers.service.getApiUrl() + "\"",
-        "-pwenetComponents.socialContextBuilder=\"" + containers.socialContextBuilder.getApiUrl() + "\"",
-        "-pwenetComponents.incentiveServer=\"" + containers.incentiveServer.getApiUrl() + "\"" };
+    final var containers = Containers.status().startAll();
+    final var dummyApiPort = Containers.nextFreePort();
+    return new MainArgumentBuilder().withApiPort(dummyApiPort)
+        .withWeNetComponent("dummy", "http://localhost:" + dummyApiPort).with(containers).build();
 
   }
 

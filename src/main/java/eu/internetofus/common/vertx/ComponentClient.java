@@ -440,7 +440,7 @@ public class ComponentClient {
 
         try {
 
-          final T model = extractor.apply(response);
+          final var model = extractor.apply(response);
           Logger.trace("{} SUCCESS with code {} and content {}", actionId, code, model);
           promise.complete(model);
 

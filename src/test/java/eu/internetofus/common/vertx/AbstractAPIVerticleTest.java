@@ -31,19 +31,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 
-import java.net.ServerSocket;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import eu.internetofus.common.Containers;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.net.ServerSocket;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Test the {@link AbstractAPIVerticle}.
@@ -68,26 +66,8 @@ public class AbstractAPIVerticleTest {
    * @throws Exception If the verticle cannot be started/stopped.
    */
   @Test
-  public void shouldNotStartWithUndefinedOpenApiSpecification(final Vertx vertx, final VertxTestContext testContext) throws Exception {
-
-    doReturn(vertx).when(this.verticle).getVertx();
-    doReturn("http://undefined_openapi.yaml").when(this.verticle).getOpenAPIResourcePath();
-    final Promise<Void> startPromise = Promise.promise();
-    this.verticle.start(startPromise);
-    startPromise.future().onComplete(testContext.failing(error -> testContext.completeNow()));
-
-  }
-
-  /**
-   * Check that not start because can not register repositories.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context of the test.
-   *
-   * @throws Exception If the verticle cannot be started/stopped.
-   */
-  @Test
-  public void shouldNotStartWithBadOpenApiSpecification(final Vertx vertx, final VertxTestContext testContext) throws Exception {
+  public void shouldNotStartWithBadOpenApiSpecification(final Vertx vertx, final VertxTestContext testContext)
+      throws Exception {
 
     doReturn(vertx).when(this.verticle).getVertx();
     doReturn("eu/internetofus/common/vertx/badOpenApi.yml").when(this.verticle).getOpenAPIResourcePath();
@@ -128,12 +108,12 @@ public class AbstractAPIVerticleTest {
   @Test
   public void shouldNotStartWithBindedPort(final Vertx vertx, final VertxTestContext testContext) throws Exception {
 
-    final int port = Containers.nextFreePort();
+    final var port = Containers.nextFreePort();
     new Thread(() -> {
 
       try {
 
-        final ServerSocket serverSocket = new ServerSocket(port);
+        final var serverSocket = new ServerSocket(port);
         serverSocket.accept();
         serverSocket.close();
 

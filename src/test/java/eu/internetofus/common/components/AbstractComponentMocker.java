@@ -26,20 +26,17 @@
 
 package eu.internetofus.common.components;
 
-import java.net.InetAddress;
-import java.util.concurrent.Semaphore;
-
-import org.tinylog.Level;
-import org.tinylog.provider.InternalLogger;
-
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import java.net.InetAddress;
+import java.util.concurrent.Semaphore;
 import javax.ws.rs.core.Response.Status;
+import org.tinylog.Level;
+import org.tinylog.provider.InternalLogger;
 
 /**
  * The generic component used to mock any WeNet component.
@@ -108,7 +105,7 @@ public abstract class AbstractComponentMocker {
       try {
         final var vertx = Vertx.vertx();
         final var server = vertx.createHttpServer();
-        final Router router = Router.router(vertx);
+        final var router = Router.router(vertx);
 
         router.route().handler(BodyHandler.create());
 
@@ -116,7 +113,7 @@ public abstract class AbstractComponentMocker {
 
         router.routeWithRegex(".*").handler(ctx -> {
 
-          final HttpServerResponse response = ctx.response();
+          final var response = ctx.response();
           response.putHeader("content-type", "application/json");
           response.setStatusCode(Status.NOT_IMPLEMENTED.getStatusCode());
           response.end();
@@ -130,7 +127,7 @@ public abstract class AbstractComponentMocker {
 
         });
 
-      } catch (Throwable cause) {
+      } catch (final Throwable cause) {
 
         return Future.failedFuture(cause);
       }
@@ -160,7 +157,7 @@ public abstract class AbstractComponentMocker {
 
     } catch (final Throwable t) {
 
-      builder.append("localhost");
+      builder.append("0.0.0.0");
     }
 
     builder.append(":");
