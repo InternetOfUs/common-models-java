@@ -315,22 +315,6 @@ public class Containers {
   }
 
   /**
-   * Return the URL to the API exposed to the specified port.
-   *
-   * @param port where the API will be exposed.
-   *
-   * @return the URL to the API exposed on the port.
-   */
-  static String exposedApiFor(final int port) {
-
-    final var builder = new StringBuilder();
-    builder.append("http://host.testcontainers.internal:");
-    builder.append(port);
-    return builder.toString();
-
-  }
-
-  /**
    * Return the URL to access the module defined on a container.
    *
    * @param container where is started the module.
@@ -348,7 +332,7 @@ public class Containers {
 
     } else {
 
-      builder.append("localhost");
+      builder.append("host.testcontainers.internal");
     }
     builder.append(":");
     builder.append(port);
