@@ -26,17 +26,17 @@
 
 package eu.internetofus.common.components.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import eu.internetofus.common.components.AbstractComponentMocker;
 import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.Model;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import java.util.ArrayList;
+import java.util.List;
 import javax.ws.rs.core.Response.Status;
 
 /**
@@ -442,7 +442,7 @@ public class WeNetServiceSimulatorMocker extends AbstractComponentMocker {
 
     return ctx -> {
 
-      final App app = Model.fromBuffer(ctx.getBody(), App.class);
+      final var app = Model.fromBuffer(ctx.getBody(), App.class);
       if (app == null) {
 
         final var response = ctx.response();
@@ -465,6 +465,25 @@ public class WeNetServiceSimulatorMocker extends AbstractComponentMocker {
 
     };
 
+  }
+
+  /**
+   * Allow to post the callbacks without the apikey.
+   *
+   * {@inheritDoc}
+   */
+  @Override
+  protected void checkWeNetComponentApikey(final RoutingContext ctx) {
+
+    final var request = ctx.request();
+    if (request.method().equals(HttpMethod.POST) && request.path().matches("/app/.+/callbacks")) {
+
+      ctx.next();
+
+    } else {
+
+      super.checkWeNetComponentApikey(ctx);
+    }
   }
 
 }

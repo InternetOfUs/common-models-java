@@ -26,7 +26,6 @@
 
 package eu.internetofus.common.vertx;
 
-import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulator;
@@ -36,7 +35,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.List;
@@ -120,7 +118,7 @@ public abstract class AbstractWeNetComponentIntegrationExtension
   protected void afterStarted(final WeNetModuleContext context) {
 
     final var vertx = context.vertx;
-    final var client = createClientWithDefaultSession(vertx);
+    final var client = AbstractServicesVerticle.createWebClientSession(vertx, context.configuration);
     final var conf = context.configuration.getJsonObject("wenetComponents", new JsonObject());
     WeNetServiceSimulator.register(vertx, client, conf);
     WeNetIncentiveServerSimulator.register(vertx, client, conf);
@@ -308,10 +306,18 @@ public abstract class AbstractWeNetComponentIntegrationExtension
           .getOrComputeIfAbsent(WebClient.class.getName(), key -> {
 
             final var context = this.getContext();
-            final var options = new WebClientOptions();
-            options.setDefaultHost(context.configuration.getJsonObject("api").getString("host"));
-            options.setDefaultPort(context.configuration.getJsonObject("api").getInteger("port"));
-            return WebClient.create(context.vertx, options);
+
+            final var config = context.configuration.copy();
+            var webclientConf = config.getJsonObject("webClient", null);
+            if (webclientConf == null) {
+
+              webclientConf = new JsonObject();
+              config.put("webClient", webclientConf);
+            }
+            webclientConf.put("defaultHost", context.configuration.getJsonObject("api").getString("host"));
+            webclientConf.put("defaultPort", context.configuration.getJsonObject("api").getInteger("port"));
+            return AbstractServicesVerticle.createWebClientSession(context.vertx, config);
+
           }, WebClient.class);
 
     } else if (type == MongoClient.class) {

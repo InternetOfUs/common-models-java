@@ -26,6 +26,7 @@
 package eu.internetofus.wenet_dummy.api;
 
 import eu.internetofus.common.vertx.AbstractAPIVerticle;
+import eu.internetofus.common.vertx.AbstractServicesVerticle;
 import eu.internetofus.wenet_dummy.api.dummies.Dummies;
 import eu.internetofus.wenet_dummy.api.dummies.DummiesResources;
 import eu.internetofus.wenet_dummy.api.echo.Echo;
@@ -33,7 +34,6 @@ import eu.internetofus.wenet_dummy.api.echo.EchoResources;
 import eu.internetofus.wenet_dummy.service.WeNetDummiesClient;
 import eu.internetofus.wenet_dummy.service.WeNetDummy;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.openapi.RouterBuilder;
 import io.vertx.serviceproxy.ServiceBinder;
 
@@ -52,7 +52,7 @@ public class APIVerticle extends AbstractAPIVerticle {
 
     final var conf = new JsonObject();
     conf.put(WeNetDummiesClient.DUMMY_CONF_KEY, "http://" + host + ":" + port);
-    final var client = WebClient.create(this.vertx);
+    final var client = AbstractServicesVerticle.createWebClientSession(this.getVertx(), this.config());
     WeNetDummy.register(this.vertx, client, conf);
 
   }

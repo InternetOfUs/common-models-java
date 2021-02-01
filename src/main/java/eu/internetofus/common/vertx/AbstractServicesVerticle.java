@@ -28,6 +28,7 @@ package eu.internetofus.common.vertx;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -59,13 +60,7 @@ public abstract class AbstractServicesVerticle extends AbstractVerticle {
 
     try {
 
-      // configure the web client
-      final var webClientConf = this.config().getJsonObject("webClient", new JsonObject());
-      final var options = new WebClientOptions(webClientConf);
-
-      this.client = WebClientSession.create(WebClient.create(this.getVertx(), options));
-      final var apiKey = webClientConf.getString("wenetComponentApikey", "UDEFINED");
-      this.client.addHeader(WENET_COMPONENT_APIKEY_HEADER, apiKey);
+      this.client = createWebClientSession(this.getVertx(), this.config());
 
       final var serviceConf = this.config().getJsonObject("wenetComponents", new JsonObject());
       this.registerServices(serviceConf);
@@ -86,6 +81,26 @@ public abstract class AbstractServicesVerticle extends AbstractVerticle {
    * @throws Exception If can not register or create teh service to register.
    */
   protected abstract void registerServices(JsonObject serviceConf) throws Exception;
+
+  /**
+   * Create a web session client.
+   *
+   * @param vertx  event bus to use.
+   * @param config configuration of the platform.
+   *
+   * @return the client with the session information.
+   */
+  public static WebClientSession createWebClientSession(final Vertx vertx, final JsonObject config) {
+
+    final var webClientConf = config.getJsonObject("webClient", new JsonObject());
+    final var options = new WebClientOptions(webClientConf);
+
+    final var client = WebClientSession.create(WebClient.create(vertx, options));
+    final var apiKey = webClientConf.getString("wenetComponentApikey", "UDEFINED");
+    client.addHeader(WENET_COMPONENT_APIKEY_HEADER, apiKey);
+    return client;
+
+  }
 
   /**
    * Close the web client.

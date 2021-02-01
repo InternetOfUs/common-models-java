@@ -33,8 +33,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientSession;
 import io.vertx.ext.web.handler.BodyHandler;
 import java.net.InetAddress;
 import java.util.concurrent.Semaphore;
@@ -115,22 +115,7 @@ public abstract class AbstractComponentMocker {
 
         router.route().handler(BodyHandler.create());
 
-        router.route().handler(ctx -> {
-
-          final var apiKey = ctx.request().getHeader(AbstractServicesVerticle.WENET_COMPONENT_APIKEY_HEADER);
-          if (Containers.DEFAULT_WENET_COMPONENT_APIKEY.equals(apiKey)) {
-
-            ctx.next();
-
-          } else {
-
-            final var response = ctx.response();
-            response.setStatusCode(Status.UNAUTHORIZED.getStatusCode());
-            response
-                .end(new ErrorMessage("bad_wenet_component_apikey", "Invalid authentication credentials").toBuffer());
-
-          }
-        });
+        router.route().handler(this::checkWeNetComponentApikey);
 
         this.fillInRouterHandler(router);
 
@@ -155,6 +140,28 @@ public abstract class AbstractComponentMocker {
         return Future.failedFuture(cause);
       }
     }
+  }
+
+  /**
+   * Check the request has the required component apikey.
+   *
+   * @param ctx routing context to check the header.
+   */
+  protected void checkWeNetComponentApikey(final RoutingContext ctx) {
+
+    final var apiKey = ctx.request().getHeader(AbstractServicesVerticle.WENET_COMPONENT_APIKEY_HEADER);
+    if (Containers.DEFAULT_WENET_COMPONENT_APIKEY.equals(apiKey)) {
+
+      ctx.next();
+
+    } else {
+
+      final var response = ctx.response();
+      response.setStatusCode(Status.UNAUTHORIZED.getStatusCode());
+      response.end(new ErrorMessage("bad_wenet_component_apikey", "Invalid authentication credentials").toBuffer());
+
+    }
+
   }
 
   /**
@@ -257,9 +264,9 @@ public abstract class AbstractComponentMocker {
    */
   public static WebClient createClientWithDefaultSession(final Vertx vertx) {
 
-    final var client = WebClientSession.create(WebClient.create(vertx));
-    client.addHeader(AbstractServicesVerticle.WENET_COMPONENT_APIKEY_HEADER, Containers.DEFAULT_WENET_COMPONENT_APIKEY);
-    return client;
+    final var config = new JsonObject().put("webClient",
+        new JsonObject().put("wenetComponentApikey", Containers.DEFAULT_WENET_COMPONENT_APIKEY));
+    return AbstractServicesVerticle.createWebClientSession(vertx, config);
 
   }
 
