@@ -25,13 +25,13 @@
  */
 package eu.internetofus.wenet_dummy.api;
 
-import eu.internetofus.common.components.interaction_protocol_engine.WeNetInteractionProtocolEngine;
 import eu.internetofus.common.vertx.AbstractAPIVerticle;
 import eu.internetofus.wenet_dummy.api.dummies.Dummies;
 import eu.internetofus.wenet_dummy.api.dummies.DummiesResources;
 import eu.internetofus.wenet_dummy.api.echo.Echo;
 import eu.internetofus.wenet_dummy.api.echo.EchoResources;
 import eu.internetofus.wenet_dummy.service.WeNetDummiesClient;
+import eu.internetofus.wenet_dummy.service.WeNetDummy;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.openapi.RouterBuilder;
@@ -48,12 +48,12 @@ public class APIVerticle extends AbstractAPIVerticle {
    * {@inheritDoc}
    */
   @Override
-  protected void startedServerAt(String host, int port) {
+  protected void startedServerAt(final String host, final int port) {
 
     final var conf = new JsonObject();
     conf.put(WeNetDummiesClient.DUMMY_CONF_KEY, "http://" + host + ":" + port);
     final var client = WebClient.create(this.vertx);
-    WeNetInteractionProtocolEngine.register(this.vertx, client, conf);
+    WeNetDummy.register(this.vertx, client, conf);
 
   }
 
@@ -61,7 +61,7 @@ public class APIVerticle extends AbstractAPIVerticle {
    * {@inheritDoc}
    */
   @Override
-  protected void mountServiceInterfaces(RouterBuilder routerFactory) {
+  protected void mountServiceInterfaces(final RouterBuilder routerFactory) {
 
     routerFactory.mountServiceInterface(Dummies.class, Dummies.ADDRESS);
     new ServiceBinder(this.vertx).setAddress(Dummies.ADDRESS).register(Dummies.class, new DummiesResources(this.vertx));

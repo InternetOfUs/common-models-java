@@ -108,8 +108,8 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
    * {@inheritDoc}
    */
   @Override
-  public void retrieveCommunityUserState(@NotNull String communityId, @NotNull String userId,
-      Handler<AsyncResult<JsonObject>> handler) {
+  public void retrieveCommunityUserState(@NotNull final String communityId, @NotNull final String userId,
+      final Handler<AsyncResult<JsonObject>> handler) {
 
     this.getJsonObject("/states/communities", communityId, "/users", userId).onComplete(handler);
 
@@ -119,8 +119,8 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
    * {@inheritDoc}
    */
   @Override
-  public void mergeCommunityUserState(@NotNull String communityId, @NotNull String userId, @NotNull JsonObject newState,
-      Handler<AsyncResult<JsonObject>> handler) {
+  public void mergeCommunityUserState(@NotNull final String communityId, @NotNull final String userId,
+      @NotNull final JsonObject newState, final Handler<AsyncResult<JsonObject>> handler) {
 
     this.patch(newState, "/states/communities", communityId, "/users", userId).onComplete(handler);
 

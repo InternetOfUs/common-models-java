@@ -63,12 +63,13 @@ public class DummiesResources implements Dummies {
    * {@inheritDoc}
    */
   @Override
-  public void postDummy(JsonObject body, ServiceRequest context, Handler<AsyncResult<ServiceResponse>> resultHandler) {
+  public void postDummy(final JsonObject body, final ServiceRequest context,
+      final Handler<AsyncResult<ServiceResponse>> resultHandler) {
 
-    var model = Model.fromJsonObject(body, Dummy.class);
+    final var model = Model.fromJsonObject(body, Dummy.class);
     if (model == null) {
 
-      ServiceResponseHandlers.responseWithErrorMessage(resultHandler, Status.BAD_REQUEST, "bad_model",
+      ServiceResponseHandlers.responseWithErrorMessage(resultHandler, Status.BAD_REQUEST, "bad_dummy",
           "The content body does not contains a valid Dummy model.");
 
     } else {
