@@ -23,38 +23,24 @@
  *
  * -----------------------------------------------------------------------------
  */
+package eu.internetofus.wenet_dummy.api.echo;
 
-package eu.internetofus.wenet_dummy.api;
-
-import eu.internetofus.common.vertx.AbstractAPIVerticleIntegrationTestCase;
-import eu.internetofus.wenet_dummy.WeNetDummyIntegrationExtension;
-import eu.internetofus.wenet_dummy.api.echo.Echo;
-import io.vertx.core.json.JsonObject;
-import org.junit.jupiter.api.extension.ExtendWith;
+import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.ReflectionModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Integration tests of the {@link APIVerticle}.
+ * A model to check the echo service.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(WeNetDummyIntegrationExtension.class)
-public class APIVerticleIT extends AbstractAPIVerticleIntegrationTestCase {
+@Schema(name = "DummyParent", description = "A dummy model to check the echo.")
+public class DummyParentModel extends ReflectionModel implements Model {
 
   /**
-   * {@inheritDoc}
+   * The name of the dummy.
    */
-  @Override
-  protected String getBadRequestPostPath() {
+  @Schema(description = "The name of the dummy.", example = "Mc Fly", nullable = true)
+  public String name;
 
-    return Echo.PATH + "/dummy";
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected JsonObject createBadRequestPostBody() {
-
-    return new JsonObject().put("name", new JsonObject().put("key", "value"));
-  }
 }

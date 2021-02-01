@@ -137,7 +137,7 @@ public class EchoIT {
     model.children.add(new DummyModel());
     model.children.add(new DummyModel());
     model.children.get(1).name = "Name";
-    model.children.get(1).parent = new DummyModel();
+    model.children.get(1).parent = new DummyParentModel();
     model.children.get(1).parent.name = "Parent";
     final var modelObject = new JsonObject(model.toBufferWithEmptyValues());
 

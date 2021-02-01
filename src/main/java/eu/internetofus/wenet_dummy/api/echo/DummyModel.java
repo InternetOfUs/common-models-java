@@ -42,19 +42,19 @@ public class DummyModel extends ReflectionModel implements Model {
   /**
    * The name of the dummy.
    */
-  @Schema(description = "The name of the dummy.", example = "Mc Fly")
+  @Schema(description = "The name of the dummy.", example = "Mc Fly", nullable = true)
   public String name;
 
   /**
    * The parent of the dummy.
    */
-  @Schema(description = "The parent of the dummy.")
-  public DummyModel parent;
+  @Schema(description = "The parent of the dummy.", example = "{\"name\":\"Parent\"}", nullable = true)
+  public DummyParentModel parent;
 
   /**
    * The list of historical transactions that has been done in this task.
    */
-  @ArraySchema(schema = @Schema(implementation = DummyModel.class), arraySchema = @Schema(description = "Children of the dummy."))
+  @ArraySchema(schema = @Schema(implementation = DummyModel.class), arraySchema = @Schema(description = "Children of the dummy.", nullable = true))
   public List<DummyModel> children;
 
 }
