@@ -88,17 +88,17 @@ public class Containers {
   /**
    * The name of the WeNet profile manager docker container to use.
    */
-  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:0.17.0";
+  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:0.18.0";
 
   /**
    * The name of the WeNet task manager docker container to use.
    */
-  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:0.10.0";
+  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:0.11.0";
 
   /**
    * The name of the WeNet interaction manager docker container to use.
    */
-  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:0.16.0";
+  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:0.17.0";
 
   /**
    * The default wenet component apikey.
