@@ -5,7 +5,8 @@ All notable changes to `wenet-common` will be documented in this file
 
 ## Version 0.6.0 (2021-)
 
- *
+ * Add update community profile service.
+ * Modify the members of the community every time get the default community.
 
 
 ## Version 0.5.0 (2021-02-01)

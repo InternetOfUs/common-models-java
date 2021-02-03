@@ -104,56 +104,101 @@ public class App extends ReflectionModel implements Model {
    * @return the default community of an application, if it does not exist try to
    *         create it.
    */
-  public static Future<CommunityProfile> getOrCreateDefaultCommunityFor(String id, Vertx vertx) {
+  public static Future<CommunityProfile> getOrCreateDefaultCommunityFor(final String id, final Vertx vertx) {
 
-    Promise<CommunityProfile> promise = Promise.promise();
-    WeNetProfileManager.createProxy(vertx)
-        .retrieveCommunityProfilesPage(id, null, null, null, null, "-_creationTs", 0, 1).onComplete(retrieve -> {
+    final Promise<CommunityProfile> promise = Promise.promise();
+    if (id == null) {
 
-          final var page = retrieve.result();
-          if (retrieve.failed() || page.communities == null || page.communities.isEmpty()) {
+      promise.fail("Cannot found community for an application without identifier");
 
-            WeNetService.createProxy(vertx).retrieveAppUserIds(id).onComplete(retrieveUsers -> {
+    } else {
 
-              final var newCommunity = new CommunityProfile();
-              newCommunity.appId = id;
-              newCommunity.name = "Community of " + id;
-              final var value = retrieveUsers.result();
-              if (value != null) {
+      WeNetService.createProxy(vertx).retrieveAppUserIds(id).onComplete(retrieveUsers -> {
 
-                newCommunity.members = new ArrayList<>();
-                for (var i = 0; i < value.size(); i++) {
+        if (retrieveUsers.failed()) {
 
-                  final var member = new CommunityMember();
-                  member.userId = value.getString(i);
-                  newCommunity.members.add(member);
+          promise.fail(retrieveUsers.cause());
 
-                }
-              }
-              WeNetProfileManager.createProxy(vertx).createCommunity(newCommunity).onComplete(createHandler -> {
+        } else {
 
-                final var community = createHandler.result();
-                if (community != null) {
+          final var appUsers = retrieveUsers.result();
+          WeNetProfileManager.createProxy(vertx)
+              .retrieveCommunityProfilesPage(id, null, null, null, null, "-_creationTs", 0, 1)
+              .onComplete(retrievePage -> {
 
-                  promise.complete(community);
+                CommunityProfile community;
+                var page = retrievePage.result();
+                if (retrievePage.failed() || page.communities == null || page.communities.isEmpty()) {
+
+                  page = null;
+                  community = new CommunityProfile();
+                  community.appId = id;
+                  community.name = "Community of " + id;
 
                 } else {
 
-                  promise.fail(createHandler.cause());
+                  community = page.communities.get(0);
+
+                }
+
+                List<CommunityMember> currentMembers = new ArrayList<>();
+                if (community.members != null) {
+
+                  currentMembers = community.members;
+                }
+                community.members = new ArrayList<>();
+
+                var changes = 0;
+                for (var i = 0; i < appUsers.size(); i++) {
+
+                  final var appUserId = appUsers.getString(i);
+                  var found = false;
+                  final var iter = currentMembers.iterator();
+                  while (iter.hasNext()) {
+
+                    final var member = iter.next();
+                    if (appUserId.equals(member.userId)) {
+
+                      iter.remove();
+                      community.members.add(member);
+                      found = true;
+                      break;
+                    }
+                  }
+
+                  if (!found) {
+
+                    final var member = new CommunityMember();
+                    member.userId = appUsers.getString(i);
+                    community.members.add(member);
+                    changes++;
+                  }
+
+                }
+
+                if (page == null) {
+
+                  WeNetProfileManager.createProxy(vertx).createCommunity(community).onComplete(promise);
+
+                } else if (changes > 0) {
+
+                  WeNetProfileManager.createProxy(vertx).updateCommunity(community).onComplete(promise);
+
+                } else {
+
+                  if (community.members.isEmpty()) {
+
+                    community.members = null;
+                  }
+                  promise.complete(community);
                 }
 
               });
+        }
 
-            });
+      });
 
-          } else {
-
-            promise.complete(page.communities.get(0));
-
-          }
-
-        });
-
+    }
     return promise.future();
 
   }

@@ -162,30 +162,30 @@ public class AppTest extends ModelTestCase<App> {
   public void shouldCreateCommunityWithMembers(final Vertx vertx, final VertxTestContext testContext) {
 
     final var users = new JsonArray().add("1").add("2").add("3").add("4");
-    testContext.assertComplete(StoreServices.storeApp(new App(), vertx, testContext)).onSuccess(app -> testContext
-        .assertComplete(
+    testContext.assertComplete(StoreServices.storeApp(new App(), vertx, testContext))
+        .onSuccess(app -> testContext
+            .assertComplete(testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx)
+                .addUsers(app.appId, users).compose(empty -> App.getOrCreateDefaultCommunityFor(app.appId, vertx))))
+            .onSuccess(createdCommunity -> testContext.verify(() -> {
 
-            WeNetServiceSimulator.createProxy(vertx).addUsers(app.appId, users)
-                .compose(empty -> App.getOrCreateDefaultCommunityFor(app.appId, vertx)))
-        .onSuccess(createdCommunity -> testContext.verify(() -> {
+              assertThat(createdCommunity.members).isNotEmpty();
+              for (final var member : createdCommunity.members) {
 
-          assertThat(createdCommunity.members).isNotEmpty();
-          for (final var member : createdCommunity.members) {
+                assertThat(users.remove(member.userId)).isTrue();
+              }
+              assertThat(users).isEmpty();
+              assertThat(createdCommunity.name).contains(app.appId);
+              assertThat(createdCommunity.appId).isEqualTo(app.appId);
 
-            assertThat(users.remove(member.userId)).isTrue();
-          }
-          assertThat(users).isEmpty();
-          assertThat(createdCommunity.name).contains(app.appId);
-          assertThat(createdCommunity.appId).isEqualTo(app.appId);
-          testContext.assertComplete(App.getOrCreateDefaultCommunityFor(app.appId, vertx))
-              .onSuccess(getCommunity -> testContext.verify(() -> {
+              testContext.assertComplete(App.getOrCreateDefaultCommunityFor(app.appId, vertx))
+                  .onSuccess(getCommunity -> testContext.verify(() -> {
 
-                assertThat(createdCommunity).isEqualTo(getCommunity);
-                testContext.completeNow();
+                    assertThat(createdCommunity).isEqualTo(getCommunity);
+                    testContext.completeNow();
 
-              }));
+                  }));
 
-        })));
+            })));
 
   }
 
@@ -200,15 +200,70 @@ public class AppTest extends ModelTestCase<App> {
   @Test
   public void shouldGetDefaultCommunityForApp(final Vertx vertx, final VertxTestContext testContext) {
 
+    final var users = new JsonArray().add("10").add("20").add("30").add("40");
     testContext.assertComplete(StoreServices.storeCommunityExample(1, vertx, testContext))
         .onSuccess(defaultCommunity -> testContext
-            .assertComplete(App.getOrCreateDefaultCommunityFor(defaultCommunity.appId, vertx))
+            .assertComplete(WeNetServiceSimulator.createProxy(vertx).addUsers(defaultCommunity.appId, users)
+                .compose(empty -> App.getOrCreateDefaultCommunityFor(defaultCommunity.appId, vertx)))
             .onSuccess(getCommunity -> testContext.verify(() -> {
 
-              assertThat(defaultCommunity).isEqualTo(getCommunity);
+              assertThat(getCommunity).isNotEqualTo(defaultCommunity);
+
+              assertThat(getCommunity.members).isNotEmpty();
+              defaultCommunity.members = new ArrayList<>();
+              for (final var member : getCommunity.members) {
+
+                for (var i = 0; i < users.size(); i++) {
+
+                  if (member.userId.equals(users.getString(i))) {
+
+                    users.remove(i);
+                    defaultCommunity.members.add(member);
+                    break;
+                  }
+                }
+
+              }
+
+              assertThat(users).isEmpty();
+              defaultCommunity._lastUpdateTs = getCommunity._lastUpdateTs;
+              assertThat(getCommunity).isEqualTo(defaultCommunity);
               testContext.completeNow();
 
             })));
+
+  }
+
+  /**
+   * Check that should fail get default community of an application without
+   * identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see App#getOrCreateDefaultCommunityFor(String, Vertx)
+   */
+  @Test
+  public void shouldFailGetDefaultCommunityWithoutAppIdentifier(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertFailure(App.getOrCreateDefaultCommunityFor(null, vertx))
+        .onFailure(error -> testContext.completeNow());
+
+  }
+
+  /**
+   * Check that should fail get default community of an undefined application.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see App#getOrCreateDefaultCommunityFor(String, Vertx)
+   */
+  @Test
+  public void shouldFailGetDefaultCommunityWithUndefinedApp(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertFailure(App.getOrCreateDefaultCommunityFor("undefined", vertx))
+        .onFailure(error -> testContext.completeNow());
 
   }
 
