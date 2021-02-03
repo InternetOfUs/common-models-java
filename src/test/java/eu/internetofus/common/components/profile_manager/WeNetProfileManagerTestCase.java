@@ -167,16 +167,7 @@ public abstract class WeNetProfileManagerTestCase {
 
     new CommunityProfileTest().createModelExample(1, vertx, testContext).onSuccess(community1 -> {
 
-      for (final var socialPractice : community1.socialPractices) {
-
-        socialPractice.norms = null;
-      }
-      new CommunityProfileTest().createModelExample(1, vertx, testContext).onSuccess(community2 -> {
-
-        for (final var socialPractice : community2.socialPractices) {
-
-          socialPractice.norms = null;
-        }
+      new CommunityProfileTest().createModelExample(2, vertx, testContext).onSuccess(community2 -> {
 
         final var service = WeNetProfileManager.createProxy(vertx);
         testContext.assertComplete(service.createCommunity(community1)).onSuccess(created -> {
@@ -193,10 +184,6 @@ public abstract class WeNetProfileManagerTestCase {
                   assertThat(updated._lastUpdateTs).isGreaterThanOrEqualTo(created._lastUpdateTs);
                   community2._creationTs = updated._creationTs;
                   community2._lastUpdateTs = updated._lastUpdateTs;
-                  for (var i = 0; i < community2.socialPractices.size(); i++) {
-
-                    community2.socialPractices.get(i).id = updated.socialPractices.get(i).id;
-                  }
                   created._lastUpdateTs = updated._lastUpdateTs;
                   assertThat(updated).isEqualTo(community2).isNotEqualTo(created);
                   testContext.assertComplete(service.retrieveCommunity(id))

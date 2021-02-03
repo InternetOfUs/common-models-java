@@ -130,8 +130,14 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
     model.members.add(new CommunityMemberTest().createModelExample(index));
     model.name = "Name_" + index;
     model.description = "Description_" + index;
-    model.norms = null;
-    model.socialPractices = null;
+    model.norms = new ArrayList<>();
+    model.norms.add(new ProtocolNormTest().createModelExample(index - 1));
+    model.norms.add(new ProtocolNormTest().createModelExample(index));
+    model.norms.add(new ProtocolNormTest().createModelExample(index + 1));
+    model.socialPractices = new ArrayList<>();
+    model.socialPractices.add(new SocialPracticeTest().createModelExample(index - 1));
+    model.socialPractices.add(new SocialPracticeTest().createModelExample(index));
+    model.socialPractices.add(new SocialPracticeTest().createModelExample(index + 1));
     return model;
   }
 
@@ -173,6 +179,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
         model.appId = storedApp.appId;
         model.members.clear();
         model.members.add(member);
+        model.norms = null;
+        model.socialPractices = null;
         return Future.succeededFuture(model);
 
       });
