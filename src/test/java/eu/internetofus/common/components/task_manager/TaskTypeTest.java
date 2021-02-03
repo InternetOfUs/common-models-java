@@ -42,6 +42,7 @@ import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.ValidationsTest;
 import eu.internetofus.common.components.profile_manager.CommunityProfile;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
@@ -685,6 +686,25 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     assertCanUpdate(target, null, vertx, testContext, updated -> {
       assertThat(updated).isSameAs(target);
     });
+
+  }
+
+  /**
+   * Create a task type that is valid.
+   *
+   * @param index       of the example.
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @return the future task type.
+   */
+  public Future<TaskType> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
+
+    final var model = this.createModelExample(index);
+    model.transactions = new JsonObject();
+    model.callbacks = new JsonObject();
+    model.norms = null;
+    return Future.succeededFuture(model);
 
   }
 

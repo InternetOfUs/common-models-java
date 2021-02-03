@@ -119,9 +119,13 @@ public interface StoreServices {
    */
   static Future<TaskType> storeTaskTypeExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    final var example = new TaskTypeTest().createModelExample(index);
-    example.id = null;
-    return storeTaskType(example, vertx, testContext);
+    return testContext
+        .assertComplete(new TaskTypeTest().createModelExample(index, vertx, testContext).compose(example -> {
+
+          example.id = null;
+          return storeTaskType(example, vertx, testContext);
+
+        }));
 
   }
 
@@ -223,7 +227,7 @@ public interface StoreServices {
    *
    * @return the future with the created tasks.
    */
-  static Future<List<Task>> storeSomeTask(final int max, long delay, final Vertx vertx,
+  static Future<List<Task>> storeSomeTask(final int max, final long delay, final Vertx vertx,
       final VertxTestContext testContext, final BiConsumer<Integer, Task> change) {
 
     Future<List<Task>> future = Future.succeededFuture(new ArrayList<Task>());
@@ -242,7 +246,7 @@ public interface StoreServices {
             return storeTask(task, vertx, testContext).compose(storedTask -> {
 
               tasks.add(storedTask);
-              Promise<List<Task>> promise = Promise.promise();
+              final Promise<List<Task>> promise = Promise.promise();
               if (delay > 0) {
 
                 vertx.setTimer(delay, id -> promise.complete(tasks));
