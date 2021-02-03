@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.serviceproxy.ServiceException;
 import javax.ws.rs.core.Response.Status;
 import org.junit.jupiter.api.Test;
 
@@ -162,23 +163,62 @@ public abstract class WeNetProfileManagerTestCase {
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldCreateRetrieveAndDeleteCommunity(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldCreateRetrieveUpdateAndDeleteCommunity(final Vertx vertx, final VertxTestContext testContext) {
 
-    new CommunityProfileTest().createModelExample(1, vertx, testContext).onSuccess(community -> {
+    new CommunityProfileTest().createModelExample(1, vertx, testContext).onSuccess(community1 -> {
 
-      final var service = WeNetProfileManager.createProxy(vertx);
-      testContext.assertComplete(service.createCommunity(community)).onSuccess(create -> {
+      for (final var socialPractice : community1.socialPractices) {
 
-        final var id = create.id;
-        testContext.assertComplete(service.retrieveCommunity(id)).onSuccess(retrieve -> testContext.verify(() -> {
+        socialPractice.norms = null;
+      }
+      new CommunityProfileTest().createModelExample(1, vertx, testContext).onSuccess(community2 -> {
 
-          assertThat(create).isEqualTo(retrieve);
-          testContext.assertComplete(service.deleteCommunity(id)).onSuccess(empty -> {
+        for (final var socialPractice : community2.socialPractices) {
 
-            testContext.assertFailure(service.retrieveCommunity(id)).onFailure(error -> testContext.completeNow());
+          socialPractice.norms = null;
+        }
 
-          });
-        }));
+        final var service = WeNetProfileManager.createProxy(vertx);
+        testContext.assertComplete(service.createCommunity(community1)).onSuccess(created -> {
+
+          final var id = created.id;
+          testContext.assertComplete(service.retrieveCommunity(id)).onSuccess(retrieved -> testContext.verify(() -> {
+
+            assertThat(retrieved).isEqualTo(created);
+
+            community2.id = created.id;
+            testContext.assertComplete(service.updateCommunity(community2))
+                .onSuccess(updated -> testContext.verify(() -> {
+
+                  assertThat(updated._lastUpdateTs).isGreaterThanOrEqualTo(created._lastUpdateTs);
+                  community2._creationTs = updated._creationTs;
+                  community2._lastUpdateTs = updated._lastUpdateTs;
+                  for (var i = 0; i < community2.socialPractices.size(); i++) {
+
+                    community2.socialPractices.get(i).id = updated.socialPractices.get(i).id;
+                  }
+                  created._lastUpdateTs = updated._lastUpdateTs;
+                  assertThat(updated).isEqualTo(community2).isNotEqualTo(created);
+                  testContext.assertComplete(service.retrieveCommunity(id))
+                      .onSuccess(retrieved2 -> testContext.verify(() -> {
+
+                        assertThat(retrieved2).isNotEqualTo(created).isEqualTo(updated);
+                        testContext.assertComplete(service.deleteCommunity(id)).onSuccess(empty -> {
+
+                          testContext.assertFailure(service.retrieveCommunity(id))
+                              .onFailure(error -> testContext.verify(() -> {
+
+                                assertThat(error).isExactlyInstanceOf(ServiceException.class);
+                                assertThat(((ServiceException) error).failureCode())
+                                    .isEqualTo(Status.NOT_FOUND.getStatusCode());
+                                testContext.completeNow();
+
+                              }));
+                        });
+                      }));
+                }));
+          }));
+        });
       });
     });
 

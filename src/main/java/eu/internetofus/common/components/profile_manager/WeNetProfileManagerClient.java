@@ -26,13 +26,13 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import java.util.LinkedHashMap;
-
 import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import java.util.LinkedHashMap;
+import javax.validation.constraints.NotNull;
 
 /**
  * The client to interact with the {@link WeNetProfileManager}.
@@ -49,7 +49,8 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
   public static final String DEFAULT_PROFILE_MANAGER_API_URL = "https://wenet.u-hopper.com/prod/profile_manager";
 
   /**
-   * The name of the configuration property that contains the URL to the profile manager API.
+   * The name of the configuration property that contains the URL to the profile
+   * manager API.
    */
   public static final String PROFILE_MANAGER_CONF_KEY = "profileManager";
 
@@ -129,7 +130,8 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
    * {@inheritDoc}
    */
   @Override
-  public void retrieveCommunityProfilesPage(final String appId, final String name, final String description, final String keywords, final String members, final String order, final int offset, final int limit,
+  public void retrieveCommunityProfilesPage(final String appId, final String name, final String description,
+      final String keywords, final String members, final String order, final int offset, final int limit,
       final Handler<AsyncResult<JsonObject>> handler) {
 
     final var params = new LinkedHashMap<String, String>();
@@ -160,6 +162,17 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
     params.put("offset", String.valueOf(offset));
     params.put("limit", String.valueOf(limit));
     this.getJsonObject(params, "/communities").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void updateCommunity(@NotNull final String id, @NotNull final JsonObject community,
+      @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.put(community, "/communities", id).onComplete(handler);
 
   }
 

@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import javax.validation.constraints.NotNull;
-
 import eu.internetofus.common.components.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -39,6 +37,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
+import javax.validation.constraints.NotNull;
 
 /**
  * The class used to interact with the WeNet profile manager.
@@ -263,6 +262,49 @@ public interface WeNetProfileManager {
     final Promise<JsonObject> promise = Promise.promise();
     this.retrieveCommunityProfilesPage(appId, name, description, keywords, members, order, offset, limit, promise);
     return Model.fromFutureJsonObject(promise.future(), CommunityProfilesPage.class);
+
+  }
+
+  /**
+   * Update a {@link CommunityProfile} in Json format.
+   *
+   * @param id        identifier of the community to update.
+   * @param community to update.
+   *
+   * @param handler   of the updated community.
+   */
+  void updateCommunity(@NotNull String id, @NotNull JsonObject community,
+      @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Update a community.
+   *
+   * @param id        identifier of the community to update.
+   * @param community to update.
+   *
+   * @return the future updated community.
+   */
+  @GenIgnore
+  default Future<CommunityProfile> updateCommunity(@NotNull final String id,
+      @NotNull final CommunityProfile community) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.updateCommunity(id, community.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), CommunityProfile.class);
+
+  }
+
+  /**
+   * Update a community.
+   *
+   * @param community to update.
+   *
+   * @return the future updated community.
+   */
+  @GenIgnore
+  default Future<CommunityProfile> updateCommunity(@NotNull final CommunityProfile community) {
+
+    return this.updateCommunity(community.id, community);
 
   }
 
