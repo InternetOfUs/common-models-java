@@ -48,6 +48,16 @@ public abstract class AbstractServicesVerticle extends AbstractVerticle {
   public static final String WENET_COMPONENT_APIKEY_HEADER = "x-wenet-component-apikey";
 
   /**
+   * The name of the configuration key with the component api key.
+   */
+  public static final String WENET_COMPONENT_APIKEY_CONF_KEY = "wenetComponentApikey";
+
+  /**
+   * The name of the configuration key with the web client values.
+   */
+  public static final String WEB_CLIENT_CONF_KEY = "webClient";
+
+  /**
    * The client to do the HTTP request to other components.
    */
   protected WebClientSession client;
@@ -92,11 +102,11 @@ public abstract class AbstractServicesVerticle extends AbstractVerticle {
    */
   public static WebClientSession createWebClientSession(final Vertx vertx, final JsonObject config) {
 
-    final var webClientConf = config.getJsonObject("webClient", new JsonObject());
+    final var webClientConf = config.getJsonObject(WEB_CLIENT_CONF_KEY, new JsonObject());
     final var options = new WebClientOptions(webClientConf);
 
     final var client = WebClientSession.create(WebClient.create(vertx, options));
-    final var apiKey = webClientConf.getString("wenetComponentApikey", "UDEFINED");
+    final var apiKey = webClientConf.getString(WENET_COMPONENT_APIKEY_CONF_KEY, "UDEFINED");
     client.addHeader(WENET_COMPONENT_APIKEY_HEADER, apiKey);
     return client;
 

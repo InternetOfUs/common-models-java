@@ -264,8 +264,8 @@ public abstract class AbstractComponentMocker {
    */
   public static WebClient createClientWithDefaultSession(final Vertx vertx) {
 
-    final var config = new JsonObject().put("webClient",
-        new JsonObject().put("wenetComponentApikey", Containers.DEFAULT_WENET_COMPONENT_APIKEY));
+    final var config = new JsonObject().put(AbstractServicesVerticle.WEB_CLIENT_CONF_KEY, new JsonObject()
+        .put(AbstractServicesVerticle.WENET_COMPONENT_APIKEY_CONF_KEY, Containers.DEFAULT_WENET_COMPONENT_APIKEY));
     return AbstractServicesVerticle.createWebClientSession(vertx, config);
 
   }
