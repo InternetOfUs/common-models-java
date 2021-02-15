@@ -80,6 +80,26 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
   protected abstract IT idOfModel(T model);
 
   /**
+   * Return the identifier of a model.
+   *
+   * @param model       to obtain the identifier.
+   * @param testContext test context to use.
+   *
+   * @return the model identifier.
+   */
+  protected IT idOfModel(final T model, final VertxTestContext testContext) {
+
+    final var id = this.idOfModel(model);
+    if (id == null) {
+
+      testContext.failNow("Can not obtain the identifier of the model " + model);
+
+    }
+
+    return id;
+  }
+
+  /**
    * Create a valid model that contains elements on the field and store it.
    *
    * @param index       of the example to store.
@@ -163,8 +183,8 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(1, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
-          .expect(res -> {
+      testRequest(client, HttpMethod.POST,
+          this.modelPath() + "/" + this.idOfModel(model, testContext) + this.fieldPath()).expect(res -> {
 
             assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
             final var error = assertThatBodyIs(ErrorMessage.class, res);
@@ -197,8 +217,8 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(1, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
-          .expect(res -> {
+      testRequest(client, HttpMethod.POST,
+          this.modelPath() + "/" + this.idOfModel(model, testContext) + this.fieldPath()).expect(res -> {
 
             assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
             final var error = assertThatBodyIs(ErrorMessage.class, res);
@@ -220,6 +240,26 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
   protected abstract List<E> fieldOf(T model);
 
   /**
+   * Return the field defined on a model.
+   *
+   * @param model       to obtain the identifier.
+   * @param testContext test context to use.
+   *
+   * @return the field defined on the model.
+   */
+  protected List<E> fieldOf(final T model, final VertxTestContext testContext) {
+
+    final var field = this.fieldOf(model);
+    if (field == null) {
+
+      testContext.failNow("Can not obtain the identifier of the model " + model);
+
+    }
+
+    return field;
+  }
+
+  /**
    * Should not create an element that is already defined.
    *
    * @param vertx       event bus to use.
@@ -232,9 +272,9 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(1, vertx, testContext)).onSuccess(model -> {
 
-      final var element = this.fieldOf(model).get(0);
-      testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
-          .expect(res -> {
+      final var element = this.fieldOf(model, testContext).get(0);
+      testRequest(client, HttpMethod.POST,
+          this.modelPath() + "/" + this.idOfModel(model, testContext) + this.fieldPath()).expect(res -> {
 
             assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
             final var error = assertThatBodyIs(ErrorMessage.class, res);
@@ -275,20 +315,20 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
           .onSuccess(element -> {
 
             final var checkpoint = testContext.checkpoint(2);
-            testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
-                .expect(res -> {
+            testRequest(client, HttpMethod.POST,
+                this.modelPath() + "/" + this.idOfModel(model, testContext) + this.fieldPath()).expect(res -> {
 
                   assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
                   @SuppressWarnings("unchecked")
-                  final E created = (E) assertThatBodyIs(element.getClass(), res);
+                  final var created = (E) assertThatBodyIs(element.getClass(), res);
                   this.assertEqualsAdded(element, created);
 
-                  testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model))
+                  testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model, testContext))
                       .expect(resRetrieve -> {
 
                         assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
                         @SuppressWarnings("unchecked")
-                        final T updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
+                        final var updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
                         final var updatedField = this.fieldOf(updatedModel);
                         assertThat(updatedField).isNotEmpty().contains(created);
 
@@ -326,20 +366,20 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
           .onSuccess(element -> {
 
             final var checkpoint = testContext.checkpoint(2);
-            testRequest(client, HttpMethod.POST, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
-                .expect(res -> {
+            testRequest(client, HttpMethod.POST,
+                this.modelPath() + "/" + this.idOfModel(model, testContext) + this.fieldPath()).expect(res -> {
 
                   assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
                   @SuppressWarnings("unchecked")
-                  final E created = (E) assertThatBodyIs(element.getClass(), res);
+                  final var created = (E) assertThatBodyIs(element.getClass(), res);
                   this.assertEqualsAdded(element, created);
 
-                  testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model))
+                  testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model, testContext))
                       .expect(resRetrieve -> {
 
                         assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
                         @SuppressWarnings("unchecked")
-                        final T updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
+                        final var updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
                         final var updatedField = this.fieldOf(updatedModel);
                         assertThat(updatedField).isNotEmpty().contains(created);
 
@@ -389,8 +429,8 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithNullField(1, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
-          .expect(res -> {
+      testRequest(client, HttpMethod.GET,
+          this.modelPath() + "/" + this.idOfModel(model, testContext) + this.fieldPath()).expect(res -> {
 
             assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
             final List<E> field = assertThatBodyIsArrayOf(this.fieldElementClass(), res);
@@ -424,12 +464,12 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(3, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath())
-          .expect(res -> {
+      testRequest(client, HttpMethod.GET,
+          this.modelPath() + "/" + this.idOfModel(model, testContext) + this.fieldPath()).expect(res -> {
 
             assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
             final List<E> field = assertThatBodyIsArrayOf(this.fieldElementClass(), res);
-            assertThat(field).isNotNull().isEqualTo(this.fieldOf(model));
+            assertThat(field).isNotNull().isEqualTo(this.fieldOf(model, testContext));
 
           }).send(testContext);
 
@@ -483,16 +523,15 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.GET,
-          this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
-              .expect(res -> {
+      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model, testContext) + this.fieldPath()
+          + this.undefinedElementIdPath()).expect(res -> {
 
-                assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-                final var error = assertThatBodyIs(ErrorMessage.class, res);
-                assertThat(error.code).isNotEmpty();
-                assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+            assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+            final var error = assertThatBodyIs(ErrorMessage.class, res);
+            assertThat(error.code).isNotEmpty();
+            assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-              }).send(testContext);
+          }).send(testContext);
 
     });
 
@@ -511,16 +550,15 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithNullField(4, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.GET,
-          this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
-              .expect(res -> {
+      testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model, testContext) + this.fieldPath()
+          + this.undefinedElementIdPath()).expect(res -> {
 
-                assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-                final var error = assertThatBodyIs(ErrorMessage.class, res);
-                assertThat(error.code).isNotEmpty();
-                assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+            assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+            final var error = assertThatBodyIs(ErrorMessage.class, res);
+            assertThat(error.code).isNotEmpty();
+            assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-              }).send(testContext);
+          }).send(testContext);
 
     });
 
@@ -549,9 +587,9 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      final var modelId = this.idOfModel(model);
+      final var modelId = this.idOfModel(model, testContext);
       final var checkpoint = testContext.checkpoint(2);
-      final var field = this.fieldOf(model);
+      final var field = this.fieldOf(model, testContext);
       final var elementId = this.idOfElementIn(model, field.get(field.size() - 1));
       testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
           .expect(resDelete -> {
@@ -586,8 +624,8 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      final var modelId = this.idOfModel(model);
-      final var field = this.fieldOf(model);
+      final var modelId = this.idOfModel(model, testContext);
+      final var field = this.fieldOf(model, testContext);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
 
@@ -641,16 +679,15 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.DELETE,
-          this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
-              .expect(res -> {
+      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + this.idOfModel(model, testContext)
+          + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
 
-                assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-                final var error = assertThatBodyIs(ErrorMessage.class, res);
-                assertThat(error.code).isNotEmpty();
-                assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+            assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+            final var error = assertThatBodyIs(ErrorMessage.class, res);
+            assertThat(error.code).isNotEmpty();
+            assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-              }).send(testContext);
+          }).send(testContext);
 
     });
 
@@ -669,16 +706,15 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithNullField(4, vertx, testContext)).onSuccess(model -> {
 
-      testRequest(client, HttpMethod.DELETE,
-          this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
-              .expect(res -> {
+      testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + this.idOfModel(model, testContext)
+          + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
 
-                assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-                final var error = assertThatBodyIs(ErrorMessage.class, res);
-                assertThat(error.code).isNotEmpty();
-                assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+            assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+            final var error = assertThatBodyIs(ErrorMessage.class, res);
+            assertThat(error.code).isNotEmpty();
+            assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-              }).send(testContext);
+          }).send(testContext);
 
     });
 
@@ -696,8 +732,8 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      final var modelId = this.idOfModel(model);
-      final var field = this.fieldOf(model);
+      final var modelId = this.idOfModel(model, testContext);
+      final var field = this.fieldOf(model, testContext);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
       final var checkpoint = testContext.checkpoint(2);
@@ -765,16 +801,15 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
       testContext.assertComplete(this.createValidModelFieldElementExample(4, vertx, testContext)).onSuccess(element -> {
 
-        testRequest(client, HttpMethod.PUT,
-            this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
-                .expect(res -> {
+        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOfModel(model, testContext)
+            + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
 
-                  assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-                  final var error = assertThatBodyIs(ErrorMessage.class, res);
-                  assertThat(error.code).isNotEmpty();
-                  assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+              assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+              final var error = assertThatBodyIs(ErrorMessage.class, res);
+              assertThat(error.code).isNotEmpty();
+              assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-                }).sendJson(element.toJsonObject(), testContext);
+            }).sendJson(element.toJsonObject(), testContext);
 
       });
 
@@ -797,16 +832,15 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
       testContext.assertComplete(this.createValidModelFieldElementExample(4, vertx, testContext)).onSuccess(element -> {
 
-        testRequest(client, HttpMethod.PUT,
-            this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
-                .expect(res -> {
+        testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOfModel(model, testContext)
+            + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
 
-                  assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-                  final var error = assertThatBodyIs(ErrorMessage.class, res);
-                  assertThat(error.code).isNotEmpty();
-                  assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+              assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+              final var error = assertThatBodyIs(ErrorMessage.class, res);
+              assertThat(error.code).isNotEmpty();
+              assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-                }).sendJson(element.toJsonObject(), testContext);
+            }).sendJson(element.toJsonObject(), testContext);
 
       });
 
@@ -827,9 +861,9 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      final var modelId = this.idOfModel(model);
+      final var modelId = this.idOfModel(model, testContext);
       final var checkpoint = testContext.checkpoint(2);
-      final var field = this.fieldOf(model);
+      final var field = this.fieldOf(model, testContext);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
       testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
@@ -866,8 +900,8 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      final var modelId = this.idOfModel(model);
-      final var field = this.fieldOf(model);
+      final var modelId = this.idOfModel(model, testContext);
+      final var field = this.fieldOf(model, testContext);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
 
@@ -898,8 +932,8 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      final var modelId = this.idOfModel(model);
-      final var field = this.fieldOf(model);
+      final var modelId = this.idOfModel(model, testContext);
+      final var field = this.fieldOf(model, testContext);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
 
@@ -931,8 +965,8 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
       testContext.assertComplete(this.createValidModelFieldElementExample(11, vertx, testContext))
           .onSuccess(element -> {
-            final var modelId = this.idOfModel(model);
-            final var field = this.fieldOf(model);
+            final var modelId = this.idOfModel(model, testContext);
+            final var field = this.fieldOf(model, testContext);
             final var elementId = this.idOfElementIn(model, field.get(field.size() - 1));
             final var checkpoint = testContext.checkpoint(2);
             testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
@@ -940,15 +974,15 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
                   assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
                   @SuppressWarnings("unchecked")
-                  final E updated = (E) assertThatBodyIs(element.getClass(), res);
+                  final var updated = (E) assertThatBodyIs(element.getClass(), res);
                   this.assertEqualsAdded(element, updated);
 
-                  testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model))
+                  testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model, testContext))
                       .expect(resRetrieve -> {
 
                         assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
                         @SuppressWarnings("unchecked")
-                        final T updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
+                        final var updatedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
                         final var updatedField = this.fieldOf(updatedModel);
                         assertThat(updatedField).isNotEmpty().contains(updated);
 
@@ -1004,16 +1038,15 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
       testContext.assertComplete(this.createValidModelFieldElementExample(4, vertx, testContext)).onSuccess(element -> {
 
-        testRequest(client, HttpMethod.PATCH,
-            this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
-                .expect(res -> {
+        testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + this.idOfModel(model, testContext)
+            + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
 
-                  assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-                  final var error = assertThatBodyIs(ErrorMessage.class, res);
-                  assertThat(error.code).isNotEmpty();
-                  assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+              assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+              final var error = assertThatBodyIs(ErrorMessage.class, res);
+              assertThat(error.code).isNotEmpty();
+              assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-                }).sendJson(element.toJsonObject(), testContext);
+            }).sendJson(element.toJsonObject(), testContext);
 
       });
 
@@ -1036,16 +1069,15 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
       testContext.assertComplete(this.createValidModelFieldElementExample(4, vertx, testContext)).onSuccess(element -> {
 
-        testRequest(client, HttpMethod.PATCH,
-            this.modelPath() + "/" + this.idOfModel(model) + this.fieldPath() + this.undefinedElementIdPath())
-                .expect(res -> {
+        testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + this.idOfModel(model, testContext)
+            + this.fieldPath() + this.undefinedElementIdPath()).expect(res -> {
 
-                  assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
-                  final var error = assertThatBodyIs(ErrorMessage.class, res);
-                  assertThat(error.code).isNotEmpty();
-                  assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+              assertThat(res.statusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+              final var error = assertThatBodyIs(ErrorMessage.class, res);
+              assertThat(error.code).isNotEmpty();
+              assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
-                }).sendJson(element.toJsonObject(), testContext);
+            }).sendJson(element.toJsonObject(), testContext);
 
       });
 
@@ -1066,9 +1098,9 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      final var modelId = this.idOfModel(model);
+      final var modelId = this.idOfModel(model, testContext);
       final var checkpoint = testContext.checkpoint(2);
-      final var field = this.fieldOf(model);
+      final var field = this.fieldOf(model, testContext);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
       testRequest(client, HttpMethod.DELETE, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
@@ -1105,8 +1137,8 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      final var modelId = this.idOfModel(model);
-      final var field = this.fieldOf(model);
+      final var modelId = this.idOfModel(model, testContext);
+      final var field = this.fieldOf(model, testContext);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
 
@@ -1137,11 +1169,10 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
     testContext.assertComplete(this.storeValidExampleModelWithFieldElements(4, vertx, testContext)).onSuccess(model -> {
 
-      final var modelId = this.idOfModel(model);
-      final var field = this.fieldOf(model);
+      final var modelId = this.idOfModel(model, testContext);
+      final var field = this.fieldOf(model, testContext);
       final var element = field.get(field.size() - 1);
       final var elementId = this.idOfElementIn(model, element);
-
       testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
           .expect(res -> {
 
@@ -1151,7 +1182,6 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
             assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
 
           }).sendJson(this.createInvalidModelFieldElement().toJsonObject(), testContext);
-
     });
 
   }
@@ -1170,8 +1200,8 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
       testContext.assertComplete(this.createValidModelFieldElementExample(11, vertx, testContext))
           .onSuccess(element -> {
-            final var modelId = this.idOfModel(model);
-            final var field = this.fieldOf(model);
+            final var modelId = this.idOfModel(model, testContext);
+            final var field = this.fieldOf(model, testContext);
             final var elementId = this.idOfElementIn(model, field.get(field.size() - 1));
             final var checkpoint = testContext.checkpoint(2);
             testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + modelId + this.fieldPath() + "/" + elementId)
@@ -1179,15 +1209,15 @@ public abstract class AbstractModelFieldResourcesIT<T extends Model, IT, E exten
 
                   assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
                   @SuppressWarnings("unchecked")
-                  final E merged = (E) assertThatBodyIs(element.getClass(), res);
+                  final var merged = (E) assertThatBodyIs(element.getClass(), res);
                   this.assertEqualsAdded(element, merged);
 
-                  testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model))
+                  testRequest(client, HttpMethod.GET, this.modelPath() + "/" + this.idOfModel(model, testContext))
                       .expect(resRetrieve -> {
 
                         assertThat(resRetrieve.statusCode()).isEqualTo(Status.OK.getStatusCode());
                         @SuppressWarnings("unchecked")
-                        final T mergedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
+                        final var mergedModel = (T) assertThatBodyIs(model.getClass(), resRetrieve);
                         final var mergedField = this.fieldOf(mergedModel);
                         assertThat(mergedField).isNotEmpty().contains(merged);
 
