@@ -60,20 +60,27 @@ public interface WeNetTaskManager {
   String HARDCODED_DINNER_TASK_TYPE_ID = "1";
 
   /**
-   * The identifier of the task type that contains the dinner protocol.
-   */
-  String DINNER_TASK_TYPE_ID = "wenet-eat-2.0.0";
-
-  /**
    * The identifier of the task type that contains the question and answer
    * protocol.
    */
   String QUESTION_AND_ANSWER_TASK_TYPE_ID = "ask4help";
 
   /**
-   * The identifier of the task type that contains the echo protocol.
+   * The identifier of the task type that contains the echo protocol with norms.
    */
-  String ECHO_TASK_TYPE_ID = "wenet-echo-1.0.0";
+  String ECHO_V1_TASK_TYPE_ID = "wenet_echo_v1";
+
+  /**
+   * The identifier of the task type that contains the eat together protocol with
+   * norms.
+   */
+  String EAT_TOGETHER_WITH_NORMS_V1_TASK_TYPE_ID = "wenet_eat_together_with_norms_v1";
+
+  /**
+   * The identifier of the task type that contains the question and answer
+   * protocol done with norms.
+   */
+  String QUESTION_AND_ANSWER_WITH_NORMS_V1_TASK_TYPE_ID = "wenet_ask_4_help_with_norms_v1";
 
   /**
    * Create a proxy of the {@link WeNetTaskManager}.
@@ -340,8 +347,8 @@ public interface WeNetTaskManager {
    * @return the future with the added transaction.
    */
   @GenIgnore
-  default Future<TaskTransaction> addTransactionIntoTask(@NotNull String taskId,
-      @NotNull TaskTransaction taskTransaction) {
+  default Future<TaskTransaction> addTransactionIntoTask(@NotNull final String taskId,
+      @NotNull final TaskTransaction taskTransaction) {
 
     final Promise<JsonObject> promise = Promise.promise();
     this.addTransactionIntoTask(taskId, taskTransaction.toJsonObject(), promise);
@@ -372,8 +379,8 @@ public interface WeNetTaskManager {
    * @return the future with the added transaction.
    */
   @GenIgnore
-  default Future<Message> addMessageIntoTransaction(@NotNull String taskId, @NotNull String taskTransactionId,
-      @NotNull Message message) {
+  default Future<Message> addMessageIntoTransaction(@NotNull final String taskId,
+      @NotNull final String taskTransactionId, @NotNull final Message message) {
 
     final Promise<JsonObject> promise = Promise.promise();
     this.addMessageIntoTransaction(taskId, taskTransactionId, message.toJsonObject(), promise);
