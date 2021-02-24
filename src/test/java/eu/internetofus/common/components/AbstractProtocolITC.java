@@ -26,6 +26,7 @@
 package eu.internetofus.common.components;
 
 import static eu.internetofus.common.components.profile_manager.WeNetProfileManagers.createUsers;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.profile_manager.CommunityProfile;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
@@ -50,7 +51,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 /**
- * Interaction test case over a protocol.
+ * Interaction test case over a protocol. ATTENTION: This test is sequential and
+ * maintains the state between methods. In other words, you must to run the
+ * entire test methods on the specified order to work.
  *
  * @author UDT-IA, IIIA-CSIC
  */
@@ -61,6 +64,11 @@ public abstract class AbstractProtocolITC {
    * Number maximum of users to use on the test.
    */
   public static final int MAX_USERS = 6;
+
+  /**
+   * The value of the last successfuk test.
+   */
+  public static int lastSuccessfulTest = 0;
 
   /**
    * The users that has been created.
@@ -88,6 +96,31 @@ public abstract class AbstractProtocolITC {
   protected static Task task;
 
   /**
+   * Assert that the last successful test was the specified step.
+   *
+   * @param step        to be successful.
+   * @param testContext context to do the test.
+   */
+  protected void assertLastSuccessfulTestWas(final int step, final VertxTestContext testContext) {
+
+    testContext
+        .verify(() -> assertThat(lastSuccessfulTest).withFailMessage("Previous test not succeeded").isEqualTo(step));
+
+  }
+
+  /**
+   * Assert that the current test is completed with a successful.
+   *
+   * @param testContext context to do the test.
+   */
+  protected void assertSuccessfulCompleted(final VertxTestContext testContext) {
+
+    lastSuccessfulTest++;
+    testContext.completeNow();
+
+  }
+
+  /**
    * Create the users that will be used on the tests.
    *
    * @param vertx       event bus to use.
@@ -97,12 +130,14 @@ public abstract class AbstractProtocolITC {
   @Order(1)
   public void shouldCreateUsers(final Vertx vertx, final VertxTestContext testContext) {
 
+    this.assertLastSuccessfulTestWas(0, testContext);
     StoreServices.storeProfileExample(1, vertx, testContext).onSuccess(me -> {
 
       testContext.assertComplete(createUsers(MAX_USERS, vertx, testContext)).onSuccess(createdUsers -> {
         users = createdUsers;
         users.add(0, me);
-        testContext.completeNow();
+        this.assertSuccessfulCompleted(testContext);
+
       });
 
     });
@@ -128,7 +163,8 @@ public abstract class AbstractProtocolITC {
   @Order(2)
   public void shouldCreateApp(final Vertx vertx, final VertxTestContext testContext) {
 
-    assert users != null;
+    this.assertLastSuccessfulTestWas(1, testContext);
+
     testContext
         .assertComplete(WeNetServiceSimulator.createProxy(vertx).createApp(this.createApp()).compose(addedApp -> {
           app = addedApp;
@@ -138,7 +174,7 @@ public abstract class AbstractProtocolITC {
             appUsers.add(profile.id);
           }
           return WeNetServiceSimulator.createProxy(vertx).addUsers(addedApp.appId, appUsers);
-        })).onComplete(added -> testContext.completeNow());
+        })).onComplete(added -> this.assertSuccessfulCompleted(testContext));
 
   }
 
@@ -154,12 +190,12 @@ public abstract class AbstractProtocolITC {
   @Order(3)
   public void shouldCreateCommunity(final Vertx vertx, final VertxTestContext testContext) {
 
-    assert app != null;
+    this.assertLastSuccessfulTestWas(2, testContext);
 
     testContext.assertComplete(App.getOrCreateDefaultCommunityFor(app.appId, vertx)).onSuccess(added -> {
 
       community = added;
-      testContext.completeNow();
+      this.assertSuccessfulCompleted(testContext);
     });
 
   }
@@ -181,14 +217,15 @@ public abstract class AbstractProtocolITC {
   @Order(4)
   public void shouldGetTaskType(final Vertx vertx, final VertxTestContext testContext) {
 
-    assert community != null;
+    this.assertLastSuccessfulTestWas(3, testContext);
 
     final var taskTypeId = this.getDefaultTaskTypeIdToUse();
     testContext.assertComplete(WeNetTaskManager.createProxy(vertx).retrieveTaskType(taskTypeId))
         .onSuccess(foundTaskType -> {
 
           taskType = foundTaskType;
-          testContext.completeNow();
+          this.assertSuccessfulCompleted(testContext);
+
         });
 
   }
@@ -341,6 +378,23 @@ public abstract class AbstractProtocolITC {
   }
 
   /**
+   * Wait until the task is created.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   *
+   * @return the future that will return the created task.
+   */
+  protected Future<Task> waitUntilTaskCreated(final Vertx vertx, final VertxTestContext testContext) {
+
+    return this.waitUntilTask(vertx, testContext, () -> {
+
+      return task.transactions != null && !task.transactions.isEmpty();
+
+    });
+  }
+
+  /**
    * Check that a task is created.
    *
    * @param vertx       event bus to use.
@@ -350,18 +404,15 @@ public abstract class AbstractProtocolITC {
   @Order(5)
   public void shouldCreateTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    assert taskType != null;
+    this.assertLastSuccessfulTestWas(4, testContext);
 
     final var future = WeNetTaskManager.createProxy(vertx).createTask(this.createTask()).compose(createdTask -> {
 
       task = createdTask;
-      return this.waitUntilTask(vertx, testContext, () -> {
-
-        return task.transactions != null && !task.transactions.isEmpty();
-
-      });
+      return this.waitUntilTaskCreated(vertx, testContext);
     });
-    testContext.assertComplete(future).onComplete(stored -> testContext.completeNow());
+    testContext.assertComplete(future).onComplete(stored -> this.assertSuccessfulCompleted(testContext));
+
   }
 
 }

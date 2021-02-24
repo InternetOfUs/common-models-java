@@ -63,7 +63,7 @@ public class EchoProtocolITC extends AbstractProtocolITC {
   @Order(6)
   public void shouldDoTransactionEcho(final Vertx vertx, final VertxTestContext testContext) {
 
-    assert task != null;
+    this.assertLastSuccessfulTestWas(5, testContext);
 
     final var transaction = new TaskTransaction();
     transaction.actioneerId = task.requesterId;
@@ -91,7 +91,7 @@ public class EchoProtocolITC extends AbstractProtocolITC {
         }).compose(task -> this.waitUntilCallbacks(vertx, testContext,
             new MessagePredicateBuilder().withLabelAndReceiverId("echo", transaction.actioneerId).build())));
 
-    testContext.assertComplete(future).onComplete(removed -> testContext.completeNow());
+    testContext.assertComplete(future).onComplete(removed -> this.assertSuccessfulCompleted(testContext));
 
   }
 }
