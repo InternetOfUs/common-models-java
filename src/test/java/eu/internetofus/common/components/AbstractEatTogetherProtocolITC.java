@@ -26,6 +26,7 @@
 
 package eu.internetofus.common.components;
 
+import eu.internetofus.common.TimeManager;
 import eu.internetofus.common.components.task_manager.Task;
 import eu.internetofus.common.components.task_manager.TaskTransaction;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
@@ -44,6 +45,18 @@ import org.junit.jupiter.api.Test;
  * @author UDT-IA, IIIA-CSIC
  */
 public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC {
+
+  @Override
+  protected Task createTask() {
+
+    final var task = super.createTask();
+    final var deadlineTs = TimeManager.now() + 1200;
+    final var startTs = deadlineTs + 30;
+    final var endTs = startTs + 300;
+    task.attributes = new JsonObject().put("deadlineTs", deadlineTs).put("startTs", startTs).put("endTs", endTs);
+    return task;
+
+  }
 
   /**
    * {@inheritDoc}
