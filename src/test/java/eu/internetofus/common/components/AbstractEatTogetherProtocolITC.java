@@ -52,14 +52,14 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
   protected Future<Task> waitUntilTaskCreated(final Vertx vertx, final VertxTestContext testContext) {
 
     final var mesageBuilder = new MessagePredicateBuilder();
-    for (final var user : users) {
+    for (final var user : this.users) {
 
-      if (!user.id.equals(task.requesterId)) {
+      if (!user.id.equals(this.task.requesterId)) {
 
         mesageBuilder.with(msg -> {
 
           return user.id.equals(msg.receiverId) && "TaskProposalNotification".equals(msg.label)
-              && msg.attributes != null && task.id.equals(msg.attributes.getString("taskId"));
+              && msg.attributes != null && this.task.id.equals(msg.attributes.getString("taskId"));
         });
       }
 
@@ -67,28 +67,28 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     return this.waitUntilCallbacks(vertx, testContext, mesageBuilder.build())
         .compose(messages -> this.waitUntilTask(vertx, testContext, () -> {
 
-          final var attributes = task.attributes;
-          if (attributes == null || task.transactions == null || task.transactions.size() != 1) {
+          final var attributes = this.task.attributes;
+          if (attributes == null || this.task.transactions == null || this.task.transactions.size() != 1) {
 
             return false;
 
           }
 
           final var unanswered = attributes.getJsonArray("unanswered");
-          if (unanswered == null || unanswered.size() != users.size() - 1) {
+          if (unanswered == null || unanswered.size() != this.users.size() - 1) {
 
             return false;
 
           }
-          final var transaction = task.transactions.get(0);
-          if (transaction.messages == null || transaction.messages.size() != users.size() - 1) {
+          final var transaction = this.task.transactions.get(0);
+          if (transaction.messages == null || transaction.messages.size() != this.users.size() - 1) {
 
             return false;
 
           }
-          for (final var user : users) {
+          for (final var user : this.users) {
 
-            if (!user.id.equals(task.requesterId)) {
+            if (!user.id.equals(this.task.requesterId)) {
 
               if (!unanswered.contains(user.id)) {
 
@@ -98,7 +98,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
               for (final var message : transaction.messages) {
 
                 if (user.id.equals(message.receiverId) && "TaskProposalNotification".equals(message.label)
-                    && message.attributes != null && task.id.equals(message.attributes.getString("taskId"))) {
+                    && message.attributes != null && this.task.id.equals(message.attributes.getString("taskId"))) {
                   found = true;
                   break;
 
@@ -132,21 +132,21 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     this.assertLastSuccessfulTestWas(5, testContext);
 
     final var transaction = new TaskTransaction();
-    final var volunteerId = users.get(1).id;
+    final var volunteerId = this.users.get(1).id;
     transaction.actioneerId = volunteerId;
-    transaction.taskId = task.id;
+    transaction.taskId = this.task.id;
     transaction.label = "refuseTask";
     transaction.attributes = new JsonObject().put("volunteerId", volunteerId);
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
         .compose(done -> this.waitUntilTask(vertx, testContext, () -> {
 
-          final var attributes = task.attributes;
-          if (attributes == null || task.transactions == null || task.transactions.size() != 2) {
+          final var attributes = this.task.attributes;
+          if (attributes == null || this.task.transactions == null || this.task.transactions.size() != 2) {
 
             return false;
 
           }
-          final var lastTransaction = task.transactions.get(1);
+          final var lastTransaction = this.task.transactions.get(1);
           if (!lastTransaction.label.equals(transaction.label)
               || !lastTransaction.actioneerId.equals(transaction.actioneerId)
               || !lastTransaction.attributes.equals(transaction.attributes)) {

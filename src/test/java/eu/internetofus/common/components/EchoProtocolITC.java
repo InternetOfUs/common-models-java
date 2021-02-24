@@ -66,17 +66,17 @@ public class EchoProtocolITC extends AbstractProtocolITC {
     this.assertLastSuccessfulTestWas(5, testContext);
 
     final var transaction = new TaskTransaction();
-    transaction.actioneerId = task.requesterId;
-    transaction.taskId = task.id;
+    transaction.actioneerId = this.task.requesterId;
+    transaction.taskId = this.task.id;
     transaction.label = "echo";
     final var message = UUID.randomUUID().toString();
     transaction.attributes = new JsonObject().put("message", message);
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
         .compose(done -> this.waitUntilTask(vertx, testContext, () -> {
 
-          if (task.transactions != null && !task.transactions.isEmpty()) {
+          if (this.task.transactions != null && !this.task.transactions.isEmpty()) {
 
-            final var lastTransaction = task.transactions.get(task.transactions.size() - 1);
+            final var lastTransaction = this.task.transactions.get(this.task.transactions.size() - 1);
             if (lastTransaction.label.equals(transaction.label)
                 && lastTransaction.actioneerId.equals(transaction.actioneerId)
                 && lastTransaction.attributes.equals(transaction.attributes)) {
