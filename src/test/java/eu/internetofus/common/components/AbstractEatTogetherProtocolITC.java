@@ -138,10 +138,11 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     transaction.taskId = this.task.id;
     transaction.label = "refuseTask";
     transaction.attributes = new JsonObject().put("volunteerId", volunteerId);
+    final var unanswered = this.task.attributes.getJsonArray("unanswered").copy();
+    unanswered.remove(volunteerId);
     final var checkTask = TaskPredicates.transactionSizeIs(2)
-        .and(TaskPredicates.attributesSimilarTo(new JsonObject()
-            .put("unanswered", this.task.attributes.getJsonArray("unanswered").copy().remove(volunteerId))
-            .put("declined", new JsonArray().add(volunteerId))))
+        .and(TaskPredicates.attributesSimilarTo(
+            new JsonObject().put("unanswered", unanswered).put("declined", new JsonArray().add(volunteerId))))
         .and(TaskPredicates.transactionAt(1, TaskTransactionPredicates.similarTo(transaction)));
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
         .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
@@ -170,8 +171,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     transaction.attributes = new JsonObject().put("volunteerId", volunteerId);
 
     final var checkTask = TaskPredicates.transactionSizeIs(2)
-        .and(TaskPredicates.attributesAre(this.task.attributes.copy())
-            .and(TaskPredicates.transactionAt(1, TaskTransactionPredicates.similarTo(transaction))));
+        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
     final var checkMessages = new ArrayList<Predicate<Message>>();
     checkMessages.add(MessagePredicates.labelIs("TextualMessage").and(MessagePredicates.receiverIs(volunteerId)));
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
