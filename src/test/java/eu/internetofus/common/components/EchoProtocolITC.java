@@ -26,6 +26,8 @@
 
 package eu.internetofus.common.components;
 
+import eu.internetofus.common.components.service.MessagesPredicateBuilder;
+import eu.internetofus.common.components.task_manager.TaskPredicateBuilder;
 import eu.internetofus.common.components.task_manager.TaskTransaction;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.vertx.core.Vertx;
@@ -71,25 +73,13 @@ public class EchoProtocolITC extends AbstractProtocolITC {
     transaction.label = "echo";
     final var message = UUID.randomUUID().toString();
     transaction.attributes = new JsonObject().put("message", message);
+    final var checkMessages = new MessagesPredicateBuilder().withLabelAndReceiverId("echo", transaction.actioneerId)
+        .build();
+    final var checkTask = new TaskPredicateBuilder().withTransactions(2)
+        .withSimilarTransactionWithMessages(transaction, checkMessages).build();
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
-        .compose(done -> this.waitUntilTask(vertx, testContext, () -> {
-
-          if (this.task.transactions != null && !this.task.transactions.isEmpty()) {
-
-            final var lastTransaction = this.task.transactions.get(this.task.transactions.size() - 1);
-            if (lastTransaction.label.equals(transaction.label)
-                && lastTransaction.actioneerId.equals(transaction.actioneerId)
-                && lastTransaction.attributes.equals(transaction.attributes)) {
-
-              return true;
-
-            }
-          }
-
-          return false;
-
-        }).compose(task -> this.waitUntilCallbacks(vertx, testContext,
-            new MessagePredicateBuilder().withLabelAndReceiverId("echo", transaction.actioneerId).build())));
+        .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
 
     testContext.assertComplete(future).onComplete(removed -> this.assertSuccessfulCompleted(testContext));
 

@@ -34,6 +34,7 @@ import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.Message;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import eu.internetofus.common.components.task_manager.Task;
+import eu.internetofus.common.components.task_manager.TaskPredicateBuilder;
 import eu.internetofus.common.components.task_manager.TaskType;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.components.task_manager.WeNetTaskManagers;
@@ -43,8 +44,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
+import javax.validation.constraints.NotNull;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -277,73 +278,14 @@ public abstract class AbstractProtocolITC {
    * @return the task that satisfy the predicate.
    */
   protected Future<Task> waitUntilTask(final Vertx vertx, final VertxTestContext testContext,
-      final BooleanSupplier checkTask) {
+      final Predicate<Task> checkTask) {
 
     return WeNetTaskManagers.waitUntilTask(this.task.id, currentTask -> {
 
       this.task = currentTask;
-      if (checkTask != null) {
-
-        return checkTask.getAsBoolean();
-
-      } else {
-
-        return true;
-      }
+      return checkTask.test(this.task);
 
     }, vertx, testContext);
-
-  }
-
-  /**
-   * Build the message predicates.
-   */
-  public static class MessagePredicateBuilder {
-
-    /**
-     * The builder predicates.
-     */
-    protected List<Predicate<Message>> predicates = new ArrayList<>();
-
-    /**
-     * The predicated to use.
-     *
-     * @return the build predicates.
-     */
-    public List<Predicate<Message>> build() {
-
-      return this.predicates;
-    }
-
-    /**
-     * Add a predicate to use.
-     *
-     * @param predicate to use.
-     *
-     * @return this builder.
-     */
-    public MessagePredicateBuilder with(final Predicate<Message> predicate) {
-
-      this.predicates.add(predicate);
-      return this;
-    }
-
-    /**
-     * Add a predicate to match the messages with the specified label and receiver.
-     *
-     * @param label      to match for the message.
-     * @param receiverId to match for the message.
-     *
-     * @return this builder.
-     */
-    public MessagePredicateBuilder withLabelAndReceiverId(final String label, final String receiverId) {
-
-      return this.with(msg -> {
-
-        return msg.label.equals(label) && msg.receiverId.equals(receiverId);
-
-      });
-    }
 
   }
 
@@ -357,8 +299,8 @@ public abstract class AbstractProtocolITC {
    *
    * @return the messages that satisfy the predicates.
    */
-  protected Future<List<Message>> waitUntilCallbacks(final Vertx vertx, final VertxTestContext testContext,
-      final List<Predicate<Message>> checkMessages) {
+  protected Future<List<Message>> waitUntilCallbacks(@NotNull final Vertx vertx,
+      @NotNull final VertxTestContext testContext, @NotNull final List<Predicate<Message>> checkMessages) {
 
     return WeNetServiceSimulator.createProxy(vertx).retrieveCallbacks(this.app.appId).compose(callbacks -> {
 
@@ -406,11 +348,8 @@ public abstract class AbstractProtocolITC {
    */
   protected Future<Task> waitUntilTaskCreated(final Vertx vertx, final VertxTestContext testContext) {
 
-    return this.waitUntilTask(vertx, testContext, () -> {
+    return this.waitUntilTask(vertx, testContext, new TaskPredicateBuilder().withTransactions().build());
 
-      return this.task.transactions != null && !this.task.transactions.isEmpty();
-
-    });
   }
 
   /**
