@@ -26,7 +26,7 @@
 package eu.internetofus.common.components;
 
 import static eu.internetofus.common.components.profile_manager.WeNetProfileManagers.createUsers;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import eu.internetofus.common.components.profile_manager.CommunityProfile;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
@@ -34,10 +34,8 @@ import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.Message;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import eu.internetofus.common.components.task_manager.Task;
-import eu.internetofus.common.components.task_manager.TaskPredicateBuilder;
 import eu.internetofus.common.components.task_manager.TaskType;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
-import eu.internetofus.common.components.task_manager.WeNetTaskManagers;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -107,8 +105,11 @@ public abstract class AbstractProtocolITC {
    */
   protected void assertLastSuccessfulTestWas(final int step, final VertxTestContext testContext) {
 
-    testContext.verify(
-        () -> assertThat(this.lastSuccessfulTest).withFailMessage("Previous test not succeeded").isEqualTo(step));
+    if (this.lastSuccessfulTest != step) {
+
+      testContext.failNow("Previous test not succeeded");
+      fail("Previous test not succeeded");
+    }
 
   }
 
@@ -255,16 +256,16 @@ public abstract class AbstractProtocolITC {
    *
    * @return the task to store and use on the tests.
    */
-  protected Task createTask() {
+  protected Task createTaskForProtocol() {
 
-    final var task = new Task();
-    task.appId = this.app.appId;
-    task.communityId = this.community.id;
-    task.taskTypeId = this.taskType.id;
-    task.goal = new HumanDescription();
-    task.goal.name = "Task to test";
-    task.requesterId = this.users.get(0).id;
-    return task;
+    final var taskForProtocol = new Task();
+    taskForProtocol.appId = this.app.appId;
+    taskForProtocol.communityId = this.community.id;
+    taskForProtocol.taskTypeId = this.taskType.id;
+    taskForProtocol.goal = new HumanDescription();
+    taskForProtocol.goal.name = "Task to test";
+    taskForProtocol.requesterId = this.users.get(0).id;
+    return taskForProtocol;
   }
 
   /**
@@ -280,12 +281,23 @@ public abstract class AbstractProtocolITC {
   protected Future<Task> waitUntilTask(final Vertx vertx, final VertxTestContext testContext,
       final Predicate<Task> checkTask) {
 
-    return WeNetTaskManagers.waitUntilTask(this.task.id, currentTask -> {
+    return WeNetTaskManager.createProxy(vertx).retrieveTask(this.task.id).compose(target -> {
 
-      this.task = currentTask;
-      return checkTask.test(this.task);
+      this.task = target;
+      if (checkTask.test(target)) {
 
-    }, vertx, testContext);
+        return Future.succeededFuture(target);
+
+      } else if (!testContext.completed()) {
+
+        return this.waitUntilTask(vertx, testContext, checkTask);
+
+      } else {
+
+        return Future.failedFuture("Test finished");
+      }
+
+    });
 
   }
 
@@ -329,6 +341,10 @@ public abstract class AbstractProtocolITC {
         return WeNetServiceSimulator.createProxy(vertx).deleteCallbacks(this.app.appId)
             .compose(deleted -> Future.succeededFuture(msgs));
 
+      } else if (testContext.completed()) {
+
+        return Future.failedFuture("Closed by timeout");
+
       } else {
 
         return this.waitUntilCallbacks(vertx, testContext, checkMessages);
@@ -339,37 +355,26 @@ public abstract class AbstractProtocolITC {
   }
 
   /**
-   * Wait until the task is created.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to do the test.
-   *
-   * @return the future that will return the created task.
-   */
-  protected Future<Task> waitUntilTaskCreated(final Vertx vertx, final VertxTestContext testContext) {
-
-    return this.waitUntilTask(vertx, testContext, new TaskPredicateBuilder().withTransactions().build());
-
-  }
-
-  /**
    * Check that a task is created.
    *
+   *
+   * @param source      task to create.
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
+   * @param checkTask   this predicate is true when the created task has the
+   *                    expected values.
+   *
+   * @return the future created task.
+   *
+   * @see #waitUntilTask(Vertx, VertxTestContext, Predicate)
    */
-  @Test
-  @Order(5)
-  public void shouldCreateTask(final Vertx vertx, final VertxTestContext testContext) {
+  protected Future<Task> waitUntilTaskCreated(@NotNull final Task source, @NotNull final Vertx vertx,
+      @NotNull final VertxTestContext testContext, @NotNull final Predicate<Task> checkTask) {
 
-    this.assertLastSuccessfulTestWas(4, testContext);
-
-    final var future = WeNetTaskManager.createProxy(vertx).createTask(this.createTask()).compose(createdTask -> {
-
-      this.task = createdTask;
-      return this.waitUntilTaskCreated(vertx, testContext);
+    return WeNetTaskManager.createProxy(vertx).createTask(source).compose(target -> {
+      this.task = target;
+      return this.waitUntilTask(vertx, testContext, checkTask);
     });
-    testContext.assertComplete(future).onComplete(stored -> this.assertSuccessfulCompleted(testContext));
 
   }
 
