@@ -204,4 +204,19 @@ public interface TaskPredicates {
 
   }
 
+  /**
+   * Return a predicate the check that the task is closed.
+   *
+   * @return the predicate to check the task is closed.
+   */
+  static Predicate<Task> isClosed() {
+
+    return target -> {
+
+      return target.closeTs != null;
+
+    };
+
+  }
+
 }

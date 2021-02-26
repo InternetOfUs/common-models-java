@@ -43,6 +43,8 @@ import java.util.ArrayList;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 /**
  * Check the eat together protocol. ATTENTION: This test is sequential and
@@ -443,13 +445,13 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
                   .put("communityId", this.community.id).put("taskId", this.task.id).put("outcome", outcome))));
 
     }
-    final var checkTask = TaskPredicates
-        .attributesSimilarTo(
+    final var checkTask = TaskPredicates.isClosed()
+        .and(TaskPredicates.attributesSimilarTo(
             new JsonObject().put("outcome", outcome).put("declined", new JsonArray().add(this.users.get(1).id))
                 .put("accepted", new JsonArray().add(this.users.get(2).id))
                 .put("refused", new JsonArray().add(this.users.get(3).id))
                 .put("volunteers", new JsonArray().add(this.users.get(4).id))
-                .put("unanswered", new JsonArray().add(this.users.get(5).id)))
+                .put("unanswered", new JsonArray().add(this.users.get(5).id))))
         .and(TaskPredicates.transactionSizeIs(this.task.transactions.size() + 1))
         .and(TaskPredicates.transactionAt(this.task.transactions.size(),
             TaskTransactionPredicates.similarTo(taskTransaction)
@@ -460,6 +462,175 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
         .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
 
     testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+
+  }
+
+  /**
+   * Check that an user can not complete a closed task.
+   *
+   * @param outcome     that can not be set to a closed task.
+   * @param order       of the parameterized test.
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @ParameterizedTest(name = "Should not complete a task with the outcome {0}")
+  @CsvSource(value = { "cancelled:0", "completed:1", "failed:2" }, delimiter = ':')
+  @Order(15)
+  public void shouldNotChangeCompletedAClosedTask(final String outcome, final String order, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(14 + Integer.parseInt(order), testContext);
+
+    final var taskTransaction = new TaskTransaction();
+    taskTransaction.actioneerId = this.task.requesterId;
+    taskTransaction.taskId = this.task.id;
+    taskTransaction.label = "taskCompleted";
+    taskTransaction.attributes = new JsonObject().put("outcome", outcome);
+
+    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
+        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
+        .and(MessagePredicates.receiverIs(taskTransaction.actioneerId)));
+    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
+        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
+    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+
+  }
+
+  /**
+   * Check that can not modify the volunteers of a closed task.
+   *
+   * @param label       of the task transaction that can not be done.
+   * @param order       of the parameterized test.
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @ParameterizedTest(name = "Should not do the task transaction {0}")
+  @CsvSource(value = { "volunteerForTask:0", "refuseTask:1", "acceptVolunteer:2",
+      "refuseVolunteer:3" }, delimiter = ':')
+  @Order(18)
+  public void shouldNotChangeVolunteerStatesWhenTaskIsClosed(final String label, final String order, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(17 + Integer.parseInt(order), testContext);
+
+    final var taskTransaction = new TaskTransaction();
+    taskTransaction.actioneerId = this.task.requesterId;
+    taskTransaction.taskId = this.task.id;
+    taskTransaction.label = label;
+    final var volunteerId = this.users.get(5).id;
+    taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
+
+    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
+        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
+        .and(MessagePredicates.receiverIs(taskTransaction.actioneerId)));
+    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
+        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
+    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+  }
+
+  /**
+   * Check that can not create a task without deadline.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @Test
+  @Order(22)
+  public void shouldNotCreateTaskWithWithoutDeadline(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(21, testContext);
+
+    final var task = this.createTaskForProtocol();
+    task.attributes.remove("deadlineTs");
+
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
+        .and(MessagePredicates.receiverIs(task.requesterId)));
+    final var future = WeNetTaskManager.createProxy(vertx).createTask(task)
+        .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
+
+    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+
+  }
+
+  /**
+   * Check that can not create a task with bad deadline.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @Test
+  @Order(23)
+  public void shouldNotCreateTaskWithWithBadDeadline(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(22, testContext);
+
+    final var task = this.createTaskForProtocol();
+    task.attributes.put("deadlineTs", TimeManager.now());
+
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
+        .and(MessagePredicates.receiverIs(task.requesterId)));
+    final var future = WeNetTaskManager.createProxy(vertx).createTask(task)
+        .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
+
+    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+
+  }
+
+  /**
+   * Check that a task is created.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @Test
+  @Order(24)
+  public void shouldCreateTaskWithShortDeadline(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(23, testContext);
+
+    final var source = this.createTaskForProtocol();
+    source.attributes.put("deadlineTs", TimeManager.now() + 10);
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    final var userIds = new JsonArray();
+    for (final var user : this.users) {
+
+      if (!user.id.equals(source.requesterId)) {
+
+        checkMessages.add(MessagePredicates.appIs(this.app.appId)
+            .and(MessagePredicates.labelIs("TaskProposalNotification")).and(MessagePredicates.receiverIs(user.id))
+            .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("communityId", this.community.id)))
+            .and(MessagePredicates.attributesAre(target -> {
+
+              return this.task.id.equals(target.getString("taskId"));
+
+            })));
+        userIds.add(user.id);
+      }
+
+    }
+    final var createTransaction = new TaskTransaction();
+    createTransaction.label = "CREATE_TASK";
+    createTransaction.actioneerId = this.users.get(0).id;
+    final var checkTask = TaskPredicates.similarTo(source)
+        .and(TaskPredicates.attributesSimilarTo(new JsonObject().put("unanswered", userIds)))
+        .and(TaskPredicates.transactionSizeIs(1))
+        .and(TaskPredicates.transactionAt(0,
+            TaskTransactionPredicates.similarTo(createTransaction)
+                .and(TaskTransactionPredicates.messagesSizeIs(this.users.size() - 1))
+                .and(TaskTransactionPredicates.containsMessages(checkMessages))))
+        .and(task -> task.attributes.getLong("deadlineTs") > TimeManager.now());
+
+    final var future = this.waitUntilTaskCreated(source, vertx, testContext, checkTask)
+        .compose(task -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
+    testContext.assertComplete(future).onComplete(stored -> this.assertSuccessfulCompleted(testContext));
 
   }
 }
