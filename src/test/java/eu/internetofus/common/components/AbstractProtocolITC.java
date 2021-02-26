@@ -27,12 +27,15 @@ package eu.internetofus.common.components;
 
 import static org.assertj.core.api.Assertions.fail;
 
+import eu.internetofus.common.components.incentive_server.TaskStatus;
+import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulator;
 import eu.internetofus.common.components.profile_manager.CommunityProfile;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.Message;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import eu.internetofus.common.components.task_manager.Task;
+import eu.internetofus.common.components.task_manager.TaskTransaction;
 import eu.internetofus.common.components.task_manager.TaskType;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.vertx.core.Future;
@@ -382,6 +385,168 @@ public abstract class AbstractProtocolITC {
       this.task = target;
       return this.waitUntilTask(vertx, testContext, checkTask);
     });
+
+  }
+
+  /**
+   * Check that is send the specified task status.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   * @param checkStatus this predicate is true when the task status has the
+   *                    expected values.
+   *
+   * @return the future created task.
+   *
+   * @see #waitUntilTask(Vertx, VertxTestContext, Predicate)
+   */
+  protected Future<List<TaskStatus>> waitUntilTaskStatus(@NotNull final Vertx vertx,
+      @NotNull final VertxTestContext testContext, @NotNull final List<Predicate<TaskStatus>> checkStatus) {
+
+    return WeNetIncentiveServerSimulator.createProxy(vertx).getTaskStatus().compose(status -> {
+
+      final List<Predicate<TaskStatus>> copy = new ArrayList<>(checkStatus);
+      final var statusIter = status.iterator();
+      while (statusIter.hasNext()) {
+
+        var state = statusIter.next();
+        final var iter = copy.iterator();
+        while (iter.hasNext()) {
+
+          final var check = iter.next();
+          if (check.test(state)) {
+
+            iter.remove();
+            state = null;
+            break;
+          }
+        }
+
+        if (state != null) {
+
+          statusIter.remove();
+        }
+
+      }
+
+      if (copy.isEmpty()) {
+
+        return WeNetIncentiveServerSimulator.createProxy(vertx).deleteTaskStatus()
+            .compose(deleted -> Future.succeededFuture(status));
+
+      } else if (testContext.completed()) {
+
+        return Future.failedFuture("Closed by timeout");
+
+      } else {
+
+        return this.waitUntilTaskStatus(vertx, testContext, checkStatus);
+      }
+    });
+
+  }
+
+  /**
+   * Create the predicate over a task for the current state of the test.
+   *
+   * @return the predicate for the task.
+   *
+   * @see #app
+   * @see #task
+   * @see #community
+   */
+  protected Predicate<Task> createTaskPredicate() {
+
+    return task -> {
+
+      if (this.app != null && !this.app.appId.equals(task.appId)) {
+
+        return false;
+      }
+      if (this.task != null && !this.task.id.equals(task.id)) {
+
+        return false;
+      }
+      if (this.community != null && !this.community.id.equals(task.communityId)) {
+
+        return false;
+      }
+
+      return true;
+    };
+
+  }
+
+  /**
+   * Create the predicate over a message for the current state of the test.
+   *
+   * @return the predicate for the message.
+   *
+   * @see #app
+   */
+  protected Predicate<Message> createMessagePredicate() {
+
+    return message -> {
+
+      if (this.app != null && !this.app.appId.equals(message.appId)) {
+
+        return false;
+      }
+
+      return true;
+    };
+
+  }
+
+  /**
+   * Create the task transaction predicate over the current satte of the test.
+   *
+   * @return the predicate for the transaction.
+   *
+   * @see #task
+   */
+  protected Predicate<TaskTransaction> createTaskTransactionPredicate() {
+
+    return transaction -> {
+
+      if (this.task != null && !this.task.id.equals(transaction.taskId)) {
+
+        return false;
+      }
+
+      return true;
+    };
+
+  }
+
+  /**
+   * Create the task status predicate over the current state of the test.
+   *
+   * @return the predicate for the status.
+   *
+   * @see #app
+   * @see #task
+   * @see #community
+   */
+  protected Predicate<TaskStatus> createTaskStatusPredicate() {
+
+    return state -> {
+
+      if (this.app != null && !this.app.appId.equals(state.app_id)) {
+
+        return false;
+      }
+      if (this.task != null && !this.task.id.equals(state.task_id)) {
+
+        return false;
+      }
+      if (this.community != null && !this.community.id.equals(state.community_id)) {
+
+        return false;
+      }
+
+      return true;
+    };
 
   }
 
