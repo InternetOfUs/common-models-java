@@ -163,6 +163,29 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
   }
 
   /**
+   * Assert that can not do a task transaction on the eat together protocol and
+   * receive an error message.
+   *
+   * @param taskTransaction that can not be done in the protocol.
+   * @param vertx           event bus to use.
+   * @param testContext     context to do the test.
+   */
+  protected void assertDoTransactionError(final TaskTransaction taskTransaction, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
+        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
+        .and(MessagePredicates.receiverIs(taskTransaction.actioneerId)));
+    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
+        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
+    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+
+  }
+
+  /**
    * Check that an user can not be a volunteer if it has declined.
    *
    * @param vertx       event bus to use.
@@ -181,16 +204,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     transaction.actioneerId = volunteerId;
     transaction.attributes = new JsonObject().put("volunteerId", volunteerId);
 
-    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
-        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
-    final var checkMessages = new ArrayList<Predicate<Message>>();
-    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
-        .and(MessagePredicates.receiverIs(transaction.actioneerId)));
-    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
-        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
-
-    testContext.assertComplete(future).onComplete(removed -> this.assertSuccessfulCompleted(testContext));
+    this.assertDoTransactionError(transaction, vertx, testContext);
 
   }
 
@@ -266,15 +280,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     taskTransaction.actioneerId = volunteerId;
     taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
 
-    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
-        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
-    final var checkMessages = new ArrayList<Predicate<Message>>();
-    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
-        .and(MessagePredicates.receiverIs(taskTransaction.actioneerId)));
-    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
-        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+    this.assertDoTransactionError(taskTransaction, vertx, testContext);
   }
 
   /**
@@ -336,15 +342,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     final var volunteerId = this.users.get(1).id;
     taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
 
-    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
-        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
-    final var checkMessages = new ArrayList<Predicate<Message>>();
-    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
-        .and(MessagePredicates.receiverIs(taskTransaction.actioneerId)));
-    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
-        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+    this.assertDoTransactionError(taskTransaction, vertx, testContext);
   }
 
   /**
@@ -406,15 +404,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     final var volunteerId = this.users.get(1).id;
     taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
 
-    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
-        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
-    final var checkMessages = new ArrayList<Predicate<Message>>();
-    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
-        .and(MessagePredicates.receiverIs(taskTransaction.actioneerId)));
-    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
-        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+    this.assertDoTransactionError(taskTransaction, vertx, testContext);
   }
 
   /**
@@ -487,16 +477,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     taskTransaction.label = "taskCompleted";
     taskTransaction.attributes = new JsonObject().put("outcome", outcome);
 
-    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
-        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
-    final var checkMessages = new ArrayList<Predicate<Message>>();
-    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
-        .and(MessagePredicates.receiverIs(taskTransaction.actioneerId)));
-    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
-        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
-
+    this.assertDoTransactionError(taskTransaction, vertx, testContext);
   }
 
   /**
@@ -523,15 +504,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     final var volunteerId = this.users.get(5).id;
     taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
 
-    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
-        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
-    final var checkMessages = new ArrayList<Predicate<Message>>();
-    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
-        .and(MessagePredicates.receiverIs(taskTransaction.actioneerId)));
-    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
-        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+    this.assertDoTransactionError(taskTransaction, vertx, testContext);
   }
 
   /**
@@ -626,11 +599,40 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
             TaskTransactionPredicates.similarTo(createTransaction)
                 .and(TaskTransactionPredicates.messagesSizeIs(this.users.size() - 1))
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))))
-        .and(task -> task.attributes.getLong("deadlineTs") > TimeManager.now());
+        .and(task -> task.attributes.getLong("deadlineTs") < TimeManager.now());
 
     final var future = this.waitUntilTaskCreated(source, vertx, testContext, checkTask)
         .compose(task -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
     testContext.assertComplete(future).onComplete(stored -> this.assertSuccessfulCompleted(testContext));
 
   }
+
+  /**
+   * Check that not do a transaction if the deadline has reached.
+   *
+   * @param label       of the task transaction that can not be done after
+   *                    deadline has reached.
+   * @param order       of the parameterized test.
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @ParameterizedTest(name = "Should not do the task transaction {0} because deadline is reached")
+  @CsvSource(value = { "volunteerForTask:0", "refuseTask:1", "acceptVolunteer:2",
+      "refuseVolunteer:3" }, delimiter = ':')
+  @Order(25)
+  public void shouldNotDoTranasctionAfterDeadline(final String label, final String order, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(24 + Integer.parseInt(order), testContext);
+
+    final var taskTransaction = new TaskTransaction();
+    taskTransaction.actioneerId = this.users.get(2).id;
+    taskTransaction.taskId = this.task.id;
+    taskTransaction.label = label;
+    final var volunteerId = this.users.get(0).id;
+    taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
+
+    this.assertDoTransactionError(taskTransaction, vertx, testContext);
+  }
+
 }
