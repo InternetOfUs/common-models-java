@@ -49,6 +49,17 @@ public class EchoProtocolITC extends AbstractProtocolITC {
   /**
    * {@inheritDoc}
    *
+   * @return {@code 1} in any case.
+   */
+  @Override
+  protected int numberOfUsersToCreate() {
+
+    return 1;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
    * @return {@link WeNetTaskManager#ECHO_V1_TASK_TYPE_ID}
    */
   @Override
@@ -111,4 +122,5 @@ public class EchoProtocolITC extends AbstractProtocolITC {
     testContext.assertComplete(future).onComplete(removed -> this.assertSuccessfulCompleted(testContext));
 
   }
+
 }

@@ -25,7 +25,6 @@
  */
 package eu.internetofus.common.components;
 
-import static eu.internetofus.common.components.profile_manager.WeNetProfileManagers.createUsers;
 import static org.assertj.core.api.Assertions.fail;
 
 import eu.internetofus.common.components.profile_manager.CommunityProfile;
@@ -61,11 +60,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 @TestInstance(Lifecycle.PER_CLASS)
 @TestMethodOrder(OrderAnnotation.class)
 public abstract class AbstractProtocolITC {
-
-  /**
-   * Number maximum of users to use on the test.
-   */
-  public static final int MAX_USERS = 6;
 
   /**
    * The value of the last successfuk test.
@@ -133,13 +127,20 @@ public abstract class AbstractProtocolITC {
   public void initializeTests() {
 
     this.lastSuccessfulTest = 0;
-    this.users = null;
+    this.users = new ArrayList<>();
     this.app = null;
     this.community = null;
     this.taskType = null;
     this.task = null;
 
   }
+
+  /**
+   * Return the number of users that you want to create.
+   *
+   * @return the number of users to create.
+   */
+  protected abstract int numberOfUsersToCreate();
 
   /**
    * Create the users that will be used on the tests.
@@ -152,16 +153,22 @@ public abstract class AbstractProtocolITC {
   public void shouldCreateUsers(final Vertx vertx, final VertxTestContext testContext) {
 
     this.assertLastSuccessfulTestWas(0, testContext);
-    StoreServices.storeProfileExample(1, vertx, testContext).onSuccess(me -> {
 
-      testContext.assertComplete(createUsers(MAX_USERS, vertx, testContext)).onSuccess(createdUsers -> {
-        this.users = createdUsers;
-        this.users.add(0, me);
-        this.assertSuccessfulCompleted(testContext);
+    var future = Future.succeededFuture();
+    final var max = this.numberOfUsersToCreate();
+    for (var i = 0; i < max; i++) {
 
-      });
+      final var index = i;
+      future = future
+          .compose(ignored -> StoreServices.storeProfileExample(index, vertx, testContext).compose(createdUser -> {
+            this.users.add(createdUser);
+            return Future.succeededFuture(createdUser);
+          }));
 
-    });
+    }
+
+    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+
   }
 
   /**

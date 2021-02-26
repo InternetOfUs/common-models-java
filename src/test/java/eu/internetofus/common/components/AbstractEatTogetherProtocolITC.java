@@ -55,6 +55,18 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
 
   /**
    * {@inheritDoc}
+   *
+   * @return {@code 6} in any case.
+   */
+  @Override
+  protected int numberOfUsersToCreate() {
+
+    return 6;
+
+  }
+
+  /**
+   * {@inheritDoc}
    */
   @Override
   protected Task createTaskForProtocol() {
@@ -431,13 +443,21 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
                   .put("communityId", this.community.id).put("taskId", this.task.id).put("outcome", outcome))));
 
     }
-    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size() + 1)
+    final var checkTask = TaskPredicates
+        .attributesSimilarTo(
+            new JsonObject().put("outcome", outcome).put("declined", new JsonArray().add(this.users.get(1).id))
+                .put("accepted", new JsonArray().add(this.users.get(2).id))
+                .put("refused", new JsonArray().add(this.users.get(3).id))
+                .put("volunteers", new JsonArray().add(this.users.get(4).id))
+                .put("unanswered", new JsonArray().add(this.users.get(5).id)))
+        .and(TaskPredicates.transactionSizeIs(this.task.transactions.size() + 1))
         .and(TaskPredicates.transactionAt(this.task.transactions.size(),
-            TaskTransactionPredicates.similarTo(taskTransaction).and(TaskTransactionPredicates.messagesSizeIs(1))
+            TaskTransactionPredicates.similarTo(taskTransaction)
+                .and(TaskTransactionPredicates.messagesSizeIs(checkMessages.size()))
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))));
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
-        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
+        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask))
+        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
 
     testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
 
