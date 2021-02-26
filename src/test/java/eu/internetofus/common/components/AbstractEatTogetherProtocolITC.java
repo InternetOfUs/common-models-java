@@ -38,10 +38,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -77,7 +75,6 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
    */
-  @Timeout(value = 1, timeUnit = TimeUnit.MINUTES)
   @Test
   @Order(5)
   public void shouldCreateTask(final Vertx vertx, final VertxTestContext testContext) {
@@ -91,14 +88,14 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
 
       if (!user.id.equals(source.requesterId)) {
 
-        checkMessages
-            .add(MessagePredicates.labelIs("TaskProposalNotification").and(MessagePredicates.receiverIs(user.id))
-                .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("communityId", this.community.id)))
-                .and(MessagePredicates.attributesAre(target -> {
+        checkMessages.add(MessagePredicates.appIs(this.app.appId)
+            .and(MessagePredicates.labelIs("TaskProposalNotification")).and(MessagePredicates.receiverIs(user.id))
+            .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("communityId", this.community.id)))
+            .and(MessagePredicates.attributesAre(target -> {
 
-                  return this.task.id.equals(target.getString("taskId"));
+              return this.task.id.equals(target.getString("taskId"));
 
-                })));
+            })));
         userIds.add(user.id);
       }
 
@@ -170,10 +167,11 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     transaction.actioneerId = volunteerId;
     transaction.attributes = new JsonObject().put("volunteerId", volunteerId);
 
-    final var checkTask = TaskPredicates.transactionSizeIs(2)
+    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
         .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
     final var checkMessages = new ArrayList<Predicate<Message>>();
-    checkMessages.add(MessagePredicates.labelIs("TextualMessage").and(MessagePredicates.receiverIs(volunteerId)));
+    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
+        .and(MessagePredicates.receiverIs(transaction.actioneerId)));
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
         .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
         .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
@@ -188,7 +186,6 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
    */
-  @Timeout(value = 1, timeUnit = TimeUnit.MINUTES)
   @Test
   @Order(8)
   public void shouldVolunteerForTask(final Vertx vertx, final VertxTestContext testContext) {
@@ -196,16 +193,18 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     this.assertLastSuccessfulTestWas(7, testContext);
 
     final var checkMessages = new ArrayList<Predicate<Message>>();
-    var checkTask = TaskPredicates.transactionSizeIs(this.users.size());
 
+    final var unanswered = this.task.attributes.getJsonArray("unanswered").copy();
     final var volunteers = new JsonArray();
     Future<?> future = Future.succeededFuture();
-    for (var i = 2; i < MAX_USERS - 1; i++) {
+    for (var i = 2; i < this.users.size() - 1; i++) {
 
       final var volunteerId = this.users.get(i).id;
+      unanswered.remove(volunteerId);
       volunteers.add(volunteerId);
 
-      final var checkMessage = MessagePredicates.labelIs("TaskVolunteerNotification")
+      final var checkMessage = MessagePredicates.appIs(this.app.appId)
+          .and(MessagePredicates.labelIs("TaskVolunteerNotification"))
           .and(MessagePredicates.receiverIs(this.task.requesterId)).and(MessagePredicates.attributesAre(new JsonObject()
               .put("communityId", this.community.id).put("taskId", this.task.id).put("volunteerId", volunteerId)));
       checkMessages.add(checkMessage);
@@ -216,20 +215,231 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
       taskTransaction.label = "volunteerForTask";
       taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
 
-      future = future.compose(map -> WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction));
+      final var checkTask = TaskPredicates
+          .attributesSimilarTo(
+              new JsonObject().put("unanswered", unanswered.copy()).put("volunteers", volunteers.copy()))
+          .and(TaskPredicates.transactionSizeIs(i + 1))
+          .and(TaskPredicates.transactionAt(i,
+              TaskTransactionPredicates.similarTo(taskTransaction).and(TaskTransactionPredicates.messagesSizeIs(1))
+                  .and(TaskTransactionPredicates.messageAt(0, checkMessage))));
+      future = future.compose(map -> WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction))
+          .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
 
-      checkTask = checkTask.and(TaskPredicates.containsTransaction(TaskTransactionPredicates.similarTo(taskTransaction)
-          .and(TaskTransactionPredicates.messagesSizeIs(1)).and(TaskTransactionPredicates.messageAt(0, checkMessage))));
     }
 
-    final var finalCheckTask = TaskPredicates
-        .attributesSimilarTo(new JsonObject().put("unanswered", new JsonArray()).put("volunteers", volunteers))
-        .and(checkTask);
-    future = future.compose(map -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(map -> this.waitUntilTask(vertx, testContext, finalCheckTask));
+    future = future.compose(map -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
 
     testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
 
   }
 
+  /**
+   * Check that an user can not decline a task if it accepted to be volunteer.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @Test
+  @Order(9)
+  public void shouldNotDeclineAfterVolunteerForTask(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(8, testContext);
+
+    final var taskTransaction = new TaskTransaction();
+    taskTransaction.taskId = this.task.id;
+    taskTransaction.label = "refuseTask";
+    final var volunteerId = this.users.get(2).id;
+    taskTransaction.actioneerId = volunteerId;
+    taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
+
+    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
+        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
+        .and(MessagePredicates.receiverIs(taskTransaction.actioneerId)));
+    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
+        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
+    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+  }
+
+  /**
+   * Check that an user can be accepted to be volunteer.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @Test
+  @Order(10)
+  public void shouldAcceptVolunteer(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(9, testContext);
+
+    final var taskTransaction = new TaskTransaction();
+    taskTransaction.actioneerId = this.task.requesterId;
+    taskTransaction.taskId = this.task.id;
+    taskTransaction.label = "acceptVolunteer";
+    final var volunteerId = this.users.get(2).id;
+    taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
+
+    final var attributes = this.task.attributes.copy();
+    attributes.getJsonArray("volunteers").remove(volunteerId);
+    attributes.put("accepted", new JsonArray().add(volunteerId));
+    final var checkMessage = MessagePredicates.appIs(this.app.appId)
+        .and(MessagePredicates.labelIs("TaskSelectionNotification")).and(MessagePredicates.receiverIs(volunteerId))
+        .and(MessagePredicates.attributesAre(new JsonObject().put("communityId", this.community.id)
+            .put("taskId", this.task.id).put("outcome", "accepted")));
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    checkMessages.add(checkMessage);
+    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size() + 1)
+        .and(TaskPredicates.attributesAre(attributes))
+        .and(TaskPredicates.transactionAt(this.task.transactions.size(),
+            TaskTransactionPredicates.similarTo(taskTransaction).and(TaskTransactionPredicates.messagesSizeIs(1))
+                .and(TaskTransactionPredicates.messageAt(0, checkMessage))));
+    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
+        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
+    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+
+  }
+
+  /**
+   * Check that an user can not be accepted as volunteer.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @Test
+  @Order(11)
+  public void shouldNotAcceptVolunteer(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(10, testContext);
+
+    final var taskTransaction = new TaskTransaction();
+    taskTransaction.actioneerId = this.task.requesterId;
+    taskTransaction.taskId = this.task.id;
+    taskTransaction.label = "acceptVolunteer";
+    final var volunteerId = this.users.get(1).id;
+    taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
+
+    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
+        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
+        .and(MessagePredicates.receiverIs(taskTransaction.actioneerId)));
+    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
+        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
+    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+  }
+
+  /**
+   * Check that an user can be refused to be volunteer.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @Test
+  @Order(12)
+  public void shouldRefuseVolunteer(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(11, testContext);
+
+    final var taskTransaction = new TaskTransaction();
+    taskTransaction.actioneerId = this.task.requesterId;
+    taskTransaction.taskId = this.task.id;
+    taskTransaction.label = "refuseVolunteer";
+    final var volunteerId = this.users.get(3).id;
+    taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
+
+    final var attributes = this.task.attributes.copy();
+    attributes.getJsonArray("volunteers").remove(volunteerId);
+    attributes.put("refused", new JsonArray().add(volunteerId));
+    final var checkMessage = MessagePredicates.appIs(this.app.appId)
+        .and(MessagePredicates.labelIs("TaskSelectionNotification")).and(MessagePredicates.receiverIs(volunteerId))
+        .and(MessagePredicates.attributesAre(new JsonObject().put("communityId", this.community.id)
+            .put("taskId", this.task.id).put("outcome", "refused")));
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    checkMessages.add(checkMessage);
+    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size() + 1)
+        .and(TaskPredicates.attributesAre(attributes))
+        .and(TaskPredicates.transactionAt(this.task.transactions.size(),
+            TaskTransactionPredicates.similarTo(taskTransaction).and(TaskTransactionPredicates.messagesSizeIs(1))
+                .and(TaskTransactionPredicates.messageAt(0, checkMessage))));
+    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
+        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
+    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+
+  }
+
+  /**
+   * Check that an user can not be refused as volunteer.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @Test
+  @Order(13)
+  public void shouldNotRefuseVolunteer(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(12, testContext);
+
+    final var taskTransaction = new TaskTransaction();
+    taskTransaction.actioneerId = this.task.requesterId;
+    taskTransaction.taskId = this.task.id;
+    taskTransaction.label = "refuseVolunteer";
+    final var volunteerId = this.users.get(1).id;
+    taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
+
+    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size())
+        .and(TaskPredicates.attributesAre(this.task.attributes.copy()));
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    checkMessages.add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TextualMessage"))
+        .and(MessagePredicates.receiverIs(taskTransaction.actioneerId)));
+    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
+        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
+    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+  }
+
+  /**
+   * Check that an user can mark the task as completed.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @Test
+  @Order(14)
+  public void shouldTaskCompleted(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(13, testContext);
+
+    final var taskTransaction = new TaskTransaction();
+    taskTransaction.actioneerId = this.task.requesterId;
+    taskTransaction.taskId = this.task.id;
+    taskTransaction.label = "taskCompleted";
+    final var outcome = "completed";
+    taskTransaction.attributes = new JsonObject().put("outcome", outcome);
+
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    for (final var id : new String[] { this.users.get(2).id, this.users.get(4).id, this.users.get(5).id }) {
+
+      checkMessages
+          .add(MessagePredicates.appIs(this.app.appId).and(MessagePredicates.labelIs("TaskConcludedNotification"))
+              .and(MessagePredicates.receiverIs(id)).and(MessagePredicates.attributesAre(new JsonObject()
+                  .put("communityId", this.community.id).put("taskId", this.task.id).put("outcome", outcome))));
+
+    }
+    final var checkTask = TaskPredicates.transactionSizeIs(this.task.transactions.size() + 1)
+        .and(TaskPredicates.transactionAt(this.task.transactions.size(),
+            TaskTransactionPredicates.similarTo(taskTransaction).and(TaskTransactionPredicates.messagesSizeIs(1))
+                .and(TaskTransactionPredicates.containsMessages(checkMessages))));
+    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
+        .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
+
+    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+
+  }
 }
