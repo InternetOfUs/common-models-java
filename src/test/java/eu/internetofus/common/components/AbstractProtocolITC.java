@@ -29,6 +29,8 @@ import static org.assertj.core.api.Assertions.fail;
 
 import eu.internetofus.common.components.incentive_server.TaskStatus;
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulator;
+import eu.internetofus.common.components.interaction_protocol_engine.State;
+import eu.internetofus.common.components.interaction_protocol_engine.WeNetInteractionProtocolEngine;
 import eu.internetofus.common.components.profile_manager.CommunityProfile;
 import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
 import eu.internetofus.common.components.service.App;
@@ -547,6 +549,142 @@ public abstract class AbstractProtocolITC {
 
       return true;
     };
+
+  }
+
+  /**
+   * Create the predicate over an user state with the data from the test.
+   *
+   * @param userId identifier of the user.
+   *
+   * @return the predicate for the user state.
+   *
+   * @see #app
+   * @see #task
+   * @see #community
+   */
+  protected Predicate<State> createUserStatePredicate(@NotNull final String userId) {
+
+    return state -> {
+
+      if (!userId.equals(state.userId)) {
+
+        return false;
+      }
+      if (state.taskId != null) {
+
+        return false;
+      }
+      if (state.communityId != null) {
+
+        return false;
+      }
+
+      return true;
+    };
+
+  }
+
+  /**
+   * Create the predicate over a community user state with the data from the test.
+   *
+   * @param userId identifier of the user.
+   *
+   * @return the predicate for the community user state.
+   *
+   * @see #app
+   * @see #task
+   * @see #community
+   */
+  protected Predicate<State> createCommunityUserStatePredicate(@NotNull final String userId) {
+
+    return state -> {
+
+      if (!userId.equals(state.userId)) {
+
+        return false;
+      }
+      if (state.taskId != null) {
+
+        return false;
+      }
+      if (this.community != null && !this.community.id.equals(state.communityId)) {
+
+        return false;
+      }
+
+      return true;
+    };
+
+  }
+
+  /**
+   * Create the predicate over a task user state with the data from the test.
+   *
+   * @param userId identifier of the user.
+   *
+   * @return the predicate for the task user state.
+   *
+   * @see #app
+   * @see #task
+   * @see #community
+   */
+  protected Predicate<State> createTaskUserStatePredicate(@NotNull final String userId) {
+
+    return state -> {
+
+      if (!userId.equals(state.userId)) {
+
+        return false;
+      }
+      if (this.task != null && !this.task.id.equals(state.taskId)) {
+
+        return false;
+      }
+      if (this.community != null && !this.community.id.equals(state.communityId)) {
+
+        return false;
+      }
+
+      return true;
+    };
+
+  }
+
+  /**
+   * Check that is send the specified task status.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   * @param userId      identifier of the user.
+   * @param checkState  this predicate is true when the community user state has
+   *                    the expected values.
+   *
+   * @return the future community user state.
+   *
+   * @see #waitUntilTask(Vertx, VertxTestContext, Predicate)
+   */
+  protected Future<State> waitUntilCommunityUserState(@NotNull final Vertx vertx,
+      @NotNull final VertxTestContext testContext, @NotNull final String userId,
+      @NotNull final Predicate<State> checkState) {
+
+    return WeNetInteractionProtocolEngine.createProxy(vertx).retrieveCommunityUserState(this.community.id, userId)
+        .compose(state -> {
+
+          if (checkState.test(state)) {
+
+            return Future.succeededFuture(state);
+
+          } else if (!testContext.completed()) {
+
+            return this.waitUntilCommunityUserState(vertx, testContext, userId, checkState);
+
+          } else {
+
+            return Future.failedFuture("Test finished");
+          }
+
+        });
 
   }
 

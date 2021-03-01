@@ -173,7 +173,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
         .compose(ignored -> this.waitUntilTaskStatus(vertx, testContext, checkStatus));
 
-    testContext.assertComplete(future).onComplete(removed -> this.assertSuccessfulCompleted(testContext));
+    testContext.assertComplete(future).onComplete(ignored -> this.assertSuccessfulCompleted(testContext));
 
   }
 
