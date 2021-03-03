@@ -113,6 +113,22 @@ public abstract class AbstractProtocolITC {
   }
 
   /**
+   * Assert that at least the successful test was the specified step.
+   *
+   * @param step        minimum step to be successful.
+   * @param testContext context to do the test.
+   */
+  protected void assertAtLeastSuccessfulTestWas(final int step, final VertxTestContext testContext) {
+
+    if (this.lastSuccessfulTest < step) {
+
+      testContext.failNow("Previous test not succeeded");
+      fail("Previous test not succeeded");
+
+    }
+  }
+
+  /**
    * Assert that the current test is completed with a successful.
    *
    * @param testContext context to do the test.
