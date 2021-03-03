@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,13 +28,13 @@ package eu.internetofus.common.components;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.function.Consumer;
-
-import io.vertx.core.Vertx;
-import io.vertx.junit5.VertxTestContext;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
 /**
- * Test the {@link Merges}.
+ * Test the {@link Merges} methods.
  *
  * @see Merges
  *
@@ -43,86 +43,146 @@ import io.vertx.junit5.VertxTestContext;
 public class MergesTest {
 
   /**
-   * Assert that a model can not be merged
+   * Check can merge simple values.
    *
-   * @param target      model to merge.
-   * @param source      model to merge.
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   * @param <T>         type of model to merge.
+   * @see Merges#mergeValues(Object,Object)
    */
-  public static <T> void assertCannotMerge(final Mergeable<T> target, final T source, final Vertx vertx, final VertxTestContext testContext) {
+  @Test
+  public void shoulMergeValues() {
 
-    assertCannotMerge(target, source, null, vertx, testContext);
+    assertThat(Merges.mergeValues(null, null)).isNull();
+
+    final var source = UUID.randomUUID().toString();
+    assertThat(Merges.mergeValues(null, source)).isSameAs(source);
+    assertThat(Merges.mergeValues(1l, source)).isSameAs(source);
+
+    final var target = UUID.randomUUID().toString();
+    assertThat(Merges.mergeValues(target, null)).isSameAs(target);
+
+    assertThat(Merges.mergeValues(target, source)).isSameAs(source);
 
   }
 
   /**
-   * Assert that a model is not valid because a field is wrong.
+   * Check can merge JSON object values.
    *
-   * @param target      model to merge.
-   * @param source      model to merge.
-   * @param fieldName   name of the field that is not valid.
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   * @param <T>         type of model to merge.
+   * @see Merges#mergeValues(Object,Object)
    */
-  public static <T> void assertCannotMerge(final Mergeable<T> target, final T source, final String fieldName, final Vertx vertx, final VertxTestContext testContext) {
+  @Test
+  public void shoulMergeJsonObjectValues() {
 
-    target.merge(source, "codePrefix", vertx).onComplete(testContext.failing(error -> testContext.verify(() -> {
+    assertThat(Merges.mergeValues(null, null)).isNull();
 
-      assertThat(error).isInstanceOf(ValidationErrorException.class);
-      var expectedCode = "codePrefix";
-      if (fieldName != null) {
+    final var source = new JsonObject();
+    source.put("source", "source");
+    assertThat(Merges.mergeValues(null, source)).isSameAs(source);
+    assertThat(Merges.mergeValues(1l, source)).isSameAs(source);
 
-        expectedCode += "." + fieldName;
+    final var target = new JsonObject();
+    target.put("target", "target");
+    assertThat(Merges.mergeValues(target, null)).isSameAs(target);
 
-      }
-      assertThat(((ValidationErrorException) error).getCode()).isEqualTo(expectedCode);
-
-      testContext.completeNow();
-
-    })));
+    final var merged = new JsonObject();
+    merged.put("target", "target");
+    merged.put("source", "source");
+    assertThat(Merges.mergeValues(target, source)).isEqualTo(merged).isNotSameAs(target).isNotSameAs(source);
 
   }
 
   /**
-   * Assert that a model has been merged.
+   * Check can merge JSON array values.
    *
-   * @param target      model to merge.
-   * @param source      model to merge.
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   * @param <T>         model to test.
+   * @see Merges#mergeValues(Object,Object)
    */
-  public static <T extends Validable> void assertCanMerge(final Mergeable<T> target, final T source, final Vertx vertx, final VertxTestContext testContext) {
+  @Test
+  public void shoulMergeJsonArrayValues() {
 
-    assertCanMerge(target, source, vertx, testContext, null);
+    assertThat(Merges.mergeValues(null, null)).isNull();
+
+    final var source = new JsonArray();
+    source.add("source");
+    assertThat(Merges.mergeValues(null, source)).isSameAs(source);
+    assertThat(Merges.mergeValues(1l, source)).isSameAs(source);
+
+    final var target = new JsonArray();
+    target.add("target");
+    assertThat(Merges.mergeValues(target, null)).isSameAs(target);
+
+    final var merged = new JsonArray();
+    merged.add("source");
+    assertThat(Merges.mergeValues(target, source)).isEqualTo(merged).isNotSameAs(target).isNotSameAs(source);
 
   }
 
   /**
-   * Assert that a model has been merged.
+   * Check can merge JSON objects.
    *
-   * @param target      model to merge.
-   * @param source      model to merge.
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   * @param expected    function to validate the merged value.
-   * @param <T>         model to test.
+   * @see Merges#mergeJsonObjects(JsonObject, JsonObject)
    */
-  public static <T extends Validable> void assertCanMerge(final Mergeable<T> target, final T source, final Vertx vertx, final VertxTestContext testContext, final Consumer<T> expected) {
+  @Test
+  public void shoulMergeJsonObjects() {
 
-    target.merge(source, "codePrefix", vertx).onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
+    assertThat(Merges.mergeJsonObjects(null, null)).isNull();
 
-      if (expected != null) {
+    final var source = new JsonObject();
+    source.put("source", "source");
+    source.put("key2", new JsonObject().put("subkey1", "value1").put("subkey2", true).put("subkey3", 1l));
+    source.put("key3", 1l);
+    source.put("key4", new JsonArray().add(1l).add("source").add(new JsonObject().put("key1", "value")));
+    assertThat(Merges.mergeJsonObjects(null, source)).isSameAs(source);
 
-        expected.accept(merged);
-      }
+    final var target = new JsonObject();
+    target.put("target", "target");
+    target.put("key2", new JsonObject().put("subkey1", true).put("subkey2", "value"));
+    target.put("key3", true);
+    target.put("key4", new JsonArray().add(5l).add(true).add(new JsonObject().put("key1", "value")));
+    target.put("key5", "value5");
+    assertThat(Merges.mergeJsonObjects(target, null)).isSameAs(target);
 
-      testContext.completeNow();
-
-    })));
+    final var merged = new JsonObject();
+    merged.put("target", "target");
+    merged.put("source", "source");
+    merged.put("key2", new JsonObject().put("subkey1", "value1").put("subkey2", true).put("subkey3", 1l));
+    merged.put("key3", 1l);
+    merged.put("key4", new JsonArray().add(1l).add("source").add(new JsonObject().put("key1", "value")));
+    merged.put("key5", "value5");
+    assertThat(Merges.mergeJsonObjects(target, source)).isEqualTo(merged).isNotSameAs(target).isNotSameAs(source);
 
   }
+
+  /**
+   * Check can merge JSON arrays.
+   *
+   * @see Merges#mergeJsonArrays(JsonArray, JsonArray)
+   */
+  @Test
+  public void shoulMergeJsonArrays() {
+
+    assertThat(Merges.mergeJsonArrays(null, null)).isNull();
+
+    final var source = new JsonArray();
+    source.add("source");
+    source.add(new JsonObject().put("subkey1", "value1").put("subkey2", true));
+    source.add(1l);
+    source.add(new JsonArray().add(1l).add("source").add(new JsonObject().put("key1", "value")));
+    assertThat(Merges.mergeJsonArrays(null, source)).isSameAs(source);
+
+    final var target = new JsonArray();
+    assertThat(Merges.mergeJsonArrays(target, source)).isSameAs(source);
+
+    target.add("target");
+    target.add(new JsonObject().put("subkey1", true).put("subkey2", "value").put("subkey3", 1l));
+    target.add(true);
+    target.add(new JsonArray().add(5l).add(true).add(new JsonObject().put("key1", "value")));
+    assertThat(Merges.mergeJsonArrays(target, null)).isSameAs(target);
+
+    final var merged = new JsonArray();
+    merged.add("source");
+    merged.add(new JsonObject().put("subkey1", "value1").put("subkey2", true).put("subkey3", 1l));
+    merged.add(1l);
+    merged.add(new JsonArray().add(1l).add("source").add(new JsonObject().put("key1", "value")));
+    assertThat(Merges.mergeJsonArrays(target, source)).isEqualTo(merged).isNotSameAs(target).isNotSameAs(source);
+
+  }
+
 }

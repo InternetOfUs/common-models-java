@@ -26,7 +26,7 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import static eu.internetofus.common.components.MergesTest.assertCannotMerge;
+import static eu.internetofus.common.components.MergeAsserts.assertCannotMerge;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 
 import java.time.LocalDate;

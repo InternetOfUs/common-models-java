@@ -230,11 +230,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
         merged.closeTs = this.closeTs;
       }
 
-      merged.attributes = source.attributes;
-      if (merged.attributes == null) {
-
-        merged.attributes = this.attributes;
-      }
+      merged.attributes = Merges.mergeJsonObjects(this.attributes, source.attributes);
 
       merged.transactions = source.transactions;
       if (merged.transactions == null) {

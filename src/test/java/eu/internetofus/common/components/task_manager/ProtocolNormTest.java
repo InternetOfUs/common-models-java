@@ -26,7 +26,7 @@
 
 package eu.internetofus.common.components.task_manager;
 
-import static eu.internetofus.common.components.MergesTest.assertCanMerge;
+import static eu.internetofus.common.components.MergeAsserts.assertCanMerge;
 import static eu.internetofus.common.components.UpdatesTest.assertCanUpdate;
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
