@@ -26,6 +26,7 @@
 
 package eu.internetofus.common.components;
 
+import eu.internetofus.common.TimeManager;
 import io.vertx.core.Handler;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -56,12 +57,12 @@ public class CRUDContext {
   /**
    * The name of the property that contains the identifier of the values.
    */
-  private String idName;
+  private final String idName;
 
   /**
    * The name of the property to store the models of the page.
    */
-  private String valuesName;
+  private final String valuesName;
 
   /**
    * Create the context.
@@ -71,7 +72,7 @@ public class CRUDContext {
    * @param valuesNames name of the page field that contains the values to return.
    * @param modelType   type of model that are valid by the context.
    */
-  public CRUDContext(String idName, String valuesNames, Class<?> modelType) {
+  public CRUDContext(final String idName, final String valuesNames, final Class<?> modelType) {
 
     this.values = new TreeMap<>();
     this.idName = idName;
@@ -108,7 +109,7 @@ public class CRUDContext {
     return ctx -> {
 
       final var id = ctx.pathParam("id");
-      var value = this.values.get(id);
+      final var value = this.values.get(id);
       if (value == null) {
 
         final var response = ctx.response();
@@ -152,14 +153,14 @@ public class CRUDContext {
    *         integer.
    *
    */
-  public int queryIntParam(RoutingContext ctx, String key, int defaultValue) {
+  public int queryIntParam(final RoutingContext ctx, final String key, final int defaultValue) {
 
     try {
 
-      var param = ctx.queryParams().get(key);
+      final var param = ctx.queryParams().get(key);
       return Integer.parseInt(param);
 
-    } catch (Throwable ignored) {
+    } catch (final Throwable ignored) {
 
       return defaultValue;
     }
@@ -172,7 +173,7 @@ public class CRUDContext {
    *
    * @return the handler to obtain a value by its identifier.
    */
-  public Handler<RoutingContext> getPageHandler(BiPredicate<RoutingContext, JsonObject> filter) {
+  public Handler<RoutingContext> getPageHandler(final BiPredicate<RoutingContext, JsonObject> filter) {
 
     return ctx -> {
 
@@ -180,22 +181,22 @@ public class CRUDContext {
       final var offset = this.queryIntParam(ctx, "offset", 0);
       final var limit = this.queryIntParam(ctx, "limit", 10);
       var array = new JsonArray();
-      var max = this.values.size();
-      var iter = this.values.keySet().iterator();
-      for (int i = 0; i < offset && iter.hasNext();) {
+      final var max = this.values.size();
+      final var iter = this.values.keySet().iterator();
+      for (var i = 0; i < offset && iter.hasNext();) {
 
-        var id = iter.next();
-        var value = this.values.get(id);
+        final var id = iter.next();
+        final var value = this.values.get(id);
         if (filter == null || filter.test(ctx, value)) {
 
           i++;
         }
 
       }
-      for (int i = 0; i < limit && iter.hasNext();) {
+      for (var i = 0; i < limit && iter.hasNext();) {
 
-        var id = iter.next();
-        var value = this.values.get(id);
+        final var id = iter.next();
+        final var value = this.values.get(id);
         if (filter == null || filter.test(ctx, value)) {
           array = array.add(value);
           i++;
@@ -206,7 +207,7 @@ public class CRUDContext {
 
         array = null;
       }
-      JsonObject page = new JsonObject().put("offset", offset).put("total", max).put(this.valuesName, array);
+      final var page = new JsonObject().put("offset", offset).put("total", max).put(this.valuesName, array);
       response.setStatusCode(Status.OK.getStatusCode());
       response.end(page.toBuffer());
 
@@ -222,15 +223,15 @@ public class CRUDContext {
    * @return the filter with the specified query parameters with the same value on
    *         the model.
    */
-  public BiPredicate<RoutingContext, JsonObject> createValueFilter(String... paramNames) {
+  public BiPredicate<RoutingContext, JsonObject> createValueFilter(final String... paramNames) {
 
     return (ctx, value) -> {
 
       if (paramNames != null) {
 
-        for (var paramName : paramNames) {
+        for (final var paramName : paramNames) {
 
-          var paramValue = ctx.queryParams().get(paramName);
+          final var paramValue = ctx.queryParams().get(paramName);
           if (paramValue != null && !paramValue.equals(value.getString(paramName))) {
 
             return false;
@@ -251,7 +252,7 @@ public class CRUDContext {
    *
    * @return the handler to obtain a value by its identifier.
    */
-  public Handler<RoutingContext> getPageHandler(String... paramNames) {
+  public Handler<RoutingContext> getPageHandler(final String... paramNames) {
 
     return this.getPageHandler(this.createValueFilter(paramNames));
   }
@@ -282,7 +283,7 @@ public class CRUDContext {
    * @return the value defined on the body or {@code null} if not value is
    *         defined.
    */
-  public JsonObject getNewValueFrom(RoutingContext ctx) {
+  public JsonObject getNewValueFrom(final RoutingContext ctx) {
 
     return this.getBodyOf(ctx, this.modelType);
 
@@ -297,14 +298,14 @@ public class CRUDContext {
    * @return the value defined on the body or {@code null} if the body is not of
    *         the specified type.
    */
-  public JsonObject getBodyOf(RoutingContext ctx, Class<?> type) {
+  public JsonObject getBodyOf(final RoutingContext ctx, final Class<?> type) {
 
     try {
 
-      var newValue = ctx.getBodyAsJson();
+      final var newValue = ctx.getBodyAsJson();
       if (newValue != null) {
 
-        var model = Json.decodeValue(newValue.toBuffer(), type);
+        final var model = Json.decodeValue(newValue.toBuffer(), type);
         if (model != null) {
 
           return newValue;
@@ -312,7 +313,7 @@ public class CRUDContext {
         }
       }
 
-    } catch (Throwable ignored) {
+    } catch (final Throwable ignored) {
 
     }
 
@@ -340,7 +341,7 @@ public class CRUDContext {
         var id = newValue.getString(this.idName);
         if (id == null) {
 
-          int index = this.values.size() + 1;
+          var index = this.values.size() + 1;
           while (this.values.containsKey(String.valueOf(index))) {
 
             index++;
@@ -352,8 +353,15 @@ public class CRUDContext {
         } else if (this.values.containsKey(id)) {
 
           response.setStatusCode(Status.BAD_REQUEST.getStatusCode());
-          response.end(new ErrorMessage("bad_id", "The identiifer is already defined").toBuffer());
+          response.end(new ErrorMessage("bad_id", "The identifier is already defined").toBuffer());
           return;
+        }
+
+        if (CreateUpdateTsDetails.class.isAssignableFrom(this.modelType)) {
+
+          final var now = TimeManager.now();
+          newValue = newValue.put("_creationTs", now);
+          newValue = newValue.put("_lastUpdateTs", now);
         }
 
         this.values.put(id, newValue);
@@ -380,6 +388,13 @@ public class CRUDContext {
 
         final var response = ctx.response();
         newValue = newValue.put(this.idName, id);
+        if (CreateUpdateTsDetails.class.isAssignableFrom(this.modelType)) {
+
+          final var now = TimeManager.now();
+          newValue = newValue.put("_creationTs", value.getValue("_creationTs"));
+          newValue = newValue.put("_lastUpdateTs", now);
+        }
+
         this.values.put(id, newValue);
         response.setStatusCode(Status.OK.getStatusCode());
         response.end(newValue.toBuffer());
@@ -400,22 +415,21 @@ public class CRUDContext {
 
     return this.toRoutingContextHandler((ctx, id, value) -> {
 
-      var newValue = this.getNewValueFrom(ctx);
+      final var newValue = this.getNewValueFrom(ctx);
       if (newValue != null) {
 
-        newValue = newValue.put(this.idName, id);
-        final var response = ctx.response();
-        for (var key : value.fieldNames()) {
+        var mergedValue = Merges.mergeJsonObjects(value, newValue);
+        mergedValue = mergedValue.put(this.idName, id);
+        if (CreateUpdateTsDetails.class.isAssignableFrom(this.modelType)) {
 
-          if (!newValue.containsKey(key)) {
-
-            newValue = newValue.put(key, value.getValue(key));
-          }
-
+          final var now = TimeManager.now();
+          mergedValue = mergedValue.put("_creationTs", value.getValue("_creationTs"));
+          mergedValue = mergedValue.put("_lastUpdateTs", now);
         }
-        this.values.put(id, newValue);
+        final var response = ctx.response();
+        this.values.put(id, mergedValue);
         response.setStatusCode(Status.OK.getStatusCode());
-        response.end(newValue.toBuffer());
+        response.end(mergedValue.toBuffer());
 
       }
 

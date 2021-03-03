@@ -28,7 +28,6 @@ package eu.internetofus.common.components.task_manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.service.Message;
 import eu.internetofus.common.components.service.MessageTest;
 import io.vertx.core.Vertx;
@@ -127,13 +126,13 @@ public abstract class WeNetTaskManagerTestCase {
   }
 
   /**
-   * Should create, retrieve and delete a task.
+   * Should create, retrieve, update, merge and delete a task.
    *
    * @param vertx       that contains the event bus to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldCreateRetrieveMergeAndDeleteTask(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldCreateRetrieveUpdateMergeAndDeleteTask(final Vertx vertx, final VertxTestContext testContext) {
 
     new TaskTest().createModelExample(1, vertx, testContext).onSuccess(task -> {
 
@@ -145,22 +144,35 @@ public abstract class WeNetTaskManagerTestCase {
         testContext.assertComplete(service.retrieveTask(id)).onSuccess(retrieve -> testContext.verify(() -> {
 
           assertThat(createdTask).isEqualTo(retrieve);
-          final var taskToMerge = Model.fromJsonObject(createdTask.toJsonObject(), Task.class);
-          taskToMerge.attributes = new JsonObject().put("newKey", "NEW VALUE");
-          testContext.assertComplete(service.mergeTask(id, taskToMerge))
-              .onSuccess(mergedTask -> testContext.verify(() -> {
 
-                createdTask._lastUpdateTs = mergedTask._lastUpdateTs;
-                createdTask.attributes = new JsonObject().put("newKey", "NEW VALUE");
-                assertThat(mergedTask).isEqualTo(createdTask);
-                testContext.assertComplete(service.deleteTask(id)).onSuccess(empty -> {
+          new TaskTest().createModelExample(2, vertx, testContext).onSuccess(taskToUpdate -> {
+            testContext.assertComplete(service.updateTask(id, taskToUpdate))
+                .onSuccess(updatedTask -> testContext.verify(() -> {
 
-                  testContext.assertFailure(service.retrieveTask(id)).onFailure(handler -> testContext.completeNow());
+                  taskToUpdate.id = createdTask.id;
+                  taskToUpdate._creationTs = createdTask._creationTs;
+                  taskToUpdate._lastUpdateTs = updatedTask._lastUpdateTs;
+                  assertThat(updatedTask).isEqualTo(taskToUpdate);
 
-                });
+                  final var taskToMerge = new Task();
+                  taskToMerge.attributes = new JsonObject().put("newKey2", "value2");
+                  testContext.assertComplete(service.mergeTask(id, taskToMerge))
+                      .onSuccess(mergedTask -> testContext.verify(() -> {
 
-              }));
+                        taskToUpdate._lastUpdateTs = mergedTask._lastUpdateTs;
+                        taskToUpdate.attributes.put("newKey2", "value2");
+                        assertThat(mergedTask).isEqualTo(taskToUpdate);
+                        testContext.assertComplete(service.deleteTask(id)).onSuccess(empty -> {
 
+                          testContext.assertFailure(service.retrieveTask(id))
+                              .onFailure(handler -> testContext.completeNow());
+
+                        });
+
+                      }));
+
+                }));
+          });
         }));
 
       });
@@ -321,7 +333,7 @@ public abstract class WeNetTaskManagerTestCase {
                             .onSuccess(retrieve2 -> testContext.verify(() -> {
 
                               assertThat(retrieve2.transactions).isNotEmpty();
-                              var transaction2 = retrieve2.transactions.get(0);
+                              final var transaction2 = retrieve2.transactions.get(0);
                               assertThat(transaction2.messages).isNotEmpty().contains(addedMessage);
                               testContext.assertComplete(service.deleteTask(addedTransaction.taskId))
                                   .onSuccess(empty -> testContext.completeNow());

@@ -118,7 +118,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
 
     }
     final var createTransaction = new TaskTransaction();
-    createTransaction.label = "CREATED_TASK";
+    createTransaction.label = "CREATE_TASK";
     createTransaction.actioneerId = source.requesterId;
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.similarTo(source))
         .and(TaskPredicates.attributesSimilarTo(new JsonObject().put("unanswered", userIds)))
@@ -633,7 +633,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
 
     }
     final var createTransaction = new TaskTransaction();
-    createTransaction.label = "CREATED_TASK";
+    createTransaction.label = "CREATE_TASK";
     createTransaction.actioneerId = source.requesterId;
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.similarTo(source))
         .and(TaskPredicates.attributesSimilarTo(new JsonObject().put("unanswered", userIds)))
