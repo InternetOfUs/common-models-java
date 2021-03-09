@@ -93,23 +93,49 @@ public abstract class WeNetProfileManagerTestCase {
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldCreateRetrieveAndDeleteProfile(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldCreateRetrieveUpdateAndDeleteProfile(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var service = WeNetProfileManager.createProxy(vertx);
-    testContext.assertComplete(service.createProfile(new WeNetUserProfile())).onSuccess(create -> {
+    new WeNetUserProfileTest().createModelExample(1, vertx, testContext).onSuccess(profile1 -> {
 
-      final var id = create.id;
-      testContext.assertComplete(service.retrieveProfile(id)).onSuccess(retrieve -> testContext.verify(() -> {
+      new WeNetUserProfileTest().createModelExample(2, vertx, testContext).onSuccess(profile2 -> {
 
-        assertThat(create).isEqualTo(retrieve);
-        testContext.assertComplete(service.deleteProfile(id)).onSuccess(empty -> {
+        profile2.norms = null;
+        profile2.plannedActivities = null;
+        profile2.relevantLocations = null;
+        final var service = WeNetProfileManager.createProxy(vertx);
+        testContext.assertComplete(service.createProfile(profile1)).onSuccess(created -> {
 
-          testContext.assertFailure(service.retrieveProfile(id)).onFailure(handler -> testContext.completeNow());
+          final var id = created.id;
+          testContext.assertComplete(service.retrieveProfile(id)).onSuccess(retrieved -> testContext.verify(() -> {
 
+            assertThat(retrieved).isEqualTo(created);
+
+            profile2.id = created.id;
+            testContext.assertComplete(service.updateProfile(profile2)).onSuccess(updated -> testContext.verify(() -> {
+
+              assertThat(updated._lastUpdateTs).isGreaterThanOrEqualTo(created._lastUpdateTs);
+              profile2._creationTs = updated._creationTs;
+              profile2._lastUpdateTs = updated._lastUpdateTs;
+              created._lastUpdateTs = updated._lastUpdateTs;
+              assertThat(updated).isEqualTo(profile2).isNotEqualTo(created);
+              testContext.assertComplete(service.retrieveProfile(id)).onSuccess(retrieved2 -> testContext.verify(() -> {
+
+                assertThat(retrieved2).isNotEqualTo(created).isEqualTo(updated);
+                testContext.assertComplete(service.deleteProfile(id)).onSuccess(empty -> {
+
+                  testContext.assertFailure(service.retrieveProfile(id)).onFailure(error -> testContext.verify(() -> {
+
+                    assertThat(error).isExactlyInstanceOf(ServiceException.class);
+                    assertThat(((ServiceException) error).failureCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+                    testContext.completeNow();
+
+                  }));
+                });
+              }));
+            }));
+          }));
         });
-
-      }));
-
+      });
     });
 
   }

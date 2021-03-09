@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import java.util.List;
-
 import eu.internetofus.common.components.CreateUpdateTsDetails;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
@@ -40,6 +38,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import java.util.List;
 
 /**
  * The profile of a WeNet user.
@@ -47,7 +46,38 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "WeNetUserProfile", description = "The profile of a WeNet user.")
-public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable, Mergeable<WeNetUserProfile>, Updateable<WeNetUserProfile> {
+public class WeNetUserProfile extends CreateUpdateTsDetails
+    implements Validable, Mergeable<WeNetUserProfile>, Updateable<WeNetUserProfile> {
+
+  /**
+   * A person whose gender identity matches to female.
+   */
+  public static final String FEMALE = "F";
+
+  /**
+   * A person whose gender identity matches to male.
+   */
+  public static final String MALE = "M";
+
+  /**
+   * A person whose gender is other.
+   */
+  public static final String OTHER = "O";
+
+  /**
+   * A person whose gender is not binary.
+   */
+  public static final String NON_BINARY = "non-binary";
+
+  /**
+   * A person whose not say its gender.
+   */
+  public static final String NOT_SAY = "not-say";
+
+  /**
+   * The possible genders of the user.
+   */
+  public static final String[] GENDERS = { FEMALE, MALE, OTHER, NON_BINARY, NOT_SAY };
 
   /**
    * The identifier of the profile.
@@ -71,7 +101,7 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
    * The gender of the user.
    */
   @Schema(description = "The gender of the user", example = "F")
-  public Gender gender;
+  public String gender;
 
   /**
    * The email of the user.
@@ -170,7 +200,8 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
       this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
       if (this.id != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
+            WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
       }
 
@@ -183,21 +214,31 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
         future = future.compose(mapper -> this.dateOfBirth.validate(codePrefix + ".dateOfBirth", vertx));
 
       }
-      // Gender not verified because is a enumeration and this fix the possible values
+
+      this.gender = Validations.validateNullableStringField(codePrefix, "gender", 25, this.gender, GENDERS);
       this.email = Validations.validateNullableEmailField(codePrefix, "email", this.email);
       this.locale = Validations.validateNullableLocaleField(codePrefix, "locale", this.locale);
-      this.phoneNumber = Validations.validateNullableTelephoneField(codePrefix, "phoneNumber", this.locale, this.phoneNumber);
+      this.phoneNumber = Validations.validateNullableTelephoneField(codePrefix, "phoneNumber", this.locale,
+          this.phoneNumber);
       this.avatar = Validations.validateNullableURLField(codePrefix, "avatar", this.avatar);
       this.nationality = Validations.validateNullableStringField(codePrefix, "nationality", 255, this.nationality);
       this.occupation = Validations.validateNullableStringField(codePrefix, "occupation", 255, this.occupation);
-      future = future.compose(Validations.validate(this.norms, (a, b) -> a.id.equals(b.id), codePrefix + ".norms", vertx));
-      future = future.compose(Validations.validate(this.plannedActivities, (a, b) -> a.id.equals(b.id), codePrefix + ".plannedActivities", vertx));
-      future = future.compose(Validations.validate(this.relevantLocations, (a, b) -> a.id.equals(b.id), codePrefix + ".relevantLocations", vertx));
-      future = future.compose(Validations.validate(this.relationships, (a, b) -> a.equals(b), codePrefix + ".relationships", vertx));
-      future = future.compose(Validations.validate(this.personalBehaviors, (a, b) -> a.equals(b), codePrefix + ".personalBehaviors", vertx));
-      future = future.compose(Validations.validate(this.materials, (a, b) -> a.equals(b), codePrefix + ".materials", vertx));
-      future = future.compose(Validations.validate(this.competences, (a, b) -> a.equals(b), codePrefix + ".competences", vertx));
-      future = future.compose(Validations.validate(this.meanings, (a, b) -> a.equals(b), codePrefix + ".meanings", vertx));
+      future = future
+          .compose(Validations.validate(this.norms, (a, b) -> a.id.equals(b.id), codePrefix + ".norms", vertx));
+      future = future.compose(Validations.validate(this.plannedActivities, (a, b) -> a.id.equals(b.id),
+          codePrefix + ".plannedActivities", vertx));
+      future = future.compose(Validations.validate(this.relevantLocations, (a, b) -> a.id.equals(b.id),
+          codePrefix + ".relevantLocations", vertx));
+      future = future.compose(
+          Validations.validate(this.relationships, (a, b) -> a.equals(b), codePrefix + ".relationships", vertx));
+      future = future.compose(Validations.validate(this.personalBehaviors, (a, b) -> a.equals(b),
+          codePrefix + ".personalBehaviors", vertx));
+      future = future
+          .compose(Validations.validate(this.materials, (a, b) -> a.equals(b), codePrefix + ".materials", vertx));
+      future = future
+          .compose(Validations.validate(this.competences, (a, b) -> a.equals(b), codePrefix + ".competences", vertx));
+      future = future
+          .compose(Validations.validate(this.meanings, (a, b) -> a.equals(b), codePrefix + ".meanings", vertx));
 
       promise.complete();
 
@@ -267,37 +308,46 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
 
       future = future.compose(Validations.validateChain(codePrefix, vertx));
 
-      future = future.compose(Merges.mergeField(this.name, source.name, codePrefix + ".name", vertx, (model, mergedName) -> model.name = mergedName));
+      future = future.compose(Merges.mergeField(this.name, source.name, codePrefix + ".name", vertx,
+          (model, mergedName) -> model.name = mergedName));
 
-      future = future.compose(Merges.mergeField(this.dateOfBirth, source.dateOfBirth, codePrefix + ".dateOfBirth", vertx, (model, mergedDateOfBirth) -> model.dateOfBirth = (AliveBirthDate) mergedDateOfBirth));
+      future = future.compose(Merges.mergeField(this.dateOfBirth, source.dateOfBirth, codePrefix + ".dateOfBirth",
+          vertx, (model, mergedDateOfBirth) -> model.dateOfBirth = (AliveBirthDate) mergedDateOfBirth));
 
-      future = future.compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
-        model.norms = mergedNorms;
-      }));
+      future = future
+          .compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
+            model.norms = mergedNorms;
+          }));
 
-      future = future.compose(Merges.mergePlannedActivities(this.plannedActivities, source.plannedActivities, codePrefix + ".plannedActivities", vertx, (model, mergedPlannedActivities) -> {
-        merged.plannedActivities = mergedPlannedActivities;
-      }));
+      future = future.compose(Merges.mergePlannedActivities(this.plannedActivities, source.plannedActivities,
+          codePrefix + ".plannedActivities", vertx, (model, mergedPlannedActivities) -> {
+            merged.plannedActivities = mergedPlannedActivities;
+          }));
 
-      future = future.compose(Merges.mergeRelevantLocations(this.relevantLocations, source.relevantLocations, codePrefix + ".relevantLocations", vertx, (model, mergedRelevantLocations) -> {
-        model.relevantLocations = mergedRelevantLocations;
-      }));
+      future = future.compose(Merges.mergeRelevantLocations(this.relevantLocations, source.relevantLocations,
+          codePrefix + ".relevantLocations", vertx, (model, mergedRelevantLocations) -> {
+            model.relevantLocations = mergedRelevantLocations;
+          }));
 
-      future = future.compose(Merges.mergeRoutines(this.personalBehaviors, source.personalBehaviors, codePrefix + ".personalBehaviors", vertx, (model, mergedPersonalBehaviors) -> {
-        model.personalBehaviors = mergedPersonalBehaviors;
-      }));
+      future = future.compose(Merges.mergeRoutines(this.personalBehaviors, source.personalBehaviors,
+          codePrefix + ".personalBehaviors", vertx, (model, mergedPersonalBehaviors) -> {
+            model.personalBehaviors = mergedPersonalBehaviors;
+          }));
 
-      future = future.compose(Merges.mergeMaterials(this.materials, source.materials, codePrefix + ".materials", vertx, (model, mergedMaterials) -> {
-        model.materials = mergedMaterials;
-      }));
+      future = future.compose(Merges.mergeMaterials(this.materials, source.materials, codePrefix + ".materials", vertx,
+          (model, mergedMaterials) -> {
+            model.materials = mergedMaterials;
+          }));
 
-      future = future.compose(Merges.mergeCompetences(this.competences, source.competences, codePrefix + ".competences", vertx, (model, mergedCompetences) -> {
-        model.competences = mergedCompetences;
-      }));
+      future = future.compose(Merges.mergeCompetences(this.competences, source.competences, codePrefix + ".competences",
+          vertx, (model, mergedCompetences) -> {
+            model.competences = mergedCompetences;
+          }));
 
-      future = future.compose(Merges.mergeMeanings(this.meanings, source.meanings, codePrefix + ".meanings", vertx, (model, mergedMeanings) -> {
-        model.meanings = mergedMeanings;
-      }));
+      future = future.compose(Merges.mergeMeanings(this.meanings, source.meanings, codePrefix + ".meanings", vertx,
+          (model, mergedMeanings) -> {
+            model.meanings = mergedMeanings;
+          }));
 
       promise.complete(merged);
 

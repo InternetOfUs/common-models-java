@@ -176,4 +176,15 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void updateProfile(@NotNull final String id, @NotNull final JsonObject profile,
+      @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.put(profile, "/profiles", id).onComplete(handler);
+
+  }
+
 }

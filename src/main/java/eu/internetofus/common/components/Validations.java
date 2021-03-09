@@ -26,6 +26,11 @@
 
 package eu.internetofus.common.components;
 
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -34,16 +39,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.validator.routines.EmailValidator;
-
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
-
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * Generic methods to validate the common fields of the models.
@@ -57,31 +54,45 @@ public interface Validations {
   /**
    * Verify a string value that can be null.
    *
-   * @param codePrefix the prefix of the code to use for the error message.
-   * @param fieldName  name of the checking field.
-   * @param maxSize    maximum size of the string.
-   * @param value      to verify.
+   * @param codePrefix     the prefix of the code to use for the error message.
+   * @param fieldName      name of the checking field.
+   * @param maxSize        maximum size of the string.
+   * @param value          to verify.
+   * @param possibleValues values that can have the value.
    *
    * @return the verified value.
    *
    * @throws ValidationErrorException If the value is not a valid string.
    */
-  static String validateNullableStringField(final String codePrefix, final String fieldName, final int maxSize, final String value) throws ValidationErrorException {
+  static String validateNullableStringField(final String codePrefix, final String fieldName, final int maxSize,
+      final String value, final String... possibleValues) throws ValidationErrorException {
 
     if (value != null) {
 
-      final var trimmedValue = value.trim();
-      if (trimmedValue.length() == 0) {
+      final var trimedValue = value.trim();
+      if (trimedValue.length() == 0) {
 
         return null;
 
-      } else if (trimmedValue.length() > maxSize) {
+      } else if (trimedValue.length() > maxSize) {
 
-        throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + trimmedValue + "' is too large. The maximum length is '" + maxSize + "'.");
+        throw new ValidationErrorException(codePrefix + "." + fieldName,
+            "The '" + trimedValue + "' is too large. The maximum length is '" + maxSize + "'.");
 
       } else {
 
-        return trimmedValue;
+        if (possibleValues != null && possibleValues.length > 0) {
+
+          if (!Arrays.stream(possibleValues).anyMatch(element -> trimedValue.equals(element))) {
+
+            throw new ValidationErrorException(codePrefix + "." + fieldName,
+                "'" + trimedValue + "' is not a valid value for the field '" + fieldName
+                    + "', because it expects any of '" + Arrays.toString(possibleValues) + "'.");
+
+          }
+        }
+
+        return trimedValue;
       }
 
     } else {
@@ -102,7 +113,8 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid list of strings.
    */
-  static List<String> validateNullableListStringField(final String codePrefix, final String fieldName, final int maxSize, final List<String> values) throws ValidationErrorException {
+  static List<String> validateNullableListStringField(final String codePrefix, final String fieldName,
+      final int maxSize, final List<String> values) throws ValidationErrorException {
 
     if (values == null || values.isEmpty()) {
 
@@ -114,7 +126,8 @@ public interface Validations {
       final var max = values.size();
       for (var index = 0; index < max; index++) {
 
-        final var value = Validations.validateNullableStringField(codePrefix, fieldName + "[" + index + "]", maxSize, values.get(index));
+        final var value = Validations.validateNullableStringField(codePrefix, fieldName + "[" + index + "]", maxSize,
+            values.get(index));
         if (value != null) {
 
           validValues.add(value);
@@ -139,21 +152,15 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid string.
    */
-  static String validateStringField(final String codePrefix, final String fieldName, final int maxSize, final String value, final String... possibleValues) throws ValidationErrorException {
+  static String validateStringField(final String codePrefix, final String fieldName, final int maxSize,
+      final String value, final String... possibleValues) throws ValidationErrorException {
 
-    final var trimedValue = validateNullableStringField(codePrefix, fieldName, maxSize, value);
+    final var trimedValue = validateNullableStringField(codePrefix, fieldName, maxSize, value, possibleValues);
     if (trimedValue == null) {
 
-      throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' can not be 'null' or contains an empty value.");
+      throw new ValidationErrorException(codePrefix + "." + fieldName,
+          "The '" + fieldName + "' can not be 'null' or contains an empty value.");
 
-    }
-    if (possibleValues != null && possibleValues.length > 0) {
-
-      if (!Arrays.stream(possibleValues).anyMatch(element -> trimedValue.equals(element))) {
-
-        throw new ValidationErrorException(codePrefix + "." + fieldName, "'" + trimedValue + "' is not a valid value for the field '" + fieldName + "', because it expects any of '" + Arrays.toString(possibleValues) + "'.");
-
-      }
     }
 
     return trimedValue;
@@ -170,14 +177,16 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid email.
    *
-   * @see #validateNullableStringField(String, String, int, String)
+   * @see #validateNullableStringField(String, String, int, String,String[])
    */
-  static String validateNullableEmailField(final String codePrefix, final String fieldName, final String value) throws ValidationErrorException {
+  static String validateNullableEmailField(final String codePrefix, final String fieldName, final String value)
+      throws ValidationErrorException {
 
     final var trimmedValue = validateNullableStringField(codePrefix, fieldName, 255, value);
     if (trimmedValue != null && !EmailValidator.getInstance().isValid(trimmedValue)) {
 
-      throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + trimmedValue + "' is not a valid email address.");
+      throw new ValidationErrorException(codePrefix + "." + fieldName,
+          "The '" + trimmedValue + "' is not a valid email address.");
 
     }
     return trimmedValue;
@@ -194,9 +203,10 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid locale.
    *
-   * @see #validateNullableStringField(String, String, int,String)
+   * @see #validateNullableStringField(String, String, int,String,String[])
    */
-  static String validateNullableLocaleField(final String codePrefix, final String fieldName, final String value) throws ValidationErrorException {
+  static String validateNullableLocaleField(final String codePrefix, final String fieldName, final String value)
+      throws ValidationErrorException {
 
     final var validStringValue = validateNullableStringField(codePrefix, fieldName, 50, value);
     if (validStringValue != null) {
@@ -227,9 +237,10 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid telephone.
    *
-   * @see #validateNullableStringField(String, String,int, String)
+   * @see #validateNullableStringField(String, String,int, String,String[])
    */
-  static String validateNullableTelephoneField(final String codePrefix, final String fieldName, final String locale, final String value) throws ValidationErrorException {
+  static String validateNullableTelephoneField(final String codePrefix, final String fieldName, final String locale,
+      final String value) throws ValidationErrorException {
 
     final var validStringValue = validateNullableStringField(codePrefix, fieldName, 50, value);
     if (validStringValue != null) {
@@ -246,7 +257,8 @@ public interface Validations {
         final var number = phoneUtil.parse(validStringValue, defaultRegion);
         if (!phoneUtil.isValidNumber(number)) {
 
-          throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + validStringValue + "' is not a valid telephone number");
+          throw new ValidationErrorException(codePrefix + "." + fieldName,
+              "The '" + validStringValue + "' is not a valid telephone number");
         }
 
         return phoneUtil.format(number, PhoneNumberFormat.INTERNATIONAL);
@@ -276,9 +288,10 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid URL.
    *
-   * @see #validateNullableStringField(String, String,int, String)
+   * @see #validateNullableStringField(String, String,int, String,String[])
    */
-  static String validateNullableURLField(final String codePrefix, final String fieldName, final String value) throws ValidationErrorException {
+  static String validateNullableURLField(final String codePrefix, final String fieldName, final String value)
+      throws ValidationErrorException {
 
     var validStringValue = validateNullableStringField(codePrefix, fieldName, 255, value);
     if (validStringValue != null) {
@@ -310,7 +323,8 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid date.
    */
-  static String validateNullableStringDateField(final String codePrefix, final String fieldName, final DateTimeFormatter format, final String value) throws ValidationErrorException {
+  static String validateNullableStringDateField(final String codePrefix, final String fieldName,
+      final DateTimeFormatter format, final String value) throws ValidationErrorException {
 
     var validStringValue = validateNullableStringField(codePrefix, fieldName, 255, value);
     if (validStringValue != null) {
@@ -334,18 +348,21 @@ public interface Validations {
    * Validate a fields that contains a list of models.
    *
    * @param models     to validate.
-   * @param predicate  used to compare if two models are equals, to check if they are duplicated.
+   * @param predicate  used to compare if two models are equals, to check if they
+   *                   are duplicated.
    * @param codePrefix the prefix of the code to use for the error message.
    * @param vertx      the event bus infrastructure to use.
    *
    * @param <T>        type of model to validate.
    *
    *
-   * @return the function that can be composed with the future that is validating the model of the filed.
+   * @return the function that can be composed with the future that is validating
+   *         the model of the filed.
    *
    * @see ValidationErrorException
    */
-  static <T extends Validable> Function<Void, Future<Void>> validate(final List<T> models, final BiPredicate<T, T> predicate, final String codePrefix, final Vertx vertx) {
+  static <T extends Validable> Function<Void, Future<Void>> validate(final List<T> models,
+      final BiPredicate<T, T> predicate, final String codePrefix, final Vertx vertx) {
 
     return mapper -> {
       final Promise<Void> promise = Promise.promise();
@@ -372,7 +389,8 @@ public interface Validations {
                 final var element = models.get(firstIndex);
                 if (predicate.test(element, model)) {
 
-                  return Future.failedFuture(new ValidationErrorException(modelPrefix, "This model is already defined at '" + firstIndex + "'."));
+                  return Future.failedFuture(new ValidationErrorException(modelPrefix,
+                      "This model is already defined at '" + firstIndex + "'."));
 
                 }
               }
@@ -404,13 +422,15 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid time stamp.
    */
-  static Long validateTimeStamp(final String codePrefix, final String fieldName, final Long value, final boolean nullable) throws ValidationErrorException {
+  static Long validateTimeStamp(final String codePrefix, final String fieldName, final Long value,
+      final boolean nullable) throws ValidationErrorException {
 
     if (value != null) {
 
       if (value < 0) {
 
-        throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + value + "' is not valid time stamp because is less than '0'.");
+        throw new ValidationErrorException(codePrefix + "." + fieldName,
+            "The '" + value + "' is not valid time stamp because is less than '0'.");
 
       }
 
@@ -429,10 +449,10 @@ public interface Validations {
    * @param fieldName  name of the checking field.
    * @param value      to verify.
    * @param nullable   is {@code true} if the value can be {@code null}.
-   * @param minValue   minimum value, inclusive, of the range the value can be defined, or {@code null} if not have
-   *                   minimum.
-   * @param maxValue   maximum value, inclusive, of the range the value can be defined, or {@code null} if not have
-   *                   maximum.
+   * @param minValue   minimum value, inclusive, of the range the value can be
+   *                   defined, or {@code null} if not have minimum.
+   * @param maxValue   maximum value, inclusive, of the range the value can be
+   *                   defined, or {@code null} if not have maximum.
    *
    * @return the valid time stamp value.
    *
@@ -440,17 +460,20 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid time stamp.
    */
-  static <T extends Number> T validateNumberOnRange(final String codePrefix, final String fieldName, final T value, final boolean nullable, final T minValue, final T maxValue) throws ValidationErrorException {
+  static <T extends Number> T validateNumberOnRange(final String codePrefix, final String fieldName, final T value,
+      final boolean nullable, final T minValue, final T maxValue) throws ValidationErrorException {
 
     if (value != null) {
 
       if (minValue != null && value.doubleValue() < minValue.doubleValue()) {
 
-        throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + value + "' is not valid because it is less than '" + minValue + "'.");
+        throw new ValidationErrorException(codePrefix + "." + fieldName,
+            "The '" + value + "' is not valid because it is less than '" + minValue + "'.");
 
       } else if (maxValue != null && value.doubleValue() > maxValue.doubleValue()) {
 
-        throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + value + "' is not valid because it is greather than '" + maxValue + "'.");
+        throw new ValidationErrorException(codePrefix + "." + fieldName,
+            "The '" + value + "' is not valid because it is greather than '" + maxValue + "'.");
       }
 
     } else if (!nullable) {
@@ -475,7 +498,8 @@ public interface Validations {
    *
    * @return the mapper that will check the identifier.
    */
-  static <T> Future<Void> composeValidateId(final Future<Void> future, final String codePrefix, final String fieldName, final String id, final boolean exist, final Function<String, Future<T>> searcher) {
+  static <T> Future<Void> composeValidateId(final Future<Void> future, final String codePrefix, final String fieldName,
+      final String id, final boolean exist, final Function<String, Future<T>> searcher) {
 
     return future.compose(map -> {
 
@@ -486,7 +510,8 @@ public interface Validations {
 
           if (exist) {
 
-            promise.fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' '" + id + "' is not defined."));
+            promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
+                "The '" + fieldName + "' '" + id + "' is not defined."));
 
           } else {
 
@@ -499,7 +524,8 @@ public interface Validations {
 
         } else {
 
-          promise.fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' '" + id + "' has already defined."));
+          promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
+              "The '" + fieldName + "' '" + id + "' has already defined."));
         }
 
       });
@@ -518,7 +544,8 @@ public interface Validations {
    *
    * @param <T>        type of {@link Validable} model to validate.
    *
-   * @return the mapper function that can validate teh model received from the future chain.
+   * @return the mapper function that can validate teh model received from the
+   *         future chain.
    *
    * @see Future#compose(Function)
    */

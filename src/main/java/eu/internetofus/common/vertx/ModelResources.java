@@ -315,6 +315,27 @@ public interface ModelResources {
   static public <T extends Model & Mergeable<T>, I> void merge(@NotNull final Vertx vertx,
       @NotNull final ModelContext<T, I> model, @NotNull final ServiceContext context, @NotNull final Runnable success) {
 
+    merge(vertx, model, context, true, success);
+
+  }
+
+  /**
+   * Merge a source model with the target one.
+   *
+   * @param vertx     event bus to use.
+   * @param model     to merge.
+   * @param context   of the request.
+   * @param nonEquals is {@code true} if the model can not be equals to the
+   *                  original.
+   * @param success   component to call if the model is valid.
+   *
+   * @param <T>       type of model to merge.
+   * @param <I>       type of the model identifier.
+   */
+  static public <T extends Model & Mergeable<T>, I> void merge(@NotNull final Vertx vertx,
+      @NotNull final ModelContext<T, I> model, @NotNull final ServiceContext context, final boolean nonEquals,
+      @NotNull final Runnable success) {
+
     model.target.merge(model.source, "bad_" + model.name, vertx).onComplete(merge -> {
 
       if (merge.failed()) {
@@ -327,7 +348,7 @@ public interface ModelResources {
       } else {
 
         model.value = merge.result();
-        if (model.target.equals(model.value)) {
+        if (nonEquals && model.target.equals(model.value)) {
 
           Logger.trace("The merged model {} is equals to the original.\n{}", () -> model.value, () -> context);
           ServiceResponseHandlers.responseWithErrorMessage(context.resultHandler, Status.BAD_REQUEST,
@@ -385,11 +406,37 @@ public interface ModelResources {
       @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context,
       @NotNull final Runnable success) {
 
+    mergeModelChain(vertx, value, model, searcher, updater, context, true, success);
+
+  }
+
+  /**
+   * Merge a JSON model to the defined on the DB.
+   *
+   * @param vertx     event bus to use.
+   * @param value     of the model to merge.
+   * @param model     context of the model to merge.
+   * @param searcher  the function used to obtain a model.
+   * @param updater   the function used to update a model.
+   * @param context   of the request.
+   * @param nonEquals is {@code true} if the model can not be equals to the
+   *                  original.
+   * @param success   component to process the merged model.
+   *
+   * @param <T>       type of model to merge.
+   * @param <I>       type of the model identifier.
+   */
+  static public <T extends Model & Mergeable<T>, I> void mergeModelChain(@NotNull final Vertx vertx,
+      final JsonObject value, @NotNull final ModelContext<T, I> model,
+      @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
+      @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context,
+      final boolean nonEquals, @NotNull final Runnable success) {
+
     toModel(value, model, context, () -> {
 
       retrieveModelChain(model, searcher, context, () -> {
 
-        merge(vertx, model, context, () -> updateModelChain(model, updater, context, success));
+        merge(vertx, model, context, nonEquals, () -> updateModelChain(model, updater, context, success));
 
       });
     });
@@ -416,11 +463,36 @@ public interface ModelResources {
       @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context,
       @NotNull final Runnable success) {
 
+    updateModelChain(vertx, value, model, searcher, updater, context, true, success);
+  }
+
+  /**
+   * Update a JSON model to the defined on the DB.
+   *
+   * @param vertx     event bus to use.
+   * @param value     of the model to update.
+   * @param model     context of the model to update.
+   * @param searcher  the function used to obtain a model.
+   * @param updater   the function used to store a model.
+   * @param context   of the request.
+   * @param nonEquals is {@code true} if the model can not be equals to the
+   *                  original.
+   * @param success   component to process the updated model.
+   *
+   * @param <T>       type of model to update.
+   * @param <I>       type of the model identifier.
+   */
+  static public <T extends Model & Updateable<T>, I> void updateModelChain(@NotNull final Vertx vertx,
+      final JsonObject value, @NotNull final ModelContext<T, I> model,
+      @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
+      @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context,
+      final boolean nonEquals, @NotNull final Runnable success) {
+
     toModel(value, model, context, () -> {
 
       retrieveModelChain(model, searcher, context, () -> {
 
-        update(vertx, model, context, () -> updateModelChain(model, updater, context, success));
+        update(vertx, model, context, nonEquals, () -> updateModelChain(model, updater, context, success));
 
       });
     });
@@ -479,6 +551,27 @@ public interface ModelResources {
   static public <T extends Model & Updateable<T>, I> void update(@NotNull final Vertx vertx,
       @NotNull final ModelContext<T, I> model, @NotNull final ServiceContext context, @NotNull final Runnable success) {
 
+    update(vertx, model, context, true, success);
+
+  }
+
+  /**
+   * Update a source model with the target one.
+   *
+   * @param vertx     event bus to use.
+   * @param model     context of the model to update.
+   * @param context   of the request.
+   * @param nonEquals is {@code true} if the model can not be equals to the
+   *                  original.
+   * @param success   component to call if the model is valid.
+   *
+   * @param <T>       type of model to update.
+   * @param <I>       type of the model identifier.
+   */
+  static public <T extends Model & Updateable<T>, I> void update(@NotNull final Vertx vertx,
+      @NotNull final ModelContext<T, I> model, @NotNull final ServiceContext context, final boolean nonEquals,
+      @NotNull final Runnable success) {
+
     model.target.update(model.source, "bad_" + model.name, vertx).onComplete(update -> {
 
       if (update.failed()) {
@@ -490,7 +583,7 @@ public interface ModelResources {
       } else {
 
         model.value = update.result();
-        if (model.target.equals(model.value)) {
+        if (nonEquals && model.target.equals(model.value)) {
 
           Logger.trace("The updated model {} is equals to the original.\n{}", model, context);
           ServiceResponseHandlers.responseWithErrorMessage(context.resultHandler, Status.BAD_REQUEST,
@@ -547,7 +640,7 @@ public interface ModelResources {
 
     retrieveModelChain(model, searcher, context, () -> {
 
-      final List<E> field = getField.apply(model.target);
+      final var field = getField.apply(model.target);
       JsonArray array = null;
       if (field == null) {
 

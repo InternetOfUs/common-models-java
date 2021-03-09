@@ -114,7 +114,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.id = null;
     model.name = new UserNameTest().createModelExample(index);
     model.dateOfBirth = new AliveBirthDateTest().createModelExample(index);
-    model.gender = Gender.F;
+    model.gender = WeNetUserProfile.FEMALE;
     model.email = "user" + index + "@internetofus.eu";
     model.phoneNumber = "+34 987 65 43 " + (10 + index % 90);
     model.locale = "ca_AD";
@@ -1434,11 +1434,11 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     assertIsValid(target, vertx, testContext, () -> {
 
       final var source = new WeNetUserProfile();
-      source.gender = Gender.M;
+      source.gender = WeNetUserProfile.MALE;
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-        target.gender = Gender.M;
+        target.gender = WeNetUserProfile.MALE;
         assertThat(merged).isEqualTo(target);
 
       });

@@ -308,4 +308,46 @@ public interface WeNetProfileManager {
 
   }
 
+  /**
+   * Update a {@link WeNetUserProfile} in Json format.
+   *
+   * @param id      identifier of the profile to update.
+   * @param profile to update.
+   *
+   * @param handler of the updated profile.
+   */
+  void updateProfile(@NotNull String id, @NotNull JsonObject profile,
+      @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Update a profile.
+   *
+   * @param id      identifier of the profile to update.
+   * @param profile to update.
+   *
+   * @return the future updated profile.
+   */
+  @GenIgnore
+  default Future<WeNetUserProfile> updateProfile(@NotNull final String id, @NotNull final WeNetUserProfile profile) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.updateProfile(id, profile.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), WeNetUserProfile.class);
+
+  }
+
+  /**
+   * Update a profile.
+   *
+   * @param profile to update.
+   *
+   * @return the future updated profile.
+   */
+  @GenIgnore
+  default Future<WeNetUserProfile> updateProfile(@NotNull final WeNetUserProfile profile) {
+
+    return this.updateProfile(profile.id, profile);
+
+  }
+
 }
