@@ -26,6 +26,7 @@
 
 package eu.internetofus.common.components;
 
+import eu.internetofus.common.components.service.Message;
 import eu.internetofus.common.components.service.MessagePredicates;
 import eu.internetofus.common.components.task_manager.TaskPredicates;
 import eu.internetofus.common.components.task_manager.TaskTransaction;
@@ -34,8 +35,9 @@ import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.UUID;
+import java.util.function.Predicate;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
@@ -109,14 +111,17 @@ public class EchoProtocolITC extends AbstractProtocolITC {
     transaction.label = "echo";
     final var message = UUID.randomUUID().toString();
     transaction.attributes = new JsonObject().put("message", message);
+    final var checkMessages = new ArrayList<Predicate<Message>>();
     final var checkMessage = MessagePredicates.labelIs("echo")
-        .and(MessagePredicates.receiverIs(transaction.actioneerId));
+        .and(MessagePredicates.receiverIs(transaction.actioneerId))
+        .and(MessagePredicates.attributesAre(transaction.attributes));
+    checkMessages.add(checkMessage);
     final var checkTask = TaskPredicates.transactionSizeIs(2)
         .and(TaskPredicates.transactionAt(1,
             TaskTransactionPredicates.similarTo(transaction).and(TaskTransactionPredicates.messagesSizeIs(1))
                 .and(TaskTransactionPredicates.messageAt(0, checkMessage))));
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
-        .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, Arrays.asList(checkMessage)))
+        .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
 
     testContext.assertComplete(future).onComplete(removed -> this.assertSuccessfulCompleted(testContext));

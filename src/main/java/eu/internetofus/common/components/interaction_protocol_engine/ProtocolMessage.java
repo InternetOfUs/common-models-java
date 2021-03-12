@@ -53,25 +53,25 @@ public class ProtocolMessage extends ReflectionModel implements Model, Validable
   /**
    * The identifier of the application that the user has used to send the message.
    */
-  @Schema(description = "The identifier of the application associated to the message.", example = "E34jhg78tbgh")
+  @Schema(description = "The identifier of the application associated to the message.", nullable = true, example = "E34jhg78tbgh")
   public String appId;
 
   /**
    * The identifier of the community where the message will be said.
    */
-  @Schema(description = "The identifier of the community associated to the message.", example = "ceb846439eba-645a-9aaf-4a55-15837028")
+  @Schema(description = "The identifier of the community associated to the message.", nullable = true, example = "ceb846439eba-645a-9aaf-4a55-15837028")
   public String communityId;
 
   /**
    * The identifier of the task that the message is related.
    */
-  @Schema(description = "The identifier of the task associated to the message.", example = "b129e5509c9bb79")
+  @Schema(description = "The identifier of the task associated to the message.", nullable = true, example = "b129e5509c9bb79")
   public String taskId;
 
   /**
    * The identifier of the task that the message is related.
    */
-  @Schema(description = "The identifier of the transaction associated to the message.", example = "b129e5509c9bb79")
+  @Schema(description = "The identifier of the transaction associated to the message.", nullable = true, example = "b129e5509c9bb79")
   public String transactionId;
 
   /**
@@ -95,7 +95,7 @@ public class ProtocolMessage extends ReflectionModel implements Model, Validable
   /**
    * The content of the message.
    */
-  @Schema(description = "The content of the message.", example = "Hi!", type = "object", implementation = Object.class)
+  @Schema(description = "The content of the message.", example = "Hi!", type = "object", nullable = true, implementation = Object.class)
   @JsonDeserialize(using = JsonObjectDeserializer.class)
   public JsonObject content;
 
