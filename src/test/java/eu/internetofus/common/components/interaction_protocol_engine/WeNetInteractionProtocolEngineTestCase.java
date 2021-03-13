@@ -29,7 +29,9 @@ package eu.internetofus.common.components.interaction_protocol_engine;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
+import eu.internetofus.common.components.WeNetComponentTestCase;
 import eu.internetofus.common.components.incentive_server.IncentiveTest;
+import eu.internetofus.common.components.incentive_server.WeNetIncentiveServer;
 import eu.internetofus.common.components.task_manager.TaskTest;
 import eu.internetofus.common.components.task_manager.TaskTransactionTest;
 import io.vertx.core.Vertx;
@@ -44,7 +46,18 @@ import org.junit.jupiter.api.Test;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class WeNetInteractionProtocolEngineTestCase {
+public class WeNetInteractionProtocolEngineTestCase extends WeNetComponentTestCase<WeNetInteractionProtocolEngine> {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see WeNetIncentiveServer#createProxy(Vertx)
+   */
+  @Override
+  protected WeNetInteractionProtocolEngine createComponentProxy(final Vertx vertx) {
+
+    return WeNetInteractionProtocolEngine.createProxy(vertx);
+  }
 
   /**
    * Should send message.
@@ -57,7 +70,7 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
 
     new ProtocolMessageTest().createModelExample(1, vertx, testContext).onSuccess(message -> {
 
-      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).sendMessage(message))
+      testContext.assertComplete(this.createComponentProxy(vertx).sendMessage(message))
           .onSuccess(sent -> testContext.verify(() -> {
 
             assertThat(message).isEqualTo(sent);
@@ -80,7 +93,7 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
 
     new IncentiveTest().createModelExample(1, vertx, testContext).onSuccess(incentive -> {
 
-      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).sendIncentive(incentive))
+      testContext.assertComplete(this.createComponentProxy(vertx).sendIncentive(incentive))
           .onSuccess(sent -> testContext.verify(() -> {
 
             assertThat(incentive).isEqualTo(sent);
@@ -103,7 +116,7 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
 
     new TaskTest().createModelExample(1, vertx, testContext).onSuccess(task -> {
 
-      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).createdTask(task))
+      testContext.assertComplete(this.createComponentProxy(vertx).createdTask(task))
           .onSuccess(created -> testContext.verify(() -> {
 
             assertThat(task).isEqualTo(created);
@@ -127,7 +140,7 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
     testContext.assertComplete(new TaskTransactionTest().createModelExample(1, vertx, testContext))
         .onSuccess(taskTransaction -> {
 
-          testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx).doTransaction(taskTransaction))
+          testContext.assertComplete(this.createComponentProxy(vertx).doTransaction(taskTransaction))
               .onSuccess(done -> testContext.verify(() -> {
 
                 assertThat(taskTransaction).isEqualTo(done);
@@ -151,9 +164,7 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
     StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
 
       final var userId = community.members.get(0).userId;
-      testContext
-          .assertComplete(
-              WeNetInteractionProtocolEngine.createProxy(vertx).retrieveCommunityUserState(community.id, userId))
+      testContext.assertComplete(this.createComponentProxy(vertx).retrieveCommunityUserState(community.id, userId))
           .onSuccess(done -> testContext.verify(() -> {
 
             final var state = new State();
@@ -183,8 +194,10 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
       state.communityId = community.id;
       state.taskId = null;
       state.userId = community.members.get(0).userId;
-      testContext.assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx)
-          .mergeCommunityUserState(state.communityId, state.userId, state)).onSuccess(done -> testContext.verify(() -> {
+      testContext
+          .assertComplete(
+              this.createComponentProxy(vertx).mergeCommunityUserState(state.communityId, state.userId, state))
+          .onSuccess(done -> testContext.verify(() -> {
 
             state._creationTs = done._creationTs;
             state._lastUpdateTs = done._lastUpdateTs;
@@ -192,8 +205,8 @@ public abstract class WeNetInteractionProtocolEngineTestCase {
 
             state.attributes.put("newKey", "testContext");
             testContext
-                .assertComplete(WeNetInteractionProtocolEngine.createProxy(vertx)
-                    .mergeCommunityUserState(state.communityId, state.userId, state))
+                .assertComplete(
+                    this.createComponentProxy(vertx).mergeCommunityUserState(state.communityId, state.userId, state))
                 .onSuccess(done2 -> testContext.verify(() -> {
 
                   state._lastUpdateTs = done2._lastUpdateTs;

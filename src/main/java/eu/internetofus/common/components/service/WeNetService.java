@@ -26,9 +26,8 @@
 
 package eu.internetofus.common.components.service;
 
-import javax.validation.constraints.NotNull;
-
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.WeNetComponent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
@@ -40,6 +39,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
+import javax.validation.constraints.NotNull;
 
 /**
  * The class used to interact with the WeNet interaction protocol engine.
@@ -47,7 +47,7 @@ import io.vertx.serviceproxy.ServiceBinder;
  * @author UDT-IA, IIIA-CSIC
  */
 @ProxyGen
-public interface WeNetService {
+public interface WeNetService extends WeNetComponent {
 
   /**
    * The address of this service.
@@ -79,6 +79,15 @@ public interface WeNetService {
         new WeNetServiceClient(client, conf));
 
   }
+
+  /**
+   * {@inheritDoc}
+   *
+   * ATTENTION: You must to maintains this method to guarantee that VertX
+   * generates the code for this method.
+   */
+  @Override
+  void obtainApiUrl(final Handler<AsyncResult<String>> handler);
 
   /**
    * Return an {@link App} in JSON format.

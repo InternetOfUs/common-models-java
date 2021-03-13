@@ -26,9 +26,8 @@
 
 package eu.internetofus.common.components.incentive_server;
 
-import javax.validation.constraints.NotNull;
-
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.WeNetComponent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
@@ -39,6 +38,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
+import javax.validation.constraints.NotNull;
 
 /**
  * The methods necessaries to interact with the interaction server.
@@ -46,7 +46,7 @@ import io.vertx.serviceproxy.ServiceBinder;
  * @author UDT-IA, IIIA-CSIC
  */
 @ProxyGen
-public interface WeNetIncentiveServer {
+public interface WeNetIncentiveServer extends WeNetComponent {
 
   /**
    * The address of this service.
@@ -74,9 +74,19 @@ public interface WeNetIncentiveServer {
    */
   static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-    new ServiceBinder(vertx).setAddress(WeNetIncentiveServer.ADDRESS).register(WeNetIncentiveServer.class, new WeNetIncentiveServerClient(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetIncentiveServer.ADDRESS).register(WeNetIncentiveServer.class,
+        new WeNetIncentiveServerClient(client, conf));
 
   }
+
+  /**
+   * {@inheritDoc}
+   *
+   * ATTENTION: You must to maintains this method to guarantee that VertX
+   * generates the code for this method.
+   */
+  @Override
+  void obtainApiUrl(final Handler<AsyncResult<String>> handler);
 
   /**
    * Update the status of a task.

@@ -27,6 +27,7 @@
 package eu.internetofus.common.components.task_manager;
 
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.WeNetComponent;
 import eu.internetofus.common.components.service.Message;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -46,7 +47,7 @@ import javax.validation.constraints.NotNull;
  * @author UDT-IA, IIIA-CSIC
  */
 @ProxyGen
-public interface WeNetTaskManager {
+public interface WeNetTaskManager extends WeNetComponent {
 
   /**
    * The address of this service.
@@ -107,6 +108,15 @@ public interface WeNetTaskManager {
         new WeNetTaskManagerClient(client, conf));
 
   }
+
+  /**
+   * {@inheritDoc}
+   *
+   * ATTENTION: You must to maintains this method to guarantee that VertX
+   * generates the code for this method.
+   */
+  @Override
+  void obtainApiUrl(final Handler<AsyncResult<String>> handler);
 
   /**
    * Search for a {@link Task} in Json format.

@@ -28,13 +28,12 @@ package eu.internetofus.common.components.social_context_builder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.UUID;
-
-import org.junit.jupiter.api.Test;
-
+import eu.internetofus.common.components.WeNetComponentTestCase;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.junit5.VertxTestContext;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test the {@link WeNetSocialContextBuilder}.
@@ -43,7 +42,18 @@ import io.vertx.junit5.VertxTestContext;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class WeNetSocialContextBuilderTestCase {
+public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<WeNetSocialContextBuilder> {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see WeNetSocialContextBuilder#createProxy(Vertx)
+   */
+  @Override
+  protected WeNetSocialContextBuilder createComponentProxy(final Vertx vertx) {
+
+    return WeNetSocialContextBuilder.createProxy(vertx);
+  }
 
   /**
    * Should retrieve social relations.
@@ -55,12 +65,13 @@ public abstract class WeNetSocialContextBuilderTestCase {
   public void shouldRetrieveSocialRelations(final Vertx vertx, final VertxTestContext testContext) {
 
     final var userId = UUID.randomUUID().toString();
-    testContext.assertComplete(WeNetSocialContextBuilder.createProxy(vertx).retrieveSocialRelations(userId)).onSuccess(relations -> testContext.verify(() -> {
+    testContext.assertComplete(this.createComponentProxy(vertx).retrieveSocialRelations(userId))
+        .onSuccess(relations -> testContext.verify(() -> {
 
-      assertThat(relations).isNotNull();
-      testContext.completeNow();
+          assertThat(relations).isNotNull();
+          testContext.completeNow();
 
-    }));
+        }));
 
   }
 
@@ -76,12 +87,14 @@ public abstract class WeNetSocialContextBuilderTestCase {
     final var userId = UUID.randomUUID().toString();
     final var taskId = UUID.randomUUID().toString();
     final var volunteers = new JsonArray();
-    testContext.assertComplete(WeNetSocialContextBuilder.createProxy(vertx).updatePreferencesForUserOnTask(userId, taskId, volunteers)).onSuccess(updated -> testContext.verify(() -> {
+    testContext
+        .assertComplete(this.createComponentProxy(vertx).updatePreferencesForUserOnTask(userId, taskId, volunteers))
+        .onSuccess(updated -> testContext.verify(() -> {
 
-      assertThat(updated).isNotNull();
-      testContext.completeNow();
+          assertThat(updated).isNotNull();
+          testContext.completeNow();
 
-    }));
+        }));
 
   }
 
@@ -96,12 +109,13 @@ public abstract class WeNetSocialContextBuilderTestCase {
 
     final var userId = UUID.randomUUID().toString();
     final var taskId = UUID.randomUUID().toString();
-    testContext.assertComplete(WeNetSocialContextBuilder.createProxy(vertx).retrieveSocialExplanation(userId, taskId)).onSuccess(relations -> testContext.verify(() -> {
+    testContext.assertComplete(this.createComponentProxy(vertx).retrieveSocialExplanation(userId, taskId))
+        .onSuccess(relations -> testContext.verify(() -> {
 
-      assertThat(relations).isNotNull();
-      testContext.completeNow();
+          assertThat(relations).isNotNull();
+          testContext.completeNow();
 
-    }));
+        }));
 
   }
 

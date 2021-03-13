@@ -24,53 +24,39 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.incentive_server;
+package eu.internetofus.common.components;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import eu.internetofus.common.components.WeNetComponentTestCase;
-import io.vertx.core.Vertx;
-import io.vertx.junit5.VertxTestContext;
-import org.junit.jupiter.api.Test;
+import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 
 /**
- * General test over the classes that implements the
- * {@link WeNetIncentiveServer}.
- *
- * @see WeNetIncentiveServer
+ * A WeNet components that can be interacted with.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetIncentiveServerTestCase extends WeNetComponentTestCase<WeNetIncentiveServer> {
+public interface WeNetComponent {
 
   /**
-   * {@inheritDoc}
+   * Obtain the URL to the API for interact with this component.
    *
-   * @see WeNetIncentiveServer#createProxy(Vertx)
+   * @param handler to inform of the API.
    */
-  @Override
-  protected WeNetIncentiveServer createComponentProxy(final Vertx vertx) {
-
-    return WeNetIncentiveServer.createProxy(vertx);
-  }
+  void obtainApiUrl(final Handler<AsyncResult<String>> handler);
 
   /**
-   * Should update the task status.
+   * Obtain the URL to the API for interact with this component.
    *
-   * @param vertx       that contains the event bus to use.
-   * @param testContext context over the tests.
+   * @return the future URL to the API of this component.
    */
-  @Test
-  public void shouldUpdateTaskStatus(final Vertx vertx, final VertxTestContext testContext) {
+  @GenIgnore
+  default Future<String> obtainApiUrl() {
 
-    final var status = new TaskStatusTest().createModelExample(1);
-    this.createComponentProxy(vertx).updateTaskStatus(status).onSuccess(updated -> testContext.verify(() -> {
-
-      assertThat(updated).isEqualTo(status);
-      testContext.completeNow();
-
-    }));
-
+    final Promise<String> promise = Promise.promise();
+    this.obtainApiUrl(promise);
+    return promise.future();
   }
 
 }

@@ -24,58 +24,43 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
+package eu.internetofus.common.components;
 
-import eu.internetofus.common.components.WeNetComponentTestCase;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test the {@link WeNetService}.
+ * General test over the classes that implements the {@link WeNetComponent}.
  *
- * @see WeNetService
+ * @param <T> type of component to test.
+ *
+ * @see WeNetComponent
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetServiceTestCase extends WeNetComponentTestCase<WeNetService> {
+public abstract class WeNetComponentTestCase<T extends WeNetComponent> {
 
   /**
-   * {@inheritDoc}
+   * Create the component to use in the test.
    *
-   * @see WeNetService#createProxy(Vertx)
+   * @param vertx that contains the event bus to use.
+   *
+   * @return the created component.
    */
-  @Override
-  protected WeNetService createComponentProxy(final Vertx vertx) {
-
-    return WeNetService.createProxy(vertx);
-  }
+  protected abstract T createComponentProxy(final Vertx vertx);
 
   /**
-   * Should not retrieve undefined app.
+   * Should obtain the the task status.
    *
    * @param vertx       that contains the event bus to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldNotRetrieveUndefinedApp(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldObtainApiUrl(final Vertx vertx, final VertxTestContext testContext) {
 
-    testContext.assertFailure(this.createComponentProxy(vertx).retrieveApp("undefined-app-identifier"))
-        .onFailure(handler -> testContext.completeNow());
-
-  }
-
-  /**
-   * Should not retrieve undefined app.
-   *
-   * @param vertx       that contains the event bus to use.
-   * @param testContext context over the tests.
-   */
-  @Test
-  public void shouldNotRetrieveUserFromUndefinedApp(final Vertx vertx, final VertxTestContext testContext) {
-
-    testContext.assertFailure(this.createComponentProxy(vertx).retrieveAppUserIds("undefined-app-identifier"))
-        .onFailure(handler -> testContext.completeNow());
+    testContext.assertComplete(this.createComponentProxy(vertx).obtainApiUrl())
+        .onSuccess(apiUrl -> testContext.completeNow());
 
   }
 

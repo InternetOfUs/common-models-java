@@ -27,6 +27,7 @@
 package eu.internetofus.common.components.interaction_protocol_engine;
 
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.WeNetComponent;
 import eu.internetofus.common.components.incentive_server.Incentive;
 import eu.internetofus.common.components.task_manager.Task;
 import eu.internetofus.common.components.task_manager.TaskTransaction;
@@ -48,7 +49,7 @@ import javax.validation.constraints.NotNull;
  * @author UDT-IA, IIIA-CSIC
  */
 @ProxyGen
-public interface WeNetInteractionProtocolEngine {
+public interface WeNetInteractionProtocolEngine extends WeNetComponent {
 
   /**
    * The address of this service.
@@ -80,6 +81,15 @@ public interface WeNetInteractionProtocolEngine {
         .register(WeNetInteractionProtocolEngine.class, new WeNetInteractionProtocolEngineClient(client, conf));
 
   }
+
+  /**
+   * {@inheritDoc}
+   *
+   * ATTENTION: You must to maintains this method to guarantee that VertX
+   * generates the code for this method.
+   */
+  @Override
+  void obtainApiUrl(final Handler<AsyncResult<String>> handler);
 
   /**
    * Send a message to be processed.

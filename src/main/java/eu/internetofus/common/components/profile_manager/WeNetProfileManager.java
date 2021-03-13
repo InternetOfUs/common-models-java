@@ -27,6 +27,7 @@
 package eu.internetofus.common.components.profile_manager;
 
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.WeNetComponent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
@@ -45,7 +46,7 @@ import javax.validation.constraints.NotNull;
  * @author UDT-IA, IIIA-CSIC
  */
 @ProxyGen
-public interface WeNetProfileManager {
+public interface WeNetProfileManager extends WeNetComponent {
 
   /**
    * The address of this service.
@@ -77,6 +78,15 @@ public interface WeNetProfileManager {
         new WeNetProfileManagerClient(client, conf));
 
   }
+
+  /**
+   * {@inheritDoc}
+   *
+   * ATTENTION: You must to maintains this method to guarantee that VertX
+   * generates the code for this method.
+   */
+  @Override
+  void obtainApiUrl(final Handler<AsyncResult<String>> handler);
 
   /**
    * Create a {@link WeNetUserProfile} in Json format.

@@ -26,11 +26,8 @@
 
 package eu.internetofus.common.components.social_context_builder;
 
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
-
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.WeNetComponent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
@@ -42,6 +39,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
+import java.util.List;
+import javax.validation.constraints.NotNull;
 
 /**
  * The class used to interact with the WeNet social context builder.
@@ -49,7 +48,7 @@ import io.vertx.serviceproxy.ServiceBinder;
  * @author UDT-IA, IIIA-CSIC
  */
 @ProxyGen
-public interface WeNetSocialContextBuilder {
+public interface WeNetSocialContextBuilder extends WeNetComponent {
 
   /**
    * The address of this service.
@@ -69,6 +68,15 @@ public interface WeNetSocialContextBuilder {
   }
 
   /**
+   * {@inheritDoc}
+   *
+   * ATTENTION: You must to maintains this method to guarantee that VertX
+   * generates the code for this method.
+   */
+  @Override
+  void obtainApiUrl(final Handler<AsyncResult<String>> handler);
+
+  /**
    * Register this service.
    *
    * @param vertx  that contains the event bus to use.
@@ -77,7 +85,8 @@ public interface WeNetSocialContextBuilder {
    */
   static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-    new ServiceBinder(vertx).setAddress(WeNetSocialContextBuilder.ADDRESS).register(WeNetSocialContextBuilder.class, new WeNetSocialContextBuilderClient(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetSocialContextBuilder.ADDRESS).register(WeNetSocialContextBuilder.class,
+        new WeNetSocialContextBuilderClient(client, conf));
 
   }
 
@@ -113,7 +122,8 @@ public interface WeNetSocialContextBuilder {
    * @param volunteers the identifier of the volunteers of the task.
    * @param handler    for the user relations.
    */
-  void updatePreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId, @NotNull JsonArray volunteers, @NotNull Handler<AsyncResult<JsonArray>> handler);
+  void updatePreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId, @NotNull JsonArray volunteers,
+      @NotNull Handler<AsyncResult<JsonArray>> handler);
 
   /**
    * Update the preferences of an user.
@@ -125,7 +135,8 @@ public interface WeNetSocialContextBuilder {
    * @return the future with the user relations.
    */
   @GenIgnore
-  default Future<JsonArray> updatePreferencesForUserOnTask(@NotNull final String userId, @NotNull final String taskId, @NotNull final JsonArray volunteers) {
+  default Future<JsonArray> updatePreferencesForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull final JsonArray volunteers) {
 
     final Promise<JsonArray> promise = Promise.promise();
     this.updatePreferencesForUserOnTask(userId, taskId, volunteers, promise);
@@ -134,7 +145,8 @@ public interface WeNetSocialContextBuilder {
   }
 
   /**
-   * Return the social explanation why an user is selected to be a possible volunteer.
+   * Return the social explanation why an user is selected to be a possible
+   * volunteer.
    *
    * @param userId identifier of the user.
    * @param taskId identifier of the task the user is involved.
@@ -142,7 +154,8 @@ public interface WeNetSocialContextBuilder {
    * @return the future with the retrieved social explanation.
    */
   @GenIgnore
-  default Future<SocialExplanation> retrieveSocialExplanation(@NotNull final String userId, @NotNull final String taskId) {
+  default Future<SocialExplanation> retrieveSocialExplanation(@NotNull final String userId,
+      @NotNull final String taskId) {
 
     final Promise<JsonObject> promise = Promise.promise();
     this.retrieveSocialExplanation(userId, taskId, promise);
@@ -151,12 +164,14 @@ public interface WeNetSocialContextBuilder {
   }
 
   /**
-   * Return the social explanation object why an user is selected to be a possible volunteer.
+   * Return the social explanation object why an user is selected to be a possible
+   * volunteer.
    *
    * @param userId  identifier of the user.
    * @param taskId  identifier of the task the user is involved.
    * @param handler for the retrieved social explanation.
    */
-  void retrieveSocialExplanation(@NotNull final String userId, @NotNull final String taskId, @NotNull Handler<AsyncResult<JsonObject>> handler);
+  void retrieveSocialExplanation(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull Handler<AsyncResult<JsonObject>> handler);
 
 }

@@ -26,10 +26,6 @@
 
 package eu.internetofus.common.components.incentive_server;
 
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
-
 import eu.internetofus.common.components.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -42,6 +38,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
+import java.util.List;
+import javax.validation.constraints.NotNull;
 
 /**
  * The services to interact with the {@link WeNetIncentiveServerSimulator}.

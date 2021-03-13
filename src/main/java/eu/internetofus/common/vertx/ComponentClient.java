@@ -28,6 +28,7 @@ package eu.internetofus.common.vertx;
 
 import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.Model;
+import eu.internetofus.common.components.WeNetComponent;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -53,7 +54,7 @@ import org.tinylog.Logger;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class ComponentClient {
+public class ComponentClient implements WeNetComponent {
 
   /**
    * The pool of web clients.
@@ -75,6 +76,18 @@ public class ComponentClient {
 
     this.client = client;
     this.componentURL = componentURL;
+
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see #componentURL
+   */
+  @Override
+  public void obtainApiUrl(final Handler<AsyncResult<String>> handler) {
+
+    handler.handle(Future.succeededFuture(this.componentURL));
 
   }
 
