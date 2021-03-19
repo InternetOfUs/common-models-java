@@ -200,6 +200,9 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
     if (source != null) {
 
       final var merged = new Task();
+      merged._creationTs = this._creationTs;
+      merged._lastUpdateTs = this._lastUpdateTs;
+
       merged.taskTypeId = source.taskTypeId;
       if (merged.taskTypeId == null) {
 
@@ -274,8 +277,6 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       future = future.map(mergedValidatedModel -> {
 
         mergedValidatedModel.id = this.id;
-        mergedValidatedModel._creationTs = this._creationTs;
-        mergedValidatedModel._lastUpdateTs = this._lastUpdateTs;
         return mergedValidatedModel;
       });
 
@@ -298,6 +299,9 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
     if (source != null) {
 
       final var updated = new Task();
+      updated._creationTs = this._creationTs;
+      updated._lastUpdateTs = this._lastUpdateTs;
+
       updated.taskTypeId = source.taskTypeId;
       updated.requesterId = source.requesterId;
       updated.appId = source.appId;
@@ -314,8 +318,6 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       future = future.map(updatedValidatedModel -> {
 
         updatedValidatedModel.id = this.id;
-        updatedValidatedModel._creationTs = this._creationTs;
-        updatedValidatedModel._lastUpdateTs = this._lastUpdateTs;
         return updatedValidatedModel;
       });
 

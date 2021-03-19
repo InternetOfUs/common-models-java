@@ -26,9 +26,6 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import java.util.List;
-import java.util.UUID;
-
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
@@ -42,6 +39,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * A social practice of an user.
@@ -49,7 +48,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "A social practice of an user.")
-public class SocialPractice extends ReflectionModel implements Model, Validable, Mergeable<SocialPractice>, Updateable<SocialPractice> {
+public class SocialPractice extends ReflectionModel
+    implements Model, Validable, Mergeable<SocialPractice>, Updateable<SocialPractice> {
 
   /**
    * The identifier of the social practice.
@@ -107,9 +107,13 @@ public class SocialPractice extends ReflectionModel implements Model, Validable,
 
       this.label = Validations.validateNullableStringField(codePrefix, "label", 255, this.label);
 
-      future = future.compose(Validations.validate(this.materials, (a, b) -> a.name.equals(b.name) && a.classification.equals(b.classification), codePrefix + ".materials", vertx));
-      future = future.compose(Validations.validate(this.competences, (a, b) -> a.name.equals(b.name) && a.ontology.equals(b.ontology), codePrefix + ".competences", vertx));
-      future = future.compose(Validations.validate(this.norms, (a, b) -> a.id.equals(b.id), codePrefix + ".norms", vertx));
+      future = future.compose(Validations.validate(this.materials,
+          (a, b) -> a.name.equals(b.name) && a.classification.equals(b.classification), codePrefix + ".materials",
+          vertx));
+      future = future.compose(Validations.validate(this.competences,
+          (a, b) -> a.name.equals(b.name) && a.ontology.equals(b.ontology), codePrefix + ".competences", vertx));
+      future = future
+          .compose(Validations.validate(this.norms, (a, b) -> a.id.equals(b.id), codePrefix + ".norms", vertx));
       promise.complete();
 
     } catch (final ValidationErrorException validationError) {
@@ -130,6 +134,7 @@ public class SocialPractice extends ReflectionModel implements Model, Validable,
     if (source != null) {
 
       final var merged = new SocialPractice();
+
       merged.label = source.label;
       if (merged.label == null) {
 
@@ -138,15 +143,18 @@ public class SocialPractice extends ReflectionModel implements Model, Validable,
 
       var future = merged.validate(codePrefix, vertx).map(empty -> merged);
 
-      future = future.compose(Merges.mergeMaterials(this.materials, source.materials, codePrefix + ".materials", vertx, (model, mergedMaterials) -> {
-        model.materials = mergedMaterials;
-      }));
-      future = future.compose(Merges.mergeCompetences(this.competences, source.competences, codePrefix + ".competences", vertx, (model, mergedCompetences) -> {
-        model.competences = mergedCompetences;
-      }));
-      future = future.compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
-        model.norms = mergedNorms;
-      }));
+      future = future.compose(Merges.mergeMaterials(this.materials, source.materials, codePrefix + ".materials", vertx,
+          (model, mergedMaterials) -> {
+            model.materials = mergedMaterials;
+          }));
+      future = future.compose(Merges.mergeCompetences(this.competences, source.competences, codePrefix + ".competences",
+          vertx, (model, mergedCompetences) -> {
+            model.competences = mergedCompetences;
+          }));
+      future = future
+          .compose(Merges.mergeNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
+            model.norms = mergedNorms;
+          }));
       // When merged set the fixed field values
       future = future.map(mergedValidatedModel -> {
 
@@ -171,13 +179,14 @@ public class SocialPractice extends ReflectionModel implements Model, Validable,
 
     if (source != null) {
 
-      final var merged = new SocialPractice();
-      merged.label = source.label;
-      merged.materials = source.materials;
-      merged.competences = source.competences;
-      merged.norms = source.norms;
+      final var updated = new SocialPractice();
 
-      var future = merged.validate(codePrefix, vertx).map(empty -> merged);
+      updated.label = source.label;
+      updated.materials = source.materials;
+      updated.competences = source.competences;
+      updated.norms = source.norms;
+
+      var future = updated.validate(codePrefix, vertx).map(empty -> updated);
 
       // When updated set the fixed field values
       future = future.map(updatedValidatedModel -> {

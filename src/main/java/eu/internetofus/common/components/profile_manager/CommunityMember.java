@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import java.util.List;
-
 import eu.internetofus.common.components.CreateUpdateTsDetails;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Updateable;
@@ -39,6 +37,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import java.util.List;
 
 /**
  * A member of a community.
@@ -46,7 +45,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "CommunityMember", description = "A member of a community.")
-public class CommunityMember extends CreateUpdateTsDetails implements Validable, Mergeable<CommunityMember>, Updateable<CommunityMember> {
+public class CommunityMember extends CreateUpdateTsDetails
+    implements Validable, Mergeable<CommunityMember>, Updateable<CommunityMember> {
 
   /**
    * Identifier of the user that is member of the community.
@@ -71,7 +71,8 @@ public class CommunityMember extends CreateUpdateTsDetails implements Validable,
     try {
 
       this.userId = Validations.validateStringField(codePrefix, "userId", 255, this.userId);
-      future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+      future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
+          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
       this.privileges = Validations.validateNullableListStringField(codePrefix, "privileges", 255, this.privileges);
       promise.complete();
 
@@ -95,6 +96,8 @@ public class CommunityMember extends CreateUpdateTsDetails implements Validable,
     if (source != null) {
 
       final var merged = new CommunityMember();
+      merged._creationTs = this._creationTs;
+      merged._lastUpdateTs = this._lastUpdateTs;
       merged.userId = this.userId;
       merged.privileges = source.privileges;
       if (merged.privileges == null) {
@@ -103,12 +106,6 @@ public class CommunityMember extends CreateUpdateTsDetails implements Validable,
       }
 
       future = future.compose(Validations.validateChain(codePrefix, vertx));
-      future = future.map(mergedValidatedModel -> {
-
-        mergedValidatedModel._creationTs = this._creationTs;
-        mergedValidatedModel._lastUpdateTs = this._lastUpdateTs;
-        return mergedValidatedModel;
-      });
 
       promise.complete(merged);
 
@@ -132,16 +129,12 @@ public class CommunityMember extends CreateUpdateTsDetails implements Validable,
     if (source != null) {
 
       final var updated = new CommunityMember();
+      updated._creationTs = this._creationTs;
+      updated._lastUpdateTs = this._lastUpdateTs;
       updated.userId = this.userId;
       updated.privileges = source.privileges;
 
       future = future.compose(Validations.validateChain(codePrefix, vertx));
-      future = future.map(updateddValidatedModel -> {
-
-        updateddValidatedModel._creationTs = this._creationTs;
-        updateddValidatedModel._lastUpdateTs = this._lastUpdateTs;
-        return updateddValidatedModel;
-      });
 
       promise.complete(updated);
 

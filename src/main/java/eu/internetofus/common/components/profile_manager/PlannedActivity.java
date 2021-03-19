@@ -26,10 +26,6 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.UUID;
-
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
@@ -42,6 +38,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * An activity planned by an user.
@@ -49,7 +48,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "An activity planned by an user.")
-public class PlannedActivity extends ReflectionModel implements Model, Validable, Mergeable<PlannedActivity>, Updateable<PlannedActivity> {
+public class PlannedActivity extends ReflectionModel
+    implements Model, Validable, Mergeable<PlannedActivity>, Updateable<PlannedActivity> {
 
   /**
    * The identifier of the activity.
@@ -110,15 +110,18 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
 
         this.id = UUID.randomUUID().toString();
       }
-      this.startTime = Validations.validateNullableStringDateField(codePrefix, "startTime", DateTimeFormatter.ISO_INSTANT, this.startTime);
-      this.endTime = Validations.validateNullableStringDateField(codePrefix, "endTime", DateTimeFormatter.ISO_INSTANT, this.endTime);
+      this.startTime = Validations.validateNullableStringDateField(codePrefix, "startTime",
+          DateTimeFormatter.ISO_INSTANT, this.startTime);
+      this.endTime = Validations.validateNullableStringDateField(codePrefix, "endTime", DateTimeFormatter.ISO_INSTANT,
+          this.endTime);
       this.description = Validations.validateNullableStringField(codePrefix, "description", 255, this.description);
       if (this.attendees != null && !this.attendees.isEmpty()) {
 
         for (final var ids = this.attendees.listIterator(); ids.hasNext();) {
 
           final var index = ids.nextIndex();
-          final var id = Validations.validateNullableStringField(codePrefix, "attendees[" + index + "]", 255, ids.next());
+          final var id = Validations.validateNullableStringField(codePrefix, "attendees[" + index + "]", 255,
+              ids.next());
           ids.remove();
           if (id != null) {
 
@@ -127,12 +130,14 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
 
               if (id.equals(this.attendees.get(j))) {
 
-                return Future.failedFuture(new ValidationErrorException(codePrefix + ".attendees[" + index + "]", "Duplicated attendee. It is equals to the attendees[" + j + "]."));
+                return Future.failedFuture(new ValidationErrorException(codePrefix + ".attendees[" + index + "]",
+                    "Duplicated attendee. It is equals to the attendees[" + j + "]."));
 
               }
             }
 
-            future = Validations.composeValidateId(future, codePrefix, "attendees[" + index + "]", id, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+            future = Validations.composeValidateId(future, codePrefix, "attendees[" + index + "]", id, true,
+                WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
           }
 
@@ -162,6 +167,7 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
 
       // merge the values
       final var merged = new PlannedActivity();
+
       merged.startTime = source.startTime;
       if (merged.startTime == null) {
 
@@ -189,7 +195,7 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
       }
       promise.complete(merged);
 
-      // validate the merged value and set the i<d
+      // validate the merged value and set the id
       future = future.compose(Validations.validateChain(codePrefix, vertx)).map(mergedValidatedModel -> {
 
         mergedValidatedModel.id = this.id;
@@ -217,6 +223,7 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
 
       // merge the values
       final var updated = new PlannedActivity();
+
       updated.startTime = source.startTime;
       updated.endTime = source.endTime;
       updated.description = source.description;
@@ -224,7 +231,7 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
       updated.status = source.status;
       promise.complete(updated);
 
-      // validate the merged value and set the i<d
+      // validate the merged value and set the id
       future = future.compose(Validations.validateChain(codePrefix, vertx)).map(mergedValidatedModel -> {
 
         mergedValidatedModel.id = this.id;

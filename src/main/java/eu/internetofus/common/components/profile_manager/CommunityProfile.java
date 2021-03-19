@@ -26,8 +26,6 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import java.util.List;
-
 import eu.internetofus.common.components.CreateUpdateTsDetails;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
@@ -42,6 +40,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import java.util.List;
 
 /**
  * A community of WeNet users.
@@ -49,7 +48,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "CommunityProfile", description = "A community of WeNet users.")
-public class CommunityProfile extends CreateUpdateTsDetails implements Validable, Mergeable<CommunityProfile>, Updateable<CommunityProfile> {
+public class CommunityProfile extends CreateUpdateTsDetails
+    implements Validable, Mergeable<CommunityProfile>, Updateable<CommunityProfile> {
 
   /**
    * The identifier of the community.
@@ -112,16 +112,20 @@ public class CommunityProfile extends CreateUpdateTsDetails implements Validable
       this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
       if (this.id != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false, WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
+        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
+            WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
       }
       this.appId = Validations.validateStringField(codePrefix, "appId", 255, this.appId);
-      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true, WeNetService.createProxy(vertx)::retrieveApp);
+      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
+          WeNetService.createProxy(vertx)::retrieveApp);
 
       this.name = Validations.validateStringField(codePrefix, "name", 255, this.name);
       this.description = Validations.validateNullableStringField(codePrefix, "description", 1023, this.description);
       this.keywords = Validations.validateNullableListStringField(codePrefix, "keywords", 255, this.keywords);
-      future = future.compose(Validations.validate(this.members, (a, b) -> a.userId.equals(b.userId), codePrefix + ".members", vertx));
-      future = future.compose(Validations.validate(this.socialPractices, (a, b) -> a.equals(b), codePrefix + ".socialPractices", vertx));
+      future = future.compose(
+          Validations.validate(this.members, (a, b) -> a.userId.equals(b.userId), codePrefix + ".members", vertx));
+      future = future.compose(
+          Validations.validate(this.socialPractices, (a, b) -> a.equals(b), codePrefix + ".socialPractices", vertx));
       future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
 
       promise.complete();
@@ -146,6 +150,9 @@ public class CommunityProfile extends CreateUpdateTsDetails implements Validable
     if (source != null) {
 
       final var merged = new CommunityProfile();
+      merged._creationTs = this._creationTs;
+      merged._lastUpdateTs = this._lastUpdateTs;
+
       merged.appId = source.appId;
       if (merged.appId == null) {
 
@@ -176,13 +183,15 @@ public class CommunityProfile extends CreateUpdateTsDetails implements Validable
         merged.norms = this.norms;
       }
 
-      future = future.compose(Merges.mergeMembers(this.members, source.members, codePrefix + ".members", vertx, (model, mergedMembers) -> {
-        model.members = mergedMembers;
-      }));
+      future = future.compose(
+          Merges.mergeMembers(this.members, source.members, codePrefix + ".members", vertx, (model, mergedMembers) -> {
+            model.members = mergedMembers;
+          }));
 
-      future = future.compose(Merges.mergeSocialPractices(this.socialPractices, source.socialPractices, codePrefix + ".socialPractices", vertx, (model, mergedSocialPractices) -> {
-        model.socialPractices = mergedSocialPractices;
-      }));
+      future = future.compose(Merges.mergeSocialPractices(this.socialPractices, source.socialPractices,
+          codePrefix + ".socialPractices", vertx, (model, mergedSocialPractices) -> {
+            model.socialPractices = mergedSocialPractices;
+          }));
 
       future = future.compose(Validations.validateChain(codePrefix, vertx));
 
@@ -190,8 +199,6 @@ public class CommunityProfile extends CreateUpdateTsDetails implements Validable
       future = future.map(mergedValidatedModel -> {
 
         mergedValidatedModel.id = this.id;
-        mergedValidatedModel._creationTs = this._creationTs;
-        mergedValidatedModel._lastUpdateTs = this._lastUpdateTs;
         return mergedValidatedModel;
       });
 
@@ -217,6 +224,8 @@ public class CommunityProfile extends CreateUpdateTsDetails implements Validable
     if (source != null) {
 
       final var updated = new CommunityProfile();
+      updated._creationTs = this._creationTs;
+      updated._lastUpdateTs = this._lastUpdateTs;
       updated.appId = source.appId;
       updated.name = source.name;
       updated.description = source.description;
@@ -231,8 +240,6 @@ public class CommunityProfile extends CreateUpdateTsDetails implements Validable
       future = future.map(updatedValidatedModel -> {
 
         updatedValidatedModel.id = this.id;
-        updatedValidatedModel._creationTs = this._creationTs;
-        updatedValidatedModel._lastUpdateTs = this._lastUpdateTs;
         return updatedValidatedModel;
       });
 

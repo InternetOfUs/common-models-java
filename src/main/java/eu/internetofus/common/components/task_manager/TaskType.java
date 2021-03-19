@@ -140,6 +140,7 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
     if (source != null) {
 
       final var merged = new TaskType();
+
       merged.name = source.name;
       if (merged.name == null) {
 
@@ -206,6 +207,7 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
     if (source != null) {
 
       final var updated = new TaskType();
+
       updated.name = source.name;
       updated.description = source.description;
       updated.keywords = source.keywords;

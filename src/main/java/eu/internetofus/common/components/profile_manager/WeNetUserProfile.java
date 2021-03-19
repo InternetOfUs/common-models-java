@@ -261,6 +261,9 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
     if (source != null) {
 
       final var merged = new WeNetUserProfile();
+      merged._creationTs = this._creationTs;
+      merged._lastUpdateTs = this._lastUpdateTs;
+
       merged.gender = source.gender;
       if (merged.gender == null) {
 
@@ -355,8 +358,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
       future = future.map(mergedValidatedModel -> {
 
         mergedValidatedModel.id = this.id;
-        mergedValidatedModel._creationTs = this._creationTs;
-        mergedValidatedModel._lastUpdateTs = this._lastUpdateTs;
         return mergedValidatedModel;
       });
 
@@ -379,6 +380,9 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
     if (source != null) {
 
       final var updated = new WeNetUserProfile();
+      updated._creationTs = this._creationTs;
+      updated._lastUpdateTs = this._lastUpdateTs;
+
       updated.gender = source.gender;
       updated.email = source.email;
       updated.locale = source.locale;
@@ -401,8 +405,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
       future = future.map(updatedValidatedModel -> {
 
         updatedValidatedModel.id = this.id;
-        updatedValidatedModel._creationTs = this._creationTs;
-        updatedValidatedModel._lastUpdateTs = this._lastUpdateTs;
         return updatedValidatedModel;
       });
 
