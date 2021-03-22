@@ -27,6 +27,7 @@
 package eu.internetofus.common;
 
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulatorMocker;
+import eu.internetofus.common.components.personal_context_builder.WeNetPersonalContextBuilderSimulatorMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderSimulatorMocker;
 import eu.internetofus.common.vertx.AbstractMain;
@@ -133,6 +134,11 @@ public class Containers {
    * The mocker of the incentive server module.
    */
   public WeNetIncentiveServerSimulatorMocker incentiveServer;
+
+  /**
+   * The mocker of the personal context builder module.
+   */
+  public WeNetPersonalContextBuilderSimulatorMocker personalContextBuilder;
 
   /**
    * The port where the profile manager is exposed.
@@ -277,6 +283,23 @@ public class Containers {
       Logger.trace("Starting Social Context Mocker");
       this.socialContextBuilder = WeNetSocialContextBuilderSimulatorMocker.start();
       Logger.trace("Started Social Context Mocker");
+
+    }
+    return this;
+  }
+
+  /**
+   * Start the personal context builder module if it is not started yet.
+   *
+   * @return this containers instance.
+   */
+  public Containers startPersonalContextBuilder() {
+
+    if (this.personalContextBuilder == null) {
+
+      Logger.trace("Starting Personal Context Mocker");
+      this.personalContextBuilder = WeNetPersonalContextBuilderSimulatorMocker.start();
+      Logger.trace("Started Personal Context Mocker");
 
     }
     return this;
@@ -453,6 +476,7 @@ public class Containers {
           .withEnv("WENET_SERVICE_API", this.service.getApiUrl())
           .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl())
           .withEnv("WENET_INCENTIVE_SERVER_API", this.incentiveServer.getApiUrl())
+          .withEnv("WENET_PERSONAL_CONTEXT_BUILDER_API", this.personalContextBuilder.getApiUrl())
           .withEnv("COMP_AUTH_KEY", DEFAULT_WENET_COMPONENT_APIKEY).waitingFor(Wait.forListeningPort());
       this.interactionProtocolEngineContainer.start();
       Logger.trace("Started Interaction Protocol Engine");
@@ -487,6 +511,7 @@ public class Containers {
    * @see #startService()
    * @see #startSocialContextBuilder()
    * @see #startIncentiveServer()
+   * @see #startPersonalContextBuilder()
    * @see #startMongoContainer()
    * @see #exposeModulePortsContainers()
    */
@@ -495,6 +520,7 @@ public class Containers {
     this.startService();
     this.startSocialContextBuilder();
     this.startIncentiveServer();
+    this.startPersonalContextBuilder();
     this.startMongoContainer();
     return this.exposeModulePortsContainers();
   }

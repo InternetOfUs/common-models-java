@@ -180,7 +180,7 @@ public class WeNetPersonalContextBuilderSimulatorMocker extends AbstractComponen
   }
 
   /**
-   * Handler for post a new loction for an user.
+   * Handler for post a new location for an user.
    *
    * @return the handler to manage an users locations.
    */
