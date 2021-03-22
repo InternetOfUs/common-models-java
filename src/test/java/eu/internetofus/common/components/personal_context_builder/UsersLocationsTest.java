@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,27 +24,36 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.service;
+package eu.internetofus.common.components.personal_context_builder;
 
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
+import eu.internetofus.common.components.ModelTestCase;
+import io.vertx.junit5.VertxExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * Add extra
+ * Test the {@link UsersLocations}.
+ *
+ * @see UsersLocations
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetServiceMockerClient extends WeNetServiceClient {
+@ExtendWith(VertxExtension.class)
+public class UsersLocationsTest extends ModelTestCase<UsersLocations> {
 
   /**
-   * Create a new service to interact with the WeNet service mocker.
-   *
-   * @param client to interact with the other modules.
-   * @param conf   configuration.
+   * {@inheritDoc}
    */
-  public WeNetServiceMockerClient(final WebClient client, final JsonObject conf) {
+  @Override
+  public UsersLocations createModelExample(final int index) {
 
-    super(client, conf);
+    final var model = new UsersLocations();
+    for (var i = 0; i < 10; i++) {
+
+      final var location = new UserLocationTest().createModelExample(index + i);
+      model.locations.add(location);
+
+    }
+    return model;
 
   }
 

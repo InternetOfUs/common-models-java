@@ -84,6 +84,12 @@ public interface WeNetTaskManager extends WeNetComponent {
   String QUESTION_AND_ANSWER_WITH_NORMS_V1_TASK_TYPE_ID = "wenet_ask_4_help_with_norms_v1";
 
   /**
+   * The identifier of the task type that contains the English auction protocol
+   * done with norms.
+   */
+  String ENGLISH_AUCTION_WITH_NORMS_V1_TASK_TYPE_ID = "wenet_english_auction_with_norms_v1";
+
+  /**
    * Create a proxy of the {@link WeNetTaskManager}.
    *
    * @param vertx where the service has to be used.
