@@ -49,7 +49,7 @@ public class UserLocationTest extends ModelTestCase<UserLocation> {
     final var model = new UserLocation();
     model.userId = "UserId_" + index;
     model.latitude = index % 90;
-    model.latitude = index % 180;
+    model.longitude = index % 180;
     return model;
 
   }

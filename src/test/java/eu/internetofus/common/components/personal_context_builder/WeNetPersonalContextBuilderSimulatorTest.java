@@ -104,7 +104,7 @@ public class WeNetPersonalContextBuilderSimulatorTest extends WeNetPersonalConte
     Future<?> future = Future.succeededFuture();
     for (var i = 0; i < 10; i++) {
 
-      final var location = new UserLocation();
+      final var location = new UserLocationTest().createModelExample(i);
       definedUsers.users.add(location.userId);
       definedUsers.users.add(UUID.randomUUID().toString());
       expectedLocations.locations.add(location);
@@ -115,9 +115,9 @@ public class WeNetPersonalContextBuilderSimulatorTest extends WeNetPersonalConte
 
     future = future
         .compose(ignored -> WeNetPersonalContextBuilderSimulator.createProxy(vertx).obtainUserlocations(definedUsers));
-    testContext.assertComplete(future).onSuccess(loctions -> testContext.verify(() -> {
+    testContext.assertComplete(future).onSuccess(locations -> testContext.verify(() -> {
 
-      assertThat(loctions).isEqualTo(expectedLocations);
+      assertThat(locations).isEqualTo(expectedLocations);
       testContext
           .assertComplete(WeNetPersonalContextBuilderSimulator.createProxy(vertx)
               .deleteLocation(expectedLocations.locations.get(0).userId).compose(

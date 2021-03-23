@@ -117,17 +117,20 @@ public class WeNetPersonalContextBuilderSimulatorMocker extends AbstractComponen
       } else {
 
         final var usersLocation = new UsersLocations();
-        for (final var userId : body.users) {
+        if (!this.locations.isEmpty()) {
 
-          for (final var location : this.locations) {
+          for (final var userId : body.users) {
 
-            if (location.userId.equals(userId)) {
+            for (final var location : this.locations) {
 
-              usersLocation.locations.add(location);
-              break;
+              if (location.userId.equals(userId)) {
+
+                usersLocation.locations.add(location);
+                break;
+              }
             }
-          }
 
+          }
         }
 
         final var response = ctx.response();
@@ -140,7 +143,7 @@ public class WeNetPersonalContextBuilderSimulatorMocker extends AbstractComponen
   }
 
   /**
-   * Handler for post a new loction for an user.
+   * Handler for post a new location for an user.
    *
    * @return the handler to manage an users locations.
    */
@@ -166,10 +169,11 @@ public class WeNetPersonalContextBuilderSimulatorMocker extends AbstractComponen
           if (location.userId.equals(id)) {
 
             this.locations.remove(i);
-            this.locations.add(body);
             break;
           }
         }
+
+        this.locations.add(body);
 
         final var response = ctx.response();
         response.setStatusCode(Status.OK.getStatusCode());
