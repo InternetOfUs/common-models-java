@@ -45,13 +45,13 @@ public class Users extends ReflectionModel implements Model {
    * The identifiers of the users to obtain the locations.
    */
   @ArraySchema(schema = @Schema(type = "string"), arraySchema = @Schema(description = "The identifiers of the users to obtain their locations."))
-  public List<String> users;
+  public List<String> userids;
 
   /**
    * Create the users to obtains their locations.
    */
   public Users() {
 
-    this.users = new ArrayList<>();
+    this.userids = new ArrayList<>();
   }
 }

@@ -50,7 +50,7 @@ public class UsersTest extends ModelTestCase<Users> {
     for (var i = 0; i < 10; i++) {
 
       final var userId = "userId_" + (index + i);
-      model.users.add(userId);
+      model.userids.add(userId);
 
     }
     return model;

@@ -121,7 +121,7 @@ public class WeNetPersonalContextBuilderSimulatorMocker extends AbstractComponen
         final var usersLocation = new UsersLocations();
         if (!this.locations.isEmpty()) {
 
-          for (final var userId : body.users) {
+          for (final var userId : body.userids) {
 
             for (final var location : this.locations) {
 

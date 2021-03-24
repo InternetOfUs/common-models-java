@@ -106,8 +106,8 @@ public class WeNetPersonalContextBuilderSimulatorTest extends WeNetPersonalConte
     for (var i = 0; i < 10; i++) {
 
       final var location = new UserLocationTest().createModelExample(i);
-      definedUsers.users.add(location.userId);
-      definedUsers.users.add(UUID.randomUUID().toString());
+      definedUsers.userids.add(location.userId);
+      definedUsers.userids.add(UUID.randomUUID().toString());
       expectedLocations.locations.add(location);
       future = future
           .compose(ignored -> WeNetPersonalContextBuilderSimulator.createProxy(vertx).addUserLocation(location));
