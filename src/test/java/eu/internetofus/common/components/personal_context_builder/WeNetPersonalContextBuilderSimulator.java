@@ -53,7 +53,7 @@ public interface WeNetPersonalContextBuilderSimulator {
   /**
    * The address of this service.
    */
-  String ADDRESS = "wenet_component.ServiceSimulator";
+  String ADDRESS = "wenet_component.PersonalContextBuilderSimulator";
 
   /**
    * Create a proxy of the {@link WeNetPersonalContextBuilderSimulator}.
