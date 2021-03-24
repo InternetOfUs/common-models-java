@@ -47,7 +47,7 @@ public class WeNetPersonalContextBuilderClient extends ComponentClient implement
   /**
    * The default URL to bind the client.
    */
-  public static final String DEFAULT_PERSONAL_CONTEXT_BUILDER_API_URL = "https://wenet.u-hopper.com/prod/service";
+  public static final String DEFAULT_PERSONAL_CONTEXT_BUILDER_API_URL = "https://wenet.u-hopper.com/prod/personal_context_builder";
 
   /**
    * The name of the configuration property that contains the URL to the personal
