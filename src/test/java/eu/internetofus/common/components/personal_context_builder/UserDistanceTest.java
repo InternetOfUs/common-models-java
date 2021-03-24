@@ -26,34 +26,31 @@
 
 package eu.internetofus.common.components.personal_context_builder;
 
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
+import eu.internetofus.common.components.ModelTestCase;
+import io.vertx.junit5.VertxExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * The location of an user.
+ * Test the {@link UserDistance}.
+ *
+ * @see UserDistance
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "UserLocation", description = "The location of an user.")
-public class UserLocation extends ReflectionModel implements Model {
+@ExtendWith(VertxExtension.class)
+public class UserDistanceTest extends ModelTestCase<UserDistance> {
 
   /**
-   * The identifier of the user.
+   * {@inheritDoc}
    */
-  @Schema(description = "The Id of the user that this is its location.", example = "3e557acc-e846-4736-8218-3f64d8e68d8c")
-  public String userId;
+  @Override
+  public UserDistance createModelExample(final int index) {
 
-  /**
-   * The latitude of the location.
-   */
-  @Schema(description = "The latitude of the location", example = "40.388756")
-  public double latitude;
+    final var model = new UserDistance();
+    model.userId = "UserId_" + index;
+    model.distance = index;
+    return model;
 
-  /**
-   * The longitude of the location.
-   */
-  @Schema(description = "The longitude of the location", example = "-3.588622")
-  public double longitude;
+  }
 
 }

@@ -31,8 +31,10 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -65,6 +67,19 @@ public class WeNetPersonalContextBuilderSimulatorClient extends WeNetPersonalCon
     final Promise<JsonObject> promise = Promise.promise();
     this.obtainUserlocations(users.toJsonObject(), promise);
     return Model.fromFutureJsonObject(promise.future(), UsersLocations.class);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<List<UserDistance>> obtainClosestUsersTo(final double latitude, final double longitude,
+      final int numUsers) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    this.obtainClosestUsersTo(latitude, longitude, numUsers, promise);
+    return Model.fromFutureJsonArray(promise.future(), UserDistance.class);
 
   }
 

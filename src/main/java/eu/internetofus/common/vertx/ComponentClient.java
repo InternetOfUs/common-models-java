@@ -518,6 +518,20 @@ public class ComponentClient implements WeNetComponent {
   }
 
   /**
+   * Get a {@link JsonArray} with some parameters.
+   *
+   * @param queryParams the query parameters.
+   * @param paths       to the resource to get.
+   *
+   * @return the future received {@link JsonArray}.
+   */
+  protected Future<JsonArray> getJsonArray(final Map<String, String> queryParams, final Object... paths) {
+
+    return this.request(HttpMethod.GET, this.createAbsoluteUrlWith(paths), queryParams, this.createArrayExtractor());
+
+  }
+
+  /**
    * Delete a resource.
    *
    * @param paths to the resource to remove.

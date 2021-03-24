@@ -35,9 +35,11 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -109,6 +111,36 @@ public interface WeNetPersonalContextBuilder extends WeNetComponent {
     final Promise<JsonObject> promise = Promise.promise();
     this.obtainUserlocations(users.toJsonObject(), promise);
     return Model.fromFutureJsonObject(promise.future(), UsersLocations.class);
+
+  }
+
+  /**
+   * Return a set of users that are closest into a location.
+   *
+   * @param latitude  of the location.
+   * @param longitude of the location.
+   * @param numUsers  number of users to return.
+   * @param handler   for inform about the closest users.
+   */
+  void obtainClosestUsersTo(double latitude, double longitude, int numUsers,
+      @NotNull Handler<AsyncResult<JsonArray>> handler);
+
+  /**
+   * Return a set of users that are closest into a location.
+   *
+   * @param latitude  of the location.
+   * @param longitude of the location.
+   * @param numUsers  number of users to return.
+   *
+   * @return the future closest users.
+   */
+  @GenIgnore
+  default Future<List<UserDistance>> obtainClosestUsersTo(final double latitude, final double longitude,
+      final int numUsers) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    this.obtainClosestUsersTo(latitude, longitude, numUsers, promise);
+    return Model.fromFutureJsonArray(promise.future(), UserDistance.class);
 
   }
 

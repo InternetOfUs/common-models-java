@@ -54,7 +54,7 @@ public class WeNetPersonalContextBuilderTestCase extends WeNetComponentTestCase<
   }
 
   /**
-   * Should not retrieve undefined app.
+   * Should not obtain user locations of an undefined user.
    *
    * @param vertx       that contains the event bus to use.
    * @param testContext context over the tests.
@@ -68,6 +68,25 @@ public class WeNetPersonalContextBuilderTestCase extends WeNetComponentTestCase<
         .onSuccess(locations -> testContext.verify(() -> {
 
           assertThat(locations).isEqualTo(new UsersLocations());
+          testContext.completeNow();
+
+        }));
+
+  }
+
+  /**
+   * Should obtain the closest user into a location.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldObtainClosestUsers(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(this.createComponentProxy(vertx).obtainClosestUsersTo(0, 0, 3))
+        .onSuccess(usersDistances -> testContext.verify(() -> {
+
+          assertThat(usersDistances).isNotNull().hasSizeBetween(0, 3);
           testContext.completeNow();
 
         }));
