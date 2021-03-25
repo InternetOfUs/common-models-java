@@ -159,6 +159,7 @@ public class MainArgumentBuilder {
     this.withWeNetComponent("service", containers.service.getApiUrl());
     this.withWeNetComponent("socialContextBuilder", containers.socialContextBuilder.getApiUrl());
     this.withWeNetComponent("incentiveServer", containers.incentiveServer.getApiUrl());
+    this.withWeNetComponent("personalContextBuilder", containers.personalContextBuilder.getApiUrl());
     this.withApikey(Containers.DEFAULT_WENET_COMPONENT_APIKEY);
 
     return this;
