@@ -43,6 +43,8 @@ import java.util.ArrayList;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Check the English auction protocol with norms. ATTENTION: This test is
@@ -123,17 +125,20 @@ public class EnglishAuctionWithNormsProtocolITC extends AbstractProtocolITC {
   /**
    * Check that can not create a task because can not found users.
    *
+   * @param whom        type of user sthat not found.
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
    */
-  @Test
+  @ParameterizedTest(name = "Should not create task because not found users of type {0}")
+  @ValueSource(strings = { "closest", "neighbor", "villager", "citizen" })
   @Order(6)
-  public void shouldNotCreateTaskBecauseNoFoundUsers(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotCreateTaskBecauseNoFoundUsers(final String whom, final Vertx vertx,
+      final VertxTestContext testContext) {
 
     this.assertAtLeastSuccessfulTestWas(4, testContext);
 
     final var source = this.createTaskForProtocol();
-    source.attributes.put("whom", "citizen");
+    source.attributes.put("whom", whom);
     final var checkMessages = new ArrayList<Predicate<Message>>();
     checkMessages.add(this.createMessagePredicate().and(MessagePredicates.labelIs("CreationError"))
         .and(MessagePredicates.receiverIs(source.requesterId)).and(MessagePredicates.attributesAre(target -> {
@@ -157,8 +162,8 @@ public class EnglishAuctionWithNormsProtocolITC extends AbstractProtocolITC {
    * @param testContext context to do the test.
    */
   @Test
-  @Order(7)
-  public void shouldCreateTask(final Vertx vertx, final VertxTestContext testContext) {
+  @Order(10)
+  public void shouldAddLocationForUsers(final Vertx vertx, final VertxTestContext testContext) {
 
     this.assertAtLeastSuccessfulTestWas(4, testContext);
 
