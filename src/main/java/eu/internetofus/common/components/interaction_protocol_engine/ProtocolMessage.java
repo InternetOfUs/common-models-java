@@ -26,21 +26,13 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
-import eu.internetofus.common.components.Validations;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 
 /**
  * A message that can be interchange in an interaction protocol.
@@ -48,31 +40,7 @@ import io.vertx.core.json.JsonObject;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(name = "ProtocolMessage", description = "A message that can be interchange in an interaction protocol.")
-public class ProtocolMessage extends ReflectionModel implements Model, Validable {
-
-  /**
-   * The identifier of the application that the user has used to send the message.
-   */
-  @Schema(description = "The identifier of the application associated to the message.", nullable = true, example = "E34jhg78tbgh")
-  public String appId;
-
-  /**
-   * The identifier of the community where the message will be said.
-   */
-  @Schema(description = "The identifier of the community associated to the message.", nullable = true, example = "ceb846439eba-645a-9aaf-4a55-15837028")
-  public String communityId;
-
-  /**
-   * The identifier of the task that the message is related.
-   */
-  @Schema(description = "The identifier of the task associated to the message.", nullable = true, example = "b129e5509c9bb79")
-  public String taskId;
-
-  /**
-   * The identifier of the task that the message is related.
-   */
-  @Schema(description = "The identifier of the transaction associated to the message.", nullable = true, example = "b129e5509c9bb79")
-  public String transactionId;
+public class ProtocolMessage extends AbstractProtocolAction implements Model, Validable {
 
   /**
    * The identifier of the user that is sending the message.
@@ -87,79 +55,27 @@ public class ProtocolMessage extends ReflectionModel implements Model, Validable
   public ProtocolAddress receiver;
 
   /**
-   * The particle of the message.
-   */
-  @Schema(description = "The particle that define the motive of the message.", example = "b129e5509c9bb79")
-  public String particle;
-
-  /**
-   * The content of the message.
-   */
-  @Schema(description = "The content of the message.", example = "Hi!", type = "object", nullable = true, implementation = Object.class)
-  @JsonDeserialize(using = JsonObjectDeserializer.class)
-  public JsonObject content;
-
-  /**
    * {@inheritDoc}
    */
   @Override
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
-    try {
+    var future = super.validate(codePrefix, vertx).compose(empty -> promise.future());
+    if (this.sender == null) {
 
-      this.appId = Validations.validateNullableStringField(codePrefix, "appId", 255, this.appId);
-      if (this.appId != null) {
+      promise.fail(new ValidationErrorException(codePrefix + ".sender", "You must to define a sender"));
 
-        future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
-            WeNetService.createProxy(vertx)::retrieveApp);
+    } else if (this.receiver == null) {
 
-      }
+      promise.fail(new ValidationErrorException(codePrefix + ".receiver", "You must to define a receiver"));
 
-      this.communityId = Validations.validateNullableStringField(codePrefix, "communityId", 255, this.communityId);
-      if (this.communityId != null) {
+    } else {
 
-        future = Validations.composeValidateId(future, codePrefix, "communityId", this.communityId, true,
-            WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
+      future = future.compose(map -> this.sender.validate(codePrefix + ".sender", vertx));
+      future = future.compose(map -> this.receiver.validate(codePrefix + ".receiver", vertx));
+      promise.complete();
 
-      }
-
-      this.taskId = Validations.validateNullableStringField(codePrefix, "taskId", 255, this.taskId);
-      if (this.taskId != null) {
-
-        future = Validations.composeValidateId(future, codePrefix, "taskId", this.taskId, true,
-            WeNetTaskManager.createProxy(vertx)::retrieveTask);
-      }
-
-      this.transactionId = Validations.validateNullableStringField(codePrefix, "transactionId", 255,
-          this.transactionId);
-
-      this.particle = Validations.validateStringField(codePrefix, "particle", 255, this.particle);
-
-      if (this.sender == null) {
-
-        promise.fail(new ValidationErrorException(codePrefix + ".sender", "You must to define a sender"));
-
-      } else if (this.receiver == null) {
-
-        promise.fail(new ValidationErrorException(codePrefix + ".receiver", "You must to define a receiver"));
-
-      } else if (this.content == null) {
-
-        promise.fail(new ValidationErrorException(codePrefix + ".content", "You must to define a content"));
-
-      } else {
-
-        future = future.compose(map -> this.sender.validate(codePrefix + ".sender", vertx));
-        future = future.compose(map -> this.receiver.validate(codePrefix + ".receiver", vertx));
-        promise.complete();
-
-      }
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
     }
 
     return future;

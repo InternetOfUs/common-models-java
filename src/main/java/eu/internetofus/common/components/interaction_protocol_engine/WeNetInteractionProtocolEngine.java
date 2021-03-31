@@ -243,4 +243,50 @@ public interface WeNetInteractionProtocolEngine extends WeNetComponent {
   void mergeCommunityUserState(@NotNull final String communityId, @NotNull final String userId,
       @NotNull final JsonObject newState, Handler<AsyncResult<JsonObject>> handler);
 
+  /**
+   * Send a event to be processed.
+   *
+   * @param event   to be processed.
+   * @param handler to send event.
+   */
+  void sendEvent(@NotNull JsonObject event, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Send a event to be processed.
+   *
+   * @param event to be processed.
+   *
+   * @return the future event.
+   */
+  @GenIgnore
+  default Future<ProtocolEvent> sendEvent(@NotNull final ProtocolEvent event) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.sendEvent(event.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), ProtocolEvent.class);
+  }
+
+  /**
+   * Delete a event to be processed.
+   *
+   * @param id      identifier of the event to delete.
+   * @param handler to inform id teh vent is deleted.
+   */
+  void deleteEvent(long id, Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Delete a event to be processed.
+   *
+   * @param id identifier of the event to delete.
+   *
+   * @return the future if the delete is done.
+   */
+  @GenIgnore
+  default Future<Void> deleteEvent(final long id) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.deleteEvent(id, promise);
+    return promise.future();
+  }
+
 }

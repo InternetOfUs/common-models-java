@@ -27,7 +27,11 @@
 package eu.internetofus.common.components.interaction_protocol_engine;
 
 import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.StoreServices;
+import eu.internetofus.common.components.ValidationsTest;
+import eu.internetofus.common.components.interaction_protocol_engine.ProtocolAddress.Component;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -37,133 +41,138 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * Test the {@link ProtocolMessage}
+ * Test the {@link ProtocolEvent}
  *
- * @see ProtocolMessage
+ * @see ProtocolEvent
  *
  * @author UDT-IA, IIIA-CSIC
  */
 @ExtendWith(VertxExtension.class)
-public class ProtocolMessageTest extends AbstractProtocolActionTestCase<ProtocolMessage> {
+public class ProtocolEventTest extends AbstractProtocolActionTestCase<ProtocolEvent> {
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public ProtocolMessage createModelExample(final int index) {
+  public ProtocolEvent createModelExample(final int index) {
 
-    final var model = new ProtocolMessage();
+    final var model = new ProtocolEvent();
     model.appId = "appId_" + index;
     model.communityId = "communityId_" + index;
     model.taskId = "taskId_" + index;
     model.transactionId = "transactionId_" + index;
     model.particle = "particle_" + index;
     model.content = new JsonObject().put("index", index);
-    model.sender = new ProtocolAddressTest().createModelExample(index);
-    model.receiver = new ProtocolAddressTest().createModelExample(index);
+    model.delay = (long) index;
+    model.userId = "User_" + index;
     return model;
 
   }
 
   /**
-   * Create an example model that has the specified index that create any required
-   * component.
-   *
-   * @param index       to use in the example.
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @return the created protocol message.
+   * {@inheritDoc}
    */
   @Override
-  public Future<ProtocolMessage> createModelExample(final int index, final Vertx vertx,
+  public Future<ProtocolEvent> createModelExample(final int index, final Vertx vertx,
       final VertxTestContext testContext) {
 
-    return testContext
-        .assertComplete(new ProtocolAddressTest().createModelExample(index, vertx, testContext).compose(sender -> {
+    return testContext.assertComplete(StoreServices.storeProfileExample(index, vertx, testContext).compose(profile -> {
 
-          return new ProtocolAddressTest().createModelExample(index + 1, vertx, testContext).compose(receiver -> {
+      return super.createModelExample(index, vertx, testContext).compose(event -> {
 
-            return super.createModelExample(index, vertx, testContext).compose(model -> {
+        event.userId = profile.id;
+        return Future.succeededFuture(event);
 
-              model.sender = sender;
-              model.receiver = receiver;
-              return Future.succeededFuture(model);
-
-            });
-
-          });
-
-        }));
+      });
+    }));
 
   }
 
   /**
-   * Check that is valid without sender.
+   * Check that is valid without delay.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolMessage#validate(String, Vertx)
+   * @see ProtocolEvent#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidWithoutSender(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWithoutDelay(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-      model.sender = null;
-      assertIsNotValid(model, "sender", vertx, testContext);
+      model.delay = null;
+      assertIsNotValid(model, "delay", vertx, testContext);
     });
   }
 
   /**
-   * Check that is valid with bad sender.
+   * Check that is valid without userId.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolMessage#validate(String, Vertx)
+   * @see ProtocolEvent#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidWithBadSender(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWithoutUserId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-      model.sender = new ProtocolAddressTest().createModelExample(1);
-      assertIsNotValid(model, "sender.userId", vertx, testContext);
+      model.userId = null;
+      assertIsNotValid(model, "userId", vertx, testContext);
     });
   }
 
   /**
-   * Check that is valid without receiver.
+   * Check that not accept a large userId.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolMessage#validate(String, Vertx)
+   * @see ProtocolEvent#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidWithoutReceiver(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWithALargeUserId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-      model.receiver = null;
-      assertIsNotValid(model, "receiver", vertx, testContext);
+      model.userId = ValidationsTest.STRING_256;
+      assertIsNotValid(model, "userId", vertx, testContext);
     });
   }
 
   /**
-   * Check that is valid with bad receiver.
+   * Check that not accept an undefined userId.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolMessage#validate(String, Vertx)
+   * @see ProtocolEvent#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidWithBadReceiver(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidWithUndefinedUserId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-      model.receiver = new ProtocolAddressTest().createModelExample(2);
-      assertIsNotValid(model, "receiver.userId", vertx, testContext);
+      model.userId = "undefined";
+      assertIsNotValid(model, "userId", vertx, testContext);
     });
+  }
+
+  /**
+   * Check that can convert to a protocol message.
+   *
+   * @see ProtocolEvent#toProtocolMessage()
+   */
+  @Test
+  public void shouldToProtocolMessage() {
+
+    final var event = this.createModelExample(1);
+    final var expectedMsg = new ProtocolMessageTest().createModelExample(1);
+    expectedMsg.sender.component = Component.INTERACTION_PROTOCOL_ENGINE;
+    expectedMsg.sender.userId = event.userId;
+    expectedMsg.receiver.component = Component.INTERACTION_PROTOCOL_ENGINE;
+    expectedMsg.receiver.userId = event.userId;
+    final var convert = event.toProtocolMessage();
+    assertThat(convert).isEqualTo(expectedMsg);
+
   }
 
 }

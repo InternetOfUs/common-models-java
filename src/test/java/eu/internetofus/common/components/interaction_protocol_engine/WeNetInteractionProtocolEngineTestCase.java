@@ -220,4 +220,34 @@ public class WeNetInteractionProtocolEngineTestCase extends WeNetComponentTestCa
 
   }
 
+  /**
+   * Should send and delete event.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldSendDeleteEvent(final Vertx vertx, final VertxTestContext testContext) {
+
+    new ProtocolEventTest().createModelExample(1, vertx, testContext).onSuccess(event -> {
+
+      event.delay = (long) 10000;
+      testContext.assertComplete(this.createComponentProxy(vertx).sendEvent(event))
+          .onSuccess(sent -> testContext.verify(() -> {
+
+            assertThat(sent.id).isNotNull();
+
+            testContext.assertComplete(this.createComponentProxy(vertx).deleteEvent(sent.id)).onSuccess(deleted -> {
+
+              testContext.assertFailure(this.createComponentProxy(vertx).deleteEvent(sent.id))
+                  .onFailure(error -> testContext.completeNow());
+
+            });
+
+          }));
+
+    });
+
+  }
+
 }

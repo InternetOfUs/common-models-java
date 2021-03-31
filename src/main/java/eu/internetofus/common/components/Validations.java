@@ -511,7 +511,7 @@ public interface Validations {
           if (exist) {
 
             promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
-                "The '" + fieldName + "' '" + id + "' is not defined."));
+                "The '" + fieldName + "' '" + id + "' is not defined.", search.cause()));
 
           } else {
 

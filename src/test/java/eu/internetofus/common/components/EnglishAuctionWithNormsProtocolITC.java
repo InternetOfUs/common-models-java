@@ -87,7 +87,7 @@ public class EnglishAuctionWithNormsProtocolITC extends AbstractProtocolITC {
     final var taskToCreate = super.createTaskForProtocol();
     final var startTime = TimeManager.now() + 10;
     taskToCreate.attributes = new JsonObject().put("quorum", 2).put("startPrice", 20).put("whom", "any")
-        .put("startTime", startTime);
+        .put("startTime", startTime).put("offerDelay", 3);
     return taskToCreate;
 
   }
@@ -107,10 +107,11 @@ public class EnglishAuctionWithNormsProtocolITC extends AbstractProtocolITC {
     final var source = this.createTaskForProtocol();
     source.attributes.put("startTime", TimeManager.now());
     final var checkMessages = new ArrayList<Predicate<Message>>();
-    checkMessages.add(this.createMessagePredicate().and(MessagePredicates.labelIs("CreationError"))
+    checkMessages.add(this.createMessagePredicate().and(MessagePredicates.labelIs("Error"))
         .and(MessagePredicates.receiverIs(source.requesterId)).and(MessagePredicates.attributesAre(target -> {
 
-          return "bad_startTime".equals(target.getString("code")) && this.task.id.equals(target.getString("taskId"));
+          return "cannot_create_task_with_bad_startTime".equals(target.getString("code"))
+              && this.task.id.equals(target.getString("taskId"));
 
         })));
 
@@ -140,10 +141,11 @@ public class EnglishAuctionWithNormsProtocolITC extends AbstractProtocolITC {
     final var source = this.createTaskForProtocol();
     source.attributes.put("whom", whom);
     final var checkMessages = new ArrayList<Predicate<Message>>();
-    checkMessages.add(this.createMessagePredicate().and(MessagePredicates.labelIs("CreationError"))
+    checkMessages.add(this.createMessagePredicate().and(MessagePredicates.labelIs("Error"))
         .and(MessagePredicates.receiverIs(source.requesterId)).and(MessagePredicates.attributesAre(target -> {
 
-          return "no_users_found".equals(target.getString("code")) && this.task.id.equals(target.getString("taskId"));
+          return "cannot_create_task_no_found_quorum".equals(target.getString("code"))
+              && this.task.id.equals(target.getString("taskId"));
 
         })));
 
@@ -163,7 +165,7 @@ public class EnglishAuctionWithNormsProtocolITC extends AbstractProtocolITC {
    */
   @Test
   @Order(10)
-  public void shouldAddLocationForUsers(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldCreateTask(final Vertx vertx, final VertxTestContext testContext) {
 
     this.assertAtLeastSuccessfulTestWas(4, testContext);
 

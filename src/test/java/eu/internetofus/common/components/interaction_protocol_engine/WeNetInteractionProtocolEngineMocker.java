@@ -28,11 +28,14 @@ package eu.internetofus.common.components.interaction_protocol_engine;
 
 import eu.internetofus.common.TimeManager;
 import eu.internetofus.common.components.AbstractComponentMocker;
+import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.Model;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.Response.Status;
 
@@ -49,6 +52,11 @@ public class WeNetInteractionProtocolEngineMocker extends AbstractComponentMocke
    * The stored states.
    */
   protected Map<String, State> states = new HashMap<>();
+
+  /**
+   * The stored events.
+   */
+  protected List<ProtocolEvent> events = new ArrayList<>();
 
   /**
    * Start a mocker builder into a random port.
@@ -91,12 +99,18 @@ public class WeNetInteractionProtocolEngineMocker extends AbstractComponentMocke
   protected void fillInRouterHandler(final Router router) {
 
     router.post("/messages").handler(this.createEchoHandler());
+
     router.post("/incentives").handler(this.createEchoHandler());
+
     router.post("/tasks/created").handler(this.createEchoHandler());
     router.post("/tasks/transactions").handler(this.createEchoHandler());
 
     router.get("/states/communities/:communityId/users/:userId").handler(this.createGetStateHandler());
     router.patch("/states/communities/:communityId/users/:userId").handler(this.createPostStateHandler());
+
+    router.post("/events").handler(this.createPostEventsHandler());
+    router.delete("/events/:id").handler(this.createDeleteEventsHandler());
+
   }
 
   /**
@@ -212,6 +226,87 @@ public class WeNetInteractionProtocolEngineMocker extends AbstractComponentMocke
       response.end(currentState.toBufferWithEmptyValues());
 
     };
+  }
+
+  /**
+   * Handler that delete an event.
+   *
+   * @return the delete event handler.
+   */
+  private Handler<RoutingContext> createDeleteEventsHandler() {
+
+    return ctx -> {
+
+      try {
+
+        final var id = Long.parseLong(ctx.pathParam("id"));
+        final var max = this.events.size();
+        for (var i = 0; i < max; i++) {
+
+          final var event = this.events.get(i);
+          if (event.id == id) {
+
+            this.events.remove(i);
+            final var response = ctx.response();
+            response.setStatusCode(Status.NO_CONTENT.getStatusCode());
+            response.end();
+            return;
+          }
+        }
+
+      } catch (final Throwable ignored) {
+
+      }
+
+      final var response = ctx.response();
+      response.setStatusCode(Status.NOT_FOUND.getStatusCode());
+      response.end(new ErrorMessage("undefined_event", "The identifier is not associated to any event.").toBuffer());
+
+    };
+  }
+
+  /**
+   * Handler that post an event.
+   *
+   * @return the post event handler.
+   */
+  private Handler<RoutingContext> createPostEventsHandler() {
+
+    return ctx -> {
+
+      final var newEvent = Model.fromJsonObject(ctx.getBodyAsJson(), ProtocolEvent.class);
+      if (newEvent == null) {
+
+        final var response = ctx.response();
+        response.setStatusCode(Status.BAD_REQUEST.getStatusCode());
+        response.end(new ErrorMessage("bad_event", "The post model is not an event.").toBuffer());
+
+      } else {
+        newEvent.id = (long) this.events.size();
+        var found = true;
+        while (found) {
+
+          found = false;
+          for (final var event : this.events) {
+
+            if (event.id == newEvent.id) {
+
+              newEvent.id++;
+              found = true;
+              break;
+            }
+          }
+
+        }
+        this.events.add(newEvent);
+
+        final var response = ctx.response();
+        response.setStatusCode(Status.OK.getStatusCode());
+        response.end(newEvent.toBufferWithEmptyValues());
+      }
+
+    };
+
   }
 
 }

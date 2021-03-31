@@ -126,4 +126,24 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void sendEvent(final JsonObject event, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(event, "/events").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteEvent(final long id, final Handler<AsyncResult<Void>> handler) {
+
+    this.delete("/events", id).onComplete(handler);
+
+  }
+
 }
