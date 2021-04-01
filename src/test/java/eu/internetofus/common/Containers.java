@@ -98,7 +98,7 @@ public class Containers {
   /**
    * The name of the WeNet interaction manager docker container to use.
    */
-  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:0.19.0";
+  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:0.20.0";
 
   /**
    * The default wenet component apikey.
