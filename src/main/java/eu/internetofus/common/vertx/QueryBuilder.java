@@ -62,7 +62,7 @@ public class QueryBuilder {
 
     if (pattern != null) {
 
-      this.query.put(fieldName, new JsonObject().put("$regex", pattern));
+      this.query.put(fieldName, new JsonObject().put("$regex", pattern).put("$options", "i"));
     }
 
     return this;
@@ -83,7 +83,8 @@ public class QueryBuilder {
       final var patternsMatch = new JsonArray();
       for (final String pattern : patterns) {
 
-        patternsMatch.add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", pattern)));
+        patternsMatch
+            .add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", pattern).put("$options", "i")));
       }
       if (patternsMatch.size() != 0) {
 
@@ -284,7 +285,7 @@ public class QueryBuilder {
     if (this.containsPattern(value)) {
 
       final var pattern = this.extractPattern(value);
-      elementMatch.put("$regex", pattern);
+      elementMatch.put("$regex", pattern).put("$options", "i");
 
     } else {
 
