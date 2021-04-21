@@ -64,13 +64,13 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
           final var routerFactory = createRouterFactory.result();
 
           this.mountServiceInterfaces(routerFactory);
+          routerFactory.rootHandler(CorsHandler.create());
 
           // bind the ERROR handlers
           final var router = routerFactory.createRouter();
           router.errorHandler(Status.NOT_FOUND.getStatusCode(), NotFoundHandler.build());
           router.errorHandler(Status.BAD_REQUEST.getStatusCode(), BadRequestHandler.build());
           router.errorHandler(Status.INTERNAL_SERVER_ERROR.getStatusCode(), InternalServerErrorHandler.build());
-          router.route().handler(CorsHandler.create());
 
           final var apiConf = this.config().getJsonObject("api", new JsonObject());
           final var httpServerOptions = new HttpServerOptions(apiConf);
