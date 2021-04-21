@@ -80,7 +80,7 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
   public JsonObject callbacks;
 
   /**
-   * The individual norms of the user
+   * The norms that describe the protocol to follow the task of this type.
    */
   @ArraySchema(schema = @Schema(implementation = ProtocolNorm.class), arraySchema = @Schema(description = "The norms that describe the protocol to follow the task of this type."))
   public List<ProtocolNorm> norms;

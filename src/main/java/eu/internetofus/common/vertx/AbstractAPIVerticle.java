@@ -31,6 +31,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.openapi.RouterBuilder;
 import javax.ws.rs.core.Response.Status;
 import org.tinylog.Logger;
@@ -69,6 +70,7 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
           router.errorHandler(Status.NOT_FOUND.getStatusCode(), NotFoundHandler.build());
           router.errorHandler(Status.BAD_REQUEST.getStatusCode(), BadRequestHandler.build());
           router.errorHandler(Status.INTERNAL_SERVER_ERROR.getStatusCode(), InternalServerErrorHandler.build());
+          router.route().handler(CorsHandler.create());
 
           final var apiConf = this.config().getJsonObject("api", new JsonObject());
           final var httpServerOptions = new HttpServerOptions(apiConf);
