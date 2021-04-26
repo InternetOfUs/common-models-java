@@ -93,7 +93,7 @@ public class Containers {
   /**
    * The name of the WeNet task manager docker container to use.
    */
-  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:0.11.0";
+  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:0.12.0";
 
   /**
    * The name of the WeNet interaction manager docker container to use.
