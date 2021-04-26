@@ -27,10 +27,15 @@
 package eu.internetofus.common.vertx;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.openapi.RouterBuilder;
 import javax.ws.rs.core.Response.Status;
@@ -64,7 +69,7 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
           final var routerFactory = createRouterFactory.result();
 
           this.mountServiceInterfaces(routerFactory);
-          routerFactory.rootHandler(CorsHandler.create());
+          routerFactory.rootHandler(this.createCORSHandler());
 
           // bind the ERROR handlers
           final var router = routerFactory.createRouter();
@@ -104,6 +109,59 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
       }
     });
 
+  }
+
+  /**
+   * Create the handler that allow any CORS connection.
+   *
+   * @return the handler that manage the CORS over the API.
+   */
+  protected Handler<RoutingContext> createCORSHandler() {
+
+    final var corsConf = this.config().getJsonObject("api", new JsonObject()).getJsonObject("cors", new JsonObject());
+    var handler = CorsHandler.create(corsConf.getString("origin", "*"));
+    final var headers = corsConf.getJsonArray("headers",
+        new JsonArray().add(AbstractServicesVerticle.WENET_COMPONENT_APIKEY_HEADER).add(HttpHeaders.CONTENT_TYPE)
+            .add(HttpHeaders.CONTENT_LENGTH).add(HttpHeaders.CONTENT_RANGE).add(HttpHeaders.ACCEPT)
+            .add(HttpHeaders.ACCEPT_RANGES).add(HttpHeaders.ORIGIN));
+
+    for (var i = 0; i < headers.size(); i++) {
+
+      final var headerName = headers.getString(i);
+      if (headerName != null && headerName.length() > 0) {
+
+        handler = handler.allowedHeader(headerName);
+      }
+
+    }
+
+    final var methods = corsConf.getJsonArray("methods",
+        new JsonArray().add(HttpMethod.GET.name()).add(HttpMethod.POST.name()).add(HttpMethod.PUT.name())
+            .add(HttpMethod.PATCH.name()).add(HttpMethod.DELETE.name()).add(HttpMethod.OPTIONS.name())
+            .add(HttpMethod.HEAD.name()));
+    for (var i = 0; i < methods.size(); i++) {
+
+      var methodName = methods.getString(i);
+      if (methodName != null && methodName.length() > 0) {
+
+        try {
+
+          methodName = methodName.trim().toUpperCase();
+          final var method = HttpMethod.valueOf(methodName);
+          handler = handler.allowedMethod(method);
+
+        } catch (final Throwable throwable) {
+
+          Logger.error(throwable, "Cannot add {} as allowed method for CORS", methodName);
+        }
+      }
+
+    }
+
+    handler.allowCredentials(corsConf.getBoolean("credentials", true));
+    handler.maxAgeSeconds(corsConf.getInteger("maxAgeSeconds", 1209600));
+
+    return handler;
   }
 
   /**
