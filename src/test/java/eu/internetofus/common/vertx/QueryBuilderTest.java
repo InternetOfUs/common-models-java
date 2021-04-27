@@ -80,7 +80,8 @@ public class QueryBuilderTest {
 
     final var builder = new QueryBuilder();
     assertThat(builder.withRegex("field", "pattern")).isSameAs(builder);
-    assertThat(builder.build()).isEqualTo(new JsonObject().put("field", new JsonObject().put("$regex", "pattern")));
+    assertThat(builder.build())
+        .isEqualTo(new JsonObject().put("field", new JsonObject().put("$regex", "pattern").put("$options", "i")));
 
   }
 
@@ -293,10 +294,10 @@ public class QueryBuilderTest {
     final var builder = new QueryBuilder();
     assertThat(builder.withRegex("fieldName", Arrays.asList("key1", "key2", "key3"))).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName",
-        new JsonObject().put("$all",
-            new JsonArray().add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key1")))
-                .add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key2")))
-                .add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key3"))))));
+        new JsonObject().put("$all", new JsonArray()
+            .add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key1").put("$options", "i")))
+            .add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key2").put("$options", "i")))
+            .add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key3").put("$options", "i"))))));
 
   }
 
@@ -331,8 +332,8 @@ public class QueryBuilderTest {
 
     final var builder = new QueryBuilder();
     assertThat(builder.withEqOrRegex("fieldName", value)).isSameAs(builder);
-    assertThat(builder.build())
-        .isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$regex", builder.extractPattern(value))));
+    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName",
+        new JsonObject().put("$regex", builder.extractPattern(value)).put("$options", "i")));
 
   }
 
@@ -362,8 +363,8 @@ public class QueryBuilderTest {
     assertThat(builder.withEqOrRegex("fieldName", Arrays.asList("value", null, "/key.+/"))).isSameAs(builder);
     assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName",
         new JsonObject().put("$all",
-            new JsonArray().add(new JsonObject().put("$elemMatch", new JsonObject().put("$eq", "value")))
-                .add(new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key.+"))))));
+            new JsonArray().add(new JsonObject().put("$elemMatch", new JsonObject().put("$eq", "value"))).add(
+                new JsonObject().put("$elemMatch", new JsonObject().put("$regex", "key.+").put("$options", "i"))))));
 
   }
 
@@ -407,13 +408,11 @@ public class QueryBuilderTest {
     final var builder = new QueryBuilder();
     assertThat(builder.withElementEqOrRegex("fieldName", "subFieldName", Arrays.asList("value", "/re.*xp/", null)))
         .isSameAs(builder);
-    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName",
-        new JsonObject().put("$all",
-            new JsonArray()
-                .add(new JsonObject().put("$elemMatch",
-                    new JsonObject().put("subFieldName", new JsonObject().put("$eq", "value"))))
-                .add(new JsonObject().put("$elemMatch",
-                    new JsonObject().put("subFieldName", new JsonObject().put("$regex", "re.*xp")))))));
+    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$all", new JsonArray()
+        .add(new JsonObject().put("$elemMatch",
+            new JsonObject().put("subFieldName", new JsonObject().put("$eq", "value"))))
+        .add(new JsonObject().put("$elemMatch",
+            new JsonObject().put("subFieldName", new JsonObject().put("$regex", "re.*xp").put("$options", "i")))))));
 
   }
 
@@ -427,7 +426,8 @@ public class QueryBuilderTest {
 
     final var builder = new QueryBuilder();
     assertThat(builder.withNoExistNullEqOrRegex("fieldName", "/re.*xp/")).isSameAs(builder);
-    assertThat(builder.build()).isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$regex", "re.*xp")));
+    assertThat(builder.build())
+        .isEqualTo(new JsonObject().put("fieldName", new JsonObject().put("$regex", "re.*xp").put("$options", "i")));
 
   }
 
