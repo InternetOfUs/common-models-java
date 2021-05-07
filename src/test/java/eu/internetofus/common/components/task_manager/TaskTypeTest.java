@@ -198,8 +198,15 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
 
     final var target = this.createModelExample(1);
     final var source = this.createModelExample(23);
-    assertCanMerge(target, source, vertx, testContext,
-        merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
+    assertCanMerge(target, source, vertx, testContext, merged -> {
+
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      target.attributes.forEach(entry -> source.attributes.put(entry.getKey(), entry.getValue()));
+      target.transactions.forEach(entry -> source.transactions.put(entry.getKey(), entry.getValue()));
+      target.callbacks.forEach(entry -> source.callbacks.put(entry.getKey(), entry.getValue()));
+      assertThat(merged).isEqualTo(source);
+
+    });
 
   }
 

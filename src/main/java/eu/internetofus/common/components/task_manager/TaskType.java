@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import eu.internetofus.common.components.HumanDescriptionWithCreateUpdateTsDetails;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Mergeable;
+import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
@@ -158,23 +159,9 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
         merged.keywords = this.keywords;
       }
 
-      merged.attributes = source.attributes;
-      if (merged.attributes == null) {
-
-        merged.attributes = this.attributes;
-      }
-
-      merged.transactions = source.transactions;
-      if (merged.transactions == null) {
-
-        merged.transactions = this.transactions;
-      }
-
-      merged.callbacks = source.callbacks;
-      if (merged.callbacks == null) {
-
-        merged.callbacks = this.callbacks;
-      }
+      merged.attributes = Merges.mergeJsonObjects(this.attributes, source.attributes);
+      merged.transactions = Merges.mergeJsonObjects(this.transactions, source.transactions);
+      merged.callbacks = Merges.mergeJsonObjects(this.callbacks, source.callbacks);
 
       merged.norms = source.norms;
       if (merged.norms == null) {
