@@ -119,7 +119,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     model.keywords.add("keyword_" + (index + 2));
     model.attributes = new JsonObject().put("key", index);
     model.transactions = new JsonObject().put("transaction_" + index, new JsonObject());
-    model.callbacks = new JsonObject().put("transaction_" + index, new JsonObject());
+    model.callbacks = new JsonObject().put("callbacks_" + index, new JsonObject());
     model.norms = new ArrayList<>();
     model.norms.add(new ProtocolNormTest().createModelExample(index));
     model.norms.add(new ProtocolNormTest().createModelExample(index + 1));
@@ -201,7 +201,6 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-      target.attributes.forEach(entry -> source.attributes.put(entry.getKey(), entry.getValue()));
       target.transactions.forEach(entry -> source.transactions.put(entry.getKey(), entry.getValue()));
       target.callbacks.forEach(entry -> source.callbacks.put(entry.getKey(), entry.getValue()));
       assertThat(merged).isEqualTo(source);
