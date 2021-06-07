@@ -107,18 +107,6 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
       this.description = Validations.validateNullableStringField(codePrefix, "description", 1023, this.description);
       this.keywords = Validations.validateNullableListStringField(codePrefix, "keywords", 255, this.keywords);
       future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
-      future = future.compose(mapper -> {
-
-        if (this.transactions == null || this.transactions.isEmpty()) {
-
-          return Future.failedFuture(new ValidationErrorException(codePrefix + ".transactions",
-              "You must to define at least one transaction."));
-
-        } else {
-
-          return Future.succeededFuture();
-        }
-      });
 
       promise.complete();
 
