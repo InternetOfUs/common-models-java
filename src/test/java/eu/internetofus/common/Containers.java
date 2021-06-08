@@ -88,7 +88,7 @@ public class Containers {
   /**
    * The name of the WeNet profile manager docker container to use.
    */
-  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:0.18.3";
+  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:0.19.0";
 
   /**
    * The name of the WeNet task manager docker container to use.
@@ -98,7 +98,7 @@ public class Containers {
   /**
    * The name of the WeNet interaction manager docker container to use.
    */
-  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:0.20.0";
+  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:0.21.0";
 
   /**
    * The default wenet component apikey.
