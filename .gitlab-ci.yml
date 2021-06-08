@@ -1,29 +1,42 @@
-test-jdk11:
-  stage: test
-  image: maven:3.6.3-jdk-11
+image: maven:3.6-jdk-11
+
+cache:
+  paths:
+    - maven.repository/
+
+variables:
+  MAVEN_OPTS: "--batch-mode -Dmaven.repo.local=maven.repository -s ci_settings.xml"
+ 
+buildTestAndDeploy:
+  stage: deploy
   script:
-    - mvn $MAVEN_CLI_OPTS clean org.jacoco:jacoco-maven-plugin:prepare-agent test jacoco:report
+    - mvn deploy
   artifacts:
     paths:
       - target/site/jacoco/jacoco.xml
+    reports:
+      junit:
+        - "**/target/surefire-reports/TEST-*.xml"
+        - "**/target/failsafe-reports/TEST-*.xml"
+  allow_failure: true
 
-coverage-jdk11:
-  # Must be in a stage later than test-jdk11's stage.
-  # The `visualize` stage does not exist by default.
-  # Please define it first, or choose an existing stage like `deploy`.
+generate-coverage:
   stage: .post
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
   script:
-    # convert report from jacoco to cobertura, using relative project path
     - python /opt/cover2cover.py target/site/jacoco/jacoco.xml $CI_PROJECT_DIR/src/main/java/ > target/site/cobertura.xml
-  needs: ["test-jdk11"]
+  needs: ["buildTestAndDeploy"]
   dependencies:
-    - test-jdk11
+    - buildTestAndDeploy
   artifacts:
     reports:
       cobertura: target/site/cobertura.xml
+  allow_failure: true
 
-deploy:
-  image: maven:3.6-jdk-11
+publish:
   script:
-    - 'mvn deploy -s ci_settings.xml'
+    - mv target/generated-docs public
+  artifacts:
+    paths:
+      - public
+  allow_failure: true
