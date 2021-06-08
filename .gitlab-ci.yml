@@ -34,6 +34,7 @@ generate-coverage:
   allow_failure: true
 
 publish:
+  stage: .post
   script:
     - mv target/generated-docs public
   artifacts:
