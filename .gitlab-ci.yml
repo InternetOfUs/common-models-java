@@ -1,16 +1,12 @@
-image: maven:3.6-jdk-11
-
 cache:
   paths:
     - maven.repository/
-
-variables:
-  MAVEN_OPTS: "--batch-mode -Dmaven.repo.local=maven.repository -s ci_settings.xml"
  
 buildTestAndDeploy:
   stage: deploy
+  image: maven:3.6-jdk-11
   script:
-    - mvn deploy
+    - 'mvn --batch-mode -Dmaven.repo.local=maven.repository -s ci_settings.xml deploy'
   artifacts:
     paths:
       - target/site/jacoco/jacoco.xml
