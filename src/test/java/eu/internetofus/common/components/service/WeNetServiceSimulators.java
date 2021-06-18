@@ -27,7 +27,7 @@
 package eu.internetofus.common.components.service;
 
 import eu.internetofus.common.components.StoreServices;
-import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
+import eu.internetofus.common.components.models.WeNetUserProfile;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;

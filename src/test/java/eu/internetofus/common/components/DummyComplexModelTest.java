@@ -29,11 +29,10 @@ package eu.internetofus.common.components;
 import static eu.internetofus.common.components.MergeAsserts.assertCanMerge;
 import static eu.internetofus.common.components.MergeAsserts.assertCannotMerge;
 import static eu.internetofus.common.components.UpdatesTest.assertCannotUpdate;
-import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import eu.internetofus.common.components.profile_manager.CommunityProfile;
+import eu.internetofus.common.components.models.CommunityProfile;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -71,23 +70,6 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
       model.siblings.add(this.createModelExample(index + 1));
     }
     return model;
-  }
-
-  /**
-   * Check that an empty model is not valid.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see DummyComplexModel#validate(String, Vertx)
-   */
-  @Test
-  public void shouldModelWithBadIdNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var model = new DummyComplexModel();
-    model.id = ValidationsTest.STRING_256;
-    assertIsNotValid(model, "id", vertx, testContext);
-
   }
 
   /**
@@ -162,9 +144,12 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
     final var target = this.createModelExample(1);
     final var source = new DummyComplexModel();
     source.siblings = new ArrayList<>();
+    source.siblings = new ArrayList<>();
     source.siblings.add(new DummyComplexModel());
-    source.siblings.get(0).id = ValidationsTest.STRING_256;
-    assertCannotMerge(target, source, "siblings[0].id", vertx, testContext);
+    source.siblings.get(0).id = "0";
+    source.siblings.add(new DummyComplexModel());
+    source.siblings.get(0).id = "0";
+    assertCannotMerge(target, source, "siblings[0]", vertx, testContext);
 
   }
 
@@ -183,8 +168,10 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
     final var source = new DummyComplexModel();
     source.siblings = new ArrayList<>();
     source.siblings.add(new DummyComplexModel());
-    source.siblings.get(0).id = ValidationsTest.STRING_256;
-    assertCannotUpdate(target, source, "siblings[0].id", vertx, testContext);
+    source.siblings.get(0).id = "0";
+    source.siblings.add(new DummyComplexModel());
+    source.siblings.get(0).id = "0";
+    assertCannotUpdate(target, source, "siblings[1]", vertx, testContext);
 
   }
 

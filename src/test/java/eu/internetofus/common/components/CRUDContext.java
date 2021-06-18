@@ -27,6 +27,7 @@
 package eu.internetofus.common.components;
 
 import eu.internetofus.common.TimeManager;
+import eu.internetofus.common.components.models.CreateUpdateTsDetails;
 import io.vertx.core.Handler;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;

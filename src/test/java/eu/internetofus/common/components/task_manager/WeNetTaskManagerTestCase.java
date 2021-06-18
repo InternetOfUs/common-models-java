@@ -29,8 +29,13 @@ package eu.internetofus.common.components.task_manager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.WeNetComponentTestCase;
-import eu.internetofus.common.components.service.Message;
-import eu.internetofus.common.components.service.MessageTest;
+import eu.internetofus.common.components.models.Message;
+import eu.internetofus.common.components.models.MessageTest;
+import eu.internetofus.common.components.models.Task;
+import eu.internetofus.common.components.models.TaskTest;
+import eu.internetofus.common.components.models.TaskTransaction;
+import eu.internetofus.common.components.models.TaskTransactionTest;
+import eu.internetofus.common.components.models.TaskTypeTest;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;

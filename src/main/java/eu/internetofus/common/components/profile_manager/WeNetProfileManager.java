@@ -28,6 +28,8 @@ package eu.internetofus.common.components.profile_manager;
 
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.WeNetComponent;
+import eu.internetofus.common.components.models.CommunityProfile;
+import eu.internetofus.common.components.models.WeNetUserProfile;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;

@@ -26,10 +26,10 @@
 
 package eu.internetofus.common.components;
 
-import eu.internetofus.common.components.service.Message;
+import eu.internetofus.common.components.models.Message;
+import eu.internetofus.common.components.models.TaskTransaction;
 import eu.internetofus.common.components.service.MessagePredicates;
 import eu.internetofus.common.components.task_manager.TaskPredicates;
-import eu.internetofus.common.components.task_manager.TaskTransaction;
 import eu.internetofus.common.components.task_manager.TaskTransactionPredicates;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.vertx.core.Vertx;

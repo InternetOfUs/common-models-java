@@ -26,15 +26,16 @@
 
 package eu.internetofus.common.components;
 
-import eu.internetofus.common.components.profile_manager.CommunityMember;
-import eu.internetofus.common.components.profile_manager.Competence;
-import eu.internetofus.common.components.profile_manager.Material;
-import eu.internetofus.common.components.profile_manager.Meaning;
-import eu.internetofus.common.components.profile_manager.Norm;
-import eu.internetofus.common.components.profile_manager.PlannedActivity;
-import eu.internetofus.common.components.profile_manager.RelevantLocation;
-import eu.internetofus.common.components.profile_manager.Routine;
-import eu.internetofus.common.components.profile_manager.SocialPractice;
+import eu.internetofus.common.components.models.CommunityMember;
+import eu.internetofus.common.components.models.Competence;
+import eu.internetofus.common.components.models.Material;
+import eu.internetofus.common.components.models.Meaning;
+import eu.internetofus.common.components.models.Norm;
+import eu.internetofus.common.components.models.PlannedActivity;
+import eu.internetofus.common.components.models.ProtocolNorm;
+import eu.internetofus.common.components.models.RelevantLocation;
+import eu.internetofus.common.components.models.Routine;
+import eu.internetofus.common.components.models.SocialPractice;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -524,6 +525,29 @@ public interface Merges {
         return merged;
       }
     }
+
+  }
+
+  /**
+   * Merge two list of protocol norms.
+   *
+   * @param targetNorms target norms to merge.
+   * @param sourceNorms source norms to merge.
+   * @param codePrefix  prefix for the error code.
+   * @param vertx       the event bus infrastructure to use.
+   * @param setter      function to set the merged field list into the merged
+   *                    model.
+   *
+   * @param <M>         type of merging model.
+   *
+   * @return the future that will provide the merged list of norms.
+   */
+  static <M> Function<M, Future<M>> mergeProtocolNorms(final List<ProtocolNorm> targetNorms,
+      final List<ProtocolNorm> sourceNorms, final String codePrefix, final Vertx vertx,
+      final BiConsumer<M, List<ProtocolNorm>> setter) {
+
+    return Merges.mergeFieldList(targetNorms, sourceNorms, codePrefix, vertx, protocolNorm -> false,
+        (targetProtocolNorm, sourceProtocolNorm) -> false, setter);
 
   }
 

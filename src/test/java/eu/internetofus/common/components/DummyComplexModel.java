@@ -9,10 +9,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,19 +26,19 @@
 
 package eu.internetofus.common.components;
 
-import java.util.List;
-import java.util.UUID;
-
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Basic implementation of a {@link Model}
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class DummyComplexModel extends DummyModel implements Validable, Mergeable<DummyComplexModel>, Updateable<DummyComplexModel> {
+public class DummyComplexModel extends DummyModel
+    implements Validable, Mergeable<DummyComplexModel>, Updateable<DummyComplexModel> {
 
   /**
    * The index of the model.
@@ -70,8 +70,10 @@ public class DummyComplexModel extends DummyModel implements Validable, Mergeabl
       final var merged = new DummyComplexModel();
       merged.index = source.index;
       merged.siblings = source.siblings;
-      future = future.compose(Merges.mergeFieldList(this.siblings, source.siblings, codePrefix + ".siblings", vertx, dummyComplexModel -> dummyComplexModel.id != null,
-          (dummyCompleModel1, dummyComplexModel2) -> dummyCompleModel1.id.equals(dummyComplexModel2.id), (dummyComplexModel, siblings) -> dummyComplexModel.siblings = siblings));
+      future = future.compose(Merges.mergeFieldList(this.siblings, source.siblings, codePrefix + ".siblings", vertx,
+          dummyComplexModel -> dummyComplexModel.id != null,
+          (dummyCompleModel1, dummyComplexModel2) -> dummyCompleModel1.id.equals(dummyComplexModel2.id),
+          (dummyComplexModel, siblings) -> dummyComplexModel.siblings = siblings));
       future = future.compose(Validations.validateChain(codePrefix, vertx));
       future = future.map(mergedAndValidated -> {
 
@@ -99,14 +101,15 @@ public class DummyComplexModel extends DummyModel implements Validable, Mergeabl
     var future = promise.future();
     try {
 
-      this.id = Validations.validateNullableStringField(codePrefix, "id", 255, this.id);
+      this.id = Validations.validateNullableStringField(codePrefix, "id", this.id);
       if (this.id == null) {
 
         this.id = UUID.randomUUID().toString();
       }
       if (this.siblings != null) {
 
-        future = future.compose(Validations.validate(this.siblings, (d1, d2) -> d1.id.equals(d2.id), codePrefix + ".siblings", vertx));
+        future = future.compose(
+            Validations.validate(this.siblings, (d1, d2) -> d1.id.equals(d2.id), codePrefix + ".siblings", vertx));
       }
       promise.complete();
 

@@ -32,10 +32,9 @@ import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 
 import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
-import eu.internetofus.common.components.ValidationsTest;
+import eu.internetofus.common.components.models.WeNetUserProfile;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
-import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
@@ -181,24 +180,6 @@ public class ProtocolAddressTest extends ModelTestCase<ProtocolAddress> {
 
     final var model = new ProtocolAddress();
     assertIsNotValid(model, "component", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the model is not valid with a large user identifier.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see ProtocolMessage#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotValidWithLargeUserId(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var model = new ProtocolAddress();
-    model.component = ProtocolAddress.Component.USER_APP;
-    model.userId = ValidationsTest.STRING_256;
-    assertIsNotValid(model, "userId", vertx, testContext);
 
   }
 

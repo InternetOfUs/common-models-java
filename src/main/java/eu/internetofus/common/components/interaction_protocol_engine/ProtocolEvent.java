@@ -74,7 +74,7 @@ public class ProtocolEvent extends AbstractProtocolAction implements Model, Vali
     var future = super.validate(codePrefix, vertx).compose(empty -> promise.future());
     try {
 
-      this.userId = Validations.validateStringField(codePrefix, "userId", 255, this.userId);
+      this.userId = Validations.validateStringField(codePrefix, "userId", this.userId);
       future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
           WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 

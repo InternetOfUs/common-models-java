@@ -27,7 +27,7 @@
 package eu.internetofus.common.components;
 
 import java.util.List;
-
+import eu.internetofus.common.components.models.CreateUpdateTsDetails;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 

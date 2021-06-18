@@ -56,7 +56,6 @@ public interface Validations {
    *
    * @param codePrefix     the prefix of the code to use for the error message.
    * @param fieldName      name of the checking field.
-   * @param maxSize        maximum size of the string.
    * @param value          to verify.
    * @param possibleValues values that can have the value.
    *
@@ -64,8 +63,8 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid string.
    */
-  static String validateNullableStringField(final String codePrefix, final String fieldName, final int maxSize,
-      final String value, final String... possibleValues) throws ValidationErrorException {
+  static String validateNullableStringField(final String codePrefix, final String fieldName, final String value,
+      final String... possibleValues) throws ValidationErrorException {
 
     if (value != null) {
 
@@ -73,11 +72,6 @@ public interface Validations {
       if (trimedValue.length() == 0) {
 
         return null;
-
-      } else if (trimedValue.length() > maxSize) {
-
-        throw new ValidationErrorException(codePrefix + "." + fieldName,
-            "The '" + trimedValue + "' is too large. The maximum length is '" + maxSize + "'.");
 
       } else {
 
@@ -106,7 +100,6 @@ public interface Validations {
    *
    * @param codePrefix the prefix of the code to use for the error message.
    * @param fieldName  name of the checking field.
-   * @param maxSize    maximum size of the string.
    * @param values     to verify.
    *
    * @return the verified value.
@@ -114,7 +107,7 @@ public interface Validations {
    * @throws ValidationErrorException If the value is not a valid list of strings.
    */
   static List<String> validateNullableListStringField(final String codePrefix, final String fieldName,
-      final int maxSize, final List<String> values) throws ValidationErrorException {
+      final List<String> values) throws ValidationErrorException {
 
     if (values == null || values.isEmpty()) {
 
@@ -126,7 +119,7 @@ public interface Validations {
       final var max = values.size();
       for (var index = 0; index < max; index++) {
 
-        final var value = Validations.validateNullableStringField(codePrefix, fieldName + "[" + index + "]", maxSize,
+        final var value = Validations.validateNullableStringField(codePrefix, fieldName + "[" + index + "]",
             values.get(index));
         if (value != null) {
 
@@ -144,7 +137,6 @@ public interface Validations {
    *
    * @param codePrefix     the prefix of the code to use for the error message.
    * @param fieldName      name of the checking field.
-   * @param maxSize        maximum size of the string.
    * @param value          to verify.
    * @param possibleValues values that can have the value.
    *
@@ -152,10 +144,10 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid string.
    */
-  static String validateStringField(final String codePrefix, final String fieldName, final int maxSize,
-      final String value, final String... possibleValues) throws ValidationErrorException {
+  static String validateStringField(final String codePrefix, final String fieldName, final String value,
+      final String... possibleValues) throws ValidationErrorException {
 
-    final var trimedValue = validateNullableStringField(codePrefix, fieldName, maxSize, value, possibleValues);
+    final var trimedValue = validateNullableStringField(codePrefix, fieldName, value, possibleValues);
     if (trimedValue == null) {
 
       throw new ValidationErrorException(codePrefix + "." + fieldName,
@@ -177,12 +169,12 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid email.
    *
-   * @see #validateNullableStringField(String, String, int, String,String[])
+   * @see #validateNullableStringField(String, String, String,String[])
    */
   static String validateNullableEmailField(final String codePrefix, final String fieldName, final String value)
       throws ValidationErrorException {
 
-    final var trimmedValue = validateNullableStringField(codePrefix, fieldName, 255, value);
+    final var trimmedValue = validateNullableStringField(codePrefix, fieldName, value);
     if (trimmedValue != null && !EmailValidator.getInstance().isValid(trimmedValue)) {
 
       throw new ValidationErrorException(codePrefix + "." + fieldName,
@@ -203,12 +195,12 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid locale.
    *
-   * @see #validateNullableStringField(String, String, int,String,String[])
+   * @see #validateNullableStringField(String, String, String,String[])
    */
   static String validateNullableLocaleField(final String codePrefix, final String fieldName, final String value)
       throws ValidationErrorException {
 
-    final var validStringValue = validateNullableStringField(codePrefix, fieldName, 50, value);
+    final var validStringValue = validateNullableStringField(codePrefix, fieldName, value);
     if (validStringValue != null) {
 
       try {
@@ -237,12 +229,12 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid telephone.
    *
-   * @see #validateNullableStringField(String, String,int, String,String[])
+   * @see #validateNullableStringField(String, String, String,String[])
    */
   static String validateNullableTelephoneField(final String codePrefix, final String fieldName, final String locale,
       final String value) throws ValidationErrorException {
 
-    final var validStringValue = validateNullableStringField(codePrefix, fieldName, 50, value);
+    final var validStringValue = validateNullableStringField(codePrefix, fieldName, value);
     if (validStringValue != null) {
 
       try {
@@ -288,12 +280,12 @@ public interface Validations {
    *
    * @throws ValidationErrorException If the value is not a valid URL.
    *
-   * @see #validateNullableStringField(String, String,int, String,String[])
+   * @see #validateNullableStringField(String, String, String,String[])
    */
   static String validateNullableURLField(final String codePrefix, final String fieldName, final String value)
       throws ValidationErrorException {
 
-    var validStringValue = validateNullableStringField(codePrefix, fieldName, 255, value);
+    var validStringValue = validateNullableStringField(codePrefix, fieldName, value);
     if (validStringValue != null) {
 
       try {
@@ -326,7 +318,7 @@ public interface Validations {
   static String validateNullableStringDateField(final String codePrefix, final String fieldName,
       final DateTimeFormatter format, final String value) throws ValidationErrorException {
 
-    var validStringValue = validateNullableStringField(codePrefix, fieldName, 255, value);
+    var validStringValue = validateNullableStringField(codePrefix, fieldName, value);
     if (validStringValue != null) {
 
       try {

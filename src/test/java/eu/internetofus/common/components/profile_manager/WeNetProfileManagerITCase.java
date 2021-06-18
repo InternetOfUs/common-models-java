@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.StoreServices;
+import eu.internetofus.common.components.models.CommunityProfile;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 

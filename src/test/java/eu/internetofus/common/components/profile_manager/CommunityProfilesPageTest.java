@@ -29,6 +29,7 @@ package eu.internetofus.common.components.profile_manager;
 import java.util.ArrayList;
 
 import eu.internetofus.common.components.ModelTestCase;
+import eu.internetofus.common.components.models.CommunityProfileTest;
 
 /**
  * Test the {@link CommunityProfilesPage}.

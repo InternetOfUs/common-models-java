@@ -28,8 +28,8 @@ package eu.internetofus.common.components.social_context_builder;
 
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
-import eu.internetofus.common.components.profile_manager.SocialNetworkRelationship;
-import eu.internetofus.common.components.profile_manager.SocialNetworkRelationshipType;
+import eu.internetofus.common.components.models.SocialNetworkRelationship;
+import eu.internetofus.common.components.models.SocialNetworkRelationshipType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**

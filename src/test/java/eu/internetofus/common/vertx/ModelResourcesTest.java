@@ -37,7 +37,6 @@ import eu.internetofus.common.components.DummyComplexModel;
 import eu.internetofus.common.components.DummyComplexModelTest;
 import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ValidationsTest;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -286,7 +285,12 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     model.source = new DummyComplexModelTest().createModelExample(2);
-    model.source.id = ValidationsTest.STRING_256;
+    model.source.siblings = new ArrayList<>();
+    model.source.siblings.add(new DummyComplexModel());
+    model.source.siblings.get(0).id = "0";
+    model.source.siblings.add(new DummyComplexModel());
+    model.source.siblings.get(0).id = "0";
+
     final var context = this.createServiceContext(resultHandler);
     final var vertx = Vertx.vertx();
     ModelResources.validate(vertx, model, context, success);
@@ -326,41 +330,6 @@ public class ModelResourcesTest {
     ModelResources.validate(vertx, model, context, success);
     verify(success, timeout(30000).times(1)).run();
     assertThat(model.value).isEqualTo(expected);
-
-  }
-
-  /**
-   * Should not create a model if it is not valid.
-   *
-   * @param resultHandler handler to manage the HTTP result.
-   * @param storer        the function used to store the model.
-   *
-   * @see ModelResources#createModel(Vertx, JsonObject, ModelContext, BiConsumer,
-   *      ServiceContext)
-   */
-  @Test
-  public void shouldNotCreateModelBecauseItIsNotNotValid(
-      @Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
-      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<DummyComplexModel>>> storer) {
-
-    final var model = this.createModelContext();
-    final var expected = new DummyComplexModelTest().createModelExample(2);
-    final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
-    ModelResources.createModel(vertx, expected.toJsonObject().put("id", ValidationsTest.STRING_256), model, storer,
-        context);
-
-    @SuppressWarnings("unchecked")
-    final ArgumentCaptor<AsyncResult<ServiceResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
-    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
-    final var asyncResult = resultCaptor.getValue();
-    assertThat(asyncResult.failed()).isFalse();
-    final var result = asyncResult.result();
-    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
-    assertThat(error).isNotNull();
-    assertThat(error.code).contains("modelName");
-    assertThat(error.message).contains("too large");
 
   }
 
@@ -534,7 +503,9 @@ public class ModelResourcesTest {
     final var source = new DummyComplexModelTest().createModelExample(1);
     source.siblings = new ArrayList<>();
     source.siblings.add(new DummyComplexModel());
-    source.siblings.get(0).id = ValidationsTest.STRING_256;
+    source.siblings.get(0).id = "0";
+    source.siblings.add(new DummyComplexModel());
+    source.siblings.get(0).id = "0";
     final var value = source.toJsonObject();
     ModelResources.mergeModel(vertx, value, model, searcher, updater, context);
 
@@ -789,7 +760,9 @@ public class ModelResourcesTest {
     final var source = new DummyComplexModelTest().createModelExample(1);
     source.siblings = new ArrayList<>();
     source.siblings.add(new DummyComplexModel());
-    source.siblings.get(0).id = ValidationsTest.STRING_256;
+    source.siblings.get(0).id = "0";
+    source.siblings.add(new DummyComplexModel());
+    source.siblings.get(0).id = "0";
     final var value = source.toJsonObject();
     ModelResources.updateModel(vertx, value, model, searcher, updater, context);
 
@@ -2047,48 +2020,6 @@ public class ModelResourcesTest {
   }
 
   /**
-   * Should not create the model field element because the element to add is not
-   * valid.
-   *
-   * @param resultHandler     handler to manage the HTTP result.
-   * @param searcher          the function used to search a model.
-   * @param storerCreateModel the function to create the model.
-   *
-   * @see ModelResources#createModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function, BiConsumer,
-   *      BiConsumer, ServiceContext)
-   */
-  @Test
-  public void shouldNotCreateModelFieldElementBecauseElementIsNotValid(
-      @Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
-      @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
-      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> storerCreateModel) {
-
-    final var element = this.createModelFieldContextById();
-    final var target = new DummyComplexModelTest().createModelExample(2);
-    element.model.id = target.id;
-    final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
-    final var source = new DummyComplexModelTest().createModelExample(3);
-    source.id = ValidationsTest.STRING_256;
-    final var valueToCreate = source.toJsonObject();
-    ModelResources.createModelFieldElement(vertx, valueToCreate, element, searcher, dummy -> dummy.siblings,
-        (dummy, siblings) -> dummy.siblings = siblings, storerCreateModel, context);
-
-    @SuppressWarnings("unchecked")
-    final ArgumentCaptor<AsyncResult<ServiceResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
-    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
-    final var asyncResult = resultCaptor.getValue();
-    assertThat(asyncResult.failed()).isFalse();
-    final var result = asyncResult.result();
-    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
-    assertThat(error).isNotNull();
-    assertThat(error.code).contains("siblings");
-    assertThat(error.message).contains("too large");
-  }
-
-  /**
    * Should not create the model field element because it can not stored created
    * model.
    *
@@ -2465,7 +2396,7 @@ public class ModelResourcesTest {
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<Promise<JsonObject>> searchHandler = ArgumentCaptor.forClass(Promise.class);
     verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
-    final JsonObject expectedPage = new JsonObject().put("models", new JsonArray()).put("offset", 0).put("limit", 100);
+    final var expectedPage = new JsonObject().put("models", new JsonArray()).put("offset", 0).put("limit", 100);
     searchHandler.getValue().complete(expectedPage);
 
     @SuppressWarnings("unchecked")

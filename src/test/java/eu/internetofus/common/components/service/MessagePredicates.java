@@ -26,6 +26,7 @@
 
 package eu.internetofus.common.components.service;
 
+import eu.internetofus.common.components.models.Message;
 import io.vertx.core.json.JsonObject;
 import java.util.function.Predicate;
 

@@ -26,18 +26,18 @@
 
 package eu.internetofus.common.components;
 
-import eu.internetofus.common.components.profile_manager.CommunityProfile;
-import eu.internetofus.common.components.profile_manager.CommunityProfileTest;
+import eu.internetofus.common.components.models.CommunityProfile;
+import eu.internetofus.common.components.models.CommunityProfileTest;
+import eu.internetofus.common.components.models.Task;
+import eu.internetofus.common.components.models.TaskTest;
+import eu.internetofus.common.components.models.TaskType;
+import eu.internetofus.common.components.models.TaskTypeTest;
+import eu.internetofus.common.components.models.WeNetUserProfile;
+import eu.internetofus.common.components.models.WeNetUserProfileTest;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.profile_manager.WeNetUserProfile;
-import eu.internetofus.common.components.profile_manager.WeNetUserProfileTest;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.AppTest;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
-import eu.internetofus.common.components.task_manager.Task;
-import eu.internetofus.common.components.task_manager.TaskTest;
-import eu.internetofus.common.components.task_manager.TaskType;
-import eu.internetofus.common.components.task_manager.TaskTypeTest;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;

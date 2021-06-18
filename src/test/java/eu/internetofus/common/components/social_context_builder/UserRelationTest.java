@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import eu.internetofus.common.components.ModelTestCase;
-import eu.internetofus.common.components.profile_manager.SocialNetworkRelationshipType;
+import eu.internetofus.common.components.models.SocialNetworkRelationshipType;
 
 /**
  * Test the {@link UserRelation}.

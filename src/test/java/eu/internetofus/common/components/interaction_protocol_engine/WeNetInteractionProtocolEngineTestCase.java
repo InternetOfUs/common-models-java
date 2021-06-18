@@ -30,10 +30,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetComponentTestCase;
-import eu.internetofus.common.components.incentive_server.IncentiveTest;
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServer;
-import eu.internetofus.common.components.task_manager.TaskTest;
-import eu.internetofus.common.components.task_manager.TaskTransactionTest;
+import eu.internetofus.common.components.models.IncentiveTest;
+import eu.internetofus.common.components.models.TaskTest;
+import eu.internetofus.common.components.models.TaskTransactionTest;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.Test;

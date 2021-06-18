@@ -28,9 +28,9 @@ package eu.internetofus.common.components.interaction_protocol_engine;
 
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.WeNetComponent;
-import eu.internetofus.common.components.incentive_server.Incentive;
-import eu.internetofus.common.components.task_manager.Task;
-import eu.internetofus.common.components.task_manager.TaskTransaction;
+import eu.internetofus.common.components.models.Incentive;
+import eu.internetofus.common.components.models.Task;
+import eu.internetofus.common.components.models.TaskTransaction;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;

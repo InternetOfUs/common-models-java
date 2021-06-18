@@ -33,9 +33,9 @@ import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
 import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
+import eu.internetofus.common.components.models.TaskTransaction;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.task_manager.TaskTransaction;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
@@ -97,12 +97,11 @@ public class AbstractProtocolAction extends ReflectionModel implements Model, Va
     var future = promise.future();
     try {
 
-      this.appId = Validations.validateNullableStringField(codePrefix, "appId", 255, this.appId);
-      this.communityId = Validations.validateNullableStringField(codePrefix, "communityId", 255, this.communityId);
-      this.taskId = Validations.validateNullableStringField(codePrefix, "taskId", 255, this.taskId);
-      this.transactionId = Validations.validateNullableStringField(codePrefix, "transactionId", 255,
-          this.transactionId);
-      this.particle = Validations.validateStringField(codePrefix, "particle", 255, this.particle);
+      this.appId = Validations.validateNullableStringField(codePrefix, "appId", this.appId);
+      this.communityId = Validations.validateNullableStringField(codePrefix, "communityId", this.communityId);
+      this.taskId = Validations.validateNullableStringField(codePrefix, "taskId", this.taskId);
+      this.transactionId = Validations.validateNullableStringField(codePrefix, "transactionId", this.transactionId);
+      this.particle = Validations.validateStringField(codePrefix, "particle", this.particle);
 
       if (this.appId != null) {
 

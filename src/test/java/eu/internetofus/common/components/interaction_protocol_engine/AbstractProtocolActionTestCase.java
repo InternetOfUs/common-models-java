@@ -31,13 +31,12 @@ import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 
 import eu.internetofus.common.components.ModelTestCase;
-import eu.internetofus.common.components.ValidationsTest;
+import eu.internetofus.common.components.models.TaskTransactionTest;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
 import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
-import eu.internetofus.common.components.task_manager.TaskTransactionTest;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.components.task_manager.WeNetTaskManagerMocker;
 import io.vertx.core.Future;
@@ -209,23 +208,6 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
   }
 
   /**
-   * Check that not accept a large appId.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see ProtocolEvent#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithALargeAppId(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-      model.appId = ValidationsTest.STRING_256;
-      assertIsNotValid(model, "appId", vertx, testContext);
-    });
-  }
-
-  /**
    * Check that not accept an undefined appId.
    *
    * @param vertx       event bus to use.
@@ -256,23 +238,6 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.communityId = null;
       assertIsValid(model, vertx, testContext);
-    });
-  }
-
-  /**
-   * Check that not accept a large communityId.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see ProtocolEvent#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithALargeCommunityId(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-      model.communityId = ValidationsTest.STRING_256;
-      assertIsNotValid(model, "communityId", vertx, testContext);
     });
   }
 
@@ -308,23 +273,6 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
       model.taskId = null;
       model.transactionId = null;
       assertIsValid(model, vertx, testContext);
-    });
-  }
-
-  /**
-   * Check that not accept a large taskId.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see ProtocolEvent#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithALargeTaskId(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-      model.taskId = ValidationsTest.STRING_256;
-      assertIsNotValid(model, "taskId", vertx, testContext);
     });
   }
 
@@ -380,23 +328,6 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
   }
 
   /**
-   * Check that not accept a large transactionId.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see ProtocolEvent#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithALargeTransactionId(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-      model.transactionId = ValidationsTest.STRING_256;
-      assertIsNotValid(model, "transactionId", vertx, testContext);
-    });
-  }
-
-  /**
    * Check that not accept an undefined transactionId.
    *
    * @param vertx       event bus to use.
@@ -426,23 +357,6 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.particle = null;
-      assertIsNotValid(model, "particle", vertx, testContext);
-    });
-  }
-
-  /**
-   * Check that is valid with large particle.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see ProtocolEvent#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithLargeParticle(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-      model.particle = ValidationsTest.STRING_256;
       assertIsNotValid(model, "particle", vertx, testContext);
     });
   }

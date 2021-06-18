@@ -30,7 +30,6 @@ import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
-import eu.internetofus.common.components.ValidationsTest;
 import eu.internetofus.common.components.interaction_protocol_engine.ProtocolAddress.Component;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -118,23 +117,6 @@ public class ProtocolEventTest extends AbstractProtocolActionTestCase<ProtocolEv
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.userId = null;
-      assertIsNotValid(model, "userId", vertx, testContext);
-    });
-  }
-
-  /**
-   * Check that not accept a large userId.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see ProtocolEvent#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithALargeUserId(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-      model.userId = ValidationsTest.STRING_256;
       assertIsNotValid(model, "userId", vertx, testContext);
     });
   }

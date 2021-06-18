@@ -55,16 +55,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 public class ValidationsTest {
 
   /**
-   * A string with 256 characters.
-   */
-  public static final String STRING_256 = "0Ncu2eQI7boSct2Ga6VHViEPJn0HqffPajWKyL3TmgUyLG4ZjVLbaZSx7DZXuY0EAWGqWnWOB35Uql92cV2zTbBrSi4gVR0y9jJ3a5zsHnnXNFucmHRyplXw0v98l7BD4d8jvKro7QBIuZM4A4fARUol9gSrRAIoZ7PpUxtbNfteFkVhxfRUhGAkHKfRUsMulmgui5bRQaCM8ivevTJm8N4jXXUlgfkPepeMsQeQPzktJRnZDR3PxDrKLtKjoE24";
-
-  /**
-   * A string with 256 characters.
-   */
-  public static final String STRING_1024 = "qsXSHCN3y8WNG9fmnNfOaEo5JvvM609Kjzm6vZDU9KHK9hl0lYRgwS58qGd9nZz8RAVlpVqVVQZBjXOzkTgI9rGYNuAipZGFELNg9XevKjl2b1bD9Q1TJSFJJr35lWlGiaAUg6xfUVxbo1YgqKXCBdHiifmYWrrd7NmhnlPfPeRL3xJGDZGVYoT2J8kpZmzXoU9aw2ga3m4NucuZqcuaoqFSPGWNlFgdnjhHV7RryFxSwRRhfUMPj5xLyyhXDQA44mmLPGVmvtM4a32oQ6ZmANNLXECQKk12FqNKrXtk1GrWi6yFLT3zonuftSSb1K8dxhgxLIBuHdnNSJ2Sh6co6fp9QAqhZbVIBfVhT373HlHKZ0qrkEFmsgw2TgjY5OUX4ZzckFqbaTjipJpI5dxUUrEOQSKX0rmXQ9v2o6dfbYAXK7MuhLTBdqL0H20wFJcofb9XQOihMaTKIMsfRsNeiIK4ZGWxSni9SN6Y3z243zf2Cmp3gwDEYe8mH4VwVIDVxmrNZfDirLOYxHKMKHzZBcQ20ZBCODr6Wx2n7eMxhFkZa416aOssc0NRKseEnNE1SKBzjLY2GMJTnTNwRY0qQwrZJ2RenBVsQkZZoBH42qO3jafaDd0m0jhGOXfcJfkk690iTWy2AKRGEELeZiIe5fy629zFV9UGoPQ6PK7LClQX37KOxeENPxKcvlRabK49jcvV6bgjWxeYh5viFmakPbM3vddpr753FGjedyRCEszGkTLw90uKoz7yyZekEwbUV7pQcOju7nDLf8wa47BAP809YqRaEL8eFFGFpl9x72rsppZlok0Z2aSLfXyoTpYEqvsbZXvD4WjrMMEMkGySZOL7Xuwxuy1J4cEQQ5u6eAXlbr2qSZAlLXs8j5AAJJdz0Lh3r2NpLpSBHkEy35AYgJTkD9CP4YaNH93hqttJ9ajShPYYVTaObyYwWKRbLYpXCDicEmGr9Yk5HT60cU6vdAtWg38xnmFF8ltejRvq81BYyweRt8XvWwO3ZSoWqbbV";
-
-  /**
    * Assert that a model is not valid.
    *
    * @param model       to validate.
@@ -149,84 +139,65 @@ public class ValidationsTest {
   /**
    * Check that a field can be null.
    *
-   * @see Validations#validateNullableStringField(String, String,
-   *      int,String,String[])
+   * @see Validations#validateNullableStringField(String, String, String,String[])
    */
   @Test
   public void shouldNullStringFieldBeValid() {
 
     assertThatCode(
-        () -> assertThat(Validations.validateNullableStringField("codePrefix", "fieldName", 255, null)).isEqualTo(null))
+        () -> assertThat(Validations.validateNullableStringField("codePrefix", "fieldName", null)).isEqualTo(null))
             .doesNotThrowAnyException();
   }
 
   /**
    * Check that an empty is right but is changed to null.
    *
-   * @see Validations#validateNullableStringField(String, String,
-   *      int,String,String[])
+   * @see Validations#validateNullableStringField(String, String, String,String[])
    */
   @Test
   public void shouldEmptyStringFieldBeValid() {
 
     assertThatCode(
-        () -> assertThat(Validations.validateNullableStringField("codePrefix", "fieldName", 255, "")).isEqualTo(null))
+        () -> assertThat(Validations.validateNullableStringField("codePrefix", "fieldName", "")).isEqualTo(null))
             .doesNotThrowAnyException();
   }
 
   /**
    * Check that an white value is right but is changed to null.
    *
-   * @see Validations#validateNullableStringField(String, String,
-   *      int,String,String[])
+   * @see Validations#validateNullableStringField(String, String, String,String[])
    */
   @Test
   public void shouldWhiteStringFieldBeValid() {
 
-    assertThatCode(() -> assertThat(Validations.validateNullableStringField("codePrefix", "fieldName", 255, "       "))
-        .isEqualTo(null)).doesNotThrowAnyException();
+    assertThatCode(
+        () -> assertThat(Validations.validateNullableStringField("codePrefix", "fieldName", "       ")).isEqualTo(null))
+            .doesNotThrowAnyException();
   }
 
   /**
    * Check that the value is trimmed to be valid.
    *
-   * @see Validations#validateNullableStringField(String, String,
-   *      int,String,String[])
+   * @see Validations#validateNullableStringField(String, String, String,String[])
    */
   @Test
   public void shouldStringWithWhiteFieldBeValid() {
 
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableStringField("codePrefix", "fieldName", 255, "   a b c    "))
-            .isEqualTo("a b c")).doesNotThrowAnyException();
-  }
-
-  /**
-   * Check that the value of the field is not valid if it is too large.
-   *
-   * @see Validations#validateNullableStringField(String, String,
-   *      int,String,String[])
-   */
-  @Test
-  public void shouldNotBeValidIfStringIsTooLarge() {
-
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNullableStringField("codePrefix", "fieldName", 255, ValidationsTest.STRING_256))
-            .getCode()).isEqualTo("codePrefix.fieldName");
+    assertThatCode(() -> assertThat(Validations.validateNullableStringField("codePrefix", "fieldName", "   a b c    "))
+        .isEqualTo("a b c")).doesNotThrowAnyException();
   }
 
   /**
    * Check that the value of the field is not valid if the vlaue is not possible.
    *
-   * @see Validations#validateNullableStringField(String, String,
-   *      int,String,String[])
+   * @see Validations#validateNullableStringField(String, String, String,String[])
    */
   @Test
   public void shouldNotBeValidIfValueIsNotPossible() {
 
     assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNullableStringField("codePrefix", "fieldName", 255, "value", "1", "2", "3"))
-            .getCode()).isEqualTo("codePrefix.fieldName");
+        () -> Validations.validateNullableStringField("codePrefix", "fieldName", "value", "1", "2", "3")).getCode())
+            .isEqualTo("codePrefix.fieldName");
   }
 
   /**
@@ -278,19 +249,6 @@ public class ValidationsTest {
 
     assertThatCode(() -> assertThat(Validations.validateNullableEmailField("codePrefix", "fieldName", "   a@b.com    "))
         .isEqualTo("a@b.com")).doesNotThrowAnyException();
-  }
-
-  /**
-   * Check that the email value of the field is not valid if it is too large.
-   *
-   * @see Validations#validateNullableEmailField(String, String, String)
-   */
-  @Test
-  public void shouldNotBeValidIfEmailIsTooLarge() {
-
-    assertThat(assertThrows(ValidationErrorException.class, () -> Validations.validateNullableEmailField("codePrefix",
-        "fieldName", ValidationsTest.STRING_256.substring(0, 250) + "@b.com")).getCode())
-            .isEqualTo("codePrefix.fieldName");
   }
 
   /**
@@ -537,13 +495,13 @@ public class ValidationsTest {
   /**
    * Check that a field can not be a null value.
    *
-   * @see Validations#validateStringField(String, String, int, String, String...)
+   * @see Validations#validateStringField(String, String, String, String...)
    */
   @Test
   public void shouldNullStringFieldNotBeValid() {
 
     assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateStringField("codePrefix", "fieldName", 255, null)).getCode())
+        () -> Validations.validateStringField("codePrefix", "fieldName", null)).getCode())
             .isEqualTo("codePrefix.fieldName");
 
   }
@@ -551,13 +509,13 @@ public class ValidationsTest {
   /**
    * Check that a field can not be an empty value.
    *
-   * @see Validations#validateStringField(String, String, int, String, String...)
+   * @see Validations#validateStringField(String, String, String, String...)
    */
   @Test
   public void shouldEmptyStringFieldNotBeValid() {
 
     assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateStringField("codePrefix", "fieldName", 255, "")).getCode())
+        () -> Validations.validateStringField("codePrefix", "fieldName", "")).getCode())
             .isEqualTo("codePrefix.fieldName");
 
   }
@@ -565,13 +523,13 @@ public class ValidationsTest {
   /**
    * Check that a field can not be a white value.
    *
-   * @see Validations#validateStringField(String, String, int, String, String...)
+   * @see Validations#validateStringField(String, String, String, String...)
    */
   @Test
   public void shouldWhiteStringFieldNotBeValid() {
 
     assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateStringField("codePrefix", "fieldName", 255, "       ")).getCode())
+        () -> Validations.validateStringField("codePrefix", "fieldName", "       ")).getCode())
             .isEqualTo("codePrefix.fieldName");
 
   }
@@ -579,27 +537,13 @@ public class ValidationsTest {
   /**
    * Check that a field can not be a white value.
    *
-   * @see Validations#validateStringField(String, String, int, String, String...)
-   */
-  @Test
-  public void shouldStringFieldNotBeValidBecauseIsTooLong() {
-
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateStringField("codePrefix", "fieldName", 5, "123456")).getCode())
-            .isEqualTo("codePrefix.fieldName");
-
-  }
-
-  /**
-   * Check that a field can not be a white value.
-   *
-   * @see Validations#validateStringField(String, String, int, String, String...)
+   * @see Validations#validateStringField(String, String, String, String...)
    */
   @Test
   public void shouldStringFieldNotBeValidBecauseValueNotAllowed() {
 
     assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateStringField("codePrefix", "fieldName", 255, "   value    ", "1", "2", "3")).getCode())
+        () -> Validations.validateStringField("codePrefix", "fieldName", "   value    ", "1", "2", "3")).getCode())
             .isEqualTo("codePrefix.fieldName");
 
   }
@@ -607,39 +551,40 @@ public class ValidationsTest {
   /**
    * Check that a non empty string is valid.
    *
-   * @see Validations#validateStringField(String, String, int, String, String...)
+   * @see Validations#validateStringField(String, String, String, String...)
    */
   @Test
   public void shouldStringBeValid() {
 
-    assertThatCode(() -> assertThat(Validations.validateStringField("codePrefix", "fieldName", 255, "   value    "))
-        .isEqualTo("value")).doesNotThrowAnyException();
+    assertThatCode(
+        () -> assertThat(Validations.validateStringField("codePrefix", "fieldName", "   value    ")).isEqualTo("value"))
+            .doesNotThrowAnyException();
   }
 
   /**
    * Check that a non empty string is valid because is defined in the possible
    * values.
    *
-   * @see Validations#validateStringField(String, String, int, String, String...)
+   * @see Validations#validateStringField(String, String, String, String...)
    */
   @Test
   public void shouldStringBeValidBecauseIsAPosisbleValue() {
 
     assertThatCode(() -> assertThat(
-        Validations.validateStringField("codePrefix", "fieldName", 255, "   value    ", "val", "lue", "value"))
+        Validations.validateStringField("codePrefix", "fieldName", "   value    ", "val", "lue", "value"))
             .isEqualTo("value")).doesNotThrowAnyException();
   }
 
   /**
    * Check that a non empty string is valid.
    *
-   * @see Validations#validateStringField(String, String, int, String, String...)
+   * @see Validations#validateStringField(String, String, String, String...)
    */
   @Test
   public void shouldStringBeValidBecauseIsNotEmpty() {
 
-    assertThatCode(() -> assertThat(
-        Validations.validateStringField("codePrefix", "fieldName", 255, "   value   ", (String[]) null))
+    assertThatCode(
+        () -> assertThat(Validations.validateStringField("codePrefix", "fieldName", "   value   ", (String[]) null))
             .isEqualTo("value")).doesNotThrowAnyException();
   }
 
@@ -686,35 +631,35 @@ public class ValidationsTest {
   /**
    * Check that is valid a {@code null} as a nullable string list.
    *
-   * @see Validations#validateNullableListStringField(String, String, int,
+   * @see Validations#validateNullableListStringField(String, String,
    *      java.util.List)
    */
   @Test
   public void shouldSuccessValidateNullableListStringFieldWithNull() {
 
     assertThatCode(
-        () -> assertThat(Validations.validateNullableListStringField("codePrefix", "fieldName", 255, null)).isNull())
+        () -> assertThat(Validations.validateNullableListStringField("codePrefix", "fieldName", null)).isNull())
             .doesNotThrowAnyException();
   }
 
   /**
    * Check that is valid a empty list as a nullable string list.
    *
-   * @see Validations#validateNullableListStringField(String, String, int,
+   * @see Validations#validateNullableListStringField(String, String,
    *      java.util.List)
    */
   @Test
   public void shouldSuccessValidateNullableListStringFieldWithEmptyList() {
 
     assertThatCode(
-        () -> assertThat(Validations.validateNullableListStringField("codePrefix", "fieldName", 255, new ArrayList<>()))
+        () -> assertThat(Validations.validateNullableListStringField("codePrefix", "fieldName", new ArrayList<>()))
             .isEmpty()).doesNotThrowAnyException();
   }
 
   /**
    * Check that is valid a list with some strings.
    *
-   * @see Validations#validateNullableListStringField(String, String, int,
+   * @see Validations#validateNullableListStringField(String, String,
    *      java.util.List)
    */
   @Test
@@ -729,7 +674,7 @@ public class ValidationsTest {
     values.add("  1 3         ");
     values.add("                 ");
 
-    assertThatCode(() -> assertThat(Validations.validateNullableListStringField("codePrefix", "fieldName", 5, values))
+    assertThatCode(() -> assertThat(Validations.validateNullableListStringField("codePrefix", "fieldName", values))
         .hasSize(3).contains("123", atIndex(0)).contains("12345", atIndex(1)).contains("1 3", atIndex(2)))
             .doesNotThrowAnyException();
   }
@@ -737,7 +682,7 @@ public class ValidationsTest {
   /**
    * Check that is not valid a list with large strings.
    *
-   * @see Validations#validateNullableListStringField(String, String, int,
+   * @see Validations#validateNullableListStringField(String, String,
    *      java.util.List)
    */
   @Test
@@ -751,7 +696,7 @@ public class ValidationsTest {
     values.add(null);
     values.add("                 ");
     assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNullableListStringField("codePrefix", "fieldName", 5, values)).getCode())
+        () -> Validations.validateNullableListStringField("codePrefix", "fieldName", values)).getCode())
             .isEqualTo("codePrefix.fieldName[3]");
   }
 

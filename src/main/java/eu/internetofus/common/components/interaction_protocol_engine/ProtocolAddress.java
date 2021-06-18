@@ -110,10 +110,11 @@ public class ProtocolAddress extends ReflectionModel implements Model, Validable
 
       try {
 
-        this.userId = Validations.validateNullableStringField(codePrefix, "userId", 255, this.userId);
+        this.userId = Validations.validateNullableStringField(codePrefix, "userId", this.userId);
         if (this.userId != null) {
 
-          future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true, WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+          future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
+              WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
         }
         promise.complete();

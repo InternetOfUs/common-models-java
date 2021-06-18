@@ -26,7 +26,8 @@
 
 package eu.internetofus.common.components.task_manager;
 
-import eu.internetofus.common.components.service.Message;
+import eu.internetofus.common.components.models.Message;
+import eu.internetofus.common.components.models.TaskTransaction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;

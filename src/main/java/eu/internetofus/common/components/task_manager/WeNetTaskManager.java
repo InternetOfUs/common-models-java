@@ -28,7 +28,10 @@ package eu.internetofus.common.components.task_manager;
 
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.WeNetComponent;
-import eu.internetofus.common.components.service.Message;
+import eu.internetofus.common.components.models.Message;
+import eu.internetofus.common.components.models.Task;
+import eu.internetofus.common.components.models.TaskTransaction;
+import eu.internetofus.common.components.models.TaskType;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;

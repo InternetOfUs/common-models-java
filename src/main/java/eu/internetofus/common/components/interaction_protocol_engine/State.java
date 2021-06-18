@@ -26,8 +26,8 @@
 package eu.internetofus.common.components.interaction_protocol_engine;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.CreateUpdateTsDetails;
 import eu.internetofus.common.components.JsonObjectDeserializer;
+import eu.internetofus.common.components.models.CreateUpdateTsDetails;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.json.JsonObject;
 
