@@ -5,7 +5,7 @@
 			"apiVersion": "${project.version}",
 			"softwareVersion": "${project.version} (${maven.build.timestamp})",
 			"vendor": "UDT-IA, IIIA-CSIC",
-			"license": "MIT"
+			"license": "Apache v2"
 		}
 	},
 	"api": {
