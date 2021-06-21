@@ -316,10 +316,11 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
       future = future.compose(Merges.mergeField(this.dateOfBirth, source.dateOfBirth, codePrefix + ".dateOfBirth",
           vertx, (model, mergedDateOfBirth) -> model.dateOfBirth = (AliveBirthDate) mergedDateOfBirth));
 
-      future = future.compose(
-          Merges.mergeProtocolNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
-            model.norms = mergedNorms;
-          }));
+      merged.norms = source.norms;
+      if (merged.norms == null) {
+
+        merged.norms = this.norms;
+      }
 
       future = future.compose(Merges.mergePlannedActivities(this.plannedActivities, source.plannedActivities,
           codePrefix + ".plannedActivities", vertx, (model, mergedPlannedActivities) -> {

@@ -328,7 +328,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
   }
 
   /**
-   * Check that merge the latitude and longitude.
+   * Check that merge the latitude.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -336,15 +336,37 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
    */
   @Test
-  public void shouldMergeLatitudeLongitude(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldMergeLatitude(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     target.id = "1";
-    final var source = this.createModelExample(0);
+    final var source = new RelevantLocation();
+    source.latitude = 45d;
     assertCanMerge(target, source, vertx, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-      target.latitude = 0d;
-      target.longitude = 0d;
+      target.latitude = 45d;
+      assertThat(merged).isEqualTo(target);
+    });
+  }
+
+  /**
+   * Check that merge the longitude.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   */
+  @Test
+  public void shouldMergeLongitude(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    target.id = "1";
+    final var source = new RelevantLocation();
+    source.longitude = 45d;
+    assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      target.longitude = 45d;
       assertThat(merged).isEqualTo(target);
     });
   }

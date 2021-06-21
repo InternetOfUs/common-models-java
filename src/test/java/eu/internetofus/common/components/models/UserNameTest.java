@@ -27,8 +27,6 @@
 package eu.internetofus.common.components.models;
 
 import static eu.internetofus.common.components.MergeAsserts.assertCanMerge;
-import static eu.internetofus.common.components.MergeAsserts.assertCannotMerge;
-import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
 import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -86,24 +84,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   }
 
   /**
-   * Check that the name is not valid if has a large prefix.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see UserName#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithALargePrefix(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var model = new UserName();
-    model.prefix = "12345678901";
-    assertIsNotValid(model, "prefix", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the name is not valid if has a large prefix.
+   * Check that the name is valid with prefix with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -120,7 +101,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   }
 
   /**
-   * Check that the name is not valid if has a large first.
+   * Check that the name is valid with a first with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -137,7 +118,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   }
 
   /**
-   * Check that the name is not valid if has a large middle.
+   * Check that the name is valid with middle with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -154,7 +135,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   }
 
   /**
-   * Check that the name is not valid if has a large last.
+   * Check that the name is valid with a last with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -171,24 +152,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   }
 
   /**
-   * Check that the name is not valid if has a large suffix.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see UserName#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithALargeSuffix(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var model = new UserName();
-    model.suffix = "12345678901";
-    assertIsNotValid(model, "suffix", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the name is not valid if has a large suffix.
+   * Check that the name is valid if has a suffix wir¡th spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -199,31 +163,13 @@ public class UserNameTest extends ModelTestCase<UserName> {
   public void shouldBeValidASuffixWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new UserName();
-    model.suffix = "   1234567890   ";
-    assertIsValid(model, vertx, testContext, () -> assertThat(model.suffix).isEqualTo("1234567890"));
+    model.suffix = "   12345  67890   ";
+    assertIsValid(model, vertx, testContext, () -> assertThat(model.suffix).isEqualTo("12345  67890"));
 
   }
 
   /**
-   * Check that the name is not merge if has a large prefix.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see UserName#merge(UserName, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithALargePrefix(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var target = new UserName();
-    final var source = new UserName();
-    source.prefix = "12345678901";
-    assertCannotMerge(target, source, "prefix", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the name is not merge if has a large prefix.
+   * Check that the name can be merged with prefix with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -235,13 +181,13 @@ public class UserNameTest extends ModelTestCase<UserName> {
 
     final var target = new UserName();
     final var source = new UserName();
-    source.prefix = "   1234567890   ";
-    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.prefix).isEqualTo("1234567890"));
+    source.prefix = "   123 4567 890   ";
+    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.prefix).isEqualTo("123 4567 890"));
 
   }
 
   /**
-   * Check that the name is not merge if has a large first.
+   * Check that the name can merge first with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -260,7 +206,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   }
 
   /**
-   * Check that the name is not merge if has a large middle.
+   * Check that the name can merge with middle with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -279,7 +225,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   }
 
   /**
-   * Check that the name is not merge if has a large last.
+   * Check that the name can merge with last with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -298,25 +244,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
   }
 
   /**
-   * Check that the name is not merge if has a large suffix.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see UserName#merge(UserName, String, Vertx)
-   */
-  @Test
-  public void shouldNotMergeWithALargeSuffix(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var target = new UserName();
-    final var source = new UserName();
-    source.suffix = "12345678901";
-    assertCannotMerge(target, source, "suffix", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the name is not merge if has a large suffix.
+   * Check that the name can merge a suffix with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -328,8 +256,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
 
     final var target = new UserName();
     final var source = new UserName();
-    source.suffix = "   1234567890   ";
-    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.suffix).isEqualTo("1234567890"));
+    source.suffix = "   12  345678 90   ";
+    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.suffix).isEqualTo("12  345678 90"));
 
   }
 

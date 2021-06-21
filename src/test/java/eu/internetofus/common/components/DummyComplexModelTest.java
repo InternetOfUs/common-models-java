@@ -144,12 +144,11 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
     final var target = this.createModelExample(1);
     final var source = new DummyComplexModel();
     source.siblings = new ArrayList<>();
-    source.siblings = new ArrayList<>();
     source.siblings.add(new DummyComplexModel());
     source.siblings.get(0).id = "0";
     source.siblings.add(new DummyComplexModel());
-    source.siblings.get(0).id = "0";
-    assertCannotMerge(target, source, "siblings[0]", vertx, testContext);
+    source.siblings.get(1).id = "0";
+    assertCannotMerge(target, source, "siblings[1]", vertx, testContext);
 
   }
 
@@ -170,7 +169,7 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
     source.siblings.add(new DummyComplexModel());
     source.siblings.get(0).id = "0";
     source.siblings.add(new DummyComplexModel());
-    source.siblings.get(0).id = "0";
+    source.siblings.get(1).id = "0";
     assertCannotUpdate(target, source, "siblings[1]", vertx, testContext);
 
   }

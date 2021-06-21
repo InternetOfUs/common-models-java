@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Test the {@link Validations}.
@@ -252,7 +253,7 @@ public class ValidationsTest {
   }
 
   /**
-   * Check that the email value of the field is not valid if it is too large.
+   * Check that the email value of the field is not valid.
    *
    * @see Validations#validateNullableEmailField(String, String, String)
    */
@@ -316,20 +317,7 @@ public class ValidationsTest {
   }
 
   /**
-   * Check that the locale value of the field is not valid if it is too large.
-   *
-   * @see Validations#validateNullableLocaleField(String, String, String)
-   */
-  @Test
-  public void shouldNotBeValidIfLocaleIsTooLarge() {
-
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNullableLocaleField("codePrefix", "fieldName", "to_la_ge_")).getCode())
-            .isEqualTo("codePrefix.fieldName");
-  }
-
-  /**
-   * Check that the locale value of the field is not valid if it is too large.
+   * Check that the locale value of the field is not valid.
    *
    * @see Validations#validateNullableLocaleField(String, String, String)
    */
@@ -396,31 +384,20 @@ public class ValidationsTest {
   }
 
   /**
-   * Check that the telephone value of the field is not valid if it is too large.
+   * Check that the telephone value of the field is not valid.
+   *
+   * @param badPhone a phone number that is not valid.
    *
    * @see Validations#validateNullableTelephoneField(String, String,
    *      String,String)
    */
-  @Test
-  public void shouldNotBeValidIfTelephoneIsTooLarge() {
+  @ParameterizedTest(name = "The phone number '{0}' has not be valid.")
+  @ValueSource(strings = { "+349876543211", "bad telephone number", "1234567890123456789012345678" })
+  public void shouldNotBeValidABadTelephoneValue(final String badPhone) {
 
     assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNullableTelephoneField("codePrefix", "fieldName", null, "+349876543211")).getCode())
+        () -> Validations.validateNullableTelephoneField("codePrefix", "fieldName", null, badPhone)).getCode())
             .isEqualTo("codePrefix.fieldName");
-  }
-
-  /**
-   * Check that the telephone value of the field is not valid if it is too large.
-   *
-   * @see Validations#validateNullableTelephoneField(String, String,
-   *      String,String)
-   */
-  @Test
-  public void shouldNotBeValidABadTelephoneValue() {
-
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNullableTelephoneField("codePrefix", "fieldName", null, "bad telephone number"))
-            .getCode()).isEqualTo("codePrefix.fieldName");
   }
 
   /**
@@ -465,7 +442,7 @@ public class ValidationsTest {
   }
 
   /**
-   * Check that the date value of the field is not valid if it is too large.
+   * Check that the date value of the field is not valid.
    *
    * @see Validations#validateNullableStringDateField(String, String,
    *      DateTimeFormatter,String)
@@ -479,7 +456,7 @@ public class ValidationsTest {
   }
 
   /**
-   * Check that the date value of the field is not valid if it is too large.
+   * Check that the date value of the field is not valid.
    *
    * @see Validations#validateNullableStringDateField(String, String,
    *      DateTimeFormatter,String)
@@ -677,27 +654,6 @@ public class ValidationsTest {
     assertThatCode(() -> assertThat(Validations.validateNullableListStringField("codePrefix", "fieldName", values))
         .hasSize(3).contains("123", atIndex(0)).contains("12345", atIndex(1)).contains("1 3", atIndex(2)))
             .doesNotThrowAnyException();
-  }
-
-  /**
-   * Check that is not valid a list with large strings.
-   *
-   * @see Validations#validateNullableListStringField(String, String,
-   *      java.util.List)
-   */
-  @Test
-  public void shouldFailValidateNullableListStringFieldWithLargeStrings() {
-
-    final List<String> values = new ArrayList<>();
-    values.add(null);
-    values.add("                 ");
-    values.add("  123         ");
-    values.add("  1234567         ");
-    values.add(null);
-    values.add("                 ");
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNullableListStringField("codePrefix", "fieldName", values)).getCode())
-            .isEqualTo("codePrefix.fieldName[3]");
   }
 
   /**

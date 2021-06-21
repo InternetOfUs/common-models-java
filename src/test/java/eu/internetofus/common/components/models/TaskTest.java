@@ -688,7 +688,7 @@ public class TaskTest extends ModelTestCase<Task> {
   }
 
   /**
-   * Check that can not merge when the {@link Task#goal} has a bas value.
+   * Check that can not merge when the {@link Task#taskTypeId} has a bas value.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -696,16 +696,16 @@ public class TaskTest extends ModelTestCase<Task> {
    * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
    */
   @Test
-  public void shouldNotMergeWithBadGoal(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithBadTaskType(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
         final var source = new Task();
-        source.goal = new HumanDescription();
-        source.goal.name = null;
-        assertCannotMerge(target, source, "goal.name", vertx, testContext);
+        source.taskTypeId = "undefined";
+        assertCannotMerge(target, source, "taskTypeId", vertx, testContext);
+
       });
 
     });

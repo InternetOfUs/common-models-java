@@ -140,8 +140,9 @@ public class SocialPractice extends ReflectionModel
         merged.label = this.label;
       }
 
-      var future = merged.validate(codePrefix, vertx).map(empty -> merged);
-
+      final Promise<SocialPractice> promise = Promise.promise();
+      promise.complete(merged);
+      var future = promise.future();
       future = future.compose(Merges.mergeMaterials(this.materials, source.materials, codePrefix + ".materials", vertx,
           (model, mergedMaterials) -> {
             model.materials = mergedMaterials;
@@ -150,10 +151,13 @@ public class SocialPractice extends ReflectionModel
           vertx, (model, mergedCompetences) -> {
             model.competences = mergedCompetences;
           }));
-      future = future.compose(
-          Merges.mergeProtocolNorms(this.norms, source.norms, codePrefix + ".norms", vertx, (model, mergedNorms) -> {
-            model.norms = mergedNorms;
-          }));
+      merged.norms = source.norms;
+      if (merged.norms == null) {
+
+        merged.norms = this.norms;
+      }
+
+      future = future.compose(Validations.validateChain(codePrefix, vertx));
       // When merged set the fixed field values
       future = future.map(mergedValidatedModel -> {
 

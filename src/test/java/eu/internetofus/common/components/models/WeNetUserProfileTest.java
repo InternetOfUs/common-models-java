@@ -771,7 +771,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   }
 
   /**
-   * Check that not merge profiles with duplicated social practice identifiers.
+   * Check that not merge profiles with duplicated norms.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -779,16 +779,16 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
    */
   @Test
-  public void shouldNotMergeWithADuplicatedNormIds(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeWithADuplicatedNorms(final Vertx vertx, final VertxTestContext testContext) {
 
     final var source = new WeNetUserProfile();
     source.norms = new ArrayList<>();
     source.norms.add(new ProtocolNormTest().createModelExample(0));
     source.norms.add(new ProtocolNormTest().createModelExample(1));
-    source.norms.add(new ProtocolNormTest().createModelExample(2));
+    source.norms.add(new ProtocolNormTest().createModelExample(1));
     final var target = new WeNetUserProfile();
     target.norms = new ArrayList<>();
-    target.norms.add(new ProtocolNormTest().createModelExample(1));
+    target.norms.add(new ProtocolNormTest().createModelExample(3));
     assertCannotMerge(target, source, "norms[2]", vertx, testContext);
 
   }

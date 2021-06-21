@@ -529,7 +529,7 @@ public interface Validations {
   }
 
   /**
-   * VAlidate the model received from the chain of events.
+   * Validate the model received from the chain of events.
    *
    * @param codePrefix the prefix of the code to use for the error message.
    * @param vertx      the event bus infrastructure to use.

@@ -289,7 +289,7 @@ public class ModelResourcesTest {
     model.source.siblings.add(new DummyComplexModel());
     model.source.siblings.get(0).id = "0";
     model.source.siblings.add(new DummyComplexModel());
-    model.source.siblings.get(0).id = "0";
+    model.source.siblings.get(1).id = "0";
 
     final var context = this.createServiceContext(resultHandler);
     final var vertx = Vertx.vertx();
@@ -304,8 +304,8 @@ public class ModelResourcesTest {
     assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
     final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
     assertThat(error).isNotNull();
-    assertThat(error.code).contains("modelName.id");
-    assertThat(error.message).contains("too large");
+    assertThat(error.code).contains("modelName.siblings[1]");
+    assertThat(error.message).contains("already defined");
 
   }
 
@@ -505,7 +505,7 @@ public class ModelResourcesTest {
     source.siblings.add(new DummyComplexModel());
     source.siblings.get(0).id = "0";
     source.siblings.add(new DummyComplexModel());
-    source.siblings.get(0).id = "0";
+    source.siblings.get(1).id = "0";
     final var value = source.toJsonObject();
     ModelResources.mergeModel(vertx, value, model, searcher, updater, context);
 
@@ -524,8 +524,8 @@ public class ModelResourcesTest {
     assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
     final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
     assertThat(error).isNotNull();
-    assertThat(error.code).contains("modelName.siblings[0].id");
-    assertThat(error.message).contains("too large");
+    assertThat(error.code).contains("modelName.siblings[1]");
+    assertThat(error.message).contains("already defined");
 
   }
 
@@ -762,7 +762,7 @@ public class ModelResourcesTest {
     source.siblings.add(new DummyComplexModel());
     source.siblings.get(0).id = "0";
     source.siblings.add(new DummyComplexModel());
-    source.siblings.get(0).id = "0";
+    source.siblings.get(1).id = "0";
     final var value = source.toJsonObject();
     ModelResources.updateModel(vertx, value, model, searcher, updater, context);
 
@@ -781,8 +781,8 @@ public class ModelResourcesTest {
     assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
     final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
     assertThat(error).isNotNull();
-    assertThat(error.code).contains("modelName.siblings[0].id");
-    assertThat(error.message).contains("too large");
+    assertThat(error.code).contains("modelName.siblings[1]");
+    assertThat(error.message).contains("already defined");
 
   }
 
