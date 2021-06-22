@@ -62,6 +62,22 @@ public class DummiesRepositoryIT {
   }
 
   /**
+   * Verify that can store a {@code null} dummy.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context that executes the test.
+   *
+   * @see DummiesRepository#storeDummy(Dummy)
+   */
+  @Test
+  public void shouldStoreNullDummy(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertFailure(DummiesRepository.createProxy(vertx).storeDummy(null))
+        .onFailure(error -> testContext.completeNow());
+
+  }
+
+  /**
    * Verify that can store a dummy.
    *
    * @param vertx       event bus to use.

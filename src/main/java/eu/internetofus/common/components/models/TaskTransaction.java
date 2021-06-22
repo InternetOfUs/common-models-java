@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
@@ -91,28 +90,23 @@ public class TaskTransaction extends CreateUpdateTsDetails implements Model, Val
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    try {
 
-      this.taskId = Validations.validateStringField(codePrefix, "taskId", this.taskId);
-      future = Validations.composeValidateId(future, codePrefix, "taskId", this.taskId, true,
-          WeNetTaskManager.createProxy(vertx)::retrieveTask);
+    future = Validations.composeValidateId(future, codePrefix, "taskId", this.taskId, true,
+        WeNetTaskManager.createProxy(vertx)::retrieveTask);
 
-      this.actioneerId = Validations.validateNullableStringField(codePrefix, "actioneerId", this.actioneerId);
-      if (this.actioneerId != null) {
+    if (this.actioneerId != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "actioneerId", this.actioneerId, true,
-            WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+      future = Validations.composeValidateId(future, codePrefix, "actioneerId", this.actioneerId, true,
+          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
-      }
-      this.label = Validations.validateStringField(codePrefix, "label", this.label);
-
-      // TODO verify the attributes are valid for the task transaction type
-      promise.complete();
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
     }
+    future = future.compose(empty -> Validations.validateStringField(codePrefix, "label", this.label).map(label -> {
+      this.label = label;
+      return null;
+    }));
+
+    // TODO verify the attributes are valid for the task transaction type
+    promise.complete();
 
     return future;
   }

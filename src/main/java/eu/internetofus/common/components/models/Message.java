@@ -25,7 +25,6 @@ import eu.internetofus.common.components.JsonObjectDeserializer;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.service.App;
@@ -77,22 +76,13 @@ public class Message extends ReflectionModel implements Model, Validable {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    try {
 
-      this.appId = Validations.validateStringField(codePrefix, "appId", this.appId);
-      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
-          WeNetService.createProxy(vertx)::retrieveApp);
+    future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
+        WeNetService.createProxy(vertx)::retrieveApp);
+    future = Validations.composeValidateId(future, codePrefix, "receiverId", this.receiverId, true,
+        WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
-      this.receiverId = Validations.validateStringField(codePrefix, "receiverId", this.receiverId);
-      future = Validations.composeValidateId(future, codePrefix, "receiverId", this.receiverId, true,
-          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
-
-      promise.complete();
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
-    }
+    promise.complete();
 
     return future;
   }

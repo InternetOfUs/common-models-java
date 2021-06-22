@@ -91,12 +91,6 @@ public class AbstractProtocolAction extends ReflectionModel implements Model, Va
     var future = promise.future();
     try {
 
-      this.appId = Validations.validateNullableStringField(codePrefix, "appId", this.appId);
-      this.communityId = Validations.validateNullableStringField(codePrefix, "communityId", this.communityId);
-      this.taskId = Validations.validateNullableStringField(codePrefix, "taskId", this.taskId);
-      this.transactionId = Validations.validateNullableStringField(codePrefix, "transactionId", this.transactionId);
-      this.particle = Validations.validateStringField(codePrefix, "particle", this.particle);
-
       if (this.appId != null) {
 
         future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
@@ -165,6 +159,12 @@ public class AbstractProtocolAction extends ReflectionModel implements Model, Va
         });
 
       }
+
+      future = future
+          .compose(empty -> Validations.validateStringField(codePrefix, "particle", this.particle).map(particle -> {
+            this.particle = particle;
+            return null;
+          }));
 
       if (this.transactionId != null && this.taskId == null) {
 

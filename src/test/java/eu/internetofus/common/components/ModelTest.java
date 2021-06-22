@@ -22,12 +22,18 @@ package eu.internetofus.common.components;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Test the {@link Model}
@@ -36,6 +42,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author UDT-IA, IIIA-CSIC
  */
+@ExtendWith(VertxExtension.class)
 public class ModelTest {
 
   /**
@@ -211,11 +218,14 @@ public class ModelTest {
 
   /**
    * Check that can not obtain list from a bad array on buffer.
+   *
+   * @param badValue the value that is not a valid array.
    */
-  @Test
-  public void shoulBadValueOnBufferNotConvertedToList() {
+  @ParameterizedTest(name = "The value '{0}' is not a valid json array")
+  @ValueSource(strings = { "{}", "[" })
+  public void shoulBadValueOnBufferNotConvertedToList(final String badValue) {
 
-    assertThat(Model.fromJsonArray(Buffer.buffer("[1]"), DummyModel.class)).isNull();
+    assertThat(Model.fromJsonArray(Buffer.buffer(badValue), DummyModel.class)).isNull();
 
   }
 
@@ -288,6 +298,75 @@ public class ModelTest {
   public void shouldNotConvertToBufferWithEmptyValues() {
 
     assertThat(new UnconvertedToJsonModel().toBufferWithEmptyValues()).isNull();
+
+  }
+
+  /**
+   * Check that the future is an empty list if the array is {@code null}.
+   *
+   * @param testContext context for the test.
+   *
+   * @see Model#fromFutureJsonArray(io.vertx.core.Future, Class)
+   */
+  @Test
+  public void shouldFutureFromNullArrayBeEmptyList(final VertxTestContext testContext) {
+
+    testContext.assertComplete(Model.fromFutureJsonArray(Future.succeededFuture(), DummyModel.class))
+        .onSuccess(result -> {
+
+          assertThat(result).isEmpty();
+          testContext.completeNow();
+
+        });
+
+  }
+
+  /**
+   * Check that the future fail because the array does not contains a valid model.
+   *
+   * @param testContext context for the test.
+   *
+   * @see Model#fromFutureJsonArray(io.vertx.core.Future, Class)
+   */
+  @Test
+  public void shouldFutureFailBecauseNoValidModel(final VertxTestContext testContext) {
+
+    testContext
+        .assertFailure(
+            Model.fromFutureJsonArray(Future.succeededFuture(new JsonArray().add(new JsonArray())), DummyModel.class))
+        .onFailure(result -> testContext.completeNow());
+
+  }
+
+  /**
+   * Check that the future fails if the object is {@code null}.
+   *
+   * @param testContext context for the test.
+   *
+   * @see Model#fromFutureJsonObject(io.vertx.core.Future, Class)
+   */
+  @Test
+  public void shouldFutureFailFromNullObject(final VertxTestContext testContext) {
+
+    testContext.assertFailure(Model.fromFutureJsonObject(Future.succeededFuture(), DummyModel.class))
+        .onFailure(result -> testContext.completeNow());
+
+  }
+
+  /**
+   * Check that the future fail if the object is not of the specified class.
+   *
+   * @param testContext context for the test.
+   *
+   * @see Model#fromFutureJsonObject(io.vertx.core.Future, Class)
+   */
+  @Test
+  public void shouldFutureFailBecauseNotValidModel(final VertxTestContext testContext) {
+
+    testContext
+        .assertFailure(Model.fromFutureJsonObject(
+            Future.succeededFuture(new JsonObject().put("index", new JsonArray())), DummyModel.class))
+        .onFailure(result -> testContext.completeNow());
 
   }
 

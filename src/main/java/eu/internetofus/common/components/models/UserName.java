@@ -24,7 +24,6 @@ import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
@@ -83,21 +82,36 @@ public class UserName extends ReflectionModel implements Model, Validable, Merge
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    try {
+    var future = promise.future();
 
-      this.prefix = Validations.validateNullableStringField(codePrefix, "prefix", this.prefix);
-      this.first = Validations.validateNullableStringField(codePrefix, "first", this.first);
-      this.middle = Validations.validateNullableStringField(codePrefix, "middle", this.middle);
-      this.last = Validations.validateNullableStringField(codePrefix, "last", this.last);
-      this.suffix = Validations.validateNullableStringField(codePrefix, "suffix", this.suffix);
-      promise.complete();
+    future = future
+        .compose(empty -> Validations.validateNullableStringField(codePrefix, "prefix", this.prefix).map(prefix -> {
+          this.prefix = prefix;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateNullableStringField(codePrefix, "first", this.first).map(first -> {
+          this.first = first;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateNullableStringField(codePrefix, "middle", this.middle).map(middle -> {
+          this.middle = middle;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateNullableStringField(codePrefix, "last", this.last).map(last -> {
+          this.last = last;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateNullableStringField(codePrefix, "suffix", this.suffix).map(suffix -> {
+          this.suffix = suffix;
+          return null;
+        }));
+    promise.complete();
 
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
-    }
-
-    return promise.future();
+    return future;
   }
 
   /**

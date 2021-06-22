@@ -89,24 +89,19 @@ public class SocialNetworkRelationship extends ReflectionModel
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    try {
 
-      if (this.type == null) {
+    if (this.type == null) {
 
-        promise.fail(new ValidationErrorException(codePrefix + ".type",
-            "It is not allowed a social relationship without a type'."));
+      promise.fail(new ValidationErrorException(codePrefix + ".type",
+          "It is not allowed a social relationship without a type'."));
 
-      } else {
+    } else {
 
-        this.userId = Validations.validateStringField(codePrefix, "userId", this.userId);
-        future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
-            WeNetProfileManager.createProxy(vertx)::retrieveProfile);
-        this.weight = Validations.validateNumberOnRange(codePrefix, "weight", this.weight, true, 0d, 1d);
-        promise.complete();
-      }
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
+      future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
+          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+      future = future
+          .compose(empty -> Validations.validateNumberOnRange(codePrefix, "weight", this.weight, true, 0d, 1d));
+      promise.complete();
     }
 
     return future;

@@ -28,7 +28,6 @@ import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -89,26 +88,29 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    try {
+    if (this.id != null) {
 
-      this.id = Validations.validateNullableStringField(codePrefix, "id", this.id);
-      if (this.id != null) {
-
-        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
-            WeNetTaskManager.createProxy(vertx)::retrieveTaskType);
-      }
-
-      this.name = Validations.validateStringField(codePrefix, "name", this.name);
-      this.description = Validations.validateNullableStringField(codePrefix, "description", this.description);
-      this.keywords = Validations.validateNullableListStringField(codePrefix, "keywords", this.keywords);
-      future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
-
-      promise.complete();
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
+      future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
+          WeNetTaskManager.createProxy(vertx)::retrieveTaskType);
     }
+
+    future = future
+        .compose(empty -> Validations.validateNullableStringField(codePrefix, "name", this.name).map(value -> {
+          this.name = value;
+          return null;
+        }));
+    future = future.compose(
+        empty -> Validations.validateNullableStringField(codePrefix, "description", this.description).map(value -> {
+          this.description = value;
+          return null;
+        }));
+    future = future.compose(
+        empty -> Validations.validateNullableListStringField(codePrefix, "keywords", this.keywords).map(value -> {
+          this.keywords = value;
+          return null;
+        }));
+    future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+    promise.complete();
 
     return future;
   }

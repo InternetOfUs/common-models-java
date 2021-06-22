@@ -172,7 +172,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see Routine#validate(String, Vertx)
    */
   @Test
   public void shouldRoutineWithoutUserIdNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -192,7 +192,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see Routine#validate(String, Vertx)
    */
   @Test
   public void shouldRoutineWithUndefinedUserIdNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -212,7 +212,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see Routine#validate(String, Vertx)
    */
   @Test
   public void shouldRoutineWithoutWeekdaydNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -232,7 +232,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see Routine#validate(String, Vertx)
    */
   @Test
   public void shouldRoutineWithoutConfidencedNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -252,7 +252,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see Routine#validate(String, Vertx)
    */
   @Test
   public void shouldRoutineWithoutLabel_distributiondNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -273,7 +273,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see Routine#validate(String, Vertx)
    */
   @Test
   public void shouldRoutineWithANotArrayInLabel_distributiondNotBeValid(final Vertx vertx,
@@ -295,7 +295,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see Routine#validate(String, Vertx)
    */
   @Test
   public void shouldRoutineWithANotScoredLabelArrayInLabel_distributiondNotBeValid(final Vertx vertx,
@@ -317,7 +317,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see Routine#validate(String, Vertx)
    */
   @Test
   public void shouldRoutineWithABadScoredLabelArrayInLabel_distributiondNotBeValid(final Vertx vertx,
@@ -339,7 +339,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see Routine#merge(Routine, String, Vertx)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
@@ -354,7 +354,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see Routine#merge(Routine, String, Vertx)
    */
   @Test
   public void shouldMergeTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
@@ -371,7 +371,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see Routine#merge(Routine, String, Vertx)
    */
   @Test
   public void shouldMergeOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -401,7 +401,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see Routine#merge(Routine, String, Vertx)
    */
   @Test
   public void shouldNotMergeWithBadUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -421,7 +421,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see Routine#merge(Routine, String, Vertx)
    */
   @Test
   public void shouldMergeOnlyWeekday(final Vertx vertx, final VertxTestContext testContext) {
@@ -447,7 +447,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see Routine#merge(Routine, String, Vertx)
    */
   @Test
   public void shouldMergeOnlyConfidence(final Vertx vertx, final VertxTestContext testContext) {
@@ -473,7 +473,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see Routine#merge(Routine, String, Vertx)
    */
   @Test
   public void shouldMergeOnlyLabelDistribution(final Vertx vertx, final VertxTestContext testContext) {
@@ -499,7 +499,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see Routine#merge(Routine, String, Vertx)
    */
   @Test
   public void shouldNotMergeWithBadLabelDistibutionField(final Vertx vertx, final VertxTestContext testContext) {
@@ -519,7 +519,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see Routine#merge(Routine, String, Vertx)
    */
   @Test
   public void shouldNotMergeWithBadLabelDistibutionArray(final Vertx vertx, final VertxTestContext testContext) {
@@ -539,7 +539,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see Routine#merge(Routine, String, Vertx)
    */
   @Test
   public void shouldNotMergeWithBadLabelDistibutionScoredLabel(final Vertx vertx, final VertxTestContext testContext) {
@@ -559,7 +559,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see Routine#merge(Routine, String, Vertx)
    */
   @Test
   public void shouldMergeOnlyScoredLAbelInLabelDistribution(final Vertx vertx, final VertxTestContext testContext) {
@@ -589,7 +589,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see Routine#update(Routine, String, Vertx)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
@@ -604,7 +604,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see Routine#update(Routine, String, Vertx)
    */
   @Test
   public void shouldUpdateTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
@@ -622,7 +622,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see Routine#update(Routine, String, Vertx)
    */
   @Test
   public void shouldUpdateOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -650,7 +650,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see Routine#update(Routine, String, Vertx)
    */
   @Test
   public void shouldNotUpdateWithBadUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -670,7 +670,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see Routine#update(Routine, String, Vertx)
    */
   @Test
   public void shouldUpdateOnlyWeekday(final Vertx vertx, final VertxTestContext testContext) {
@@ -694,7 +694,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see Routine#update(Routine, String, Vertx)
    */
   @Test
   public void shouldUpdateOnlyConfidence(final Vertx vertx, final VertxTestContext testContext) {
@@ -718,7 +718,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see Routine#update(Routine, String, Vertx)
    */
   @Test
   public void shouldUpdateOnlyLabelDistribution(final Vertx vertx, final VertxTestContext testContext) {
@@ -742,7 +742,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see Routine#update(Routine, String, Vertx)
    */
   @Test
   public void shouldNotUpdateWithBadLabelDistibutionField(final Vertx vertx, final VertxTestContext testContext) {
@@ -762,7 +762,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see Routine#update(Routine, String, Vertx)
    */
   @Test
   public void shouldNotUpdateWithBadLabelDistibutionArray(final Vertx vertx, final VertxTestContext testContext) {
@@ -782,7 +782,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see Routine#update(Routine, String, Vertx)
    */
   @Test
   public void shouldNotUpdateWithBadLabelDistibutionScoredLabel(final Vertx vertx, final VertxTestContext testContext) {

@@ -165,12 +165,9 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
     this.createModelExample(index, vertx, testContext).onSuccess(model -> {
 
-      final var originalUserId = model.userId;
-      model.userId = "   " + originalUserId + "   ";
-      assertIsValid(model, vertx, testContext, () -> {
+      model.userId = model.userId;
+      assertIsValid(model, vertx, testContext);
 
-        assertThat(model.userId).isEqualTo(originalUserId);
-      });
     });
 
   }

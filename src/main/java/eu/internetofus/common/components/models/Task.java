@@ -118,64 +118,62 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    try {
 
-      this.id = Validations.validateNullableStringField(codePrefix, "id", this.id);
-      if (this.id != null) {
+    if (this.id != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
-            WeNetTaskManager.createProxy(vertx)::retrieveTask);
-      }
+      future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
+          WeNetTaskManager.createProxy(vertx)::retrieveTask);
+    }
 
-      this.taskTypeId = Validations.validateStringField(codePrefix, "taskTypeId", this.taskTypeId);
-      future = Validations.composeValidateId(future, codePrefix, "taskTypeId", this.taskTypeId, true,
-          WeNetTaskManager.createProxy(vertx)::retrieveTaskType);
+    future = Validations.composeValidateId(future, codePrefix, "taskTypeId", this.taskTypeId, true,
+        WeNetTaskManager.createProxy(vertx)::retrieveTaskType);
 
-      this.requesterId = Validations.validateStringField(codePrefix, "requesterId", this.requesterId);
-      future = Validations.composeValidateId(future, codePrefix, "requesterId", this.requesterId, true,
-          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+    future = Validations.composeValidateId(future, codePrefix, "requesterId", this.requesterId, true,
+        WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
-      this.appId = Validations.validateStringField(codePrefix, "appId", this.appId);
-      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
-          WeNetService.createProxy(vertx)::retrieveApp);
+    future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
+        WeNetService.createProxy(vertx)::retrieveApp);
 
-      this.communityId = Validations.validateStringField(codePrefix, "communityId", this.communityId);
-      future = Validations.composeValidateId(future, codePrefix, "communityId", this.communityId, true,
-          WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
+    future = Validations.composeValidateId(future, codePrefix, "communityId", this.communityId, true,
+        WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
 
-      if (this.goal == null) {
+    if (this.goal == null) {
 
-        promise.fail(new ValidationErrorException(codePrefix + ".goal", "You must to define the 'goal' of the task."));
+      promise.fail(new ValidationErrorException(codePrefix + ".goal", "You must to define the 'goal' of the task."));
+
+    } else {
+
+      future = future
+          .compose(empty -> Validations.validateStringField(codePrefix, "goal.name", this.goal.name).map(name -> {
+            this.goal.name = name;
+            return null;
+          }));
+      future = future.compose(empty -> Validations
+          .validateNullableStringField(codePrefix, "goal.description", this.goal.description).map(description -> {
+            this.goal.description = description;
+            return null;
+          }));
+      future = future.compose(empty -> Validations
+          .validateNullableListStringField(codePrefix, "keywords", this.goal.keywords).map(keywords -> {
+            this.goal.keywords = keywords;
+            return null;
+          }));
+
+      future = future.compose(empty -> Validations.validateTimeStamp(codePrefix, "closeTs", this.closeTs, true));
+      if (this.closeTs != null && this.closeTs < this._creationTs) {
+
+        promise.fail(
+            new ValidationErrorException(codePrefix + ".closeTs", "The 'closeTs' has to be after the '_creationTs'."));
 
       } else {
 
-        this.goal.name = Validations.validateStringField(codePrefix, "goal.name", this.goal.name);
-        this.goal.description = Validations.validateNullableStringField(codePrefix, "goal.description",
-            this.goal.description);
-        this.goal.keywords = Validations.validateNullableListStringField(codePrefix, "goal.keywords",
-            this.goal.keywords);
+        future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
 
-        this.closeTs = Validations.validateTimeStamp(codePrefix, "closeTs", this.closeTs, true);
-        if (this.closeTs != null && this.closeTs < this._creationTs) {
+        // TODO check the attributes fetch the attributes on the type
 
-          promise.fail(new ValidationErrorException(codePrefix + ".closeTs",
-              "The 'closeTs' has to be after the '_creationTs'."));
+        promise.complete();
 
-        } else {
-
-          future = future
-              .compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
-
-          // TODO check the attributes fetch the attributes on the type
-
-          promise.complete();
-
-        }
       }
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
     }
 
     return future;

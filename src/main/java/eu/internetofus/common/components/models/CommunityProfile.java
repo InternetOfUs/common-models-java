@@ -25,7 +25,6 @@ import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.service.WeNetService;
@@ -72,7 +71,7 @@ public class CommunityProfile extends HumanDescriptionWithCreateUpdateTsDetails
   /**
    * The community norms.
    */
-  @ArraySchema(schema = @Schema(implementation = Norm.class), arraySchema = @Schema(description = "The norms that regulates the community.", nullable = true))
+  @ArraySchema(schema = @Schema(implementation = ProtocolNorm.class), arraySchema = @Schema(description = "The norms that regulates the community.", nullable = true))
   public List<ProtocolNorm> norms;
 
   /**
@@ -89,33 +88,36 @@ public class CommunityProfile extends HumanDescriptionWithCreateUpdateTsDetails
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    try {
 
-      this.id = Validations.validateNullableStringField(codePrefix, "id", this.id);
-      if (this.id != null) {
+    if (this.id != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
-            WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
-      }
-      this.appId = Validations.validateStringField(codePrefix, "appId", this.appId);
-      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
-          WeNetService.createProxy(vertx)::retrieveApp);
-
-      this.name = Validations.validateStringField(codePrefix, "name", this.name);
-      this.description = Validations.validateNullableStringField(codePrefix, "description", this.description);
-      this.keywords = Validations.validateNullableListStringField(codePrefix, "keywords", this.keywords);
-      future = future.compose(
-          Validations.validate(this.members, (a, b) -> a.userId.equals(b.userId), codePrefix + ".members", vertx));
-      future = future.compose(
-          Validations.validate(this.socialPractices, (a, b) -> a.equals(b), codePrefix + ".socialPractices", vertx));
-      future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
-
-      promise.complete();
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
+      future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
+          WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
     }
+    future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
+        WeNetService.createProxy(vertx)::retrieveApp);
+
+    future = future.compose(empty -> Validations.validateStringField(codePrefix, "name", this.name).map(name -> {
+      this.name = name;
+      return null;
+    }));
+    future = future.compose(empty -> Validations
+        .validateNullableStringField(codePrefix, "description", this.description).map(description -> {
+          this.description = description;
+          return null;
+        }));
+    future = future.compose(
+        empty -> Validations.validateNullableListStringField(codePrefix, "keywords", this.keywords).map(keywords -> {
+          this.keywords = keywords;
+          return null;
+        }));
+    future = future.compose(
+        Validations.validate(this.members, (a, b) -> a.userId.equals(b.userId), codePrefix + ".members", vertx));
+    future = future.compose(
+        Validations.validate(this.socialPractices, (a, b) -> a.equals(b), codePrefix + ".socialPractices", vertx));
+    future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+
+    promise.complete();
 
     return future;
   }

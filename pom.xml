@@ -46,6 +46,7 @@
   <!-- Maven plugins versions -->
   <io.swagger.core.v3-version>2.1.6</io.swagger.core.v3-version>
   <maven-clean-plugin-version>3.1.0</maven-clean-plugin-version>
+  <maven-source-plugin-version>3.2.1</maven-source-plugin-version>
   <maven-compiler-plugin-version>3.8.1</maven-compiler-plugin-version>
   <maven-dependency-plugin-version>3.1.2</maven-dependency-plugin-version>
   <maven-enforcer-plugin-version>3.0.0-M3</maven-enforcer-plugin-version>
@@ -280,6 +281,19 @@
    </plugin>
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-source-plugin</artifactId>
+    <version>${maven-source-plugin-version}</version>
+    <executions>
+     <execution>
+      <id>attach-sources</id>
+      <goals>
+       <goal>jar</goal>
+      </goals>
+     </execution>
+    </executions>
+   </plugin>
+   <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-clean-plugin</artifactId>
     <version>${maven-clean-plugin-version}</version>
    </plugin>
@@ -471,6 +485,14 @@
     <configuration>
      <source>${compiler.source}</source>
     </configuration>
+    <executions>
+     <execution>
+      <id>attach-javadocs</id>
+      <goals>
+       <goal>jar</goal>
+      </goals>
+     </execution>
+    </executions>
    </plugin>
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>

@@ -25,7 +25,6 @@ import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
@@ -69,48 +68,34 @@ public class RelevantLocation extends ReflectionModel
   public Double longitude;
 
   /**
-   * Create an empty relation.
-   */
-  public RelevantLocation() {
-
-  }
-
-  /**
    * {@inheritDoc}
    */
   @Override
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    try {
+    var future = promise.future();
 
-      this.id = Validations.validateNullableStringField(codePrefix, "id", this.id);
+    future = future
+        .compose(empty -> Validations.validateNullableStringField(codePrefix, "label", this.label).map(label -> {
+          this.label = label;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateNumberOnRange(codePrefix, "latitude", this.latitude, true, -90, 90));
+    future = future
+        .compose(empty -> Validations.validateNumberOnRange(codePrefix, "longitude", this.longitude, true, -180, 180));
+    future = future.compose(empty -> {
       if (this.id == null) {
 
         this.id = UUID.randomUUID().toString();
       }
-      this.label = Validations.validateNullableStringField(codePrefix, "label", this.label);
-      if (this.latitude != null && (this.latitude < -90 || this.latitude > 90)) {
+      return Future.succeededFuture();
+    });
 
-        promise.fail(
-            new ValidationErrorException(codePrefix + ".latitude", "The latitude has to be on the range [-90,90]"));
+    promise.complete();
 
-      } else if (this.longitude != null && (this.longitude < -180 || this.longitude > 180)) {
-
-        promise.fail(
-            new ValidationErrorException(codePrefix + ".longitude", "The longitude has to be on the range [-180,180]"));
-
-      } else {
-
-        promise.complete();
-      }
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
-    }
-
-    return promise.future();
+    return future;
   }
 
   /**

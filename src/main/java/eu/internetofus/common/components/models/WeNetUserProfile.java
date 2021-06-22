@@ -24,7 +24,6 @@ import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Merges;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -189,56 +188,76 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    try {
 
-      this.id = Validations.validateNullableStringField(codePrefix, "id", this.id);
-      if (this.id != null) {
+    if (this.id != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
-            WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+      future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
+          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
-      }
-
-      if (this.name != null) {
-
-        future = future.compose(mapper -> this.name.validate(codePrefix + ".name", vertx));
-      }
-      if (this.dateOfBirth != null) {
-
-        future = future.compose(mapper -> this.dateOfBirth.validate(codePrefix + ".dateOfBirth", vertx));
-
-      }
-
-      this.gender = Validations.validateNullableStringField(codePrefix, "gender", this.gender, GENDERS);
-      this.email = Validations.validateNullableEmailField(codePrefix, "email", this.email);
-      this.locale = Validations.validateNullableLocaleField(codePrefix, "locale", this.locale);
-      this.phoneNumber = Validations.validateNullableTelephoneField(codePrefix, "phoneNumber", this.locale,
-          this.phoneNumber);
-      this.avatar = Validations.validateNullableURLField(codePrefix, "avatar", this.avatar);
-      this.nationality = Validations.validateNullableStringField(codePrefix, "nationality", this.nationality);
-      this.occupation = Validations.validateNullableStringField(codePrefix, "occupation", this.occupation);
-      future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
-      future = future.compose(Validations.validate(this.plannedActivities, (a, b) -> a.id.equals(b.id),
-          codePrefix + ".plannedActivities", vertx));
-      future = future.compose(Validations.validate(this.relevantLocations, (a, b) -> a.id.equals(b.id),
-          codePrefix + ".relevantLocations", vertx));
-      future = future.compose(
-          Validations.validate(this.relationships, (a, b) -> a.equals(b), codePrefix + ".relationships", vertx));
-      future = future.compose(Validations.validate(this.personalBehaviors, (a, b) -> a.equals(b),
-          codePrefix + ".personalBehaviors", vertx));
-      future = future
-          .compose(Validations.validate(this.materials, (a, b) -> a.equals(b), codePrefix + ".materials", vertx));
-      future = future
-          .compose(Validations.validate(this.competences, (a, b) -> a.equals(b), codePrefix + ".competences", vertx));
-      future = future
-          .compose(Validations.validate(this.meanings, (a, b) -> a.equals(b), codePrefix + ".meanings", vertx));
-
-      promise.complete();
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
     }
+
+    if (this.name != null) {
+
+      future = future.compose(mapper -> this.name.validate(codePrefix + ".name", vertx));
+    }
+    if (this.dateOfBirth != null) {
+
+      future = future.compose(mapper -> this.dateOfBirth.validate(codePrefix + ".dateOfBirth", vertx));
+
+    }
+
+    future = future.compose(
+        empty -> Validations.validateNullableStringField(codePrefix, "gender", this.gender, GENDERS).map(gender -> {
+          this.gender = gender;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateNullableEmailField(codePrefix, "email", this.email).map(email -> {
+          this.email = email;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateNullableLocaleField(codePrefix, "locale", this.locale).map(locale -> {
+          this.locale = locale;
+          return null;
+        }));
+    future = future.compose(empty -> Validations
+        .validateNullableTelephoneField(codePrefix, "phoneNumber", this.locale, this.phoneNumber).map(phoneNumber -> {
+          this.phoneNumber = phoneNumber;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateNullableURLField(codePrefix, "avatar", this.avatar).map(avatar -> {
+          this.avatar = avatar;
+          return null;
+        }));
+    future = future.compose(empty -> Validations
+        .validateNullableStringField(codePrefix, "nationality", this.nationality).map(nationality -> {
+          this.nationality = nationality;
+          return null;
+        }));
+    future = future.compose(
+        empty -> Validations.validateNullableStringField(codePrefix, "occupation", this.occupation).map(occupation -> {
+          this.occupation = occupation;
+          return null;
+        }));
+    future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+    future = future.compose(Validations.validate(this.plannedActivities, (a, b) -> a.id.equals(b.id),
+        codePrefix + ".plannedActivities", vertx));
+    future = future.compose(Validations.validate(this.relevantLocations, (a, b) -> a.id.equals(b.id),
+        codePrefix + ".relevantLocations", vertx));
+    future = future
+        .compose(Validations.validate(this.relationships, (a, b) -> a.equals(b), codePrefix + ".relationships", vertx));
+    future = future.compose(
+        Validations.validate(this.personalBehaviors, (a, b) -> a.equals(b), codePrefix + ".personalBehaviors", vertx));
+    future = future
+        .compose(Validations.validate(this.materials, (a, b) -> a.equals(b), codePrefix + ".materials", vertx));
+    future = future
+        .compose(Validations.validate(this.competences, (a, b) -> a.equals(b), codePrefix + ".competences", vertx));
+    future = future
+        .compose(Validations.validate(this.meanings, (a, b) -> a.equals(b), codePrefix + ".meanings", vertx));
+
+    promise.complete();
 
     return future;
   }

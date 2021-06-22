@@ -84,46 +84,46 @@ public class Incentive extends ReflectionModel implements Model, Validable {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    try {
 
-      this.AppID = Validations.validateNullableStringField(codePrefix, "AppID", this.AppID);
-      if (this.AppID != null) {
+    if (this.AppID != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "AppID", this.AppID, true,
-            WeNetService.createProxy(vertx)::retrieveApp);
+      future = Validations.composeValidateId(future, codePrefix, "AppID", this.AppID, true,
+          WeNetService.createProxy(vertx)::retrieveApp);
 
-      }
-      this.UserId = Validations.validateNullableStringField(codePrefix, "UserId", this.UserId);
-      if (this.UserId != null) {
-
-        future = Validations.composeValidateId(future, codePrefix, "UserId", this.UserId, true,
-            WeNetProfileManager.createProxy(vertx)::retrieveProfile);
-
-      }
-      this.IncentiveType = Validations.validateNullableStringField(codePrefix, "IncentiveType", this.IncentiveType);
-      this.Issuer = Validations.validateNullableStringField(codePrefix, "Issuer", this.Issuer);
-      if (this.Message == null && this.Badge == null) {
-
-        promise.fail(new ValidationErrorException(codePrefix + ".Message", "You must specify a message or a badge"));
-      }
-
-      if (this.Message != null) {
-
-        future = future.compose(val -> this.Message.validate(codePrefix + ".Message", vertx));
-      }
-
-      if (this.Badge != null) {
-
-        future = future.compose(val -> this.Badge.validate(codePrefix + ".Badge", vertx));
-
-      }
-
-      promise.tryComplete();
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
     }
+    if (this.UserId != null) {
+
+      future = Validations.composeValidateId(future, codePrefix, "UserId", this.UserId, true,
+          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+
+    }
+    future = future.compose(
+        empty -> Validations.validateStringField(codePrefix, "IncentiveType", this.IncentiveType).map(IncentiveType -> {
+          this.IncentiveType = IncentiveType;
+          return null;
+        }));
+    future = future.compose(empty -> Validations.validateStringField(codePrefix, "Issuer", this.Issuer).map(Issuer -> {
+      this.Issuer = Issuer;
+      return null;
+    }));
+
+    if (this.Message == null && this.Badge == null) {
+
+      promise.fail(new ValidationErrorException(codePrefix + ".Message", "You must specify a message or a badge"));
+    }
+
+    if (this.Message != null) {
+
+      future = future.compose(val -> this.Message.validate(codePrefix + ".Message", vertx));
+    }
+
+    if (this.Badge != null) {
+
+      future = future.compose(val -> this.Badge.validate(codePrefix + ".Badge", vertx));
+
+    }
+
+    promise.tryComplete();
 
     return future;
 

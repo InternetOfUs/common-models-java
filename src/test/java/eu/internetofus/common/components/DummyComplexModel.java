@@ -93,24 +93,17 @@ public class DummyComplexModel extends DummyModel
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    try {
 
-      this.id = Validations.validateNullableStringField(codePrefix, "id", this.id);
-      if (this.id == null) {
+    if (this.id == null) {
 
-        this.id = UUID.randomUUID().toString();
-      }
-      if (this.siblings != null) {
-
-        future = future.compose(
-            Validations.validate(this.siblings, (d1, d2) -> d1.id.equals(d2.id), codePrefix + ".siblings", vertx));
-      }
-      promise.complete();
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
+      this.id = UUID.randomUUID().toString();
     }
+    if (this.siblings != null) {
+
+      future = future.compose(
+          Validations.validate(this.siblings, (d1, d2) -> d1.id.equals(d2.id), codePrefix + ".siblings", vertx));
+    }
+    promise.complete();
 
     return future;
   }

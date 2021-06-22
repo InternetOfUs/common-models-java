@@ -84,14 +84,14 @@ public interface DummiesRepository {
   @GenIgnore
   default Future<Dummy> storeDummy(final Dummy dummy) {
 
-    Promise<JsonObject> promise = Promise.promise();
-    final var object = dummy.toJsonObject();
-    if (object == null) {
+    final Promise<JsonObject> promise = Promise.promise();
+    if (dummy == null) {
 
       promise.fail("The dummy can not converted to JSON.");
 
     } else {
 
+      final var object = dummy.toJsonObject();
       this.storeDummy(object, promise);
 
     }

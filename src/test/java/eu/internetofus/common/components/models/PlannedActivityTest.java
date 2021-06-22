@@ -185,7 +185,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
     this.createModelExample(index, vertx, testContext).onSuccess(model -> {
 
-      model.id = " ";
+      model.id = null;
       final var originalStartTime = model.startTime;
       model.startTime = " " + originalStartTime + " ";
       final var originalEndTime = model.endTime;
@@ -193,13 +193,12 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       final var originalDescription = model.description;
       model.description = " " + originalDescription + " ";
       final List<String> originalAttendees = new ArrayList<>(model.attendees);
-      model.attendees.add(0, "");
+      model.attendees.add(0, null);
       model.attendees.add(null);
-      model.attendees.add(" ");
 
       assertIsValid(model, vertx, testContext, () -> {
 
-        assertThat(model.id).isNotNull().isNotEqualTo(" ");
+        assertThat(model.id).isNotNull();
         assertThat(model.startTime).isEqualTo(originalStartTime);
         assertThat(model.endTime).isEqualTo(originalEndTime);
         assertThat(model.description).isEqualTo(originalDescription);
@@ -370,8 +369,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     final var model = new PlannedActivity();
     model.attendees = new ArrayList<>();
     model.attendees.add(null);
-    model.attendees.add("");
-    model.attendees.add("      ");
+    model.attendees.add(null);
+    model.attendees.add(null);
 
     assertIsValid(model, vertx, testContext, () -> {
 
@@ -534,8 +533,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     final var source = new PlannedActivity();
     source.attendees = new ArrayList<>();
     source.attendees.add(null);
-    source.attendees.add("");
-    source.attendees.add("      ");
+    source.attendees.add(null);
+    source.attendees.add(null);
     assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.attendees).isNotNull().isEmpty());
 
   }
@@ -899,8 +898,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     final var source = new PlannedActivity();
     source.attendees = new ArrayList<>();
     source.attendees.add(null);
-    source.attendees.add("");
-    source.attendees.add("      ");
+    source.attendees.add(null);
+    source.attendees.add(null);
     assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated.attendees).isNotNull().isEmpty());
 
   }

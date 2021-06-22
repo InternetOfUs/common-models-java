@@ -25,7 +25,6 @@ import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -98,52 +97,31 @@ public class PlannedActivity extends ReflectionModel
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    try {
 
-      this.id = Validations.validateNullableStringField(codePrefix, "id", this.id);
-      if (this.id == null) {
+    if (this.id == null) {
 
-        this.id = UUID.randomUUID().toString();
-      }
-      this.startTime = Validations.validateNullableStringDateField(codePrefix, "startTime",
-          DateTimeFormatter.ISO_INSTANT, this.startTime);
-      this.endTime = Validations.validateNullableStringDateField(codePrefix, "endTime", DateTimeFormatter.ISO_INSTANT,
-          this.endTime);
-      this.description = Validations.validateNullableStringField(codePrefix, "description", this.description);
-      if (this.attendees != null && !this.attendees.isEmpty()) {
-
-        for (final var ids = this.attendees.listIterator(); ids.hasNext();) {
-
-          final var index = ids.nextIndex();
-          final var id = Validations.validateNullableStringField(codePrefix, "attendees[" + index + "]", ids.next());
-          ids.remove();
-          if (id != null) {
-
-            ids.add(id);
-            for (var j = 0; j < index; j++) {
-
-              if (id.equals(this.attendees.get(j))) {
-
-                return Future.failedFuture(new ValidationErrorException(codePrefix + ".attendees[" + index + "]",
-                    "Duplicated attendee. It is equals to the attendees[" + j + "]."));
-
-              }
-            }
-
-            future = Validations.composeValidateId(future, codePrefix, "attendees[" + index + "]", id, true,
-                WeNetProfileManager.createProxy(vertx)::retrieveProfile);
-
-          }
-
-        }
-
-      }
-      promise.complete();
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
+      this.id = UUID.randomUUID().toString();
     }
+    future = future.compose(empty -> Validations
+        .validateNullableStringDateField(codePrefix, "startTime", DateTimeFormatter.ISO_INSTANT, this.startTime)
+        .map(startTime -> {
+          this.startTime = startTime;
+          return null;
+        }));
+    future = future.compose(empty -> Validations
+        .validateNullableStringDateField(codePrefix, "endTime", DateTimeFormatter.ISO_INSTANT, this.endTime)
+        .map(endTime -> {
+          this.endTime = endTime;
+          return null;
+        }));
+    future = future.compose(empty -> Validations
+        .validateNullableStringField(codePrefix, "description", this.description).map(description -> {
+          this.description = description;
+          return null;
+        }));
+    future = Validations.composeValidateIds(future, codePrefix, "attendees", this.attendees, true,
+        WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+    promise.complete();
 
     return future;
 

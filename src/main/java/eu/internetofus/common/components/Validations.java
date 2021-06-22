@@ -53,40 +53,38 @@ public interface Validations {
    * @param value          to verify.
    * @param possibleValues values that can have the value.
    *
-   * @return the verified value.
-   *
-   * @throws ValidationErrorException If the value is not a valid string.
+   * @return the future with the validated value.
    */
-  static String validateNullableStringField(final String codePrefix, final String fieldName, final String value,
-      final String... possibleValues) throws ValidationErrorException {
+  static Future<String> validateNullableStringField(final String codePrefix, final String fieldName, final String value,
+      final String... possibleValues) {
 
+    final Promise<String> promise = Promise.promise();
     if (value != null) {
 
       final var trimedValue = value.trim();
       if (trimedValue.length() == 0) {
 
-        return null;
+        promise.complete();
+
+      } else if (possibleValues != null && possibleValues.length > 0
+          && !Arrays.stream(possibleValues).anyMatch(element -> trimedValue.equals(element))) {
+
+        promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
+            "'" + trimedValue + "' is not a valid value for the field '" + fieldName + "', because it expects any of '"
+                + Arrays.toString(possibleValues) + "'."));
 
       } else {
 
-        if (possibleValues != null && possibleValues.length > 0) {
+        promise.complete(trimedValue);
 
-          if (!Arrays.stream(possibleValues).anyMatch(element -> trimedValue.equals(element))) {
-
-            throw new ValidationErrorException(codePrefix + "." + fieldName,
-                "'" + trimedValue + "' is not a valid value for the field '" + fieldName
-                    + "', because it expects any of '" + Arrays.toString(possibleValues) + "'.");
-
-          }
-        }
-
-        return trimedValue;
       }
 
     } else {
 
-      return null;
+      promise.complete();
     }
+
+    return promise.future();
   }
 
   /**
@@ -96,33 +94,38 @@ public interface Validations {
    * @param fieldName  name of the checking field.
    * @param values     to verify.
    *
-   * @return the verified value.
-   *
-   * @throws ValidationErrorException If the value is not a valid list of strings.
+   * @return the future verified value.
    */
-  static List<String> validateNullableListStringField(final String codePrefix, final String fieldName,
-      final List<String> values) throws ValidationErrorException {
+  static Future<List<String>> validateNullableListStringField(final String codePrefix, final String fieldName,
+      final List<String> values) {
 
+    final Promise<List<String>> promise = Promise.promise();
+    var future = promise.future();
     if (values == null || values.isEmpty()) {
 
-      return values;
+      promise.complete();
 
     } else {
 
-      final List<String> validValues = new ArrayList<>();
       final var max = values.size();
       for (var index = 0; index < max; index++) {
 
-        final var value = Validations.validateNullableStringField(codePrefix, fieldName + "[" + index + "]",
-            values.get(index));
-        if (value != null) {
+        final var elementName = fieldName + "[" + index + "]";
+        final var value = values.get(index);
+        future = future.compose(
+            validValues -> Validations.validateNullableStringField(codePrefix, elementName, value).map(validValue -> {
+              if (validValue != null) {
 
-          validValues.add(value);
-        }
+                validValues.add(validValue);
+              }
+              return validValues;
+
+            }));
       }
 
-      return validValues;
+      promise.complete(new ArrayList<>());
     }
+    return future;
 
   }
 
@@ -134,22 +137,26 @@ public interface Validations {
    * @param value          to verify.
    * @param possibleValues values that can have the value.
    *
-   * @return the verified value.
+   * @return the future verified value.
    *
    * @throws ValidationErrorException If the value is not a valid string.
    */
-  static String validateStringField(final String codePrefix, final String fieldName, final String value,
+  static Future<String> validateStringField(final String codePrefix, final String fieldName, final String value,
       final String... possibleValues) throws ValidationErrorException {
 
-    final var trimedValue = validateNullableStringField(codePrefix, fieldName, value, possibleValues);
-    if (trimedValue == null) {
+    return validateNullableStringField(codePrefix, fieldName, value, possibleValues).compose(trimedValue -> {
 
-      throw new ValidationErrorException(codePrefix + "." + fieldName,
-          "The '" + fieldName + "' can not be 'null' or contains an empty value.");
+      if (trimedValue == null) {
 
-    }
+        return Future.failedFuture(new ValidationErrorException(codePrefix + "." + fieldName,
+            "The '" + fieldName + "' can not be 'null' or contains an empty value."));
 
-    return trimedValue;
+      } else {
+
+        return Future.succeededFuture(trimedValue);
+      }
+
+    });
   }
 
   /**
@@ -159,23 +166,24 @@ public interface Validations {
    * @param fieldName  name of the checking field.
    * @param value      to verify.
    *
-   * @return the verified email value.
-   *
-   * @throws ValidationErrorException If the value is not a valid email.
-   *
-   * @see #validateNullableStringField(String, String, String,String[])
+   * @return the future verified email value.
    */
-  static String validateNullableEmailField(final String codePrefix, final String fieldName, final String value)
-      throws ValidationErrorException {
+  static Future<String> validateNullableEmailField(final String codePrefix, final String fieldName,
+      final String value) {
 
-    final var trimmedValue = validateNullableStringField(codePrefix, fieldName, value);
-    if (trimmedValue != null && !EmailValidator.getInstance().isValid(trimmedValue)) {
+    return validateNullableStringField(codePrefix, fieldName, value).compose(validStringValue -> {
+      if (validStringValue != null && !EmailValidator.getInstance().isValid(validStringValue)) {
 
-      throw new ValidationErrorException(codePrefix + "." + fieldName,
-          "The '" + trimmedValue + "' is not a valid email address.");
+        return Future.failedFuture(new ValidationErrorException(codePrefix + "." + fieldName,
+            "The '" + validStringValue + "' is not a valid email address."));
 
-    }
-    return trimmedValue;
+      } else {
+
+        return Future.succeededFuture(validStringValue);
+      }
+
+    });
+
   }
 
   /**
@@ -185,30 +193,28 @@ public interface Validations {
    * @param fieldName  name of the checking field.
    * @param value      to verify.
    *
-   * @return the verified locale value.
-   *
-   * @throws ValidationErrorException If the value is not a valid locale.
-   *
-   * @see #validateNullableStringField(String, String, String,String[])
+   * @return the future verified locale value.
    */
-  static String validateNullableLocaleField(final String codePrefix, final String fieldName, final String value)
-      throws ValidationErrorException {
+  static Future<String> validateNullableLocaleField(final String codePrefix, final String fieldName,
+      final String value) {
 
-    final var validStringValue = validateNullableStringField(codePrefix, fieldName, value);
-    if (validStringValue != null) {
+    return validateNullableStringField(codePrefix, fieldName, value).compose(validStringValue -> {
 
       try {
 
-        LocaleUtils.toLocale(validStringValue);
+        if (validStringValue != null) {
+
+          LocaleUtils.toLocale(validStringValue);
+        }
+        return Future.succeededFuture(validStringValue);
 
       } catch (final IllegalArgumentException badLocale) {
 
-        throw new ValidationErrorException(codePrefix + "." + fieldName, badLocale);
+        return Future.failedFuture(new ValidationErrorException(codePrefix + "." + fieldName, badLocale));
 
       }
 
-    }
-    return validStringValue;
+    });
   }
 
   /**
@@ -219,48 +225,49 @@ public interface Validations {
    * @param locale     to use.
    * @param value      to verify.
    *
-   * @return the verified telephone value.
-   *
-   * @throws ValidationErrorException If the value is not a valid telephone.
-   *
-   * @see #validateNullableStringField(String, String, String,String[])
+   * @return the future verified telephone value.
    */
-  static String validateNullableTelephoneField(final String codePrefix, final String fieldName, final String locale,
-      final String value) throws ValidationErrorException {
+  static Future<String> validateNullableTelephoneField(final String codePrefix, final String fieldName,
+      final String locale, final String value) {
 
-    final var validStringValue = validateNullableStringField(codePrefix, fieldName, value);
-    if (validStringValue != null) {
+    return validateNullableStringField(codePrefix, fieldName, value).compose(validStringValue -> {
 
-      try {
+      if (validStringValue != null) {
 
-        final var phoneUtil = PhoneNumberUtil.getInstance();
-        var defaultRegion = Locale.getDefault().getCountry();
-        if (locale != null) {
+        try {
 
-          defaultRegion = new Locale(locale).getCountry();
+          final var phoneUtil = PhoneNumberUtil.getInstance();
+          var defaultRegion = Locale.getDefault().getCountry();
+          if (locale != null) {
+
+            defaultRegion = new Locale(locale).getCountry();
+
+          }
+          final var number = phoneUtil.parse(validStringValue, defaultRegion);
+          if (!phoneUtil.isValidNumber(number)) {
+
+            return Future.failedFuture(new ValidationErrorException(codePrefix + "." + fieldName,
+                "The '" + validStringValue + "' is not a valid telephone number"));
+
+          } else {
+
+            return Future.succeededFuture(phoneUtil.format(number, PhoneNumberFormat.INTERNATIONAL));
+
+          }
+
+        } catch (final Throwable badTelephone) {
+
+          return Future.failedFuture(new ValidationErrorException(codePrefix + "." + fieldName, badTelephone));
 
         }
-        final var number = phoneUtil.parse(validStringValue, defaultRegion);
-        if (!phoneUtil.isValidNumber(number)) {
 
-          throw new ValidationErrorException(codePrefix + "." + fieldName,
-              "The '" + validStringValue + "' is not a valid telephone number");
-        }
+      } else {
 
-        return phoneUtil.format(number, PhoneNumberFormat.INTERNATIONAL);
-
-      } catch (final ValidationErrorException error) {
-
-        throw error;
-
-      } catch (final Throwable badTelephone) {
-
-        throw new ValidationErrorException(codePrefix + "." + fieldName, badTelephone);
-
+        return Future.succeededFuture(validStringValue);
       }
 
-    }
-    return validStringValue;
+    });
+
   }
 
   /**
@@ -270,31 +277,30 @@ public interface Validations {
    * @param fieldName  name of the checking field.
    * @param value      to verify.
    *
-   * @return the verified URL value.
-   *
-   * @throws ValidationErrorException If the value is not a valid URL.
-   *
-   * @see #validateNullableStringField(String, String, String,String[])
+   * @return the future verified URL value.
    */
-  static String validateNullableURLField(final String codePrefix, final String fieldName, final String value)
-      throws ValidationErrorException {
+  static Future<String> validateNullableURLField(final String codePrefix, final String fieldName, final String value) {
 
-    var validStringValue = validateNullableStringField(codePrefix, fieldName, value);
-    if (validStringValue != null) {
+    return validateNullableStringField(codePrefix, fieldName, value).compose(validStringValue -> {
+      if (validStringValue != null) {
 
-      try {
+        try {
 
-        final var url = new URL(value);
-        validStringValue = url.toString();
+          final var url = new URL(value);
+          return Future.succeededFuture(url.toString());
 
-      } catch (final Throwable badURL) {
+        } catch (final Throwable badURL) {
 
-        throw new ValidationErrorException(codePrefix + "." + fieldName, badURL);
+          return Future.failedFuture(new ValidationErrorException(codePrefix + "." + fieldName, badURL));
 
+        }
+
+      } else {
+
+        return Future.succeededFuture();
       }
 
-    }
-    return validStringValue;
+    });
   }
 
   /**
@@ -305,29 +311,30 @@ public interface Validations {
    * @param format     that has to have the date.
    * @param value      to verify.
    *
-   * @return the verified date.
-   *
-   * @throws ValidationErrorException If the value is not a valid date.
+   * @return the future verified date.
    */
-  static String validateNullableStringDateField(final String codePrefix, final String fieldName,
-      final DateTimeFormatter format, final String value) throws ValidationErrorException {
+  static Future<String> validateNullableStringDateField(final String codePrefix, final String fieldName,
+      final DateTimeFormatter format, final String value) {
 
-    var validStringValue = validateNullableStringField(codePrefix, fieldName, value);
-    if (validStringValue != null) {
+    return validateNullableStringField(codePrefix, fieldName, value).compose(validStringValue -> {
+      if (validStringValue != null) {
 
-      try {
+        try {
 
-        final var date = format.parse(validStringValue);
-        validStringValue = format.format(date);
+          final var date = format.parse(validStringValue);
+          return Future.succeededFuture(format.format(date));
 
-      } catch (final Throwable badDate) {
+        } catch (final Throwable badDate) {
 
-        throw new ValidationErrorException(codePrefix + "." + fieldName, badDate);
+          return Future.failedFuture(new ValidationErrorException(codePrefix + "." + fieldName, badDate));
 
+        }
+
+      } else {
+
+        return Future.succeededFuture();
       }
-
-    }
-    return validStringValue;
+    });
   }
 
   /**
@@ -405,27 +412,26 @@ public interface Validations {
    * @param nullable   is{@code true} if the value can be {@code null}.
    *
    * @return the valid time stamp value.
-   *
-   * @throws ValidationErrorException If the value is not a valid time stamp.
    */
-  static Long validateTimeStamp(final String codePrefix, final String fieldName, final Long value,
-      final boolean nullable) throws ValidationErrorException {
+  static Future<Void> validateTimeStamp(final String codePrefix, final String fieldName, final Long value,
+      final boolean nullable) {
 
-    if (value != null) {
+    final Promise<Void> promise = Promise.promise();
+    if (value != null && value < 0) {
 
-      if (value < 0) {
+      promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
+          "The '" + value + "' is not valid time stamp because is less than '0'."));
 
-        throw new ValidationErrorException(codePrefix + "." + fieldName,
-            "The '" + value + "' is not valid time stamp because is less than '0'.");
+    } else if (!nullable && value == null) {
 
-      }
+      promise
+          .fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + value + "' has to be defined."));
 
-    } else if (!nullable) {
+    } else {
 
-      throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + value + "' has to be defined.");
-
+      promise.complete();
     }
-    return value;
+    return promise.future();
   }
 
   /**
@@ -443,31 +449,31 @@ public interface Validations {
    * @return the valid time stamp value.
    *
    * @param <T> type of number to validate.
-   *
-   * @throws ValidationErrorException If the value is not a valid time stamp.
    */
-  static <T extends Number> T validateNumberOnRange(final String codePrefix, final String fieldName, final T value,
-      final boolean nullable, final T minValue, final T maxValue) throws ValidationErrorException {
+  static <T extends Number> Future<Void> validateNumberOnRange(final String codePrefix, final String fieldName,
+      final T value, final boolean nullable, final T minValue, final T maxValue) {
 
-    if (value != null) {
+    final Promise<Void> promise = Promise.promise();
+    if (value != null && minValue != null && value.doubleValue() < minValue.doubleValue()) {
 
-      if (minValue != null && value.doubleValue() < minValue.doubleValue()) {
+      promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
+          "The '" + value + "' is not valid because it is less than '" + minValue + "'."));
 
-        throw new ValidationErrorException(codePrefix + "." + fieldName,
-            "The '" + value + "' is not valid because it is less than '" + minValue + "'.");
+    } else if (value != null && maxValue != null && value.doubleValue() > maxValue.doubleValue()) {
 
-      } else if (maxValue != null && value.doubleValue() > maxValue.doubleValue()) {
+      promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
+          "The '" + value + "' is not valid because it is greather than '" + maxValue + "'."));
 
-        throw new ValidationErrorException(codePrefix + "." + fieldName,
-            "The '" + value + "' is not valid because it is greather than '" + maxValue + "'.");
-      }
+    } else if (!nullable && value == null) {
 
-    } else if (!nullable) {
+      promise
+          .fail(new ValidationErrorException(codePrefix + "." + fieldName, "The '" + value + "' has to be defined."));
 
-      throw new ValidationErrorException(codePrefix + "." + fieldName, "The '" + value + "' has to be defined.");
+    } else {
 
+      promise.complete();
     }
-    return value;
+    return promise.future();
   }
 
   /**
@@ -490,34 +496,108 @@ public interface Validations {
     return future.compose(map -> {
 
       final Promise<Void> promise = Promise.promise();
-      searcher.apply(id).onComplete(search -> {
 
-        if (search.failed()) {
+      if (id == null) {
 
-          if (exist) {
+        promise.fail(
+            new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' cannot be 'null'."));
 
-            promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
-                "The '" + fieldName + "' '" + id + "' is not defined.", search.cause()));
+      } else {
+
+        searcher.apply(id).onComplete(search -> {
+
+          if (search.failed()) {
+
+            if (exist) {
+
+              promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
+                  "The '" + fieldName + "' '" + id + "' is not defined.", search.cause()));
+
+            } else {
+
+              promise.complete();
+            }
+
+          } else if (exist) {
+
+            promise.complete();
 
           } else {
 
-            promise.complete();
+            promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
+                "The '" + fieldName + "' '" + id + "' has already defined."));
           }
 
-        } else if (exist) {
+        });
 
-          promise.complete();
-
-        } else {
-
-          promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
-              "The '" + fieldName + "' '" + id + "' has already defined."));
-        }
-
-      });
+      }
 
       return promise.future();
+    });
 
+  }
+
+  /**
+   * Validate that a list of identifiers are valid.
+   *
+   * @param future     to compose.
+   * @param codePrefix the prefix of the code to use for the error message.
+   * @param fieldName  name of the checking field.
+   * @param ids        value to verify.
+   * @param exist      is {@code true} if the identifier has to exist.
+   * @param searcher   component to search for the model.
+   *
+   * @param <T>        type of model associated to the id.
+   *
+   * @return the mapper that will check the identifier.
+   */
+  static <T> Future<Void> composeValidateIds(final Future<Void> future, final String codePrefix, final String fieldName,
+      final List<String> ids, final boolean exist, final Function<String, Future<T>> searcher) {
+
+    return future.compose(map -> {
+
+      if (ids == null || ids.isEmpty()) {
+
+        return Future.succeededFuture();
+
+      } else {
+
+        final Promise<Void> promise = Promise.promise();
+        var idsFuture = promise.future();
+        for (final var i = ids.listIterator(); i.hasNext();) {
+
+          final var index = i.nextIndex();
+          final var id = i.next();
+          if (id != null) {
+
+            idsFuture = Validations
+                .composeValidateId(idsFuture, codePrefix, fieldName + "[" + index + "]", id, exist, searcher)
+                .compose(empty -> {
+
+                  final var found = ids.indexOf(id);
+                  if (found != index) {
+
+                    return Future.failedFuture(new ValidationErrorException(
+                        codePrefix + "." + fieldName + "[" + index + "]", "Duplicated identifier at '" + found + "'."));
+
+                  } else {
+
+                    return Future.succeededFuture();
+
+                  }
+
+                });
+
+          } else {
+
+            i.remove();
+          }
+
+        }
+        promise.complete();
+
+        return idsFuture;
+      }
     });
 
   }

@@ -24,7 +24,6 @@ import eu.internetofus.common.components.models.CommunityMember;
 import eu.internetofus.common.components.models.Competence;
 import eu.internetofus.common.components.models.Material;
 import eu.internetofus.common.components.models.Meaning;
-import eu.internetofus.common.components.models.Norm;
 import eu.internetofus.common.components.models.PlannedActivity;
 import eu.internetofus.common.components.models.RelevantLocation;
 import eu.internetofus.common.components.models.Routine;
@@ -140,28 +139,6 @@ public interface Merges {
         return model;
       });
     };
-
-  }
-
-  /**
-   * Merge two list of norms.
-   *
-   * @param targetNorms target norms to merge.
-   * @param sourceNorms source norms to merge.
-   * @param codePrefix  prefix for the error code.
-   * @param vertx       the event bus infrastructure to use.
-   * @param setter      function to set the merged field list into the merged
-   *                    model.
-   *
-   * @param <M>         type of merging model.
-   *
-   * @return the future that will provide the merged list of norms.
-   */
-  static <M> Function<M, Future<M>> mergeNorms(final List<Norm> targetNorms, final List<Norm> sourceNorms,
-      final String codePrefix, final Vertx vertx, final BiConsumer<M, List<Norm>> setter) {
-
-    return Merges.mergeFieldList(targetNorms, sourceNorms, codePrefix, vertx, norm -> norm.id != null,
-        (targetNorm, sourceNorm) -> targetNorm.id.equals(sourceNorm.id), setter);
 
   }
 

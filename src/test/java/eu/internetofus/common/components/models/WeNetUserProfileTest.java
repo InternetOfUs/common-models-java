@@ -557,7 +557,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.personalBehaviors.add(new Routine());
     model.personalBehaviors.add(new Routine());
     model.personalBehaviors.add(new Routine());
-    assertIsNotValid(model, "personalBehaviors[0].user_id", vertx, testContext);
+    assertIsNotValid(model, "personalBehaviors[0].label_distribution", vertx, testContext);
 
   }
 
@@ -1087,7 +1087,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     final var source = new WeNetUserProfile();
     source.personalBehaviors = new ArrayList<>();
     source.personalBehaviors.add(new Routine());
-    assertCannotMerge(new WeNetUserProfile(), source, "personalBehaviors[0].user_id", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "personalBehaviors[0].label_distribution", vertx, testContext);
 
   }
 
@@ -1799,7 +1799,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
           final var source = new WeNetUserProfile();
           source.personalBehaviors = new ArrayList<>();
           source.personalBehaviors.add(new Routine());
-          assertCannotMerge(target, source, "personalBehaviors[0].user_id", vertx, testContext);
+          assertCannotMerge(target, source, "personalBehaviors[0].label_distribution", vertx, testContext);
         });
       });
     });
@@ -2227,7 +2227,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     final var source = new WeNetUserProfile();
     source.personalBehaviors = new ArrayList<>();
     source.personalBehaviors.add(new Routine());
-    assertCannotUpdate(new WeNetUserProfile(), source, "personalBehaviors[0].user_id", vertx, testContext);
+    assertCannotUpdate(new WeNetUserProfile(), source, "personalBehaviors[0].label_distribution", vertx, testContext);
 
   }
 

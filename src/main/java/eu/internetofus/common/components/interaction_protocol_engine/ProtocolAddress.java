@@ -102,21 +102,13 @@ public class ProtocolAddress extends ReflectionModel implements Model, Validable
 
     } else {
 
-      try {
+      if (this.userId != null) {
 
-        this.userId = Validations.validateNullableStringField(codePrefix, "userId", this.userId);
-        if (this.userId != null) {
+        future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
+            WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
-          future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
-              WeNetProfileManager.createProxy(vertx)::retrieveProfile);
-
-        }
-        promise.complete();
-
-      } catch (final ValidationErrorException error) {
-
-        promise.fail(error);
       }
+      promise.complete();
 
     }
 

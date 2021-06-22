@@ -23,7 +23,6 @@ package eu.internetofus.common.components.models;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
@@ -69,21 +68,31 @@ public class IncentiveBadge extends ReflectionModel implements Model, Validable 
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
+    var future = promise.future();
 
-    try {
+    future = future
+        .compose(empty -> Validations.validateStringField(codePrefix, "BadgeClass", this.BadgeClass).map(BadgeClass -> {
+          this.BadgeClass = BadgeClass;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateNullableURLField(codePrefix, "ImgUrl", this.ImgUrl).map(ImgUrl -> {
+          this.ImgUrl = ImgUrl;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateStringField(codePrefix, "Criteria", this.Criteria).map(Criteria -> {
+          this.Criteria = Criteria;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateStringField(codePrefix, "Message", this.Message).map(Message -> {
+          this.Message = Message;
+          return null;
+        }));
+    promise.complete();
 
-      this.BadgeClass = Validations.validateStringField(codePrefix, "BadgeClass", this.BadgeClass);
-      this.ImgUrl = Validations.validateNullableURLField(codePrefix, "ImgUrl", this.ImgUrl);
-      this.Criteria = Validations.validateStringField(codePrefix, "Criteria", this.Criteria);
-      this.Message = Validations.validateStringField(codePrefix, "Message", this.Message);
-      promise.complete();
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
-    }
-
-    return promise.future();
+    return future;
   }
 
 }

@@ -23,7 +23,6 @@ package eu.internetofus.common.components.models;
 import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -62,19 +61,14 @@ public class CommunityMember extends CreateUpdateTsDetails
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    try {
-
-      this.userId = Validations.validateStringField(codePrefix, "userId", this.userId);
-      future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
-          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
-      this.privileges = Validations.validateNullableListStringField(codePrefix, "privileges", this.privileges);
-      promise.complete();
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
-    }
-
+    future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
+        WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+    future = future.compose(empty -> Validations
+        .validateNullableListStringField(codePrefix, "privileges", this.privileges).map(privileges -> {
+          this.privileges = privileges;
+          return null;
+        }));
+    promise.complete();
     return future;
 
   }

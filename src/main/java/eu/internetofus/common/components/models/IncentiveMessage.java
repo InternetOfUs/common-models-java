@@ -23,7 +23,6 @@ package eu.internetofus.common.components.models;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
@@ -51,17 +50,16 @@ public class IncentiveMessage extends ReflectionModel implements Model, Validabl
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    try {
+    var future = promise.future();
 
-      this.content = Validations.validateStringField(codePrefix, "content", this.content);
-      promise.complete();
+    future = future
+        .compose(empty -> Validations.validateStringField(codePrefix, "content", this.content).map(content -> {
+          this.content = content;
+          return null;
+        }));
+    promise.complete();
 
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
-    }
-
-    return promise.future();
+    return future;
   }
 
 }

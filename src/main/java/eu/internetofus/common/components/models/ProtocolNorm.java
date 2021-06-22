@@ -141,28 +141,42 @@ public class ProtocolNorm extends ReflectionModel
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    try {
+    var future = promise.future();
 
-      this.description = Validations.validateNullableStringField(codePrefix, "description", this.description);
-      this.whenever = Validations.validateStringField(codePrefix, "whenever", this.whenever);
-      this.thenceforth = Validations.validateStringField(codePrefix, "thenceforth", this.thenceforth);
-      this.ontology = Validations.validateNullableStringField(codePrefix, "ontology", this.ontology);
+    future = future.compose(empty -> Validations
+        .validateNullableStringField(codePrefix, "description", this.description).map(description -> {
+          this.description = description;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateStringField(codePrefix, "whenever", this.whenever).map(whenever -> {
+          this.whenever = whenever;
+          return null;
+        }));
+    future = future.compose(
+        empty -> Validations.validateStringField(codePrefix, "thenceforth", this.thenceforth).map(thenceforth -> {
+          this.thenceforth = thenceforth;
+          return null;
+        }));
+    future = future.compose(
+        empty -> Validations.validateNullableStringField(codePrefix, "ontology", this.ontology).map(ontology -> {
+          this.ontology = ontology;
+          return null;
+        }));
+    future = future.compose(empty -> {
       if (this.whenever.equals(this.thenceforth)) {
 
-        promise.fail(new ValidationErrorException(codePrefix + ".thenceforth",
+        return Future.failedFuture(new ValidationErrorException(codePrefix + ".thenceforth",
             "The 'thenceforth' can not be equals to the  'whenever'."));
 
       } else {
 
-        promise.complete();
+        return Future.succeededFuture();
       }
+    });
+    promise.complete();
 
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
-    }
-
-    return promise.future();
+    return future;
 
   }
 

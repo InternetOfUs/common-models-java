@@ -89,60 +89,58 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    try {
 
-      this.user_id = Validations.validateStringField(codePrefix, "user_id", this.user_id);
-      future = Validations.composeValidateId(future, codePrefix, "user_id", this.user_id, true,
-          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+    future = Validations.composeValidateId(future, codePrefix, "user_id", this.user_id, true,
+        WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
-      this.weekday = Validations.validateStringField(codePrefix, "weekday", this.weekday);
-      if (this.label_distribution == null) {
+    future = future
+        .compose(empty -> Validations.validateStringField(codePrefix, "weekday", this.weekday).map(weekday -> {
+          this.weekday = weekday;
+          return null;
+        }));
+    if (this.label_distribution == null) {
 
-        promise.fail(new ValidationErrorException(codePrefix + ".label_distribution",
-            "The 'label_distribution' can not be null."));
+      promise.fail(new ValidationErrorException(codePrefix + ".label_distribution",
+          "The 'label_distribution' can not be null."));
+
+    } else {
+
+      for (final String fieldName : this.label_distribution.fieldNames()) {
+
+        try {
+
+          final var array = this.label_distribution.getJsonArray(fieldName);
+          final var labels = Model.fromJsonArray(array, ScoredLabel.class);
+          final var scorePrefix = codePrefix + ".label_distribution." + fieldName;
+          if (labels == null) {
+
+            promise.fail(
+                new ValidationErrorException(scorePrefix, "The '" + array + "' is not a valid array of ScoredLabel."));
+            return future;
+
+          } else {
+
+            future = future.compose(
+                Validations.validate(labels, (l1, l2) -> l1.label.name.equals(l2.label.name), scorePrefix, vertx));
+          }
+
+        } catch (final ClassCastException cause) {
+
+          promise.fail(new ValidationErrorException(codePrefix + ".label_distribution." + fieldName,
+              "Does not contains an array of scored labels.", cause));
+          return future;
+        }
+
+      }
+
+      if (this.confidence == null) {
+
+        promise.fail(new ValidationErrorException(codePrefix + ".confidence", "The 'confidence' can not be null."));
 
       } else {
 
-        for (final String fieldName : this.label_distribution.fieldNames()) {
-
-          try {
-
-            final var array = this.label_distribution.getJsonArray(fieldName);
-            final var labels = Model.fromJsonArray(array, ScoredLabel.class);
-            final var scorePrefix = codePrefix + ".label_distribution." + fieldName;
-            if (labels == null) {
-
-              promise.fail(new ValidationErrorException(scorePrefix,
-                  "The '" + array + "' is not a valid array of ScoredLabel."));
-              return future;
-
-            } else {
-
-              future = future.compose(
-                  Validations.validate(labels, (l1, l2) -> l1.label.name.equals(l2.label.name), scorePrefix, vertx));
-            }
-
-          } catch (final ClassCastException cause) {
-
-            throw new ValidationErrorException(codePrefix + ".label_distribution." + fieldName,
-                "Does not contains an array of scored labels.", cause);
-          }
-
-        }
-
-        if (this.confidence == null) {
-
-          promise.fail(new ValidationErrorException(codePrefix + ".confidence", "The 'confidence' can not be null."));
-
-        } else {
-
-          promise.complete();
-        }
+        promise.complete();
       }
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
     }
 
     return future;

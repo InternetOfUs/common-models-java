@@ -24,7 +24,6 @@ import eu.internetofus.common.components.Mergeable;
 import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
@@ -70,43 +69,22 @@ public class Label extends ReflectionModel implements Model, Validable, Mergeabl
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    try {
+    var future = promise.future();
 
-      this.name = Validations.validateStringField(codePrefix, "name", this.name);
-      if (this.semantic_class == null) {
+    future = future.compose(empty -> Validations.validateStringField(codePrefix, "name", this.name).map(name -> {
+      this.name = name;
+      return null;
+    }));
+    future = future.compose(empty -> Validations.validateNumberOnRange(codePrefix, "semantic_class",
+        this.semantic_class, false, null, null));
+    future = future
+        .compose(empty -> Validations.validateNumberOnRange(codePrefix, "latitude", this.latitude, false, -90, 90));
+    future = future
+        .compose(empty -> Validations.validateNumberOnRange(codePrefix, "longitude", this.longitude, false, -180, 180));
 
-        promise
-            .fail(new ValidationErrorException(codePrefix + ".semantic_class", "You must to define a semantic_class."));
+    promise.complete();
 
-      } else if (this.latitude == null) {
-
-        promise.fail(new ValidationErrorException(codePrefix + ".latitude", "You must to define a latitude."));
-
-      } else if (this.longitude == null) {
-
-        promise.fail(new ValidationErrorException(codePrefix + ".longitude", "You must to define a longitude."));
-
-      } else if (this.latitude < -90 || this.latitude > 90) {
-
-        promise.fail(
-            new ValidationErrorException(codePrefix + ".latitude", "The latitude has to be on the range [-90,90]"));
-
-      } else if (this.longitude < -180 || this.longitude > 180) {
-
-        promise.fail(
-            new ValidationErrorException(codePrefix + ".longitude", "The longitude has to be on the range [-180,180]"));
-
-      } else {
-
-        promise.complete();
-      }
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
-    }
-
-    return promise.future();
+    return future;
 
   }
 

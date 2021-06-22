@@ -25,7 +25,6 @@ import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
@@ -73,19 +72,19 @@ public class Competence extends ReflectionModel
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    try {
-
-      this.name = Validations.validateStringField(codePrefix, "name", this.name);
-      this.ontology = Validations.validateStringField(codePrefix, "ontology", this.ontology);
-      this.level = Validations.validateNumberOnRange(codePrefix, "level", this.level, false, 0d, 1d);
-      promise.complete();
-
-    } catch (final ValidationErrorException validationCause) {
-
-      promise.fail(validationCause);
-    }
-
-    return promise.future();
+    var future = promise.future();
+    future = future.compose(empty -> Validations.validateStringField(codePrefix, "name", this.name).map(name -> {
+      this.name = name;
+      return null;
+    }));
+    future = future
+        .compose(empty -> Validations.validateStringField(codePrefix, "ontology", this.ontology).map(ontology -> {
+          this.ontology = ontology;
+          return null;
+        }));
+    future = future.compose(empty -> Validations.validateNumberOnRange(codePrefix, "level", this.level, false, 0d, 1d));
+    promise.complete();
+    return future;
   }
 
   /**

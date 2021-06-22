@@ -21,9 +21,7 @@
 package eu.internetofus.common.components;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.atIndex;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -37,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
@@ -132,509 +131,543 @@ public class ValidationsTest {
   }
 
   /**
-   * Check that a field can be null.
+   * Check that a field value is valid and converted tyo null.
+   *
+   * @param value       to be valid.
+   * @param testContext test context to use.
    *
    * @see Validations#validateNullableStringField(String, String, String,String[])
    */
-  @Test
-  public void shouldNullStringFieldBeValid() {
+  @ParameterizedTest(name = "The value '{0}' is valid and converted to null")
+  @NullSource
+  @ValueSource(strings = { "", "        " })
+  public void shouldNullStringFieldBeValid(final String value, final VertxTestContext testContext) {
 
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableStringField("codePrefix", "fieldName", null)).isEqualTo(null))
-            .doesNotThrowAnyException();
-  }
+    Validations.validateNullableStringField("codePrefix", "fieldName", value)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
 
-  /**
-   * Check that an empty is right but is changed to null.
-   *
-   * @see Validations#validateNullableStringField(String, String, String,String[])
-   */
-  @Test
-  public void shouldEmptyStringFieldBeValid() {
-
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableStringField("codePrefix", "fieldName", "")).isEqualTo(null))
-            .doesNotThrowAnyException();
-  }
-
-  /**
-   * Check that an white value is right but is changed to null.
-   *
-   * @see Validations#validateNullableStringField(String, String, String,String[])
-   */
-  @Test
-  public void shouldWhiteStringFieldBeValid() {
-
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableStringField("codePrefix", "fieldName", "       ")).isEqualTo(null))
-            .doesNotThrowAnyException();
+          assertThat(result).isNull();
+          testContext.completeNow();
+        })));
   }
 
   /**
    * Check that the value is trimmed to be valid.
    *
-   * @see Validations#validateNullableStringField(String, String, String,String[])
-   */
-  @Test
-  public void shouldStringWithWhiteFieldBeValid() {
-
-    assertThatCode(() -> assertThat(Validations.validateNullableStringField("codePrefix", "fieldName", "   a b c    "))
-        .isEqualTo("a b c")).doesNotThrowAnyException();
-  }
-
-  /**
-   * Check that the value of the field is not valid if the vlaue is not possible.
+   * @param value       to be valid.
+   * @param testContext test context to use.
    *
    * @see Validations#validateNullableStringField(String, String, String,String[])
    */
-  @Test
-  public void shouldNotBeValidIfValueIsNotPossible() {
+  @ParameterizedTest(name = "The value '{0}' is valid")
+  @ValueSource(strings = { "a b c", "  a b c      " })
+  public void shouldStringWithWhiteFieldBeValid(final String value, final VertxTestContext testContext) {
 
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNullableStringField("codePrefix", "fieldName", "value", "1", "2", "3")).getCode())
-            .isEqualTo("codePrefix.fieldName");
+    Validations.validateNullableStringField("codePrefix", "fieldName", value)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).isEqualTo(value.trim());
+          testContext.completeNow();
+        })));
   }
 
   /**
-   * Check that a field can be null.
+   * Check that the value of the field is not valid if the value is not possible.
    *
-   * @see Validations#validateNullableEmailField(String, String, String)
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateNullableStringField(String, String, String,String[])
    */
   @Test
-  public void shouldNullEmailFieldBeValid() {
+  public void shouldNotBeValidIfValueIsNotPossible(final VertxTestContext testContext) {
 
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableEmailField("codePrefix", "fieldName", null)).isEqualTo(null))
-            .doesNotThrowAnyException();
+    Validations.validateNullableStringField("codePrefix", "fieldName", "value", "1", "2", "3")
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo("codePrefix.fieldName");
+          testContext.completeNow();
+
+        })));
   }
 
   /**
-   * Check that an empty is right but is changed to null.
+   * Check that an email value is valid but it is {@code null}.
+   *
+   * @param value       to be valid.
+   * @param testContext test context to use.
    *
    * @see Validations#validateNullableEmailField(String, String, String)
    */
-  @Test
-  public void shouldEmptyEmailFieldBeValid() {
+  @ParameterizedTest(name = "The value '{0}' is valid email and converted to null")
+  @NullSource
+  @ValueSource(strings = { "", "        " })
+  public void shouldEmailBeValidAndSetToNull(final String value, final VertxTestContext testContext) {
 
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableEmailField("codePrefix", "fieldName", "")).isEqualTo(null))
-            .doesNotThrowAnyException();
-  }
+    Validations.validateNullableEmailField("codePrefix", "fieldName", value)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
 
-  /**
-   * Check that an white value is right but is changed to null.
-   *
-   * @see Validations#validateNullableEmailField(String, String, String)
-   */
-  @Test
-  public void shouldWhiteEmailFieldBeValid() {
-
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableEmailField("codePrefix", "fieldName", "       ")).isEqualTo(null))
-            .doesNotThrowAnyException();
+          assertThat(result).isNull();
+          testContext.completeNow();
+        })));
   }
 
   /**
    * Check that the email value is trimmed to be valid.
    *
-   * @see Validations#validateNullableEmailField(String, String, String)
-   */
-  @Test
-  public void shouldEmailWithWhiteFieldBeValid() {
-
-    assertThatCode(() -> assertThat(Validations.validateNullableEmailField("codePrefix", "fieldName", "   a@b.com    "))
-        .isEqualTo("a@b.com")).doesNotThrowAnyException();
-  }
-
-  /**
-   * Check that the email value of the field is not valid.
+   * @param value       to be valid.
+   * @param testContext test context to use.
    *
    * @see Validations#validateNullableEmailField(String, String, String)
    */
-  @Test
-  public void shouldNotBeValidABadEmailValue() {
+  @ParameterizedTest(name = "The value '{0}' is valid")
+  @ValueSource(strings = { "a@b.com", "  a@b.com     " })
+  public void shouldEMailBeValid(final String value, final VertxTestContext testContext) {
 
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNullableEmailField("codePrefix", "fieldName", "bad email(at)host.com")).getCode())
-            .isEqualTo("codePrefix.fieldName");
+    Validations.validateNullableEmailField("codePrefix", "fieldName", value)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).isEqualTo(value.trim());
+          testContext.completeNow();
+        })));
   }
 
   /**
-   * Check that a field can be null.
+   * Check that the email value is not valid.
    *
-   * @see Validations#validateNullableLocaleField(String, String, String)
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateNullableEmailField(String, String, String)
    */
   @Test
-  public void shouldNullLocaleFieldBeValid() {
+  public void shouldNotBeValidEMail(final VertxTestContext testContext) {
 
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableLocaleField("codePrefix", "fieldName", null)).isEqualTo(null))
-            .doesNotThrowAnyException();
+    Validations.validateNullableEmailField("codePrefix", "fieldName", "bad email(at)host.com")
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo("codePrefix.fieldName");
+          testContext.completeNow();
+
+        })));
   }
 
   /**
-   * Check that an empty is right but is changed to null.
+   * Check that a locale value is valid but it is {@code null}.
+   *
+   * @param value       to be valid.
+   * @param testContext test context to use.
    *
    * @see Validations#validateNullableLocaleField(String, String, String)
    */
-  @Test
-  public void shouldEmptyLocaleFieldBeValid() {
+  @ParameterizedTest(name = "The value '{0}' is valid locale and converted to null")
+  @NullSource
+  @ValueSource(strings = { "", "        " })
+  public void shouldLocaleBeValidAndSetToNull(final String value, final VertxTestContext testContext) {
 
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableLocaleField("codePrefix", "fieldName", "")).isEqualTo(null))
-            .doesNotThrowAnyException();
-  }
+    Validations.validateNullableLocaleField("codePrefix", "fieldName", value)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
 
-  /**
-   * Check that an white value is right but is changed to null.
-   *
-   * @see Validations#validateNullableLocaleField(String, String, String)
-   */
-  @Test
-  public void shouldWhiteLocaleFieldBeValid() {
-
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableLocaleField("codePrefix", "fieldName", "       ")).isEqualTo(null))
-            .doesNotThrowAnyException();
+          assertThat(result).isNull();
+          testContext.completeNow();
+        })));
   }
 
   /**
    * Check that the locale value is trimmed to be valid.
    *
-   * @see Validations#validateNullableLocaleField(String, String, String)
-   */
-  @Test
-  public void shouldLocaleWithWhiteFieldBeValid() {
-
-    assertThatCode(() -> assertThat(Validations.validateNullableLocaleField("codePrefix", "fieldName", "   en_US    "))
-        .isEqualTo("en_US")).doesNotThrowAnyException();
-  }
-
-  /**
-   * Check that the locale value of the field is not valid.
+   * @param value       to be valid.
+   * @param testContext test context to use.
    *
    * @see Validations#validateNullableLocaleField(String, String, String)
    */
-  @Test
-  public void shouldNotBeValidABadLocaleValue() {
+  @ParameterizedTest(name = "The value '{0}' is valid")
+  @ValueSource(strings = { "en_US", "  en_US    ", "en", "   en  " })
+  public void shouldLocaleBeValid(final String value, final VertxTestContext testContext) {
 
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNullableLocaleField("codePrefix", "fieldName", "de-Gr")).getCode())
-            .isEqualTo("codePrefix.fieldName");
+    Validations.validateNullableLocaleField("codePrefix", "fieldName", value)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).isEqualTo(value.trim());
+          testContext.completeNow();
+        })));
   }
 
   /**
-   * Check that a field can be null.
+   * Check that the locale value is not valid.
    *
-   * @see Validations#validateNullableTelephoneField(String, String,
-   *      String,String)
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateNullableLocaleField(String, String, String)
    */
   @Test
-  public void shouldNullTelephoneFieldBeValid() {
+  public void shouldNotBeValidLocale(final VertxTestContext testContext) {
 
-    assertThatCode(() -> assertThat(Validations.validateNullableTelephoneField("codePrefix", "fieldName", null, null))
-        .isEqualTo(null)).doesNotThrowAnyException();
+    Validations.validateNullableLocaleField("codePrefix", "fieldName", "de-Gr")
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo("codePrefix.fieldName");
+          testContext.completeNow();
+
+        })));
   }
 
   /**
-   * Check that an empty is right but is changed to null.
+   * Check that a telephone value is valid but it is {@code null}.
    *
-   * @see Validations#validateNullableTelephoneField(String, String,
-   *      String,String)
-   */
-  @Test
-  public void shouldEmptyTelephoneFieldBeValid() {
-
-    assertThatCode(() -> assertThat(Validations.validateNullableTelephoneField("codePrefix", "fieldName", null, ""))
-        .isEqualTo(null)).doesNotThrowAnyException();
-  }
-
-  /**
-   * Check that an white value is right but is changed to null.
+   * @param value       to be valid.
+   * @param testContext test context to use.
    *
-   * @see Validations#validateNullableTelephoneField(String, String,
-   *      String,String)
+   * @see Validations#validateNullableTelephoneField(String, String, String,
+   *      String)
    */
-  @Test
-  public void shouldWhiteTelephoneFieldBeValid() {
+  @ParameterizedTest(name = "The value '{0}' is valid telephone and converted to null")
+  @NullSource
+  @ValueSource(strings = { "", "        " })
+  public void shouldTelephoneBeValidAndSetToNull(final String value, final VertxTestContext testContext) {
 
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableTelephoneField("codePrefix", "fieldName", null, "       "))
-            .isEqualTo(null)).doesNotThrowAnyException();
+    Validations.validateNullableTelephoneField("codePrefix", "fieldName", null, value)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).isNull();
+          testContext.completeNow();
+        })));
   }
 
   /**
    * Check that the telephone value is trimmed to be valid.
    *
-   * @see Validations#validateNullableTelephoneField(String, String,
-   *      String,String)
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateNullableTelephoneField(String, String, String,
+   *      String)
    */
   @Test
-  public void shouldTelephoneWithWhiteFieldBeValid() {
+  public void shouldTelephoneBeValid(final VertxTestContext testContext) {
 
-    assertThatCode(() -> assertThat(
-        Validations.validateNullableTelephoneField("codePrefix", "fieldName", null, "   +34987654321    "))
-            .isEqualTo("+34 987 65 43 21")).doesNotThrowAnyException();
+    Validations.validateNullableTelephoneField("codePrefix", "fieldName", null, "   +34987654321    ")
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).isEqualTo("+34 987 65 43 21");
+          testContext.completeNow();
+        })));
   }
 
   /**
    * Check that the telephone value of the field is not valid.
    *
-   * @param badPhone a phone number that is not valid.
+   * @param badPhone    a phone number that is not valid.
+   * @param testContext test context to use.
    *
    * @see Validations#validateNullableTelephoneField(String, String,
    *      String,String)
    */
   @ParameterizedTest(name = "The phone number '{0}' has not be valid.")
   @ValueSource(strings = { "+349876543211", "bad telephone number", "1234567890123456789012345678" })
-  public void shouldNotBeValidABadTelephoneValue(final String badPhone) {
+  public void shouldNotBeValidABadTelephoneValue(final String badPhone, final VertxTestContext testContext) {
 
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNullableTelephoneField("codePrefix", "fieldName", null, badPhone)).getCode())
-            .isEqualTo("codePrefix.fieldName");
+    Validations.validateNullableTelephoneField("codePrefix", "fieldName", null, badPhone)
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo("codePrefix.fieldName");
+          testContext.completeNow();
+
+        })));
+
   }
 
   /**
-   * Check that an empty is right but is changed to null.
+   * Check that a date value is valid but it is {@code null}.
+   *
+   * @param value       to be valid.
+   * @param testContext test context to use.
    *
    * @see Validations#validateNullableStringDateField(String, String,
-   *      DateTimeFormatter,String)
+   *      DateTimeFormatter, String)
    */
-  @Test
-  public void shouldEmptyDateFieldBeValid() {
+  @ParameterizedTest(name = "The value '{0}' is valid date and converted to null")
+  @NullSource
+  @ValueSource(strings = { "", "        " })
+  public void shouldDateBeValidAndSetToNull(final String value, final VertxTestContext testContext) {
 
-    assertThatCode(() -> assertThat(
-        Validations.validateNullableStringDateField("codePrefix", "fieldName", DateTimeFormatter.ISO_INSTANT, ""))
-            .isEqualTo(null)).doesNotThrowAnyException();
-  }
+    Validations.validateNullableStringDateField("codePrefix", "fieldName", DateTimeFormatter.ISO_INSTANT, value)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
 
-  /**
-   * Check that an white value is right but is changed to null.
-   *
-   * @see Validations#validateNullableStringDateField(String, String,
-   *      DateTimeFormatter,String)
-   */
-  @Test
-  public void shouldWhiteDateFieldBeValid() {
-
-    assertThatCode(() -> assertThat(Validations.validateNullableStringDateField("codePrefix", "fieldName",
-        DateTimeFormatter.ISO_INSTANT, "       ")).isEqualTo(null)).doesNotThrowAnyException();
+          assertThat(result).isNull();
+          testContext.completeNow();
+        })));
   }
 
   /**
    * Check that the date value is trimmed to be valid.
    *
-   * @see Validations#validateNullableStringDateField(String, String,
-   *      DateTimeFormatter,String)
-   */
-  @Test
-  public void shouldDateWithWhiteFieldBeValid() {
-
-    assertThatCode(() -> assertThat(Validations.validateNullableStringDateField("codePrefix", "fieldName",
-        DateTimeFormatter.ISO_INSTANT, "   2011-12-03t10:15:30z    ")).isEqualTo("2011-12-03T10:15:30Z"))
-            .doesNotThrowAnyException();
-  }
-
-  /**
-   * Check that the date value of the field is not valid.
+   * @param value       to be valid.
+   * @param testContext test context to use.
    *
    * @see Validations#validateNullableStringDateField(String, String,
-   *      DateTimeFormatter,String)
+   *      DateTimeFormatter, String)
    */
-  @Test
-  public void shouldNotBeValidABadDateValue() {
+  @ParameterizedTest(name = "The value '{0}' is valid")
+  @ValueSource(strings = { "2011-12-03t10:15:30z", "  2011-12-03t10:15:30z    ", "2011-12-03T10:15:30Z",
+      "  2011-12-03t10:15:30Z    " })
+  public void shouldDateBeValid(final String value, final VertxTestContext testContext) {
 
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNullableStringDateField("codePrefix", "fieldName", null, "bad date")).getCode())
-            .isEqualTo("codePrefix.fieldName");
+    Validations.validateNullableStringDateField("codePrefix", "fieldName", DateTimeFormatter.ISO_INSTANT, value)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).isEqualTo(value.trim().toUpperCase());
+          testContext.completeNow();
+        })));
   }
 
   /**
-   * Check that the date value of the field is not valid.
+   * Check that the date value is not valid.
+   *
+   * @param testContext test context to use.
    *
    * @see Validations#validateNullableStringDateField(String, String,
-   *      DateTimeFormatter,String)
+   *      DateTimeFormatter, String)
    */
   @Test
-  public void shouldNotBeValidABadIsoInstanceValue() {
+  public void shouldNotBeValidDate(final VertxTestContext testContext) {
 
-    assertThat(
-        assertThrows(ValidationErrorException.class, () -> Validations.validateNullableStringDateField("codePrefix",
-            "fieldName", DateTimeFormatter.ISO_INSTANT, "bad date")).getCode()).isEqualTo("codePrefix.fieldName");
+    Validations.validateNullableStringDateField("codePrefix", "fieldName", DateTimeFormatter.ISO_INSTANT, "bad date")
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo("codePrefix.fieldName");
+          testContext.completeNow();
+
+        })));
   }
 
   /**
-   * Check that a field can not be a null value.
+   * Check that the date value is not valid.
+   *
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateNullableStringDateField(String, String,
+   *      DateTimeFormatter, String)
+   */
+  @Test
+  public void shouldNotBeValidDateWithoutFormat(final VertxTestContext testContext) {
+
+    Validations.validateNullableStringDateField("codePrefix", "fieldName", null, "bad date")
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo("codePrefix.fieldName");
+          testContext.completeNow();
+
+        })));
+  }
+
+  /**
+   * Check that a field can not be valid.
+   *
+   * @param value       that is not valid.
+   * @param testContext test context to use.
    *
    * @see Validations#validateStringField(String, String, String, String...)
    */
-  @Test
-  public void shouldNullStringFieldNotBeValid() {
+  @ParameterizedTest(name = "The value '{0}' is not valid for a string value")
+  @NullSource
+  @ValueSource(strings = { "", "        " })
+  public void shouldStringFieldNotBeValid(final String value, final VertxTestContext testContext) {
 
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateStringField("codePrefix", "fieldName", null)).getCode())
-            .isEqualTo("codePrefix.fieldName");
+    Validations.validateStringField("codePrefix", "fieldName", value)
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
 
-  }
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo("codePrefix.fieldName");
+          testContext.completeNow();
 
-  /**
-   * Check that a field can not be an empty value.
-   *
-   * @see Validations#validateStringField(String, String, String, String...)
-   */
-  @Test
-  public void shouldEmptyStringFieldNotBeValid() {
-
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateStringField("codePrefix", "fieldName", "")).getCode())
-            .isEqualTo("codePrefix.fieldName");
+        })));
 
   }
 
   /**
    * Check that a field can not be a white value.
    *
-   * @see Validations#validateStringField(String, String, String, String...)
-   */
-  @Test
-  public void shouldWhiteStringFieldNotBeValid() {
-
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateStringField("codePrefix", "fieldName", "       ")).getCode())
-            .isEqualTo("codePrefix.fieldName");
-
-  }
-
-  /**
-   * Check that a field can not be a white value.
+   * @param testContext test context to use.
    *
    * @see Validations#validateStringField(String, String, String, String...)
    */
   @Test
-  public void shouldStringFieldNotBeValidBecauseValueNotAllowed() {
+  public void shouldStringFieldNotBeValidBecauseValueNotAllowed(final VertxTestContext testContext) {
 
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateStringField("codePrefix", "fieldName", "   value    ", "1", "2", "3")).getCode())
-            .isEqualTo("codePrefix.fieldName");
+    Validations.validateStringField("codePrefix", "fieldName", "   value    ", "1", "2", "3")
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo("codePrefix.fieldName");
+          testContext.completeNow();
+
+        })));
 
   }
 
   /**
    * Check that a non empty string is valid.
    *
+   * @param testContext test context to use.
+   *
    * @see Validations#validateStringField(String, String, String, String...)
    */
   @Test
-  public void shouldStringBeValid() {
+  public void shouldStringBeValid(final VertxTestContext testContext) {
 
-    assertThatCode(
-        () -> assertThat(Validations.validateStringField("codePrefix", "fieldName", "   value    ")).isEqualTo("value"))
-            .doesNotThrowAnyException();
+    Validations.validateStringField("codePrefix", "fieldName", "   value    ")
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).isEqualTo("value");
+          testContext.completeNow();
+        })));
+
   }
 
   /**
    * Check that a non empty string is valid because is defined in the possible
    * values.
    *
+   * @param testContext test context to use.
+   *
    * @see Validations#validateStringField(String, String, String, String...)
    */
   @Test
-  public void shouldStringBeValidBecauseIsAPosisbleValue() {
+  public void shouldStringBeValidBecauseIsAPosisbleValue(final VertxTestContext testContext) {
 
-    assertThatCode(() -> assertThat(
-        Validations.validateStringField("codePrefix", "fieldName", "   value    ", "val", "lue", "value"))
-            .isEqualTo("value")).doesNotThrowAnyException();
+    Validations.validateStringField("codePrefix", "fieldName", "   value    ", "val", "lue", "value")
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).isEqualTo("value");
+          testContext.completeNow();
+        })));
+
   }
 
   /**
    * Check that a non empty string is valid.
    *
+   * @param testContext test context to use.
+   *
    * @see Validations#validateStringField(String, String, String, String...)
    */
   @Test
-  public void shouldStringBeValidBecauseIsNotEmpty() {
+  public void shouldStringBeValidBecauseIsNotEmpty(final VertxTestContext testContext) {
 
-    assertThatCode(
-        () -> assertThat(Validations.validateStringField("codePrefix", "fieldName", "   value   ", (String[]) null))
-            .isEqualTo("value")).doesNotThrowAnyException();
+    Validations.validateStringField("codePrefix", "fieldName", "   value    ", (String[]) null)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).isEqualTo("value");
+          testContext.completeNow();
+        })));
+
   }
 
   /**
    * Check that a {@code null} time stamp is valid.
    *
+   * @param testContext test context to use.
+   *
    * @see Validations#validateTimeStamp(String, String, Long, boolean)
    */
   @Test
-  public void shouldNullTimeStampBeValid() {
+  public void shouldNullTimeStampBeValid(final VertxTestContext testContext) {
 
-    assertThatCode(() -> assertThat(Validations.validateTimeStamp("codePrefix", "fieldName", null, true)).isNull())
-        .doesNotThrowAnyException();
+    Validations.validateTimeStamp("codePrefix", "fieldName", null, true)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).isNull();
+          testContext.completeNow();
+        })));
+
   }
 
   /**
    * Check that a {@code null} time stamp is not valid.
    *
-   * @see Validations#validateTimeStamp(String, String, Long, boolean)
-   */
-  @Test
-  public void shouldNullTimeStampNotBeValid() {
-
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateTimeStamp("codePrefix", "fieldName", null, false)).getCode())
-            .isEqualTo("codePrefix.fieldName");
-
-  }
-
-  /**
-   * Check that a negative time stamp is not valid.
+   * @param value       that is not valid.
+   * @param testContext test context to use.
    *
    * @see Validations#validateTimeStamp(String, String, Long, boolean)
    */
-  @Test
-  public void shouldNegativeTimeStampNotBeValid() {
+  @ParameterizedTest(name = "The value '{0}' is not valid for as timestamp")
+  @NullSource
+  @ValueSource(longs = { -1l })
+  public void shouldNullTimeStampNotBeValid(final Long value, final VertxTestContext testContext) {
 
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateTimeStamp("codePrefix", "fieldName", -1l, false)).getCode())
-            .isEqualTo("codePrefix.fieldName");
+    Validations.validateTimeStamp("codePrefix", "fieldName", value, false)
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo("codePrefix.fieldName");
+          testContext.completeNow();
+
+        })));
 
   }
 
   /**
    * Check that is valid a {@code null} as a nullable string list.
    *
+   * @param testContext test context to use.
+   *
    * @see Validations#validateNullableListStringField(String, String,
    *      java.util.List)
    */
   @Test
-  public void shouldSuccessValidateNullableListStringFieldWithNull() {
+  public void shouldSuccessValidateNullableListStringFieldWithNull(final VertxTestContext testContext) {
 
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableListStringField("codePrefix", "fieldName", null)).isNull())
-            .doesNotThrowAnyException();
+    Validations.validateNullableListStringField("codePrefix", "fieldName", null)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).isNull();
+          testContext.completeNow();
+        })));
+
   }
 
   /**
    * Check that is valid a empty list as a nullable string list.
    *
-   * @see Validations#validateNullableListStringField(String, String,
-   *      java.util.List)
-   */
-  @Test
-  public void shouldSuccessValidateNullableListStringFieldWithEmptyList() {
-
-    assertThatCode(
-        () -> assertThat(Validations.validateNullableListStringField("codePrefix", "fieldName", new ArrayList<>()))
-            .isEmpty()).doesNotThrowAnyException();
-  }
-
-  /**
-   * Check that is valid a list with some strings.
+   * @param testContext test context to use.
    *
    * @see Validations#validateNullableListStringField(String, String,
    *      java.util.List)
    */
   @Test
-  public void shouldSuccessValidateNullableListStringFieldWithSomeValues() {
+  public void shouldSuccessValidateNullableListStringFieldWithEmptyList(final VertxTestContext testContext) {
+
+    Validations.validateNullableListStringField("codePrefix", "fieldName", new ArrayList<>())
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).isNull();
+          testContext.completeNow();
+        })));
+  }
+
+  /**
+   * Check that is valid a list with some strings.
+   *
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateNullableListStringField(String, String,
+   *      java.util.List)
+   */
+  @Test
+  public void shouldSuccessValidateNullableListStringFieldWithSomeValues(final VertxTestContext testContext) {
 
     final List<String> values = new ArrayList<>();
     values.add(null);
@@ -645,9 +678,13 @@ public class ValidationsTest {
     values.add("  1 3         ");
     values.add("                 ");
 
-    assertThatCode(() -> assertThat(Validations.validateNullableListStringField("codePrefix", "fieldName", values))
-        .hasSize(3).contains("123", atIndex(0)).contains("12345", atIndex(1)).contains("1 3", atIndex(2)))
-            .doesNotThrowAnyException();
+    Validations.validateNullableListStringField("codePrefix", "fieldName", values)
+        .onComplete(testContext.succeeding(result -> testContext.verify(() -> {
+
+          assertThat(result).hasSize(3).contains("123", atIndex(0)).contains("12345", atIndex(1)).contains("1 3",
+              atIndex(2));
+          testContext.completeNow();
+        })));
   }
 
   /**
@@ -878,24 +915,33 @@ public class ValidationsTest {
   /**
    * Check the a double value is not valid.
    *
-   * @param val value that is not valid.
-   * @param min minimum range value.
-   * @param max maximum range value.
+   * @param val         value that is not valid.
+   * @param min         minimum range value.
+   * @param max         maximum range value.
+   * @param testContext test context to use.
    *
    * @see Validations#validateNumberOnRange(String, String, Number, boolean,
    *      Number, Number)
    */
   @ParameterizedTest(name = "The value {0} should not be valid")
   @CsvSource({ "1,0,0.1", "1,2,3", "-1,0,", "10,,1" })
-  public void shouldNumberNotBeValid(final String val, final String min, final String max) {
+  public void shouldNumberNotBeValid(final String val, final String min, final String max,
+      final VertxTestContext testContext) {
 
     final Double value = Double.parseDouble(val);
     final var nullable = false;
     final var minValue = this.extractDouble(min);
     final var maxValue = this.extractDouble(max);
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNumberOnRange("codePrefix", "fieldName", value, nullable, minValue, maxValue))
-            .getCode()).isEqualTo("codePrefix.fieldName");
+
+    Validations.validateNumberOnRange("codePrefix", "fieldName", value, nullable, minValue, maxValue)
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo("codePrefix.fieldName");
+          testContext.completeNow();
+
+        })));
 
   }
 
@@ -922,39 +968,49 @@ public class ValidationsTest {
   /**
    * Check the a {@code null} value is not valid when the element is not nullable.
    *
+   * @param testContext test context to use.
+   *
    * @see Validations#validateNumberOnRange(String, String, Number, boolean,
    *      Number, Number)
    */
   @Test
-  public void shouldNullNumberNotBeValidWhenIsNotNullable() {
+  public void shouldNullNumberNotBeValidWhenIsNotNullable(final VertxTestContext testContext) {
 
-    assertThat(assertThrows(ValidationErrorException.class,
-        () -> Validations.validateNumberOnRange("codePrefix", "fieldName", null, false, 0d, 1d)).getCode())
-            .isEqualTo("codePrefix.fieldName");
+    Validations.validateNumberOnRange("codePrefix", "fieldName", null, false, 0d, 1d)
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo("codePrefix.fieldName");
+          testContext.completeNow();
+
+        })));
 
   }
 
   /**
    * Check the a double value is valid.
    *
-   * @param val value that is not valid.
-   * @param min minimum range value.
-   * @param max maximum range value.
+   * @param val         value that is not valid.
+   * @param min         minimum range value.
+   * @param max         maximum range value.
+   * @param testContext test context to use.
    *
    * @see Validations#validateNumberOnRange(String, String, Number, boolean,
    *      Number, Number)
    */
   @ParameterizedTest(name = "The value {0} should not be valid")
   @CsvSource({ "1,0,1", "1,1,3", "0.5,0,1", "-1,,1", "1,0," })
-  public void shouldNumberBeValid(final String val, final String min, final String max) {
+  public void shouldNumberBeValid(final String val, final String min, final String max,
+      final VertxTestContext testContext) {
 
     final Double value = Double.parseDouble(val);
     final var nullable = false;
     final var minValue = this.extractDouble(min);
     final var maxValue = this.extractDouble(max);
-    assertThatCode(() -> assertThat(
-        Validations.validateNumberOnRange("codePrefix", "fieldName", value, nullable, minValue, maxValue))
-            .isEqualTo(value)).doesNotThrowAnyException();
+
+    Validations.validateNumberOnRange("codePrefix", "fieldName", value, nullable, minValue, maxValue)
+        .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
 
   }
 

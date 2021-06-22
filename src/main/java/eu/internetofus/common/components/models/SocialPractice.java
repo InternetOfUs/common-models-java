@@ -26,7 +26,6 @@ import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -72,7 +71,7 @@ public class SocialPractice extends ReflectionModel
   /**
    * The norms of the social practice.
    */
-  @ArraySchema(schema = @Schema(implementation = Norm.class), arraySchema = @Schema(description = "The norms of the social practice", nullable = true))
+  @ArraySchema(schema = @Schema(implementation = ProtocolNorm.class), arraySchema = @Schema(description = "The norms of the social practice", nullable = true))
   public List<ProtocolNorm> norms;
 
   /**
@@ -91,28 +90,22 @@ public class SocialPractice extends ReflectionModel
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
 
-    try {
+    if (this.id == null) {
 
-      this.id = Validations.validateNullableStringField(codePrefix, "id", this.id);
-      if (this.id == null) {
-
-        this.id = UUID.randomUUID().toString();
-      }
-
-      this.label = Validations.validateNullableStringField(codePrefix, "label", this.label);
-
-      future = future.compose(Validations.validate(this.materials,
-          (a, b) -> a.name.equals(b.name) && a.classification.equals(b.classification), codePrefix + ".materials",
-          vertx));
-      future = future.compose(Validations.validate(this.competences,
-          (a, b) -> a.name.equals(b.name) && a.ontology.equals(b.ontology), codePrefix + ".competences", vertx));
-      future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
-      promise.complete();
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
+      this.id = UUID.randomUUID().toString();
     }
+    future = future
+        .compose(empty -> Validations.validateNullableStringField(codePrefix, "label", this.label).map(label -> {
+          this.label = label;
+          return null;
+        }));
+    future = future.compose(Validations.validate(this.materials,
+        (a, b) -> a.name.equals(b.name) && a.classification.equals(b.classification), codePrefix + ".materials",
+        vertx));
+    future = future.compose(Validations.validate(this.competences,
+        (a, b) -> a.name.equals(b.name) && a.ontology.equals(b.ontology), codePrefix + ".competences", vertx));
+    future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+    promise.complete();
 
     return future;
 

@@ -141,6 +141,21 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   }
 
   /**
+   * Check that an empty type is valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskType#validate(String, Vertx)
+   */
+  @Test
+  public void shouldEmptyBeValid(final Vertx vertx, final VertxTestContext testContext) {
+
+    assertIsValid(new TaskType(), vertx, testContext);
+
+  }
+
+  /**
    * Check that the model with id is not valid.
    *
    * @param vertx       event bus to use.
@@ -203,6 +218,29 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   }
 
   /**
+   * Check that merge two empty models.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskType#merge(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldMergeEmptymodels(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = new TaskType();
+    target.id = "1";
+    final var source = new TaskType();
+    source.id = "2";
+    assertCanMerge(target, source, vertx, testContext, merged -> {
+
+      assertThat(merged).isEqualTo(target).isNotEqualTo(source);
+
+    });
+
+  }
+
+  /**
    * Check that merge with {@code null}.
    *
    * @param vertx       event bus to use.
@@ -219,24 +257,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   }
 
   /**
-   * Check that the model is not valid if has a large name.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see TaskType#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithALargeName(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var model = this.createModelExample(1);
-    model.name = null;
-    assertIsNotValid(model, "name", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the model is not valid if has a large name.
+   * Check that the model is valid with a name with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -253,7 +274,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   }
 
   /**
-   * Check that the model is not valid if has a large description.
+   * Check that the model is valid with a description with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -270,7 +291,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   }
 
   /**
-   * Check that the model is not valid if has a large keyword.
+   * Check that the model is valid with keywords with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -314,7 +335,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   }
 
   /**
-   * Check that the model does not merge if has a large name.
+   * Check that the model is merged with a name with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -332,7 +353,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   }
 
   /**
-   * Check that the model does not merge if has a large description.
+   * Check that the model is merged with a description with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -352,7 +373,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   }
 
   /**
-   * Check that the model does not merge if has a large keyword.
+   * Check that the model is merged with keywords with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -399,25 +420,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   }
 
   /**
-   * Check that the model does not update with a bad name.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see TaskType#update(TaskType, String, Vertx)
-   */
-  @Test
-  public void shouldNotUpdateWithABadName(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var target = this.createModelExample(1);
-    final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
-    source.name = null;
-    assertCannotUpdate(target, source, "name", vertx, testContext);
-
-  }
-
-  /**
-   * Check that the model does not update if has a large name.
+   * Check that the model is updated with a name with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -435,7 +438,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   }
 
   /**
-   * Check that the model does not update if has a large description.
+   * Check that the model is updated with a description with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -455,7 +458,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   }
 
   /**
-   * Check that the model does not update if has a large keyword.
+   * Check that the model is updated with keywords with spaces.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -536,6 +539,29 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     model.callbacks = new JsonObject().put("echo", new JsonObject().put("type", "object"));
     model.norms = null;
     return Future.succeededFuture(model);
+
+  }
+
+  /**
+   * Check that update two empty models.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskType#update(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldUpdateEmptyModels(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = new TaskType();
+    target.id = "1";
+    final var source = new TaskType();
+    source.id = "2";
+    assertCanUpdate(target, source, vertx, testContext, updated -> {
+
+      assertThat(updated).isEqualTo(target).isNotEqualTo(source);
+
+    });
 
   }
 

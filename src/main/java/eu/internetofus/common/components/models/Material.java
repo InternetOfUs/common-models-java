@@ -25,7 +25,6 @@ import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.ReflectionModel;
 import eu.internetofus.common.components.Updateable;
 import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.ValidationErrorException;
 import eu.internetofus.common.components.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
@@ -76,19 +75,27 @@ public class Material extends ReflectionModel implements Model, Validable, Merge
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
     final Promise<Void> promise = Promise.promise();
-    try {
+    var future = promise.future();
 
-      this.name = Validations.validateStringField(codePrefix, "name", this.name);
-      this.description = Validations.validateNullableStringField(codePrefix, "description", this.description);
-      this.quantity = Validations.validateNumberOnRange(codePrefix, "quantity", this.quantity, false, 1, null);
-      this.classification = Validations.validateStringField(codePrefix, "classification", this.classification);
-      promise.complete();
+    future = future.compose(empty -> Validations.validateStringField(codePrefix, "name", this.name).map(name -> {
+      this.name = name;
+      return null;
+    }));
+    future = future.compose(empty -> Validations
+        .validateNullableStringField(codePrefix, "description", this.description).map(description -> {
+          this.description = description;
+          return null;
+        }));
+    future = future
+        .compose(empty -> Validations.validateNumberOnRange(codePrefix, "quantity", this.quantity, false, 1, null));
+    future = future.compose(empty -> Validations.validateStringField(codePrefix, "classification", this.classification)
+        .map(classification -> {
+          this.classification = classification;
+          return null;
+        }));
+    promise.complete();
 
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
-    }
-    return promise.future();
+    return future;
 
   }
 
