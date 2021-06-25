@@ -1,7 +1,7 @@
 /*
  * -----------------------------------------------------------------------------
  *
- *   Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
+ * Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
-
-import eu.internetofus.common.components.Model;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.models.CommunityProfile;
+import eu.internetofus.common.model.Model;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 

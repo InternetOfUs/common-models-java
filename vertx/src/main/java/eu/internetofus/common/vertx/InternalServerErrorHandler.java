@@ -1,7 +1,7 @@
 /*
  * -----------------------------------------------------------------------------
  *
- *   Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
+ * Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,13 @@
 
 package eu.internetofus.common.vertx;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
-
-import org.tinylog.Logger;
-
-import eu.internetofus.common.components.ErrorMessage;
+import eu.internetofus.common.model.ErrorMessage;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
+import org.tinylog.Logger;
 
 /**
  * Handler when do an internal server error.

@@ -1,7 +1,7 @@
 /*
  * -----------------------------------------------------------------------------
  *
- *   Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
+ * Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 
 package eu.internetofus.common.components;
 
-import eu.internetofus.common.TimeManager;
 import eu.internetofus.common.components.incentive_server.TaskStatus;
 import eu.internetofus.common.components.incentive_server.TaskStatusPredicates;
 import eu.internetofus.common.components.models.Message;
@@ -30,6 +29,7 @@ import eu.internetofus.common.components.service.MessagePredicates;
 import eu.internetofus.common.components.task_manager.TaskPredicates;
 import eu.internetofus.common.components.task_manager.TaskTransactionPredicates;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
+import eu.internetofus.common.model.TimeManager;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;

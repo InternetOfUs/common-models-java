@@ -1,7 +1,7 @@
 /*
  * -----------------------------------------------------------------------------
  *
- *   Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
+ * Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,8 @@
 
 package eu.internetofus.common.vertx;
 
-import eu.internetofus.common.components.ErrorMessage;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.WeNetComponent;
+import eu.internetofus.common.model.ErrorMessage;
+import eu.internetofus.common.model.Model;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -48,7 +47,7 @@ import org.tinylog.Logger;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class ComponentClient implements WeNetComponent {
+public class ComponentClient {
 
   /**
    * The pool of web clients.
@@ -74,11 +73,22 @@ public class ComponentClient implements WeNetComponent {
   }
 
   /**
-   * {@inheritDoc}
+   * Obtain the URL to the API for interact with this component.
    *
-   * @see #componentURL
+   * @return the future URL to the API of this component.
    */
-  @Override
+  public Future<String> obtainApiUrl() {
+
+    final Promise<String> promise = Promise.promise();
+    this.obtainApiUrl(promise);
+    return promise.future();
+  }
+
+  /**
+   * Obtain the URL to the API for interact with this component.
+   *
+   * @param handler to inform of the API.
+   */
   public void obtainApiUrl(final Handler<AsyncResult<String>> handler) {
 
     handler.handle(Future.succeededFuture(this.componentURL));

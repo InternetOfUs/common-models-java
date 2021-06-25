@@ -1,7 +1,7 @@
 /*
  * -----------------------------------------------------------------------------
  *
- *   Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
+ * Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ package eu.internetofus.common.components.task_manager;
 
 import eu.internetofus.common.components.AbstractComponentMocker;
 import eu.internetofus.common.components.CRUDContext;
-import eu.internetofus.common.components.ErrorMessage;
 import eu.internetofus.common.components.models.Message;
 import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTransaction;
 import eu.internetofus.common.components.models.TaskType;
+import eu.internetofus.common.model.ErrorMessage;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.Router;

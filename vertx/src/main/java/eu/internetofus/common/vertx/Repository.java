@@ -1,7 +1,7 @@
 /*
  * -----------------------------------------------------------------------------
  *
- *   Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
+ * Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ package eu.internetofus.common.vertx;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ValidationErrorException;
+import eu.internetofus.common.model.Model;
+import eu.internetofus.common.model.ValidationErrorException;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -397,7 +397,7 @@ public class Repository {
    *
    * @see #schemaVersion
    */
-  protected JsonObject createQueryToReturnDocumentsWithAVersionLessThan(String version) {
+  protected JsonObject createQueryToReturnDocumentsWithAVersionLessThan(final String version) {
 
     final var notExists = new JsonObject().put(SCHEMA_VERSION, new JsonObject().put("$exists", false));
     final var notString = new JsonObject().put(SCHEMA_VERSION,
@@ -421,7 +421,7 @@ public class Repository {
    */
   protected <T extends Model> Future<Void> migrateCollection(final String collectionName, final Class<T> type) {
 
-    final JsonObject query = this.createQueryToReturnDocumentsWithAVersionLessThan(this.schemaVersion);
+    final var query = this.createQueryToReturnDocumentsWithAVersionLessThan(this.schemaVersion);
     return this.pool.count(collectionName, query).compose(maxDocuments -> {
 
       if (maxDocuments > 0) {
@@ -463,10 +463,10 @@ public class Repository {
         mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         final var reader = mapper.readerFor(type);
-        final T value = reader.readValue(foundObject.encode());
+        final var value = reader.readValue(foundObject.encode());
         final var id = foundObject.remove("_id");
-        final JsonObject updateQuery = new JsonObject().put("_id", id);
-        final JsonObject model = value.toJsonObject();
+        final var updateQuery = new JsonObject().put("_id", id);
+        final var model = value.toJsonObject();
         for (final var key : foundObject.fieldNames()) {
 
           if (!model.containsKey(key)) {
@@ -584,18 +584,18 @@ public class Repository {
    * @return the future found page.
    */
   protected Future<JsonObject> aggregatePageObject(@NotNull final String collectionName,
-      @NotNull final JsonObject query, @NotNull final JsonObject order, int offset, int limit,
+      @NotNull final JsonObject query, @NotNull final JsonObject order, final int offset, final int limit,
       @NotNull final String elementPath) {
 
-    var splitted = AggregationBuilder.splitElementPath(elementPath);
+    final var splitted = AggregationBuilder.splitElementPath(elementPath);
     return this.countAggregation(collectionName, splitted, query).compose(total -> {
 
-      Promise<JsonObject> promise = Promise.promise();
-      var retrievePipeline = new AggregationBuilder().unwindPath(splitted).match(query).sort(order, offset, limit)
+      final Promise<JsonObject> promise = Promise.promise();
+      final var retrievePipeline = new AggregationBuilder().unwindPath(splitted).match(query).sort(order, offset, limit)
           .build();
-      var elements = new JsonArray();
-      var resultKey = splitted[splitted.length - 1];
-      var page = new JsonObject().put("offset", offset).put("total", total).put(resultKey, elements);
+      final var elements = new JsonArray();
+      final var resultKey = splitted[splitted.length - 1];
+      final var page = new JsonObject().put("offset", offset).put("total", total).put(resultKey, elements);
       this.pool.aggregate(collectionName, retrievePipeline).handler(value -> {
 
         var element = value.getJsonObject(splitted[0]);
@@ -634,15 +634,15 @@ public class Repository {
    *
    * @return the future of the total documents that match.
    */
-  protected Future<Long> countAggregation(@NotNull String collectionName, @NotNull String[] elementPath,
-      @NotNull JsonObject query) {
+  protected Future<Long> countAggregation(@NotNull final String collectionName, @NotNull final String[] elementPath,
+      @NotNull final JsonObject query) {
 
-    Promise<Long> promise = Promise.promise();
-    var countPipeline = new AggregationBuilder().unwindPath(elementPath).match(query).build()
+    final Promise<Long> promise = Promise.promise();
+    final var countPipeline = new AggregationBuilder().unwindPath(elementPath).match(query).build()
         .add(new JsonObject().put("$count", "total"));
     this.pool.aggregate(collectionName, countPipeline).handler(element -> {
 
-      var total = element.getLong("total", 0l);
+      final var total = element.getLong("total", 0l);
       promise.complete(total);
 
     }).exceptionHandler(cause -> {

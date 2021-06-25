@@ -1,7 +1,7 @@
 /*
  * -----------------------------------------------------------------------------
  *
- *   Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
+ * Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 
 package eu.internetofus.common.vertx;
 
-import eu.internetofus.common.components.Model;
+import eu.internetofus.common.model.Model;
 
 /**
  * Contains the information of a model that is used on a operation.
@@ -68,7 +68,7 @@ public class ModelContext<T extends Model, I> {
   @Override
   public String toString() {
 
-    final StringBuilder builder = new StringBuilder();
+    final var builder = new StringBuilder();
 
     builder.append(this.name);
     if (this.id != null) {

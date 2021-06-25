@@ -1,7 +1,7 @@
 /*
  * -----------------------------------------------------------------------------
  *
- *   Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
+ * Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,9 @@
 package eu.internetofus.common.components.models;
 
 import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
-import static eu.internetofus.common.components.ValidationsTest.assertIsNotValid;
-import static eu.internetofus.common.components.ValidationsTest.assertIsValid;
+import static eu.internetofus.common.model.ValidationsTest.assertIsNotValid;
+import static eu.internetofus.common.model.ValidationsTest.assertIsValid;
 
-import eu.internetofus.common.components.ModelTestCase;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
@@ -32,6 +31,7 @@ import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
+import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;

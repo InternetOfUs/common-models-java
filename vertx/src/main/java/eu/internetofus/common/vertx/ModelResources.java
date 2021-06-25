@@ -1,7 +1,7 @@
 /*
  * -----------------------------------------------------------------------------
  *
- *   Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
+ * Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@
 
 package eu.internetofus.common.vertx;
 
-import eu.internetofus.common.TimeManager;
-import eu.internetofus.common.components.Mergeable;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.Updateable;
-import eu.internetofus.common.components.Validable;
-import eu.internetofus.common.components.models.CreateUpdateTsDetails;
+import eu.internetofus.common.model.CreateUpdateTsDetails;
+import eu.internetofus.common.model.Mergeable;
+import eu.internetofus.common.model.Model;
+import eu.internetofus.common.model.TimeManager;
+import eu.internetofus.common.model.Updateable;
+import eu.internetofus.common.model.Validable;
 import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;

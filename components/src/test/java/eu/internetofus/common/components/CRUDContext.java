@@ -1,7 +1,7 @@
 /*
  * -----------------------------------------------------------------------------
  *
- *   Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
+ * Copyright 2019 - 2022 UDT-IA, IIIA-CSIC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@
 
 package eu.internetofus.common.components;
 
-import eu.internetofus.common.TimeManager;
-import eu.internetofus.common.components.models.CreateUpdateTsDetails;
+import eu.internetofus.common.model.CreateUpdateTsDetails;
+import eu.internetofus.common.model.ErrorMessage;
+import eu.internetofus.common.model.Merges;
+import eu.internetofus.common.model.TimeManager;
 import io.vertx.core.Handler;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
