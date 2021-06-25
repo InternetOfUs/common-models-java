@@ -28,6 +28,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -251,6 +252,41 @@ public class MergesTest {
 
           assertThat(merged).isSameAs(model);
           assertThat(merged.other).isSameAs(source);
+          testContext.completeNow();
+
+        })));
+  }
+
+  /**
+   * Check that merge a field list.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Merges#mergeFieldList
+   */
+  @Test
+  public void shouldMergeFieldList(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var model = new DummyComplexModelTest().createModelExample(1);
+    final var target = new ArrayList<DummyComplexModel>();
+    target.add(new DummyComplexModelTest().createModelExample(2));
+    target.add(new DummyComplexModelTest().createModelExample(3));
+    target.add(new DummyComplexModelTest().createModelExample(9));
+    target.get(2).id = null;
+    final var source = new ArrayList<DummyComplexModel>();
+    source.add(new DummyComplexModelTest().createModelExample(4));
+    source.add(new DummyComplexModelTest().createModelExample(3));
+    source.add(new DummyComplexModelTest().createModelExample(30));
+    source.get(1).index = 90;
+    source.get(2).id = null;
+    Future.succeededFuture(model)
+        .compose(Merges.mergeFieldList(source, source, "siblings", vertx, sibling -> sibling.id != null,
+            (a, b) -> a.id.equals(b.id), (merged, siblings) -> merged.siblings = siblings))
+        .onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
+
+          assertThat(merged).isSameAs(model);
+          assertThat(merged.siblings).isEqualTo(source);
           testContext.completeNow();
 
         })));
