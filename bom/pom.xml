@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+ <modelVersion>4.0.0</modelVersion>
+ <parent>
+  <groupId>eu.internetofus</groupId>
+  <artifactId>common-parent</artifactId>
+  <relativePath>../pom.xml</relativePath>
+  <version>0.7.0</version>
+ </parent>
+ <groupId>eu.internetofus</groupId>
+ <artifactId>common-bom</artifactId>
+ <version>0.7.0</version>
+ <packaging>pom</packaging>
+ <description>Bill of Materials (BOM) of the wenet common components</description>
+ <organization>
+  <name>UDT-IA, IIIA-CSIC</name>
+  <url>http://www.iiia.csic.es/</url>
+ </organization>
+ <licenses>
+  <license>
+   <name>Apache V2.0 License</name>
+   <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+  </license>
+ </licenses>
+ <dependencyManagement>
+  <dependencies>
+   <dependency>
+    <groupId>eu.internetofus</groupId>
+    <artifactId>common-test</artifactId>
+    <version>${project.version}</version>
+   </dependency>
+   <dependency>
+    <groupId>eu.internetofus</groupId>
+    <artifactId>common-vertx</artifactId>
+    <version>${project.version}</version>
+   </dependency>
+   <dependency>
+    <groupId>eu.internetofus</groupId>
+    <artifactId>common-components</artifactId>
+    <version>${project.version}</version>
+   </dependency>
+   <dependency>
+    <groupId>eu.internetofus</groupId>
+    <artifactId>common-dummy</artifactId>
+    <version>${project.version}</version>
+   </dependency>
+  </dependencies>
+ </dependencyManagement>
+</project>
