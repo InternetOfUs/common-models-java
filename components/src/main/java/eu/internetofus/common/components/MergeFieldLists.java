@@ -20,14 +20,14 @@
 
 package eu.internetofus.common.components;
 
-import eu.internetofus.common.model.Models.CommunityMember;
-import eu.internetofus.common.model.Models.Competence;
-import eu.internetofus.common.model.Models.Material;
-import eu.internetofus.common.model.Models.Meaning;
-import eu.internetofus.common.model.Models.PlannedActivity;
-import eu.internetofus.common.model.Models.RelevantLocation;
-import eu.internetofus.common.model.Models.Routine;
-import eu.internetofus.common.model.Models.SocialPractice;
+import eu.internetofus.common.components.models.CommunityMember;
+import eu.internetofus.common.components.models.Competence;
+import eu.internetofus.common.components.models.Material;
+import eu.internetofus.common.components.models.Meaning;
+import eu.internetofus.common.components.models.PlannedActivity;
+import eu.internetofus.common.components.models.RelevantLocation;
+import eu.internetofus.common.components.models.Routine;
+import eu.internetofus.common.components.models.SocialPractice;
 import eu.internetofus.common.model.Merges;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;

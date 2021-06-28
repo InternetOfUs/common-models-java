@@ -20,14 +20,14 @@
 
 package eu.internetofus.common.components;
 
-import eu.internetofus.common.model.Models.CommunityProfile;
-import eu.internetofus.common.model.Models.CommunityProfileTest;
-import eu.internetofus.common.model.Models.Task;
-import eu.internetofus.common.model.Models.TaskTest;
-import eu.internetofus.common.model.Models.TaskType;
-import eu.internetofus.common.model.Models.TaskTypeTest;
-import eu.internetofus.common.model.Models.WeNetUserProfile;
-import eu.internetofus.common.model.Models.WeNetUserProfileTest;
+import eu.internetofus.common.components.models.CommunityProfile;
+import eu.internetofus.common.components.models.CommunityProfileTest;
+import eu.internetofus.common.components.models.Task;
+import eu.internetofus.common.components.models.TaskTest;
+import eu.internetofus.common.components.models.TaskType;
+import eu.internetofus.common.components.models.TaskTypeTest;
+import eu.internetofus.common.components.models.WeNetUserProfile;
+import eu.internetofus.common.components.models.WeNetUserProfileTest;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.AppTest;

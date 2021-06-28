@@ -21,8 +21,8 @@
 package eu.internetofus.common.components.service;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.model.Models.CommunityMember;
-import eu.internetofus.common.model.Models.CommunityProfile;
+import eu.internetofus.common.components.models.CommunityMember;
+import eu.internetofus.common.components.models.CommunityProfile;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.model.JsonObjectDeserializer;
 import eu.internetofus.common.model.Model;

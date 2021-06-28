@@ -21,7 +21,7 @@
 package eu.internetofus.common.components.profile_manager;
 
 import java.util.ArrayList;
-import eu.internetofus.common.model.Models.CommunityProfileTest;
+import eu.internetofus.common.components.models.CommunityProfileTest;
 import eu.internetofus.common.model.ModelTestCase;
 
 /**

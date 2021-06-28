@@ -21,8 +21,8 @@
 package eu.internetofus.common.components.profile_manager;
 
 import eu.internetofus.common.components.WeNetComponent;
-import eu.internetofus.common.model.Models.CommunityProfile;
-import eu.internetofus.common.model.Models.WeNetUserProfile;
+import eu.internetofus.common.components.models.CommunityProfile;
+import eu.internetofus.common.components.models.WeNetUserProfile;
 import eu.internetofus.common.model.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;

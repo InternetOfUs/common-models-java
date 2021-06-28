@@ -20,8 +20,8 @@
 
 package eu.internetofus.common.components.task_manager;
 
-import eu.internetofus.common.model.Models.Task;
-import eu.internetofus.common.model.Models.TaskTransaction;
+import eu.internetofus.common.components.models.Task;
+import eu.internetofus.common.components.models.TaskTransaction;
 import io.vertx.core.json.JsonObject;
 import java.util.function.Predicate;
 

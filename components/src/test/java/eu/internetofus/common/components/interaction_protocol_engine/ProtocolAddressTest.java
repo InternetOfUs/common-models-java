@@ -25,7 +25,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 
 import eu.internetofus.common.components.StoreServices;
-import eu.internetofus.common.model.Models.WeNetUserProfile;
+import eu.internetofus.common.components.models.WeNetUserProfile;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
 import eu.internetofus.common.model.ModelTestCase;

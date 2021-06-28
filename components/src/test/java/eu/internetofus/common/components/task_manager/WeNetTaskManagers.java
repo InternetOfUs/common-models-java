@@ -21,7 +21,7 @@
 package eu.internetofus.common.components.task_manager;
 
 import java.util.function.Predicate;
-import eu.internetofus.common.model.Models.Task;
+import eu.internetofus.common.components.models.Task;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;

@@ -21,10 +21,10 @@
 package eu.internetofus.common.components.task_manager;
 
 import eu.internetofus.common.components.WeNetComponent;
-import eu.internetofus.common.model.Models.Message;
-import eu.internetofus.common.model.Models.Task;
-import eu.internetofus.common.model.Models.TaskTransaction;
-import eu.internetofus.common.model.Models.TaskType;
+import eu.internetofus.common.components.models.Message;
+import eu.internetofus.common.components.models.Task;
+import eu.internetofus.common.components.models.TaskTransaction;
+import eu.internetofus.common.components.models.TaskType;
 import eu.internetofus.common.model.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
