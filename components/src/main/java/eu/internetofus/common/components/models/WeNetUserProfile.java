@@ -20,6 +20,7 @@
 
 package eu.internetofus.common.components.models;
 
+import eu.internetofus.common.components.MergeFieldLists;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.model.CreateUpdateTsDetails;
 import eu.internetofus.common.model.Mergeable;
@@ -336,33 +337,33 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
         merged.norms = this.norms;
       }
 
-      future = future.compose(Merges.mergePlannedActivities(this.plannedActivities, source.plannedActivities,
+      future = future.compose(MergeFieldLists.mergePlannedActivities(this.plannedActivities, source.plannedActivities,
           codePrefix + ".plannedActivities", vertx, (model, mergedPlannedActivities) -> {
             merged.plannedActivities = mergedPlannedActivities;
           }));
 
-      future = future.compose(Merges.mergeRelevantLocations(this.relevantLocations, source.relevantLocations,
+      future = future.compose(MergeFieldLists.mergeRelevantLocations(this.relevantLocations, source.relevantLocations,
           codePrefix + ".relevantLocations", vertx, (model, mergedRelevantLocations) -> {
             model.relevantLocations = mergedRelevantLocations;
           }));
 
-      future = future.compose(Merges.mergeRoutines(this.personalBehaviors, source.personalBehaviors,
+      future = future.compose(MergeFieldLists.mergeRoutines(this.personalBehaviors, source.personalBehaviors,
           codePrefix + ".personalBehaviors", vertx, (model, mergedPersonalBehaviors) -> {
             model.personalBehaviors = mergedPersonalBehaviors;
           }));
 
-      future = future.compose(Merges.mergeMaterials(this.materials, source.materials, codePrefix + ".materials", vertx,
-          (model, mergedMaterials) -> {
+      future = future.compose(MergeFieldLists.mergeMaterials(this.materials, source.materials,
+          codePrefix + ".materials", vertx, (model, mergedMaterials) -> {
             model.materials = mergedMaterials;
           }));
 
-      future = future.compose(Merges.mergeCompetences(this.competences, source.competences, codePrefix + ".competences",
-          vertx, (model, mergedCompetences) -> {
+      future = future.compose(MergeFieldLists.mergeCompetences(this.competences, source.competences,
+          codePrefix + ".competences", vertx, (model, mergedCompetences) -> {
             model.competences = mergedCompetences;
           }));
 
-      future = future.compose(Merges.mergeMeanings(this.meanings, source.meanings, codePrefix + ".meanings", vertx,
-          (model, mergedMeanings) -> {
+      future = future.compose(MergeFieldLists.mergeMeanings(this.meanings, source.meanings, codePrefix + ".meanings",
+          vertx, (model, mergedMeanings) -> {
             model.meanings = mergedMeanings;
           }));
 

@@ -21,8 +21,8 @@
 package eu.internetofus.common.components.interaction_protocol_engine;
 
 import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
-import static eu.internetofus.common.model.ValidationsTest.assertIsNotValid;
-import static eu.internetofus.common.model.ValidationsTest.assertIsValid;
+import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
+import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.models.WeNetUserProfile;

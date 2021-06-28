@@ -20,8 +20,8 @@
 
 package eu.internetofus.common.components.models;
 
-import static eu.internetofus.common.model.ValidationsTest.assertIsNotValid;
-import static eu.internetofus.common.model.ValidationsTest.assertIsValid;
+import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
+import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.model.ModelTestCase;

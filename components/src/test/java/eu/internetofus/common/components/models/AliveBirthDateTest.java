@@ -21,14 +21,12 @@
 package eu.internetofus.common.components.models;
 
 import static eu.internetofus.common.model.MergeAsserts.assertCannotMerge;
-import static eu.internetofus.common.model.ValidationsTest.assertIsNotValid;
-
-import java.time.LocalDate;
-
-import org.junit.jupiter.api.Test;
+import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
+import java.time.LocalDate;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test the {@link AliveBirthDate}.
@@ -77,7 +75,8 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
    * @see AliveBirthDate#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidToBornBeforeTheOldestPersonOnTheWorld(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidToBornBeforeTheOldestPersonOnTheWorld(final Vertx vertx,
+      final VertxTestContext testContext) {
 
     final var model = this.createEmptyModel();
     model.year = 1903;
@@ -116,7 +115,8 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
    * @see AliveBirthDate#merge(ProfileDate, String, Vertx)
    */
   @Test
-  public void shouldNotMergeToBornBeforeTheOldestPersonOnTheWorld(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotMergeToBornBeforeTheOldestPersonOnTheWorld(final Vertx vertx,
+      final VertxTestContext testContext) {
 
     final var target = this.createEmptyModel();
     final var source = this.createEmptyModel();

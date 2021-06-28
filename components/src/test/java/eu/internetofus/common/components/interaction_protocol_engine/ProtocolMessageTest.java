@@ -20,7 +20,7 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
-import static eu.internetofus.common.model.ValidationsTest.assertIsNotValid;
+import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;

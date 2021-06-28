@@ -23,10 +23,10 @@ package eu.internetofus.common.components.models;
 import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static eu.internetofus.common.model.MergeAsserts.assertCanMerge;
 import static eu.internetofus.common.model.MergeAsserts.assertCannotMerge;
-import static eu.internetofus.common.model.UpdatesTest.assertCanUpdate;
-import static eu.internetofus.common.model.UpdatesTest.assertCannotUpdate;
-import static eu.internetofus.common.model.ValidationsTest.assertIsNotValid;
-import static eu.internetofus.common.model.ValidationsTest.assertIsValid;
+import static eu.internetofus.common.model.UpdateAsserts.assertCanUpdate;
+import static eu.internetofus.common.model.UpdateAsserts.assertCannotUpdate;
+import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
+import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;

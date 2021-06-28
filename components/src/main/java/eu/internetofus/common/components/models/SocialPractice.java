@@ -20,8 +20,8 @@
 
 package eu.internetofus.common.components.models;
 
+import eu.internetofus.common.components.MergeFieldLists;
 import eu.internetofus.common.model.Mergeable;
-import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
@@ -130,12 +130,12 @@ public class SocialPractice extends ReflectionModel
       final Promise<SocialPractice> promise = Promise.promise();
       promise.complete(merged);
       var future = promise.future();
-      future = future.compose(Merges.mergeMaterials(this.materials, source.materials, codePrefix + ".materials", vertx,
-          (model, mergedMaterials) -> {
+      future = future.compose(MergeFieldLists.mergeMaterials(this.materials, source.materials,
+          codePrefix + ".materials", vertx, (model, mergedMaterials) -> {
             model.materials = mergedMaterials;
           }));
-      future = future.compose(Merges.mergeCompetences(this.competences, source.competences, codePrefix + ".competences",
-          vertx, (model, mergedCompetences) -> {
+      future = future.compose(MergeFieldLists.mergeCompetences(this.competences, source.competences,
+          codePrefix + ".competences", vertx, (model, mergedCompetences) -> {
             model.competences = mergedCompetences;
           }));
       merged.norms = source.norms;

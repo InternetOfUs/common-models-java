@@ -28,24 +28,19 @@ import eu.internetofus.common.components.models.PlannedActivity;
 import eu.internetofus.common.components.models.RelevantLocation;
 import eu.internetofus.common.components.models.Routine;
 import eu.internetofus.common.components.models.SocialPractice;
+import eu.internetofus.common.model.Merges;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 /**
  * The utility components to merge values.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public interface Merges {
+public interface MergeFieldLists {
 
   /**
    * Merge two list of planned activities.

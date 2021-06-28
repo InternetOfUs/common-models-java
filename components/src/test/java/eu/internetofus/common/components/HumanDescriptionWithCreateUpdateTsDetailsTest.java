@@ -37,9 +37,9 @@ public class HumanDescriptionWithCreateUpdateTsDetailsTest
    * {@inheritDoc}
    */
   @Override
-  public HumanDescriptionWithCreateUpdateTsDetails createModelExample(int index) {
+  public HumanDescriptionWithCreateUpdateTsDetails createModelExample(final int index) {
 
-    var model = new HumanDescriptionWithCreateUpdateTsDetails();
+    final var model = new HumanDescriptionWithCreateUpdateTsDetails();
     model._creationTs = index;
     model._lastUpdateTs = index + 1;
     model.name = "name_" + index;

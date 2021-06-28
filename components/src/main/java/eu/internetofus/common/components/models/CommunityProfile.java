@@ -21,10 +21,10 @@
 package eu.internetofus.common.components.models;
 
 import eu.internetofus.common.components.HumanDescriptionWithCreateUpdateTsDetails;
+import eu.internetofus.common.components.MergeFieldLists;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.model.Mergeable;
-import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
 import eu.internetofus.common.model.Validations;
@@ -167,12 +167,12 @@ public class CommunityProfile extends HumanDescriptionWithCreateUpdateTsDetails
         merged.norms = this.norms;
       }
 
-      future = future.compose(
-          Merges.mergeMembers(this.members, source.members, codePrefix + ".members", vertx, (model, mergedMembers) -> {
+      future = future.compose(MergeFieldLists.mergeMembers(this.members, source.members, codePrefix + ".members", vertx,
+          (model, mergedMembers) -> {
             model.members = mergedMembers;
           }));
 
-      future = future.compose(Merges.mergeSocialPractices(this.socialPractices, source.socialPractices,
+      future = future.compose(MergeFieldLists.mergeSocialPractices(this.socialPractices, source.socialPractices,
           codePrefix + ".socialPractices", vertx, (model, mergedSocialPractices) -> {
             model.socialPractices = mergedSocialPractices;
           }));

@@ -18,12 +18,39 @@
  * -----------------------------------------------------------------------------
  */
 
+package eu.internetofus.common.components;
+
+import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+
 /**
- * Contains the WeNet components that other components can interact.
+ * A WeNet components that can be interacted with.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ModuleGen(name = "components", groupPackage = "eu.internetofus.common")
-package eu.internetofus.common.components;
+public interface WeNetComponent {
 
-import io.vertx.codegen.annotations.ModuleGen;
+  /**
+   * Obtain the URL to the API for interact with this component.
+   *
+   * @param handler to inform of the API.
+   */
+  void obtainApiUrl(final Handler<AsyncResult<String>> handler);
+
+  /**
+   * Obtain the URL to the API for interact with this component.
+   *
+   * @return the future URL to the API of this component.
+   */
+  @GenIgnore
+  default Future<String> obtainApiUrl() {
+
+    final Promise<String> promise = Promise.promise();
+    this.obtainApiUrl(promise);
+    return promise.future();
+  }
+
+}

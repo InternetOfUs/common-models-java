@@ -21,7 +21,7 @@
 package eu.internetofus.common.components.models;
 
 import static eu.internetofus.common.model.MergeAsserts.assertCanMerge;
-import static eu.internetofus.common.model.ValidationsTest.assertIsValid;
+import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.model.ModelTestCase;
