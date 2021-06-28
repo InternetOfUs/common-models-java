@@ -81,6 +81,14 @@ public class WeNetDummyIntegrationExtension extends AbstractWeNetComponentIntegr
     return new Main();
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @see WeNetServiceSimulator
+   * @see WeNetIncentiveServerSimulator
+   * @see WeNetSocialContextBuilderSimulator
+   * @see WeNetPersonalContextBuilderSimulator
+   */
   @Override
   protected void afterStarted(final Vertx vertx, final WebClientSession client, final JsonObject conf) {
 

@@ -16,5 +16,5 @@ openAPI:
       name: Bruno Rosell i Gui (UDT-IA, IIIA-CSIC)
       email: rosell@iiia.csic.es
     license:
-      name: MIT
-      url: https://opensource.org/licenses/MIT
+      name: Apache V2
+      url: http://www.apache.org/licenses/LICENSE-2.0
