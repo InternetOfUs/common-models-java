@@ -19,7 +19,7 @@
  */
 package eu.internetofus.wenet_dummy.api.dummies;
 
-import eu.internetofus.common.components.ErrorMessage;
+import eu.internetofus.common.model.ErrorMessage;
 import eu.internetofus.wenet_dummy.service.Dummy;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

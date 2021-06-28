@@ -21,7 +21,7 @@
 package eu.internetofus.common.components.interaction_protocol_engine;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.models.TaskTransaction;
+import eu.internetofus.common.model.Models.TaskTransaction;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;

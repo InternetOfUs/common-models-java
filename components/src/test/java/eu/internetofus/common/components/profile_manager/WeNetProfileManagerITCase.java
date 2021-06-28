@@ -26,7 +26,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import eu.internetofus.common.components.StoreServices;
-import eu.internetofus.common.components.models.CommunityProfile;
+import eu.internetofus.common.model.Models.CommunityProfile;
 import eu.internetofus.common.model.Model;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;

@@ -19,7 +19,7 @@
  */
 package eu.internetofus.wenet_dummy.persistence;
 
-import eu.internetofus.common.components.Model;
+import eu.internetofus.common.model.Model;
 import eu.internetofus.wenet_dummy.service.Dummy;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;

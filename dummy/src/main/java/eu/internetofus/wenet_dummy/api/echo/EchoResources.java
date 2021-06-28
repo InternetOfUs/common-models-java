@@ -19,7 +19,7 @@
  */
 package eu.internetofus.wenet_dummy.api.echo;
 
-import eu.internetofus.common.components.Model;
+import eu.internetofus.common.model.Model;
 import eu.internetofus.common.vertx.ServiceResponseHandlers;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;

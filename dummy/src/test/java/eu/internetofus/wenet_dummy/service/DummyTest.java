@@ -19,7 +19,7 @@
  */
 package eu.internetofus.wenet_dummy.service;
 
-import eu.internetofus.common.components.ModelTestCase;
+import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.json.JsonObject;
 
 /**

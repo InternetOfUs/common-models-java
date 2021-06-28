@@ -19,8 +19,8 @@
  */
 package eu.internetofus.wenet_dummy.api.echo;
 
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.model.Model;
+import eu.internetofus.common.model.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**

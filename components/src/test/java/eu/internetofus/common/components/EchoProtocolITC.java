@@ -20,8 +20,8 @@
 
 package eu.internetofus.common.components;
 
-import eu.internetofus.common.components.models.Message;
-import eu.internetofus.common.components.models.TaskTransaction;
+import eu.internetofus.common.model.Models.Message;
+import eu.internetofus.common.model.Models.TaskTransaction;
 import eu.internetofus.common.components.service.MessagePredicates;
 import eu.internetofus.common.components.task_manager.TaskPredicates;
 import eu.internetofus.common.components.task_manager.TaskTransactionPredicates;

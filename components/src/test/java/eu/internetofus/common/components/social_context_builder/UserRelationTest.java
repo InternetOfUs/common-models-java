@@ -23,7 +23,7 @@ package eu.internetofus.common.components.social_context_builder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-import eu.internetofus.common.components.models.SocialNetworkRelationshipType;
+import eu.internetofus.common.model.Models.SocialNetworkRelationshipType;
 import eu.internetofus.common.model.ModelTestCase;
 
 /**

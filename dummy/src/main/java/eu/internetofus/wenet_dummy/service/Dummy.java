@@ -20,9 +20,9 @@
 package eu.internetofus.wenet_dummy.service;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.JsonObjectDeserializer;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ReflectionModel;
+import eu.internetofus.common.model.JsonObjectDeserializer;
+import eu.internetofus.common.model.Model;
+import eu.internetofus.common.model.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.json.JsonObject;
 

@@ -22,9 +22,9 @@ package eu.internetofus.common.components;
 
 import eu.internetofus.common.components.incentive_server.TaskStatus;
 import eu.internetofus.common.components.incentive_server.TaskStatusPredicates;
-import eu.internetofus.common.components.models.Message;
-import eu.internetofus.common.components.models.Task;
-import eu.internetofus.common.components.models.TaskTransaction;
+import eu.internetofus.common.model.Models.Message;
+import eu.internetofus.common.model.Models.Task;
+import eu.internetofus.common.model.Models.TaskTransaction;
 import eu.internetofus.common.components.service.MessagePredicates;
 import eu.internetofus.common.components.task_manager.TaskPredicates;
 import eu.internetofus.common.components.task_manager.TaskTransactionPredicates;

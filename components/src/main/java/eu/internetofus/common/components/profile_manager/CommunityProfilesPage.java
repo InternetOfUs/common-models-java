@@ -21,7 +21,7 @@
 package eu.internetofus.common.components.profile_manager;
 
 import java.util.List;
-import eu.internetofus.common.components.models.CommunityProfile;
+import eu.internetofus.common.model.Models.CommunityProfile;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

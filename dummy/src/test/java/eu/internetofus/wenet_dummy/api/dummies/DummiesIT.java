@@ -23,7 +23,7 @@ import static eu.internetofus.common.vertx.HttpResponses.assertThatBodyIs;
 import static io.reactiverse.junit5.web.TestRequest.testRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import eu.internetofus.common.components.ErrorMessage;
+import eu.internetofus.common.model.ErrorMessage;
 import eu.internetofus.wenet_dummy.WeNetDummyIntegrationExtension;
 import eu.internetofus.wenet_dummy.service.Dummy;
 import eu.internetofus.wenet_dummy.service.DummyTest;

@@ -24,7 +24,7 @@ import static eu.internetofus.common.components.AbstractComponentMocker.createCl
 import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 
-import eu.internetofus.common.components.models.TaskTransactionTest;
+import eu.internetofus.common.model.Models.TaskTransactionTest;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
 import eu.internetofus.common.components.service.WeNetService;

@@ -24,8 +24,8 @@ import static eu.internetofus.common.vertx.ComponentClientAsserts.assertStatusEr
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.WeNetComponentTestCase;
-import eu.internetofus.common.components.models.CommunityProfileTest;
-import eu.internetofus.common.components.models.WeNetUserProfileTest;
+import eu.internetofus.common.model.Models.CommunityProfileTest;
+import eu.internetofus.common.model.Models.WeNetUserProfileTest;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;

@@ -21,9 +21,9 @@
 package eu.internetofus.common.components.interaction_protocol_engine;
 
 import eu.internetofus.common.components.WeNetComponent;
-import eu.internetofus.common.components.models.Incentive;
-import eu.internetofus.common.components.models.Task;
-import eu.internetofus.common.components.models.TaskTransaction;
+import eu.internetofus.common.model.Models.Incentive;
+import eu.internetofus.common.model.Models.Task;
+import eu.internetofus.common.model.Models.TaskTransaction;
 import eu.internetofus.common.model.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;

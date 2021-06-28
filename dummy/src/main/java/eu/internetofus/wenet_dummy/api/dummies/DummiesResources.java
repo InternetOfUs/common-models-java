@@ -19,7 +19,7 @@
  */
 package eu.internetofus.wenet_dummy.api.dummies;
 
-import eu.internetofus.common.components.Model;
+import eu.internetofus.common.model.Model;
 import eu.internetofus.common.vertx.ServiceResponseHandlers;
 import eu.internetofus.wenet_dummy.persistence.DummiesRepository;
 import eu.internetofus.wenet_dummy.service.Dummy;
