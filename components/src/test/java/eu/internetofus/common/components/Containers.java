@@ -24,6 +24,8 @@ import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSi
 import eu.internetofus.common.components.personal_context_builder.WeNetPersonalContextBuilderSimulatorMocker;
 import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderSimulatorMocker;
+import eu.internetofus.common.test.MongoContainer;
+import eu.internetofus.common.test.WeNetComponentContainers;
 import eu.internetofus.common.vertx.AbstractMain;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -32,14 +34,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import java.net.ServerSocket;
 import java.nio.file.FileSystems;
 import org.testcontainers.Testcontainers;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 import org.tinylog.Logger;
 
 /**
@@ -47,32 +44,7 @@ import org.tinylog.Logger;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class Containers {
-
-  /**
-   * The name of the mongo docker container to use.
-   */
-  public static final String MONGO_DOCKER_NAME = "mongo:4.4.3";
-
-  /**
-   * The port for the MongoDB that has to be exported.
-   */
-  public static final int EXPORT_MONGODB_PORT = 27017;
-
-  /**
-   * The name of the database started on the container.
-   */
-  public static final String MONGODB_NAME = "wenetDB";
-
-  /**
-   * The name of the user to access the MongoDB on the container.
-   */
-  public static final String MONGODB_USER = "wenet";
-
-  /**
-   * The password of the user to access the MongoDB on the container.
-   */
-  public static final String MONGODB_PASSWORD = "password";
+public class Containers extends MongoContainer<Containers> implements WeNetComponentContainers {
 
   /**
    * The port that listen for the API requests on a container to be exported.
@@ -95,24 +67,9 @@ public class Containers {
   public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:0.21.0";
 
   /**
-   * The default wenet component apikey.
-   */
-  public static final String DEFAULT_WENET_COMPONENT_APIKEY = "secret";
-
-  /**
    * The current implementation of the containers.
    */
   private static final Containers INSTANCE = new Containers();
-
-  /**
-   * The network in witch all the containers are linked.
-   */
-  public Network network;
-
-  /**
-   * The container with a mongoDB.
-   */
-  public GenericContainer<?> mongoContainer;
 
   /**
    * The mocker of the service module.
@@ -165,14 +122,6 @@ public class Containers {
   public WeNetComponentContainer<?> interactionProtocolEngineContainer;
 
   /**
-   * Create a new instance of the containers.
-   */
-  protected Containers() {
-
-    this.network = Network.newNetwork();
-  }
-
-  /**
    * Return current containers.
    *
    * @return the current instance of the containers.
@@ -180,72 +129,6 @@ public class Containers {
   public static Containers status() {
 
     return INSTANCE;
-  }
-
-  /**
-   * Search for a free port.
-   *
-   * @return a free port.
-   */
-  public static int nextFreePort() {
-
-    var port = 0;
-    try {
-      final var server = new ServerSocket(0);
-      port = server.getLocalPort();
-      server.close();
-    } catch (final Throwable ignored) {
-    }
-
-    return port;
-  }
-
-  /**
-   * Start the MongoDB container if it is not started yet.
-   *
-   * @return this containers instance.
-   */
-  @SuppressWarnings("resource")
-  public Containers startMongoContainer() {
-
-    if (this.mongoContainer == null) {
-
-      Logger.trace("Starting MongoDB container");
-      this.mongoContainer = new GenericContainer<>(DockerImageName.parse(MONGO_DOCKER_NAME)).withStartupAttempts(1)
-          .withEnv("MONGO_INITDB_ROOT_USERNAME", "root").withEnv("MONGO_INITDB_ROOT_PASSWORD", "password")
-          .withEnv("MONGO_INITDB_DATABASE", MONGODB_NAME)
-          .withCopyFileToContainer(
-              MountableFile.forClasspathResource(
-                  Containers.class.getPackageName().replaceAll("\\.", "/") + "/initialize-wenetDB.js"),
-              "/docker-entrypoint-initdb.d/init-mongo.js")
-          .withExposedPorts(EXPORT_MONGODB_PORT).withNetwork(this.network).withNetworkAliases(MONGODB_NAME)
-          .waitingFor(Wait.forListeningPort());
-      this.mongoContainer.start();
-      Logger.trace("Started MongoDB container");
-    }
-
-    return this;
-  }
-
-  /**
-   * Return the host where the MongoDB is listening.
-   *
-   * @return the host where is the MongoDB container.
-   */
-  public String getMongoDBHost() {
-
-    return this.mongoContainer.getHost();
-  }
-
-  /**
-   * Return the port where the MongoDB is listening.
-   *
-   * @return the port where is the MongoDB container.
-   */
-  public int getMongoDBPort() {
-
-    return this.mongoContainer.getMappedPort(Containers.EXPORT_MONGODB_PORT);
-
   }
 
   /**
@@ -325,9 +208,9 @@ public class Containers {
 
     if (this.profileManagerApiPort == 0) {
 
-      this.profileManagerApiPort = Containers.nextFreePort();
-      this.taskManagerApiPort = Containers.nextFreePort();
-      this.interactionProtocolEngineApiPort = Containers.nextFreePort();
+      this.profileManagerApiPort = WeNetComponentContainers.nextFreePort();
+      this.taskManagerApiPort = WeNetComponentContainers.nextFreePort();
+      this.interactionProtocolEngineApiPort = WeNetComponentContainers.nextFreePort();
       Testcontainers.exposeHostPorts(this.profileManagerApiPort, this.taskManagerApiPort,
           this.interactionProtocolEngineApiPort);
     }
@@ -366,6 +249,7 @@ public class Containers {
    *
    * @return the profile manager API URL.
    */
+  @Override
   public String getProfileManagerApi() {
 
     return this.createApiFor(this.profileManagerContainer, this.profileManagerApiPort);
@@ -377,6 +261,7 @@ public class Containers {
    *
    * @return the task manager API URL.
    */
+  @Override
   public String getTaskManagerApi() {
 
     return this.createApiFor(this.taskManagerContainer, this.taskManagerApiPort);
@@ -388,6 +273,7 @@ public class Containers {
    *
    * @return the interaction protocol engine API URL.
    */
+  @Override
   public String getInteractionProtocolEngineApi() {
 
     return this.createApiFor(this.interactionProtocolEngineContainer, this.interactionProtocolEngineApiPort);
@@ -539,22 +425,54 @@ public class Containers {
   }
 
   /**
-   * Return the configuration to interact with the database.
-   *
-   * @return the configuration to interact with the MongoDB.
-   */
-  public JsonObject getMongoDBConfig() {
-
-    return new JsonObject().put("db_name", Containers.MONGODB_NAME).put("host", this.getMongoDBHost())
-        .put("port", this.getMongoDBPort()).put("username", Containers.MONGODB_USER)
-        .put("password", Containers.MONGODB_PASSWORD);
-  }
-
-  /**
    * Create the main arguments to start a component.
    */
   protected class MainStartArgumentBuilder {
 
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see #service
+   */
+  @Override
+  public String getServiceApi() {
+
+    return this.service.getApiUrl();
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see #socialContextBuilder
+   */
+  @Override
+  public String getSocialContextBuilderApi() {
+
+    return this.socialContextBuilder.getApiUrl();
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see #incentiveServer
+   */
+  @Override
+  public String getIncentiveServerApi() {
+
+    return this.incentiveServer.getApiUrl();
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see #personalContextBuilder
+   */
+  @Override
+  public String getPersonalContextBuilderApi() {
+
+    return this.personalContextBuilder.getApiUrl();
   }
 
 }

@@ -22,13 +22,11 @@ package eu.internetofus.common.vertx;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulator;
-import eu.internetofus.common.components.service.WeNetServiceSimulator;
-import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderSimulator;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientSession;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.List;
@@ -114,11 +112,18 @@ public abstract class AbstractWeNetComponentIntegrationExtension
     final var vertx = context.vertx;
     final var client = AbstractServicesVerticle.createWebClientSession(vertx, context.configuration);
     final var conf = context.configuration.getJsonObject("wenetComponents", new JsonObject());
-    WeNetServiceSimulator.register(vertx, client, conf);
-    WeNetIncentiveServerSimulator.register(vertx, client, conf);
-    WeNetSocialContextBuilderSimulator.register(vertx, client, conf);
+    this.afterStarted(vertx, client, conf);
 
   }
+
+  /**
+   * Start the simulator services.
+   *
+   * @param vertx  event bus to use.
+   * @param client to interact with the API.
+   * @param conf   configuration of the WeNet components.
+   */
+  protected abstract void afterStarted(final Vertx vertx, WebClientSession client, JsonObject conf);
 
   /**
    * Create the main class that initialize the WeNet module.

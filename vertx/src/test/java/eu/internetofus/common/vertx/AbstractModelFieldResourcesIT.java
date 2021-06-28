@@ -25,8 +25,8 @@ import static eu.internetofus.common.vertx.HttpResponses.assertThatBodyIsArrayOf
 import static io.reactiverse.junit5.web.TestRequest.testRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import eu.internetofus.common.components.ErrorMessage;
-import eu.internetofus.common.components.Model;
+import eu.internetofus.common.model.ErrorMessage;
+import eu.internetofus.common.model.Model;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;

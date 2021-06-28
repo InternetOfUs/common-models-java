@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 
-import eu.internetofus.common.Containers;
+import eu.internetofus.common.test.WeNetComponentContainers;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -102,7 +102,7 @@ public class AbstractAPIVerticleTest {
   @Test
   public void shouldNotStartWithBindedPort(final Vertx vertx, final VertxTestContext testContext) throws Exception {
 
-    final var port = Containers.nextFreePort();
+    final var port = WeNetComponentContainers.nextFreePort();
     new Thread(() -> {
 
       try {

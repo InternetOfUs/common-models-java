@@ -20,7 +20,6 @@
 
 package eu.internetofus.common.components;
 
-import eu.internetofus.common.Containers;
 import eu.internetofus.common.model.ErrorMessage;
 import eu.internetofus.common.vertx.AbstractServicesVerticle;
 import io.vertx.core.Future;

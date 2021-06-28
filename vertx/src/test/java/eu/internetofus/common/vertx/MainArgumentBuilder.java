@@ -20,7 +20,8 @@
 
 package eu.internetofus.common.vertx;
 
-import eu.internetofus.common.Containers;
+import eu.internetofus.common.test.MongoContainer;
+import eu.internetofus.common.test.WeNetComponentContainers;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -140,21 +141,21 @@ public class MainArgumentBuilder {
    *
    * @return the argument builder.
    */
-  public MainArgumentBuilder with(@NotNull final Containers containers) {
+  public MainArgumentBuilder with(@NotNull final WeNetComponentContainers containers) {
 
-    this.with("persistence.db_name", Containers.MONGODB_NAME);
+    this.with("persistence.db_name", MongoContainer.MONGODB_NAME);
     this.with("persistence.host", containers.getMongoDBHost());
     this.with("persistence.port", containers.getMongoDBPort());
-    this.with("persistence.username", Containers.MONGODB_USER);
-    this.with("persistence.password", Containers.MONGODB_PASSWORD);
+    this.with("persistence.username", MongoContainer.MONGODB_USER);
+    this.with("persistence.password", MongoContainer.MONGODB_PASSWORD);
     this.withWeNetComponent("profileManager", containers.getProfileManagerApi());
     this.withWeNetComponent("taskManager", containers.getTaskManagerApi());
     this.withWeNetComponent("interactionProtocolEngine", containers.getInteractionProtocolEngineApi());
-    this.withWeNetComponent("service", containers.service.getApiUrl());
-    this.withWeNetComponent("socialContextBuilder", containers.socialContextBuilder.getApiUrl());
-    this.withWeNetComponent("incentiveServer", containers.incentiveServer.getApiUrl());
-    this.withWeNetComponent("personalContextBuilder", containers.personalContextBuilder.getApiUrl());
-    this.withApikey(Containers.DEFAULT_WENET_COMPONENT_APIKEY);
+    this.withWeNetComponent("service", containers.getServiceApi());
+    this.withWeNetComponent("socialContextBuilder", containers.getSocialContextBuilderApi());
+    this.withWeNetComponent("incentiveServer", containers.getIncentiveServerApi());
+    this.withWeNetComponent("personalContextBuilder", containers.getPersonalContextBuilderApi());
+    this.withApikey(WeNetComponentContainers.DEFAULT_WENET_COMPONENT_APIKEY);
 
     return this;
   }

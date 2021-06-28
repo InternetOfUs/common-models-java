@@ -29,7 +29,6 @@
    <groupId>eu.internetofus</groupId>
    <artifactId>common-test</artifactId>
    <version>${project.version}</version>
-   <type>pom</type>
    <scope>test</scope>
   </dependency>
   <dependency>
@@ -249,22 +248,6 @@
       <goals>
        <goal>test-jar</goal>
       </goals>
-     </execution>
-    </executions>
-   </plugin>
-   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-dependency-plugin</artifactId>
-    <version>${maven-dependency-plugin-version}</version>
-    <executions>
-     <execution>
-      <phase>package</phase>
-      <goals>
-       <goal>copy-dependencies</goal>
-      </goals>
-      <configuration>
-       <outputDirectory>${project.build.directory}/lib</outputDirectory>
-      </configuration>
      </execution>
     </executions>
    </plugin>

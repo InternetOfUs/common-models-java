@@ -24,19 +24,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import eu.internetofus.common.Containers;
+import eu.internetofus.common.test.MongoContainer;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Test the {@link AbstractPersistenceVerticle}.
@@ -53,6 +54,32 @@ public class AbstractPersistenceVerticleTest {
   public AbstractPersistenceVerticle verticle;
 
   /**
+   * The container with the mongoDB.
+   */
+  protected static MongoContainer<?> container;
+
+  /**
+   * Start the database.
+   */
+  @BeforeAll
+  public static void startDatabaseContainer() {
+
+    container = new MongoContainer<>();
+    container.startMongoContainer();
+
+  }
+
+  /**
+   * Stop the container.
+   */
+  @AfterAll
+  public static void stopDatabasecontainer() {
+
+    container.mongoContainer.stop();
+
+  }
+
+  /**
    * Set the default mocking methods.
    *
    * @param vertx event bus to use.
@@ -60,7 +87,7 @@ public class AbstractPersistenceVerticleTest {
   @BeforeEach
   public void setDefaultMocks(final Vertx vertx) {
 
-    doReturn(new JsonObject().put("persistence", Containers.status().startMongoContainer().getMongoDBConfig())).when(this.verticle).config();
+    doReturn(new JsonObject().put("persistence", container.getMongoDBConfig())).when(this.verticle).config();
     doReturn(vertx).when(this.verticle).getVertx();
 
   }

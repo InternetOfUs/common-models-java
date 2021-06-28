@@ -27,8 +27,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 
-import eu.internetofus.common.components.DummyModel;
-import eu.internetofus.common.components.ValidationErrorException;
+import eu.internetofus.common.model.DummyModel;
+import eu.internetofus.common.model.ValidationErrorException;
 import io.vertx.core.Future;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -150,7 +150,7 @@ public class RepositoryTest {
     final var error = catchThrowableOfType(
         () -> Repository.queryParamToSort(Arrays.asList(values), "codePrefix", (value) -> {
 
-          final String key = value.toLowerCase();
+          final var key = value.toLowerCase();
           if (!key.startsWith("key")) {
 
             return null;

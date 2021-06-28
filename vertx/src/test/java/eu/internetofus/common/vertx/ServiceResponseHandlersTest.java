@@ -22,20 +22,18 @@ package eu.internetofus.common.vertx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import eu.internetofus.common.components.DummyModel;
-import eu.internetofus.common.components.Model;
-import eu.internetofus.common.components.ValidationErrorException;
+import eu.internetofus.common.model.DummyModel;
+import eu.internetofus.common.model.Model;
+import eu.internetofus.common.model.ValidationErrorException;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.serviceproxy.ServiceException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test the {@link ServiceResponseHandlers}.
@@ -154,7 +152,8 @@ public class ServiceResponseHandlersTest {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
-      assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"undefined\",\"message\":\"Unexpected failure\"}");
+      assertThat(reponse.getPayload().toString())
+          .isEqualTo("{\"code\":\"undefined\",\"message\":\"Unexpected failure\"}");
       testContext.completeNow();
 
     })), Status.NOT_FOUND, null);
@@ -173,7 +172,8 @@ public class ServiceResponseHandlersTest {
 
       assertThat(reponse.getStatusCode()).isEqualTo(Status.NOT_ACCEPTABLE.getStatusCode());
       assertThat(reponse.getHeaders().get(HttpHeaders.CONTENT_TYPE)).isEqualTo(MediaType.APPLICATION_JSON);
-      assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"NullPointerException\",\"message\":\"message\"}");
+      assertThat(reponse.getPayload().toString())
+          .isEqualTo("{\"code\":\"NullPointerException\",\"message\":\"message\"}");
       testContext.completeNow();
 
     })), Status.NOT_ACCEPTABLE, new NullPointerException("message"));
@@ -271,7 +271,8 @@ public class ServiceResponseHandlersTest {
       assertThat(reponse.getPayload().toString()).isEqualTo("{\"code\":\"Zero\",\"message\":\"Error\"}");
       testContext.completeNow();
 
-    })), Status.NOT_FOUND, new ServiceException(0, "Zero", new JsonObject().put("code", "Zero").put("message", "Error")));
+    })), Status.NOT_FOUND,
+        new ServiceException(0, "Zero", new JsonObject().put("code", "Zero").put("message", "Error")));
 
   }
 

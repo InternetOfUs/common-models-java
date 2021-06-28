@@ -18,7 +18,7 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common;
+package eu.internetofus.common.components;
 
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.InternetProtocol;

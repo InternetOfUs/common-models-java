@@ -27,10 +27,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
-import eu.internetofus.common.components.DummyComplexModel;
-import eu.internetofus.common.components.DummyComplexModelTest;
-import eu.internetofus.common.components.ErrorMessage;
-import eu.internetofus.common.components.Model;
+import eu.internetofus.common.model.DummyComplexModel;
+import eu.internetofus.common.model.DummyComplexModelTest;
+import eu.internetofus.common.model.ErrorMessage;
+import eu.internetofus.common.model.Model;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;

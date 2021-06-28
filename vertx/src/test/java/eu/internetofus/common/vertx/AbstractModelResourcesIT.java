@@ -24,8 +24,8 @@ import static eu.internetofus.common.vertx.HttpResponses.assertThatBodyIs;
 import static io.reactiverse.junit5.web.TestRequest.testRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import eu.internetofus.common.components.ErrorMessage;
-import eu.internetofus.common.components.Model;
+import eu.internetofus.common.model.ErrorMessage;
+import eu.internetofus.common.model.Model;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -139,7 +139,7 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
         assertThat(res.statusCode()).isEqualTo(Status.CREATED.getStatusCode());
         @SuppressWarnings("unchecked")
-        final T target = (T) assertThatBodyIs(source.getClass(), res);
+        final var target = (T) assertThatBodyIs(source.getClass(), res);
         this.assertThatCreatedEquals(source, target);
 
       }).sendJson(source.toJsonObject(), testContext);
@@ -245,7 +245,7 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
           assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
           @SuppressWarnings("unchecked")
-          final T target = (T) assertThatBodyIs(source.getClass(), res);
+          final var target = (T) assertThatBodyIs(source.getClass(), res);
           assertThat(target).isEqualTo(stored);
 
         }).send(testContext);
@@ -395,7 +395,7 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
             assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
             @SuppressWarnings("unchecked")
-            final T updated = (T) assertThatBodyIs(source.getClass(), res);
+            final var updated = (T) assertThatBodyIs(source.getClass(), res);
             assertThat(updated).isNotNull().isNotEqualTo(stored);
             this.assertThatCreatedEquals(source, updated);
 
@@ -540,7 +540,7 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
             assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
             @SuppressWarnings("unchecked")
-            final T merged = (T) assertThatBodyIs(source.getClass(), res);
+            final var merged = (T) assertThatBodyIs(source.getClass(), res);
             assertThat(merged).isNotNull().isNotEqualTo(stored);
             this.assertThatCreatedEquals(source, merged);
 

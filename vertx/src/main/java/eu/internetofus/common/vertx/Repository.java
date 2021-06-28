@@ -463,7 +463,8 @@ public class Repository {
         mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         final var reader = mapper.readerFor(type);
-        final var value = reader.readValue(foundObject.encode());
+        @SuppressWarnings("unchecked")
+        final var value = (T) reader.readValue(foundObject.encode());
         final var id = foundObject.remove("_id");
         final var updateQuery = new JsonObject().put("_id", id);
         final var model = value.toJsonObject();
