@@ -298,7 +298,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   }
 
   /**
-   * Check that a {@code null} app identifier is not valid.
+   * Check that an empty community is valid.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -306,14 +306,10 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @see CommunityProfile#validate(String, Vertx)
    */
   @Test
-  public void shouldNotBeValidWithANullAppId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldEmptyCommunityHasToBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
+    assertIsValid(new CommunityProfile(), vertx, testContext);
 
-      model.appId = null;
-      assertIsNotValid(model, "appId", vertx, testContext);
-
-    });
   }
 
   /**
@@ -331,25 +327,6 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
 
       model.appId = "Undefined identifier";
       assertIsNotValid(model, "appId", vertx, testContext);
-
-    });
-  }
-
-  /**
-   * Check that an invalid name is not valid.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see CommunityProfile#validate(String, Vertx)
-   */
-  @Test
-  public void shouldNotBeValidWithInvalidName(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
-
-      model.name = null;
-      assertIsNotValid(model, "name", vertx, testContext);
 
     });
   }
@@ -644,25 +621,6 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
       source.appId = "Undefined application id";
       assertCannotUpdate(target, source, "appId", vertx, testContext);
-    });
-
-  }
-
-  /**
-   * Should not update with a bad name.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
-   */
-  @Test
-  public void shouldNotUpdateWithBadName(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
-      final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
-      source.name = null;
-      assertCannotUpdate(target, source, "name", vertx, testContext);
     });
 
   }

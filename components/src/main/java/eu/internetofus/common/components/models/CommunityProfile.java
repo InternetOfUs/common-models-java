@@ -94,13 +94,17 @@ public class CommunityProfile extends HumanDescriptionWithCreateUpdateTsDetails
       future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
           WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
     }
-    future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
-        WeNetService.createProxy(vertx)::retrieveApp);
+    if (this.appId != null) {
 
-    future = future.compose(empty -> Validations.validateStringField(codePrefix, "name", this.name).map(name -> {
-      this.name = name;
-      return null;
-    }));
+      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
+          WeNetService.createProxy(vertx)::retrieveApp);
+    }
+
+    future = future
+        .compose(empty -> Validations.validateNullableStringField(codePrefix, "name", this.name).map(name -> {
+          this.name = name;
+          return null;
+        }));
     future = future.compose(empty -> Validations
         .validateNullableStringField(codePrefix, "description", this.description).map(description -> {
           this.description = description;
