@@ -7,9 +7,7 @@
   <relativePath>../pom.xml</relativePath>
   <version>0.7.0</version>
  </parent>
- <groupId>eu.internetofus</groupId>
  <artifactId>common-bom</artifactId>
- <version>0.7.0</version>
  <packaging>pom</packaging>
  <description>Bill of Materials (BOM) of the wenet common components</description>
  <organization>
@@ -31,8 +29,31 @@
    </dependency>
    <dependency>
     <groupId>eu.internetofus</groupId>
+    <artifactId>common-test</artifactId>
+    <version>${project.version}</version>
+    <type>test-jar</type>
+   </dependency>
+   <dependency>
+    <groupId>eu.internetofus</groupId>
+    <artifactId>common-model</artifactId>
+    <version>${project.version}</version>
+   </dependency>
+   <dependency>
+    <groupId>eu.internetofus</groupId>
+    <artifactId>common-model</artifactId>
+    <version>${project.version}</version>
+    <type>test-jar</type>
+   </dependency>
+   <dependency>
+    <groupId>eu.internetofus</groupId>
     <artifactId>common-vertx</artifactId>
     <version>${project.version}</version>
+   </dependency>
+   <dependency>
+    <groupId>eu.internetofus</groupId>
+    <artifactId>common-vertx</artifactId>
+    <version>${project.version}</version>
+    <type>test-jar</type>
    </dependency>
    <dependency>
     <groupId>eu.internetofus</groupId>
@@ -41,8 +62,20 @@
    </dependency>
    <dependency>
     <groupId>eu.internetofus</groupId>
+    <artifactId>common-components</artifactId>
+    <version>${project.version}</version>
+    <type>test-jar</type>
+   </dependency>
+   <dependency>
+    <groupId>eu.internetofus</groupId>
     <artifactId>common-dummy</artifactId>
     <version>${project.version}</version>
+   </dependency>
+   <dependency>
+    <groupId>eu.internetofus</groupId>
+    <artifactId>common-dummy</artifactId>
+    <version>${project.version}</version>
+    <type>test-jar</type>
    </dependency>
   </dependencies>
  </dependencyManagement>
