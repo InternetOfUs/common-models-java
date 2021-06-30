@@ -6,7 +6,7 @@ buildTestAndDeploy:
   stage: deploy
   image: maven:3.6-jdk-11
   script:
-    - 'mvn --batch-mode -Dmaven.repo.local=maven.repository -s ci_settings.xml deploy'
+    - 'mvn --batch-mode -Dmaven.repo.local=maven.repository -fn -s ci_settings.xml deploy'
   artifacts:
     paths:
       - target/site/jacoco/jacoco.xml

@@ -165,19 +165,19 @@
     <version>${maven-pmd-plugin-version}</version>
     <executions>
      <execution>
-      <id>named-logging-enforcement</id>
-      <phase>compile</phase>
+      <phase>verify</phase>
       <goals>
        <goal>check</goal>
        <goal>cpd-check</goal>
       </goals>
+
       <configuration>
        <verbose>true</verbose>
       </configuration>
      </execution>
     </executions>
     <configuration>
-     <linkXref>true</linkXref>
+     <linkXRef>true</linkXRef>
      <sourceEncoding>utf-8</sourceEncoding>
      <minimumTokens>100</minimumTokens>
      <targetJdk>${java.version}</targetJdk>
@@ -201,7 +201,6 @@
       <include>**/*Test.java</include>
       <include>**/*IT.java</include>
      </includes>
-     <runOrder>reversealphabetical</runOrder>
     </configuration>
    </plugin>
    <plugin>

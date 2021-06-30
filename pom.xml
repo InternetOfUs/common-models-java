@@ -42,7 +42,6 @@
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   <require-maven-version>3.6</require-maven-version>
-  <maven.test.failure.ignore>true</maven.test.failure.ignore>
   <finalName>${project.artifactId}-${project.version}</finalName>
   <!-- Maven plugins versions -->
   <io.swagger.core.v3-version>2.1.6</io.swagger.core.v3-version>
