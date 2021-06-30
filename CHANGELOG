@@ -3,12 +3,13 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
-## Version 0.7.0 (2021-06-25)
+## Version 0.7.0 (2021-06-30)
 
  * Migrate to license Apache v2
  * Use protocol norm on the task and the profile.
  * Remove limits for the string values.
- * Modularize
+ * Modularize.
+ * Allow to have empty task type and user/community profiles. 
 
 
 ## Version 0.6.0 (2021-03-31)
