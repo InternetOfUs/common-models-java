@@ -53,8 +53,8 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
 
     final var model = new ProtocolNorm();
     model.description = "description " + index;
-    model.whenever = "whenever" + index;
-    model.thenceforth = "thenceforth_" + index;
+    model.whenever = "is_received_do_transaction(_,json([index=" + index + "]))";
+    model.thenceforth = "put_task_state_attribute('index'," + index + ")";
     model.ontology = "ontology" + index;
     return model;
 
