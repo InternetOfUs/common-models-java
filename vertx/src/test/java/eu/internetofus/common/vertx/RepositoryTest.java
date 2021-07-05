@@ -30,14 +30,17 @@ import static org.mockito.Mockito.doReturn;
 import eu.internetofus.common.model.DummyModel;
 import eu.internetofus.common.model.ValidationErrorException;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClient;
+import io.vertx.ext.mongo.UpdateOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,13 +65,14 @@ public class RepositoryTest {
    * Check search communities fail because can not find.
    *
    * @param pool        mocked MongoDB client.
+   * @param vertx       event bus to use.
    * @param testContext test context.
    */
   @Test
-  public void shouldSearchPageObjectFailedByMongoClientFind(@Mock final MongoClient pool,
+  public void shouldSearchPageObjectFailedByMongoClientFind(@Mock final MongoClient pool, final Vertx vertx,
       final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "version");
+    final var repository = new Repository(vertx, pool, "version");
     doReturn(Future.succeededFuture(100L)).when(pool).count(any(), any());
     doReturn(Future.failedFuture("Internal error")).when(pool).findWithOptions(any(), any(), any());
     testContext.assertFailure(repository.searchPageObject(null, null, new FindOptions(), null, null))
@@ -187,19 +191,33 @@ public class RepositoryTest {
    * Should not migrate document because update failed.
    *
    * @param pool        mocked MongoDB client.
+   * @param vertx       event bus to use.
    * @param testContext test context.
    */
   @Test
-  public void shouldNotMigrateOneDocumentBecauseUpdateFailed(@Mock final MongoClient pool,
+  public void shouldNotMigrateOneDocumentBecauseUpdateFailed(@Mock final MongoClient pool, final Vertx vertx,
       final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "version");
+    final var repository = new Repository(vertx, pool, "version");
     final var collection = "collectionName";
     doReturn(Future.succeededFuture(new JsonObject())).when(pool).findOne(eq(collection), any(), any());
-    doReturn(Future.failedFuture("Cannot update")).when(pool).updateCollectionWithOptions(eq(collection), any(), any(),
-        any());
-    testContext.assertFailure(repository.migrateOneDocument(collection, DummyModel.class, new JsonObject(), 10l))
-        .onFailure(error -> testContext.completeNow());
+    doReturn(Future.failedFuture("Cannot update")).when(pool).updateCollectionWithOptions(eq(collection),
+        any(JsonObject.class), any(JsonObject.class), any(UpdateOptions.class));
+    final var consumerId = UUID.randomUUID().toString();
+    final var consumer = vertx.eventBus().localConsumer(consumerId);
+    consumer.handler(msg -> {
+
+      consumer.unregister();
+      testContext.verify(() -> {
+
+        assertThat(msg.body()).isInstanceOf(String.class);
+        testContext.completeNow();
+
+      });
+
+    });
+
+    repository.migrateOneDocument(consumerId, collection, DummyModel.class, new JsonObject(), 10l);
 
   }
 

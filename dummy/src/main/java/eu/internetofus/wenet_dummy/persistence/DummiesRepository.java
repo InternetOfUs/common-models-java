@@ -68,7 +68,7 @@ public interface DummiesRepository {
    */
   static Future<Void> register(final Vertx vertx, final MongoClient pool, final String version) {
 
-    final var repository = new DummiesRepositoryImpl(pool, version);
+    final var repository = new DummiesRepositoryImpl(vertx, pool, version);
     new ServiceBinder(vertx).setAddress(DummiesRepository.ADDRESS).register(DummiesRepository.class, repository);
     return repository.migrateDocumentsToCurrentVersions();
 

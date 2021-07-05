@@ -155,12 +155,13 @@ public class RepositoryIT {
   /**
    * Should not found page because query is wrong.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotSearchPageObjectBecauseQueryIsNotValid(final VertxTestContext testContext) {
+  public void shouldNotSearchPageObjectBecauseQueryIsNotValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     final var options = new FindOptions();
     options.setLimit(1000);
     testContext.assertFailure(repository.searchPageObject(EMPTY_COLLECTION,
@@ -172,12 +173,13 @@ public class RepositoryIT {
   /**
    * Should return an empty page if no documents on collection.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldSearchPageObjectIsEmpty(final VertxTestContext testContext) {
+  public void shouldSearchPageObjectIsEmpty(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     final var options = new FindOptions();
     options.setLimit(1000);
     testContext.assertComplete(repository.searchPageObject(EMPTY_COLLECTION, new JsonObject(), options, "models", null))
@@ -196,12 +198,14 @@ public class RepositoryIT {
   /**
    * Should return an empty page because the offset is greater than the total.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldSearchPageObjectIsEmptyWhenOffsetIsGreaterTotal(final VertxTestContext testContext) {
+  public void shouldSearchPageObjectIsEmptyWhenOffsetIsGreaterTotal(final Vertx vertx,
+      final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     final var options = new FindOptions();
     options.setSkip(10);
     options.setLimit(1000);
@@ -222,12 +226,13 @@ public class RepositoryIT {
   /**
    * Should return a page of models.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldSearchPageObjectModels(final VertxTestContext testContext) {
+  public void shouldSearchPageObjectModels(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     final var options = new FindOptions();
     options.setSkip(1);
     options.setLimit(3);
@@ -257,12 +262,13 @@ public class RepositoryIT {
   /**
    * Should return a page of models.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldSearchPageObject(final VertxTestContext testContext) {
+  public void shouldSearchPageObject(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     final var options = new FindOptions();
     options.setSkip(3);
     options.setLimit(1);
@@ -288,12 +294,13 @@ public class RepositoryIT {
   /**
    * Should not delete document because the query is wrong.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotDeleteDocumentBecauseQueryIsNotValid(final VertxTestContext testContext) {
+  public void shouldNotDeleteDocumentBecauseQueryIsNotValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext
         .assertFailure(repository.deleteOneDocument(EMPTY_COLLECTION, new JsonObject().put("$undefinedAction", -1)))
         .onFailure(error -> testContext.completeNow());
@@ -303,12 +310,13 @@ public class RepositoryIT {
   /**
    * Should not delete document because the collection is empty.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotDeleteDocumentBecauseEmptyCollection(final VertxTestContext testContext) {
+  public void shouldNotDeleteDocumentBecauseEmptyCollection(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext.assertFailure(repository.deleteOneDocument(EMPTY_COLLECTION, new JsonObject()))
         .onFailure(error -> testContext.completeNow());
 
@@ -317,12 +325,13 @@ public class RepositoryIT {
   /**
    * Should not delete document because not found.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotDeleteDocumentBecauseNotFound(final VertxTestContext testContext) {
+  public void shouldNotDeleteDocumentBecauseNotFound(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext.assertFailure(repository.deleteOneDocument(TEN_DUMMY_COLLECTION, new JsonObject().put("index", -1)))
         .onFailure(error -> testContext.completeNow());
 
@@ -331,14 +340,15 @@ public class RepositoryIT {
   /**
    * Should delete document.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldDeleteDocument(final VertxTestContext testContext) {
+  public void shouldDeleteDocument(final Vertx vertx, final VertxTestContext testContext) {
 
     pool.insert(TEST_COLLECTION, new JsonObject().put("index", -1567), testContext.succeeding(id -> {
 
-      final var repository = new Repository(pool, "schemaVersion");
+      final var repository = new Repository(vertx, pool, "schemaVersion");
       final var query = new JsonObject().put("index", -1567);
       testContext.assertComplete(
           repository.deleteOneDocument(TEST_COLLECTION, query).compose(deleted -> pool.find(TEST_COLLECTION, query)))
@@ -356,12 +366,13 @@ public class RepositoryIT {
   /**
    * Should not update {@code null} document.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotUpdateNullDocument(final VertxTestContext testContext) {
+  public void shouldNotUpdateNullDocument(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext.assertFailure(repository.updateOneDocument(TEN_DUMMY_COLLECTION, new JsonObject(), null))
         .onFailure(error -> testContext.completeNow());
 
@@ -370,12 +381,13 @@ public class RepositoryIT {
   /**
    * Should not update document from an empty collection.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotUpdateDocumentFormEmptyCollection(final VertxTestContext testContext) {
+  public void shouldNotUpdateDocumentFormEmptyCollection(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext
         .assertFailure(
             repository.updateOneDocument(EMPTY_COLLECTION, new JsonObject(), new JsonObject().put("index", 100)))
@@ -386,12 +398,13 @@ public class RepositoryIT {
   /**
    * Should not update document because it can not be found.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotUpdateDocumentIfNotFound(final VertxTestContext testContext) {
+  public void shouldNotUpdateDocumentIfNotFound(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext.assertFailure(repository.updateOneDocument(TEN_DUMMY_COLLECTION, new JsonObject().put("index", -1),
         new JsonObject().put("index", 100))).onFailure(error -> testContext.completeNow());
 
@@ -400,12 +413,13 @@ public class RepositoryIT {
   /**
    * Should not update document because query is not valid.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotUpdateDocumentBecauseQueryIsNotValid(final VertxTestContext testContext) {
+  public void shouldNotUpdateDocumentBecauseQueryIsNotValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext.assertFailure(repository.updateOneDocument(TEN_DUMMY_COLLECTION,
         new JsonObject().put("index", new JsonObject().put("$undefinedAction", -1)), new JsonObject().putNull("index")))
         .onFailure(error -> testContext.completeNow());
@@ -415,16 +429,17 @@ public class RepositoryIT {
   /**
    * Should update document.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldUpdateDocument(final VertxTestContext testContext) {
+  public void shouldUpdateDocument(final Vertx vertx, final VertxTestContext testContext) {
 
     final var document = new JsonObject().put("key1", "value").put("key2", 2).put("key3", false).put("key4",
         new JsonArray());
     pool.insert(TEST_COLLECTION, document, testContext.succeeding(id -> {
 
-      final var repository = new Repository(pool, "schemaVersion");
+      final var repository = new Repository(vertx, pool, "schemaVersion");
       final var query = new JsonObject().put("_id", id);
       testContext.assertComplete(repository
           .updateOneDocument(TEST_COLLECTION, query,
@@ -448,16 +463,17 @@ public class RepositoryIT {
   /**
    * Should not store with defined id.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotStoreWithDefinedId(final VertxTestContext testContext) {
+  public void shouldNotStoreWithDefinedId(final Vertx vertx, final VertxTestContext testContext) {
 
     final var document = new JsonObject().put("key1", "value").put("key2", 2).put("key3", false).put("key4",
         new JsonArray());
     testContext.assertComplete(pool.insert(TEST_COLLECTION, document).onSuccess(id -> {
 
-      final var repository = new Repository(pool, "schemaVersion");
+      final var repository = new Repository(vertx, pool, "schemaVersion");
       document.put("_id", id);
       testContext.assertFailure(repository.storeOneDocument(TEST_COLLECTION, document, null))
           .onFailure(error -> testContext.completeNow());
@@ -469,14 +485,15 @@ public class RepositoryIT {
   /**
    * Should not store because map throws exception.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotStoreBecauseMapThrowsException(final VertxTestContext testContext) {
+  public void shouldNotStoreBecauseMapThrowsException(final Vertx vertx, final VertxTestContext testContext) {
 
     final var document = new JsonObject().put("key1", "value").put("key2", 2).put("key3", false).put("key4",
         new JsonArray());
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext
         .assertFailure(repository.storeOneDocument(TEST_COLLECTION, document,
             model -> model.put("undefined", model.getString("undefined").toString())))
@@ -487,15 +504,16 @@ public class RepositoryIT {
   /**
    * Should store with a map.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldStoreWithMap(final VertxTestContext testContext) {
+  public void shouldStoreWithMap(final Vertx vertx, final VertxTestContext testContext) {
 
     final var document = new JsonObject().put("key1", "value").put("key2", 2).put("key3", false).put("key4",
         new JsonArray());
     final var version = UUID.randomUUID().toString();
-    final var repository = new Repository(pool, version);
+    final var repository = new Repository(vertx, pool, version);
     testContext.assertComplete(repository
         .storeOneDocument(TEST_COLLECTION, document, model -> model.put("id", model.remove("_id"))).compose(stored -> {
 
@@ -520,15 +538,16 @@ public class RepositoryIT {
   /**
    * Should store without a map.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldStoreWithoutMap(final VertxTestContext testContext) {
+  public void shouldStoreWithoutMap(final Vertx vertx, final VertxTestContext testContext) {
 
     final var document = new JsonObject().put("key1", "value").put("key2", 2).put("key3", false).put("key4",
         new JsonArray());
     final var version = UUID.randomUUID().toString();
-    final var repository = new Repository(pool, version);
+    final var repository = new Repository(vertx, pool, version);
     testContext.assertComplete(repository.storeOneDocument(TEST_COLLECTION, document, null).compose(stored -> {
 
       document.mergeIn(stored);
@@ -553,12 +572,13 @@ public class RepositoryIT {
   /**
    * Should not fond one document because the query is not valid.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotFindOneDocumentBecauseQueryNotValid(final VertxTestContext testContext) {
+  public void shouldNotFindOneDocumentBecauseQueryNotValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext
         .assertFailure(repository.findOneDocument(TEN_DUMMY_COLLECTION,
             new JsonObject().put("index", new JsonObject().put("$undefinedAction", -1)), null, null))
@@ -569,12 +589,13 @@ public class RepositoryIT {
   /**
    * Should not fond one document because any match query.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotFindOneDocumentBeauceAnyMatchQuery(final VertxTestContext testContext) {
+  public void shouldNotFindOneDocumentBeauceAnyMatchQuery(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext.assertFailure(repository.findOneDocument(EMPTY_COLLECTION,
         new JsonObject().put("index", new JsonObject().put("$mod", new JsonArray().add(2).add(0))),
         new JsonObject().put("index", false), null)).onFailure(error -> testContext.completeNow());
@@ -584,12 +605,13 @@ public class RepositoryIT {
   /**
    * Should not fond one document because map fail.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotFindOneDocumentBeauceMapFails(final VertxTestContext testContext) {
+  public void shouldNotFindOneDocumentBeauceMapFails(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext.assertFailure(repository.findOneDocument(TEN_DUMMY_COLLECTION,
         new JsonObject().put("index", new JsonObject().put("$mod", new JsonArray().add(2).add(0))),
         new JsonObject().put("index", false), model -> model.put("undefined", model.getString("undefined").toString())))
@@ -600,12 +622,13 @@ public class RepositoryIT {
   /**
    * Should fond one document.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldFindOneDocument(final VertxTestContext testContext) {
+  public void shouldFindOneDocument(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext.assertComplete(repository.findOneDocument(TEN_DUMMY_COLLECTION,
         new JsonObject().put("index", new JsonObject().put("$mod", new JsonArray().add(2).add(0))),
         new JsonObject().put("index", false), model -> {
@@ -623,12 +646,13 @@ public class RepositoryIT {
   /**
    * Should fond one document without map.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldFindOneDocumentWithoutMap(final VertxTestContext testContext) {
+  public void shouldFindOneDocumentWithoutMap(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext.assertComplete(repository.findOneDocument(TEN_DUMMY_COLLECTION,
         new JsonObject().put("index", new JsonObject().put("$mod", new JsonArray().add(2).add(0))),
         new JsonObject().put("index", false), null)).onSuccess(found -> testContext.verify(() -> {
@@ -643,12 +667,13 @@ public class RepositoryIT {
   /**
    * Should migrate empty collection.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldMigrateCollectionWhenItIsEmpty(final VertxTestContext testContext) {
+  public void shouldMigrateCollectionWhenItIsEmpty(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     repository.migrateCollection(EMPTY_COLLECTION, DummyModel.class)
         .onComplete(testContext.succeeding(migrated -> testContext.completeNow()));
 
@@ -657,12 +682,13 @@ public class RepositoryIT {
   /**
    * Should not migrate with bad query.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotMigrateCollectionWithBadQuery(final VertxTestContext testContext) {
+  public void shouldNotMigrateCollectionWithBadQuery(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Repository repository = new Repository(pool, "schemaVersion") {
+    final Repository repository = new Repository(vertx, pool, "schemaVersion") {
 
       /**
        * {@inheritDoc}
@@ -682,85 +708,91 @@ public class RepositoryIT {
   /**
    * Should not migrate document with bad query.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotMigrateOneDocumentWithBadQuery(final VertxTestContext testContext) {
+  public void shouldNotMigrateOneDocumentWithBadQuery(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     final var query = new JsonObject().put(Repository.SCHEMA_VERSION,
         new JsonObject().put("$undefinedOperator", "value"));
 
     final var maxDocuments = 10l;
-    testContext
-        .assertFailure(repository.migrateOneDocument(TEN_DUMMY_COLLECTION, DummyModel.class, query, maxDocuments))
-        .onComplete(error -> testContext.completeNow());
+    final var consumerId = UUID.randomUUID().toString();
+    final var consumer = vertx.eventBus().localConsumer(consumerId);
+    consumer.handler(msg -> {
+
+      consumer.unregister();
+      testContext.verify(() -> {
+
+        assertThat(msg.body()).isInstanceOf(String.class);
+        testContext.completeNow();
+
+      });
+
+    });
+    repository.migrateOneDocument(consumerId, TEN_DUMMY_COLLECTION, DummyModel.class, query, maxDocuments);
 
   }
 
   /**
    * Should not migrate document with empty collection.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotMigrateOneDocumentWithEmptyCollection(final VertxTestContext testContext) {
+  public void shouldNotMigrateOneDocumentWithEmptyCollection(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     final var query = new JsonObject().put(Repository.SCHEMA_VERSION,
         new JsonObject().put("$undefinedOperator", "value"));
 
     final var maxDocuments = 10l;
-    testContext.assertFailure(repository.migrateOneDocument(EMPTY_COLLECTION, DummyModel.class, query, maxDocuments))
-        .onFailure(error -> testContext.completeNow());
+    final var consumerId = UUID.randomUUID().toString();
+    final var consumer = vertx.eventBus().localConsumer(consumerId);
+    consumer.handler(msg -> {
+
+      consumer.unregister();
+      testContext.verify(() -> {
+
+        assertThat(msg.body()).isInstanceOf(String.class);
+        testContext.completeNow();
+
+      });
+
+    });
+    repository.migrateOneDocument(consumerId, EMPTY_COLLECTION, DummyModel.class, query, maxDocuments);
 
   }
 
   /**
    * Should not migrate document because a exception is thrown.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotMigrateOneDocumentBecauseExceptionIsThrown(final VertxTestContext testContext) {
+  public void shouldNotMigrateOneDocumentBecauseExceptionIsThrown(final Vertx vertx,
+      final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     final var maxDocuments = 10l;
-    testContext.assertFailure(repository.migrateOneDocument(TEN_DUMMY_COLLECTION, null, new JsonObject(), maxDocuments))
-        .onFailure(error -> testContext.completeNow());
+    final var consumerId = UUID.randomUUID().toString();
+    final var consumer = vertx.eventBus().localConsumer(consumerId);
+    consumer.handler(msg -> {
 
-  }
+      consumer.unregister();
+      testContext.verify(() -> {
 
-  /**
-   * Should migrate one document.
-   *
-   * @param testContext context for the test.
-   */
-  @Test
-  public void shouldMigrateOneDocument(final VertxTestContext testContext) {
+        assertThat(msg.body()).isInstanceOf(String.class);
+        testContext.completeNow();
 
-    final var document = new JsonObject().put("key1", "value").put("key2", 2).put("key3", false).put("key4",
-        new JsonArray());
-    pool.insert(TEST_COLLECTION, document, testContext.succeeding(id -> {
+      });
 
-      final var version = UUID.randomUUID().toString();
-      final var repository = new Repository(pool, version);
-      testContext.assertComplete(testContext
-          .assertComplete(
-              repository.migrateOneDocument(TEST_COLLECTION, DummyModel.class, new JsonObject().put("_id", id), 1l))
-          .compose(migrated -> pool.find(TEST_COLLECTION, new JsonObject().put("_id", id)))
-          .onSuccess(value -> testContext.verify(() -> {
-
-            assertThat(value).isNotEmpty().hasSize(1);
-            final var element = value.get(0);
-            final var expected = new JsonObject().put("_id", id).put(Repository.SCHEMA_VERSION, version).put("index",
-                0);
-            assertThat(element).isNotEqualTo(document).isEqualTo(expected);
-            testContext.completeNow();
-
-          })));
-
-    }));
+    });
+    repository.migrateOneDocument(consumerId, TEN_DUMMY_COLLECTION, null, new JsonObject(), maxDocuments);
 
   }
 
@@ -785,7 +817,8 @@ public class RepositoryIT {
       model.id = null;
       final var document = model.toJsonObject().put("extraValue", "value")
           .put("extraObject", new JsonObject().put("key", "value"))
-          .put("extraArray", new JsonArray().add(1).add(new JsonObject().put("key", "value")));
+          .put("extraArray", new JsonArray().add(1).add(new JsonObject().put("key", "value")))
+          .put(Repository.SCHEMA_VERSION, "0");
       if (model.siblings != null) {
         final var siblings = document.getJsonArray("siblings");
         for (var pos = 0; pos < siblings.size(); pos++) {
@@ -804,18 +837,18 @@ public class RepositoryIT {
   /**
    * Should migrate collection.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldMigrateCollection(final VertxTestContext testContext) {
+  public void shouldMigrateCollection(final Vertx vertx, final VertxTestContext testContext) {
 
     final var collection = "_" + UUID.randomUUID().toString().replaceAll("-", "");
     pool.createCollection(collection, testContext.succeeding(createdCollections -> {
 
-      this.createAndInsertDummyComplexModelsWithExtraFieldsTo(collection, 10, testContext, () -> {
+      this.createAndInsertDummyComplexModelsWithExtraFieldsTo(collection, 1000, testContext, () -> {
 
-        final var version = UUID.randomUUID().toString();
-        final var repository = new Repository(pool, version);
+        final var repository = new Repository(vertx, pool, "2");
         final var options = new FindOptions();
         options.setLimit(10000);
         options.getSort().put("index", 1);
@@ -823,9 +856,9 @@ public class RepositoryIT {
             .onComplete(testContext.succeeding(migrated -> pool.findWithOptions(collection, new JsonObject(), options,
                 testContext.succeeding(values -> testContext.verify(() -> {
 
-                  assertThat(values).isNotEmpty().hasSize(10);
-                  final var expected = new JsonObject().put(Repository.SCHEMA_VERSION, version);
-                  for (var i = 0; i < 10; i++) {
+                  assertThat(values).isNotEmpty().hasSize(1000);
+                  final var expected = new JsonObject().put(Repository.SCHEMA_VERSION, "2");
+                  for (var i = 0; i < 1000; i++) {
 
                     final var value = values.get(i);
                     expected.put("index", i + 1).put("_id", value.getString("_id"));
@@ -843,10 +876,11 @@ public class RepositoryIT {
   /**
    * Should migrate collection.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldMigrateCollectionWithDummyComplexModels(final VertxTestContext testContext) {
+  public void shouldMigrateCollectionWithDummyComplexModels(final Vertx vertx, final VertxTestContext testContext) {
 
     final var collection = "_" + UUID.randomUUID().toString().replaceAll("-", "");
     pool.createCollection(collection, testContext.succeeding(createdCollections -> {
@@ -854,7 +888,7 @@ public class RepositoryIT {
       this.createAndInsertDummyComplexModelsWithExtraFieldsTo(collection, 10, testContext, () -> {
 
         final var version = UUID.randomUUID().toString();
-        final var repository = new Repository(pool, version);
+        final var repository = new Repository(vertx, pool, version);
         final var options = new FindOptions();
         options.setLimit(10000);
         options.getSort().put("index", 1);
@@ -927,10 +961,11 @@ public class RepositoryIT {
   /**
    * Should update the documents of a collection to the current schema version.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldUpdateSchemaVersionOnCollection(final VertxTestContext testContext) {
+  public void shouldUpdateSchemaVersionOnCollection(final Vertx vertx, final VertxTestContext testContext) {
 
     final var collection = "_" + UUID.randomUUID().toString().replaceAll("-", "");
     pool.createCollection(collection, testContext.succeeding(createdCollections -> {
@@ -938,7 +973,7 @@ public class RepositoryIT {
       this.createAndInsertDummyModelsWithSchemaVersionsTo(collection, 100, testContext, () -> {
 
         final var version = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
-        final var repository = new Repository(pool, version);
+        final var repository = new Repository(vertx, pool, version);
         repository.updateSchemaVersionOnCollection(collection).onComplete(testContext.succeeding(empty -> {
 
           final var options = new FindOptions();
@@ -972,14 +1007,15 @@ public class RepositoryIT {
    * Should not update the documents of a collection to the current schema
    * version.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotUpdateSchemaVersionOnCollection(final VertxTestContext testContext) {
+  public void shouldNotUpdateSchemaVersionOnCollection(final Vertx vertx, final VertxTestContext testContext) {
 
     final var version = UUID.randomUUID().toString();
 
-    final Repository repository = new Repository(pool, version) {
+    final Repository repository = new Repository(vertx, pool, version) {
 
       /**
        * {@inheritDoc}
@@ -1019,13 +1055,15 @@ public class RepositoryIT {
    * Should store, find, update , find, delete and find a
    * {@link DummyComplexModel}.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldStoreFindUpdateFindDeleteAndFindDummyComplexModel(final VertxTestContext testContext) {
+  public void shouldStoreFindUpdateFindDeleteAndFindDummyComplexModel(final Vertx vertx,
+      final VertxTestContext testContext) {
 
     final var version = UUID.randomUUID().toString();
-    final var repository = new Repository(pool, version);
+    final var repository = new Repository(vertx, pool, version);
     final var targetModel = new DummyComplexModelTest().createModelExample(1);
     targetModel.id = null;
     final Function<JsonObject, JsonObject> objectIdToModel = model -> model.put("id", model.remove("_id"));
@@ -1078,12 +1116,13 @@ public class RepositoryIT {
   /**
    * Should by empty aggregate page because query is wrong.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldCountAggregationByZero(final VertxTestContext testContext) {
+  public void shouldCountAggregationByZero(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext.assertComplete(repository.countAggregation(EMPTY_COLLECTION, null, null))
         .onSuccess(total -> testContext.verify(() -> {
 
@@ -1097,12 +1136,14 @@ public class RepositoryIT {
   /**
    * Should not aggregate page because query is wrong.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotAggregatePageObjectBecauseQueryIsNotValid(final VertxTestContext testContext) {
+  public void shouldNotAggregatePageObjectBecauseQueryIsNotValid(final Vertx vertx,
+      final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     final var query = new JsonObject().put("$undefinedAction", -1);
     final var order = new JsonObject();
     testContext.assertFailure(repository.aggregatePageObject(EMPTY_COLLECTION, query, order, 0, 10, "models"))
@@ -1113,15 +1154,18 @@ public class RepositoryIT {
   /**
    * Should not aggregate page because order is wrong.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldNotAggregatePageObjectBecauseOrderIsNotValid(final VertxTestContext testContext) {
+  public void shouldNotAggregatePageObjectBecauseOrderIsNotValid(final Vertx vertx,
+      final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     final var query = new JsonObject();
     final var order = new JsonObject().put("$undefinedAction", new JsonObject().put("key", 1));
-    testContext.assertFailure(repository.aggregatePageObject(EMPTY_COLLECTION, query, order, 0, 10, "models"))
+    testContext
+        .assertFailure(repository.aggregatePageObject(TEN_AGGREGATIOMN_COLLECTION, query, order, 0, 10, "models"))
         .onFailure(error -> testContext.completeNow());
 
   }
@@ -1129,12 +1173,13 @@ public class RepositoryIT {
   /**
    * Should return an empty page if no documents on collection.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldAggregatePageObjectIsEmpty(final VertxTestContext testContext) {
+  public void shouldAggregatePageObjectIsEmpty(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     testContext
         .assertComplete(
             repository.aggregatePageObject(EMPTY_COLLECTION, new JsonObject(), new JsonObject(), 0, 10, "models"))
@@ -1153,12 +1198,14 @@ public class RepositoryIT {
   /**
    * Should return an empty page because the offset is greater than the total.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldAggregatePageObjectIsEmptyWhenOffsetIsGreaterTotal(final VertxTestContext testContext) {
+  public void shouldAggregatePageObjectIsEmptyWhenOffsetIsGreaterTotal(final Vertx vertx,
+      final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     final var query = new JsonObject();
     final var order = new JsonObject();
     testContext
@@ -1178,12 +1225,13 @@ public class RepositoryIT {
   /**
    * Should return a page of models.
    *
+   * @param vertx       event bus to use.
    * @param testContext context for the test.
    */
   @Test
-  public void shouldAggregatePageObjectModels(final VertxTestContext testContext) {
+  public void shouldAggregatePageObjectModels(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var repository = new Repository(pool, "schemaVersion");
+    final var repository = new Repository(vertx, pool, "schemaVersion");
     final var query = new JsonObject().put("index", new JsonObject().put("$mod", new JsonArray().add(2).add(0)));
     final var order = new JsonObject().put("index", -1).put("children.j", 1).put("children.grandChildren.k", -1)
         .put("children.grandChildren.elders.l", 1);

@@ -3,6 +3,11 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
+## Version 0.8.0 (2021-07-05)
+
+ * Fix stack overflow when migrate a collection with more than 6000 entries.
+
+
 ## Version 0.7.0 (2021-07-01)
 
  * Migrate to license Apache v2

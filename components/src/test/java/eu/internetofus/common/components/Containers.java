@@ -31,7 +31,9 @@ import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import java.nio.file.FileSystems;
@@ -54,12 +56,12 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   /**
    * The name of the WeNet profile manager docker container to use.
    */
-  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:0.19.0";
+  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:0.20.0";
 
   /**
    * The name of the WeNet task manager docker container to use.
    */
-  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:0.12.0";
+  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:0.13.0";
 
   /**
    * The name of the WeNet interaction manager docker container to use.
@@ -371,7 +373,7 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
    * @param vertx                event bus to use to load the configurations.
    * @param configurationHandler the handler of the effective configuration
    */
-  static void defaultEffectiveConfiguration(final Vertx vertx,
+  public static void defaultEffectiveConfiguration(final Vertx vertx,
       final Handler<AsyncResult<JsonObject>> configurationHandler) {
 
     final var effectiveConfigurationFile = new ConfigStoreOptions().setType("file").setFormat("json")
@@ -380,6 +382,21 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
 
     final var options = new ConfigRetrieverOptions().addStore(effectiveConfigurationFile);
     ConfigRetriever.create(vertx, options).getConfig(configurationHandler);
+
+  }
+
+  /**
+   * Return the effective configuration over the started component.
+   *
+   * @param vertx event bus to use to load the configurations.
+   *
+   * @return the future effective configuration.
+   */
+  public static Future<JsonObject> defaultEffectiveConfiguration(final Vertx vertx) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    defaultEffectiveConfiguration(vertx, result -> promise.handle(result));
+    return promise.future();
 
   }
 

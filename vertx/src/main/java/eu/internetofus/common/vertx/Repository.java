@@ -26,11 +26,13 @@ import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ValidationErrorException;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.UpdateOptions;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.validation.constraints.NotNull;
@@ -59,13 +61,20 @@ public class Repository {
   protected String schemaVersion;
 
   /**
+   * The event bus that is using.
+   */
+  protected Vertx vertx;
+
+  /**
    * Create a new service.
    *
+   * @param vertx         event bus to use.
    * @param pool          to create the connections.
    * @param schemaVersion version of the schemas stored by this repository.
    */
-  public Repository(final MongoClient pool, final String schemaVersion) {
+  public Repository(final Vertx vertx, final MongoClient pool, final String schemaVersion) {
 
+    this.vertx = vertx;
     this.pool = pool;
     this.schemaVersion = schemaVersion;
 
@@ -186,6 +195,7 @@ public class Repository {
 
       final var options = new UpdateOptions().setMulti(false);
       return this.pool.updateCollectionWithOptions(collectionName, query, updateQuery, options).compose(result -> {
+
         if (result.getDocModified() != 1) {
 
           return Future.failedFuture("Not found document to update");
@@ -427,7 +437,39 @@ public class Repository {
       if (maxDocuments > 0) {
 
         Logger.trace("Start to migrate {} documents", maxDocuments);
-        return this.migrateOneDocument(collectionName, type, query, maxDocuments);
+        final Promise<Void> promise = Promise.promise();
+        final var consumerId = UUID.randomUUID().toString();
+        final var consumer = this.vertx.eventBus().localConsumer(consumerId);
+        consumer.handler(msg -> {
+
+          final var body = msg.body();
+          if (body instanceof Number) {
+
+            this.migrateOneDocument(consumerId, collectionName, type, query, ((Number) body).longValue());
+
+          } else {
+
+            if (body instanceof String) {
+
+              promise.fail((String) body);
+
+            } else {
+
+              promise.complete();
+            }
+
+            consumer.unregister().onComplete(unregister -> {
+
+              Logger.trace(unregister.cause(), "Finished documents migrations");
+
+            });
+          }
+
+        });
+
+        consumer.completionHandler(
+            register -> this.migrateOneDocument(consumerId, collectionName, type, query, maxDocuments));
+        return promise.future();
 
       } else {
         // nothing to migrate
@@ -441,60 +483,77 @@ public class Repository {
   /**
    * Called when want to migrate one document.
    *
+   * @param consumerId     address to send the message to continue migrating.
    * @param collectionName name of the collection to migrate.
    * @param type           of the documents on the collection.
    * @param query          to obtain the documents to migrate.
    * @param maxDocuments   number of document that has to migrate.
    *
-   * @return the future result of the migration process.
-   *
-   * @param <T> type of the documents.
+   * @param <T>            type of the documents.
    */
-  protected <T extends Model> Future<Void> migrateOneDocument(final String collectionName, final Class<T> type,
-      final JsonObject query, final long maxDocuments) {
+  protected <T extends Model> void migrateOneDocument(final String consumerId, final String collectionName,
+      final Class<T> type, final JsonObject query, final long maxDocuments) {
 
-    return this.findOneDocument(collectionName, query, null, null).compose(foundObject -> {
+    this.findOneDocument(collectionName, query, null, null).onComplete(find -> {
 
-      try {
+      if (find.failed()) {
 
-        final var mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
-        mapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
-        mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        final var reader = mapper.readerFor(type);
-        @SuppressWarnings("unchecked")
-        final var value = (T) reader.readValue(foundObject.encode());
-        final var id = foundObject.remove("_id");
-        final var updateQuery = new JsonObject().put("_id", id);
-        final var model = value.toJsonObject();
-        for (final var key : foundObject.fieldNames()) {
+        final var cause = find.cause();
+        Logger.error(cause, "Cannot find document to migrate");
+        this.vertx.eventBus().send(consumerId, cause.getMessage());
 
-          if (!model.containsKey(key)) {
+      } else {
 
-            model.putNull(key);
+        final var foundObject = find.result();
+        try {
+
+          final var mapper = new ObjectMapper();
+          mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+          mapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
+          mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
+          mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+          final var reader = mapper.readerFor(type);
+
+          @SuppressWarnings("unchecked")
+          final var value = (T) reader.readValue(foundObject.encode());
+          final var id = foundObject.remove("_id");
+          final var updateQuery = new JsonObject().put("_id", id);
+          final var model = value.toJsonObject();
+          for (final var key : foundObject.fieldNames()) {
+
+            if (!model.containsKey(key)) {
+
+              model.putNull(key);
+            }
           }
+          this.updateOneDocument(collectionName, updateQuery, model).onComplete(update -> {
+
+            if (update.failed()) {
+
+              final var cause = update.cause();
+              Logger.error(cause, "Cannot migrate {}", () -> foundObject.encodePrettily());
+              this.vertx.eventBus().send(consumerId, cause.getMessage());
+
+            } else if (maxDocuments == 1) {
+              // migrated all the documents
+              Logger.trace("Migrated all document");
+              this.vertx.eventBus().send(consumerId, null);
+
+            } else {
+
+              final var documentsToMigrate = maxDocuments - 1;
+              Logger.trace("Migrated a document. There are {} documents to migrate.", documentsToMigrate);
+              this.vertx.eventBus().send(consumerId, documentsToMigrate);
+            }
+
+          });
+
+        } catch (final Throwable cause) {
+
+          Logger.error(cause, "Cannot migrate {}", () -> foundObject.encodePrettily());
+          this.vertx.eventBus().send(consumerId, cause.getMessage());
+
         }
-        return this.updateOneDocument(collectionName, updateQuery, model).compose(update -> {
-
-          if (maxDocuments == 1) {
-            // migrated all the documents
-            Logger.trace("Migrated all document");
-            return Future.succeededFuture();
-
-          } else {
-
-            final var documentsToMigrate = maxDocuments - 1;
-            Logger.trace("Migrated a document. There are {} documents to migrate.", documentsToMigrate);
-            return this.migrateOneDocument(collectionName, type, query, documentsToMigrate);
-          }
-
-        });
-
-      } catch (final Throwable cause) {
-
-        Logger.error(cause, "Cannot migrate {}", () -> foundObject.encodePrettily());
-        return Future.failedFuture(cause);
 
       }
 
