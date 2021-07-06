@@ -2,11 +2,22 @@ cache:
   paths:
     - maven.repository/
  
-buildTestAndDeploy:
+deployTag:
   stage: deploy
   image: maven:3.6-jdk-11
   script:
     - 'mvn --batch-mode -Dmaven.repo.local=maven.repository -fn -s ci_settings.xml deploy'
+  allow_failure: true
+  only:
+    - tags
+  except:
+    - branches
+
+test:
+  stage: test
+  image: maven:3.6-jdk-11
+  script:
+    - 'mvn --batch-mode -Dmaven.repo.local=maven.repository -fn test'
   artifacts:
     paths:
       - target/site/jacoco/jacoco.xml
@@ -15,9 +26,11 @@ buildTestAndDeploy:
         - "**/target/surefire-reports/TEST-*.xml"
         - "**/target/failsafe-reports/TEST-*.xml"
   allow_failure: true
+  except:
+    - tags
 
 generate-coverage:
-  stage: .post
+  stage: deploy
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
   script:
     - python /opt/cover2cover.py target/site/jacoco/jacoco.xml $CI_PROJECT_DIR/src/main/java/ > target/site/cobertura.xml
@@ -28,12 +41,16 @@ generate-coverage:
     reports:
       cobertura: target/site/cobertura.xml
   allow_failure: true
+  except:
+    - tags
 
 publish:
-  stage: .post
+  stage: deploy
   script:
     - mv target/generated-docs public
   artifacts:
     paths:
       - public
   allow_failure: true
+  except:
+    - tags
