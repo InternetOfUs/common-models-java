@@ -28,6 +28,7 @@ import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
 import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -210,19 +211,26 @@ public interface ModelResources {
 
     } else {
 
-      model.source = Model.fromJsonObject(value, model.type);
-      if (model.source == null) {
+      Model.fromFutureJsonObject(Future.succeededFuture(value), model.type).onComplete(parsed -> {
 
-        Logger.trace("The JSON does not represents a {}.\n{}\n{}", () -> model, () -> value.encodePrettily(),
-            () -> context);
-        ServiceResponseHandlers.responseWithErrorMessage(context.resultHandler, Status.BAD_REQUEST, "bad_" + model.name,
-            "The JSON does not represents a " + model.name + ".");
+        if (parsed.failed()) {
 
-      } else {
+          final var cause = parsed.cause();
+          Logger.trace(cause, "The JSON does not represents a {}.\n{}\n{}", () -> model, () -> value.encodePrettily(),
+              () -> context);
+          ServiceResponseHandlers.responseWithErrorMessage(context.resultHandler, Status.BAD_REQUEST,
+              "bad_" + model.name, "The JSON does not represents a " + model.name + ", because "
+                  + cause.getMessage().replaceAll("\\([^\\(]*\\w(\\.\\w)*[^\\(]*\\)", ""));
 
-        Logger.trace("Obtain model {}.\n{}", model, context);
-        success.run();
-      }
+        } else {
+
+          model.source = parsed.result();
+          Logger.trace("Obtain model {}.\n{}", model, context);
+          success.run();
+        }
+
+      });
+
     }
   }
 

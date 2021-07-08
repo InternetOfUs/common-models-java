@@ -24,8 +24,12 @@ import eu.internetofus.common.model.ErrorMessage;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.validation.BodyProcessorException;
+import io.vertx.ext.web.validation.ParameterProcessorException;
+import io.vertx.json.schema.ValidationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
+import org.tinylog.Logger;
 
 /**
  * Handler when do a bad request over the API.
@@ -53,13 +57,41 @@ public class BadRequestHandler implements Handler<RoutingContext> {
     final var response = event.response();
     response.setStatusCode(Status.BAD_REQUEST.getStatusCode());
     response.putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-    final Throwable failure = event.failure();
-    var message = "Bad request";
+    Throwable failure = event.failure();
+    final var code = new StringBuilder();
+    code.append("bad_");
+    if (failure instanceof BodyProcessorException) {
+
+      code.append("body");
+      failure = failure.getCause();
+      if (failure instanceof ValidationException) {
+
+        final var validationError = (ValidationException) failure;
+        code.append(validationError.schema().getScope().toString().replace("/properties/", "_"));
+      }
+
+    } else if (failure instanceof ParameterProcessorException) {
+
+      code.append("parameter_");
+      code.append(((ParameterProcessorException) failure).getParameterName());
+
+    } else {
+
+      code.append("request");
+    }
+
+    String message;
     if (failure != null) {
 
       message = failure.getMessage();
+
+    } else {
+
+      message = "Bad request";
     }
-    final var error = new ErrorMessage("bad_api_request", message);
+    final var error = new ErrorMessage(code.toString(), message);
+    Logger.debug("Bad request {} {} with {} because {}", () -> event.request().method(), () -> event.mountPoint(),
+        () -> event.getBodyAsString(), () -> error.toJsonString());
     response.end(error.toJsonString());
 
   }

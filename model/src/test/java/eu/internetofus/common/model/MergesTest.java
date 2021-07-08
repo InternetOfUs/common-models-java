@@ -277,6 +277,7 @@ public class MergesTest {
     final var source = new ArrayList<DummyComplexModel>();
     source.add(new DummyComplexModelTest().createModelExample(4));
     source.add(new DummyComplexModelTest().createModelExample(3));
+    source.add(new DummyComplexModel());
     source.add(new DummyComplexModelTest().createModelExample(30));
     source.get(1).index = 90;
     source.get(2).id = null;

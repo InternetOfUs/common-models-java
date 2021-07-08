@@ -83,7 +83,7 @@ public class AbstractAPIVerticleTest {
   public void shouldNotStartBacauseCannotMount(final Vertx vertx, final VertxTestContext testContext) throws Exception {
 
     doReturn(vertx).when(this.verticle).getVertx();
-    doReturn("eu/internetofus/common/vertx/basicOpenApi.yaml").when(this.verticle).getOpenAPIResourcePath();
+    doReturn("wenet-basic-openapi.yaml").when(this.verticle).getOpenAPIResourcePath();
     doThrow(new RuntimeException("Unexpected error")).when(this.verticle).mountServiceInterfaces(any());
     final Promise<Void> startPromise = Promise.promise();
     this.verticle.start(startPromise);
@@ -116,7 +116,7 @@ public class AbstractAPIVerticleTest {
 
     }).start();
     doReturn(vertx).when(this.verticle).getVertx();
-    doReturn("eu/internetofus/common/vertx/basicOpenApi.yaml").when(this.verticle).getOpenAPIResourcePath();
+    doReturn("wenet-basic-openapi.yaml").when(this.verticle).getOpenAPIResourcePath();
     doReturn(new JsonObject().put("api", new JsonObject().put("port", port))).when(this.verticle).config();
     final Promise<Void> startPromise = Promise.promise();
     this.verticle.start(startPromise);
@@ -136,7 +136,7 @@ public class AbstractAPIVerticleTest {
   public void shouldStartAndStop(final Vertx vertx, final VertxTestContext testContext) throws Exception {
 
     doReturn(vertx).when(this.verticle).getVertx();
-    doReturn("eu/internetofus/common/vertx/basicOpenApi.yaml").when(this.verticle).getOpenAPIResourcePath();
+    doReturn("wenet-basic-openapi.yaml").when(this.verticle).getOpenAPIResourcePath();
     doReturn(new JsonObject().put("api", new JsonObject().put("port", 0))).when(this.verticle).config();
     final Promise<Void> startPromise = Promise.promise();
     this.verticle.start(startPromise);

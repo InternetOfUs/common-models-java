@@ -134,6 +134,25 @@ public class MainArgumentBuilder {
   }
 
   /**
+   * Add all the configuration to interact with the data base. container.
+   *
+   * @param container with the data base.
+   *
+   * @return the argument builder.
+   */
+  public MainArgumentBuilder withMongoDB(@NotNull final MongoContainer<?> container) {
+
+    this.with("persistence.db_name", MongoContainer.MONGODB_NAME);
+    this.with("persistence.host", container.getMongoDBHost());
+    this.with("persistence.port", container.getMongoDBPort());
+    this.with("persistence.username", MongoContainer.MONGODB_USER);
+    this.with("persistence.password", MongoContainer.MONGODB_PASSWORD);
+
+    return this;
+
+  }
+
+  /**
    * Add all the configuration to interact with all the components defined on the
    * container.
    *
@@ -141,7 +160,7 @@ public class MainArgumentBuilder {
    *
    * @return the argument builder.
    */
-  public MainArgumentBuilder with(@NotNull final WeNetComponentContainers containers) {
+  public MainArgumentBuilder withComponents(@NotNull final WeNetComponentContainers containers) {
 
     this.with("persistence.db_name", MongoContainer.MONGODB_NAME);
     this.with("persistence.host", containers.getMongoDBHost());

@@ -1,0 +1,237 @@
+openapi: 3.0.1
+info:
+  title: WeNet - Basic
+  description: Basic CRUD to run integration tests.
+  contact:
+    name: 'Bruno Rosell i Gui (UDT-IA, IIIA-CSIC)'
+    email: rosell@iiia.csic.es
+  license:
+    name: Apache V2
+    url: 'http://www.apache.org/licenses/LICENSE-2.0'
+  version: 1.0.0
+tags:
+  - name: Users
+    description: The functionality to manage the users.
+paths:
+  /users:
+    post:
+      tags:
+        - Users
+      summary: Add a new User
+      operationId: createUser
+      requestBody:
+        description: The user to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Bad user to create
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    get:
+      tags:
+        - Users
+      summary: Get the defined users
+      operationId: retrieveUsersPage
+      parameters:
+        - name: offset
+          in: query
+          description: The index of the first community to return.
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          example: 4
+        - name: limit
+          in: query
+          description: The number maximum of communities to return
+          schema:
+            type: integer
+            format: int32
+            default: 10
+          example: 100
+      responses:
+        "200":
+          description: The found users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersPage'
+  /users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Get a user
+      operationId: retrieveUser
+      parameters:
+      - name: userId
+        in: path
+        description: The identifier of the user to get
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: User associated to the identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "404":
+          description: Not found user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    put:
+      tags:
+        - Users
+      summary: Update a user
+      operationId: updateUser
+      parameters:
+      - name: userId
+        in: path
+        description: The identifier of the user to update
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The user to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        "200":
+          description: The updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Bad updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        "404":
+          description: Not found user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    patch:
+      tags:
+        - Users
+      summary: Merge a user
+      operationId: mergeUser
+      parameters:
+      - name: userId
+        in: path
+        description: The identifier of the user to merge
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: The user to merge
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        "200":
+          description: The merged user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Bad merged user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        "404":
+          description: Not found user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    delete:
+      tags:
+        - Users
+      summary: Delete a user
+      operationId: deleteUser
+      parameters:
+      - name: userId
+        in: path
+        description: The identifier of the user to delete
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: The user is deleted
+        "404":
+          description: Not found user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+components:
+  schemas:
+    ErrorMessage:
+      type: object
+      description: Inform of an error that happens when interacts with the API
+      properties:
+        code:
+          type: string
+          description: Contain code that identifies the error
+          example: error_code
+        message:
+          type: string
+          description: Contain a brief description of the error to be read by a human
+          example: Error readable by a human
+    User:
+      type: object
+      description: The information of an user.
+      properties:
+        _id:
+          type: string
+          description: The identifier of the user.
+          example: 1
+        name:
+          type: string
+          description: The name of the user.
+          example: Jane doe
+    UsersPage:
+      type: object
+      description: A set of found users.
+      properties:
+        offset:
+          type: integer
+          format: int32
+          default: 0
+          description: the index of the first user.
+          example: 0
+        total:
+          type: integer
+          format: int32
+          default: 0
+          description: The maximum number of defined users.
+          example: 100
+        users:
+          type: array
+          description: The found users
+          items:
+            $ref: '#/components/schemas/User'

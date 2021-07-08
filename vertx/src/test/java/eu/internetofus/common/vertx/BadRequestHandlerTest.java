@@ -26,13 +26,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import javax.ws.rs.core.MediaType;
-
-import org.junit.jupiter.api.Test;
-
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import javax.ws.rs.core.MediaType;
+import org.junit.jupiter.api.Test;
 
 /**
  * Integration test of the {@link BadRequestHandler}.
@@ -64,10 +63,12 @@ public class BadRequestHandlerTest {
     final var event = mock(RoutingContext.class);
     final var response = mock(HttpServerResponse.class);
     doReturn(response).when(event).response();
+    final var request = mock(HttpServerRequest.class);
+    doReturn(request).when(event).request();
     handler.handle(event);
     verify(response, times(1)).setStatusCode(400);
     verify(response, times(1)).putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-    verify(response, times(1)).end("{\"code\":\"bad_api_request\",\"message\":\"Bad request\"}");
+    verify(response, times(1)).end("{\"code\":\"bad_request\",\"message\":\"Bad request\"}");
 
   }
 
@@ -82,10 +83,12 @@ public class BadRequestHandlerTest {
     final var response = mock(HttpServerResponse.class);
     doReturn(response).when(event).response();
     doReturn(new Throwable("Error message")).when(event).failure();
+    final var request = mock(HttpServerRequest.class);
+    doReturn(request).when(event).request();
     handler.handle(event);
     verify(response, times(1)).setStatusCode(400);
     verify(response, times(1)).putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-    verify(response, times(1)).end("{\"code\":\"bad_api_request\",\"message\":\"Error message\"}");
+    verify(response, times(1)).end("{\"code\":\"bad_request\",\"message\":\"Error message\"}");
 
   }
 

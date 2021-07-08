@@ -1,0 +1,26 @@
+{
+	"help": {
+		"info": {
+			"name": "wenet/basic",
+			"apiVersion": "1.0.0",
+			"softwareVersion": "${project.version} (${maven.build.timestamp})",
+			"vendor": "UDT-IA, IIIA-CSIC",
+			"license": "MIT"
+		}
+	},
+	"api": {
+		"host": "localhost",
+		"port": 8080
+	},
+	"persistence": {
+		"db_name": "wenetBasicDB",
+		"host": "localhost",
+		"port": 27017,
+		"username": "wenetBasic",
+		"password": "password"
+	},
+	"webClient": {
+		"defaultHost": "0.0.0.0",
+		"defaultPort": 80
+	}
+}

@@ -66,7 +66,7 @@ public class WeNetDummyIntegrationExtension extends AbstractWeNetComponentIntegr
     final var containers = Containers.status().startAll();
     final var dummyApiPort = WeNetComponentContainers.nextFreePort();
     return new MainArgumentBuilder().withApiPort(dummyApiPort)
-        .withWeNetComponent("dummy", "http://localhost:" + dummyApiPort).with(containers).build();
+        .withWeNetComponent("dummy", "http://localhost:" + dummyApiPort).withComponents(containers).build();
 
   }
 
