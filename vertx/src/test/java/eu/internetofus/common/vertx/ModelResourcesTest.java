@@ -29,8 +29,10 @@ import static org.mockito.Mockito.verify;
 
 import eu.internetofus.common.model.DummyComplexModel;
 import eu.internetofus.common.model.DummyComplexModelTest;
+import eu.internetofus.common.model.DummyTsModel;
 import eu.internetofus.common.model.ErrorMessage;
 import eu.internetofus.common.model.Model;
+import eu.internetofus.common.model.TimeManager;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -2129,7 +2131,7 @@ public class ModelResourcesTest {
    *      BiConsumer, ServiceContext)
    */
   @Test
-  public void shouldCreateModelFieldElementWehnFieldIsNull(
+  public void shouldCreateModelFieldElementWhenFieldIsNull(
       @Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
       @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
       @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> storerCreateModel) {
@@ -2402,6 +2404,135 @@ public class ModelResourcesTest {
     assertThat(result.getStatusCode()).isEqualTo(Status.OK.getStatusCode());
     final var page = Json.decodeValue(result.getPayload());
     assertThat(page).isNotNull().isEqualTo(expectedPage);
+  }
+
+  /**
+   * Create new model context.
+   *
+   * @return the create context.
+   */
+  protected ModelContext<DummyTsModel, String> createModelContextForDummyTsModel() {
+
+    final var model = new ModelContext<DummyTsModel, String>();
+    model.id = "1";
+    model.name = "dummy_ts";
+    model.type = DummyTsModel.class;
+    return model;
+  }
+
+  /**
+   * Create new model context.
+   *
+   * @return the create context.
+   */
+  protected ModelFieldContext<DummyTsModel, String, DummyTsModel, String> createModelFieldContextForDummiesInDummyTsModel() {
+
+    final var element = new ModelFieldContext<DummyTsModel, String, DummyTsModel, String>();
+    element.id = "0";
+    element.name = "dummies";
+    element.type = DummyTsModel.class;
+    element.model = this.createModelContextForDummyTsModel();
+    return element;
+  }
+
+  /**
+   * Should create field element setting timestamps.
+   *
+   * @param searcher          the function that will search the model.
+   * @param resultHandler     handler to manage the HTTP result.
+   * @param success           function to call when the validation success.
+   * @param storerCreateModel the function used to update a model.
+   *
+   * @see ModelResources#createModelFieldElementChain
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void shouldSetTimeStampWhenCreateFieldElement(
+      @Mock final BiConsumer<String, Handler<AsyncResult<DummyTsModel>>> searcher,
+      @Mock final BiConsumer<DummyTsModel, Handler<AsyncResult<Void>>> storerCreateModel,
+      @Mock final Handler<AsyncResult<ServiceResponse>> resultHandler, @Mock final Runnable success) {
+
+    final var context = this.createServiceContext(resultHandler);
+
+    final var modelFieldContext = this.createModelFieldContextForDummiesInDummyTsModel();
+
+    final var newElement = new DummyTsModel();
+    newElement._creationTs = 2;
+    newElement._lastUpdateTs = 3;
+    newElement.value = "ElementToCreate";
+    final var vertx = Vertx.vertx();
+    ModelResources.createModelFieldElementChain(vertx, newElement.toJsonObject(), modelFieldContext, searcher,
+        model -> model.dummies, (model, dummies) -> model.dummies = dummies, storerCreateModel, context, success);
+
+    final var expectedModel = new DummyTsModel();
+    expectedModel._id = "1";
+    expectedModel.value = "ModelToAddNewDummy";
+    expectedModel._creationTs = 0;
+    expectedModel._lastUpdateTs = 1;
+    final var start = TimeManager.now();
+
+    final ArgumentCaptor<Handler<AsyncResult<DummyTsModel>>> searchHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
+    searchHandler.getValue().handle(Future.succeededFuture(expectedModel));
+
+    final ArgumentCaptor<DummyTsModel> modelToStore = ArgumentCaptor.forClass(DummyTsModel.class);
+    final ArgumentCaptor<Handler<AsyncResult<Void>>> storerHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(storerCreateModel, timeout(30000).times(1)).accept(modelToStore.capture(), storerHandler.capture());
+    storerHandler.getValue().handle(Future.succeededFuture());
+    final var storedElement = modelToStore.getValue();
+
+    verify(success, timeout(30000).times(1)).run();
+    final var end = TimeManager.now();
+    assertThat(storedElement._creationTs).isEqualTo(0l);
+    assertThat(storedElement._lastUpdateTs).isBetween(start, end);
+    assertThat(storedElement.dummies).hasSize(1);
+    assertThat(storedElement.dummies.get(0)._creationTs).isBetween(start, end);
+    assertThat(storedElement.dummies.get(0)._lastUpdateTs).isEqualTo(storedElement.dummies.get(0)._creationTs);
+    newElement._creationTs = storedElement.dummies.get(0)._creationTs;
+    newElement._lastUpdateTs = storedElement.dummies.get(0)._lastUpdateTs;
+    assertThat(storedElement.dummies.get(0)).isEqualTo(newElement);
+
+  }
+
+  /**
+   * Should create model setting timestamps.
+   *
+   * @param resultHandler handler to manage the HTTP result.
+   * @param success       function to call when the validation success.
+   * @param storer        the function used to store a model.
+   *
+   * @see ModelResources#createModelChain
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void shouldSetTimeStampWhenCreateModel(
+      @Mock final BiConsumer<DummyTsModel, Handler<AsyncResult<DummyTsModel>>> storer,
+      @Mock final Handler<AsyncResult<ServiceResponse>> resultHandler, @Mock final Runnable success) {
+
+    final var context = this.createServiceContext(resultHandler);
+
+    final var modelContext = this.createModelContextForDummyTsModel();
+
+    final var newElement = new DummyTsModel();
+    newElement._creationTs = 2;
+    newElement._lastUpdateTs = 3;
+    newElement.value = "ElementToCreate";
+    final var vertx = Vertx.vertx();
+    final var start = TimeManager.now();
+    ModelResources.createModelChain(vertx, newElement.toJsonObject(), modelContext, storer, context, success);
+
+    final ArgumentCaptor<DummyTsModel> modelToStore = ArgumentCaptor.forClass(DummyTsModel.class);
+    final ArgumentCaptor<Handler<AsyncResult<DummyTsModel>>> storerHandler = ArgumentCaptor.forClass(Handler.class);
+    verify(storer, timeout(30000).times(1)).accept(modelToStore.capture(), storerHandler.capture());
+    final var storedElement = modelToStore.getValue();
+    storedElement._id = "1";
+    storerHandler.getValue().handle(Future.succeededFuture(storedElement));
+
+    verify(success, timeout(30000).times(1)).run();
+    final var end = TimeManager.now();
+    assertThat(storedElement._creationTs).isBetween(start, end);
+    assertThat(storedElement._lastUpdateTs).isEqualTo(storedElement._creationTs);
+
   }
 
 }

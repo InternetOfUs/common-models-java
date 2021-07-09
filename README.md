@@ -11,6 +11,15 @@ After that you can start a development environment with the script
 **startDevelopmentEnvironment.sh**. It creates a docker image with 
 the software to compile and test the project.
 
+This project uses the [Apache maven](https://maven.apache.org/) to solve
+the dependencies, compile and run the test.
+
+ - Use `mvn compile` to compile and generate the Open API documentation (**target/classes/wenet-profile_manager-openapi.yml**).
+ - Use `mvn test` to run the test. Exist some Integration test that requires around 10 minutes, so if you want to ignore them execute them with `mvn -Ddisable.large.unit.tests=true test`.
+ - Use `mvnd test` to run the test on debug mode.
+ - Use `mvn site` to generate a HTML page (**target/site/index.html**) with all the reports (test, javadoc, PMD,CPD and coverage).
+
+
 When you finish you can stop the started docker container with the script
 **stopDevelopmentEnvironment.sh**.
 

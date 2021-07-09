@@ -280,8 +280,9 @@ public interface ModelResources {
         if (model.value instanceof CreateUpdateTsDetails) {
 
           final var now = TimeManager.now();
-          ((CreateUpdateTsDetails) model.value)._creationTs = now;
-          ((CreateUpdateTsDetails) model.value)._lastUpdateTs = now;
+          final var timestamp = (CreateUpdateTsDetails) model.value;
+          timestamp._creationTs = now;
+          timestamp._lastUpdateTs = now;
         }
         storer.accept(model.value, stored -> {
 
@@ -1045,8 +1046,9 @@ public interface ModelResources {
         if (element.value instanceof CreateUpdateTsDetails) {
 
           final var now = TimeManager.now();
-          ((CreateUpdateTsDetails) element.value)._creationTs = now;
-          ((CreateUpdateTsDetails) element.value)._lastUpdateTs = now;
+          final var timestamp = (CreateUpdateTsDetails) element.value;
+          timestamp._creationTs = now;
+          timestamp._lastUpdateTs = now;
         }
 
         retrieveModelChain(element.model, searcher, context, () -> {
