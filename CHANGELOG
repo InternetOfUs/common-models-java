@@ -3,7 +3,7 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
-## Version 0.8.0 (2021-07-05)
+## Version 0.8.0 (2021-07-12)
 
  * Fix stack overflow when migrate a collection with more than 6000 entries.
 

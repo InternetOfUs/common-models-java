@@ -40,12 +40,12 @@ public class BasicIntegrationExtension extends AbstractWeNetComponentIntegration
   /**
    * The container with the mongo database.
    */
-  protected static final MongoContainer<?> container = new MongoContainer<>();
+  public static final MongoContainer<?> container = new MongoContainer<>();
 
   /**
    * The port for the basoic API.
    */
-  protected static final int apiPort = WeNetComponentContainers.nextFreePort();
+  public static final int apiPort = WeNetComponentContainers.nextFreePort();
 
   /**
    * {@inheritDoc}

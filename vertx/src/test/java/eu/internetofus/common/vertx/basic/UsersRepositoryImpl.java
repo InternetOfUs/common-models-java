@@ -103,7 +103,7 @@ public class UsersRepositoryImpl extends Repository implements UsersRepository {
    */
   public Future<Void> migrateDocumentsToCurrentVersions() {
 
-    return this.updateSchemaVersionOnCollection(USERS_COLLECTION);
+    return this.migrateCollection(USERS_COLLECTION, User.class);
 
   }
 
