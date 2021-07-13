@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.model.ErrorMessage;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxTestContext;
 import javax.ws.rs.core.Response.Status;
@@ -37,44 +36,6 @@ import org.junit.jupiter.api.Test;
  * @author UDT-IA, IIIA-CSIC
  */
 public abstract class AbstractAPIVerticleIntegrationTestCase {
-
-  /**
-   * Check that return a bad api request when try to post a bad context.
-   *
-   * @param client      to realize connection over the
-   * @param testContext context to test the VertX event bus.
-   *
-   * @see #getBadRequestPostPath()
-   * @see #createBadRequestPostBody()
-   */
-  @Test
-  public void shouldReturnABadRequestError(final WebClient client, final VertxTestContext testContext) {
-
-    testRequest(client, HttpMethod.POST, this.getBadRequestPostPath()).expect(res -> {
-      assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-      final var error = HttpResponses.assertThatBodyIs(ErrorMessage.class, res);
-      assertThat(error.code).isEqualTo("bad_api_request");
-      assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
-    }).sendJson(this.createBadRequestPostBody(), testContext);
-
-  }
-
-  /**
-   * Return the path to the API to post and will return a bad request.
-   *
-   * @return the path to post.
-   */
-  protected abstract String getBadRequestPostPath();
-
-  /**
-   * Create a body to post that produces a bad api request.
-   *
-   * @return an object that
-   */
-  protected JsonObject createBadRequestPostBody() {
-
-    return new JsonObject().put("undefinedKey", "undefined value");
-  }
 
   /**
    * Verify that return a not found error.

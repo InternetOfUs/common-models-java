@@ -17,19 +17,19 @@
  *
  * -----------------------------------------------------------------------------
  */
-
-package eu.internetofus.wenet_dummy.api;
+package eu.internetofus.common.vertx.basic;
 
 import eu.internetofus.common.vertx.AbstractAPIVerticleIntegrationTestCase;
-import eu.internetofus.wenet_dummy.WeNetDummyIntegrationExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * Integration tests of the {@link APIVerticle}.
+ * Test the {@link APIVerticle}.
+ *
+ * @see APIVerticle
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(WeNetDummyIntegrationExtension.class)
+@ExtendWith(BasicIntegrationExtension.class)
 public class APIVerticleIT extends AbstractAPIVerticleIntegrationTestCase {
 
 }

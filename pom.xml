@@ -3,7 +3,7 @@
  <modelVersion>4.0.0</modelVersion>
  <groupId>eu.internetofus</groupId>
  <artifactId>common-parent</artifactId>
- <version>0.8.0</version>
+ <version>0.8.1</version>
  <packaging>pom</packaging>
  <description>This project will be used to provide the common classes for the UDT-IA IIIA-CSIC WeNet components.</description>
  <organization>
