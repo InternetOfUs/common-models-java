@@ -40,23 +40,23 @@ public interface TaskStatusPredicates {
 
     return msg -> {
 
-      return msg.Action.equals(action);
+      return msg.action.equals(action);
 
     };
   }
 
   /**
-   * Check that the task status has the specified message.
+   * Check that the task status has the specified count.
    *
-   * @param message to match for the task status.
+   * @param count to match for the task status.
    *
    * @return the predicate to do this match.
    */
-  static Predicate<TaskStatus> messageIs(final String message) {
+  static Predicate<TaskStatus> countIs(final int count) {
 
     return msg -> {
 
-      return msg.Message.equals(message);
+      return msg.count == count;
 
     };
   }
