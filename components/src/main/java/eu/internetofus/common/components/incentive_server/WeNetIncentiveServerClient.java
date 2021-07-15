@@ -29,7 +29,8 @@ import io.vertx.ext.web.client.WebClient;
 /**
  * The client to interact with the {@link WeNetIncentiveServer}.
  *
- * @see WeNetIncentiveServer#register(io.vertx.core.Vertx, WebClient, io.vertx.core.json.JsonObject)
+ * @see WeNetIncentiveServer#register(io.vertx.core.Vertx, WebClient,
+ *      io.vertx.core.json.JsonObject)
  *
  * @author UDT-IA, IIIA-CSIC
  */
@@ -41,7 +42,8 @@ public class WeNetIncentiveServerClient extends ComponentClient implements WeNet
   public static final String DEFAULT_INCENTIVE_SERVER_API_URL = "https://wenet.u-hopper.com/prod/incentive_server";
 
   /**
-   * The name of the configuration property that contains the URL to the incentive server API.
+   * The name of the configuration property that contains the URL to the incentive
+   * server API.
    */
   public static final String INCENTIVE_SERVER_CONF_KEY = "incentiveServer";
 

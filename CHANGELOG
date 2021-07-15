@@ -2,6 +2,11 @@
 
 All notable changes to `wenet-common` will be documented in this file
 
+## Version 0.9.0 (2021-07-15)
+
+ * Adapt to the new task status notification to the incentive server.
+
+
 ## Version 0.8.1 (2021-07-13)
 
  * Fix junit problems.

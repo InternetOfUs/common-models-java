@@ -29,14 +29,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "TaskStatus", description = "The status of a task.")
+@Schema(hidden = true, name = "task_status", description = "The status of a task.")
 public class TaskStatus extends ReflectionModel implements Model {
-
-  /**
-   * Identifier of the app.
-   */
-  @Schema(example = "WeNet_user5")
-  public String app_id = "-1";
 
   /**
    * Identifier of the user.
@@ -51,6 +45,12 @@ public class TaskStatus extends ReflectionModel implements Model {
   public String community_id;
 
   /**
+   * Identifier of the app.
+   */
+  @Schema(example = "WeNet_user5")
+  public String app_id = "-1";
+
+  /**
    * Identifier of the task.
    */
   @Schema(example = "WeNet_task")
@@ -59,13 +59,13 @@ public class TaskStatus extends ReflectionModel implements Model {
   /**
    * The action that update the task.
    */
-  @Schema(example = "Starts")
-  public String Action;
+  @Schema(example = "Questions")
+  public String action;
 
   /**
    * The message of the status.
    */
-  @Schema(example = "some message")
-  public String Message;
+  @Schema(example = "10")
+  public int count;
 
 }
