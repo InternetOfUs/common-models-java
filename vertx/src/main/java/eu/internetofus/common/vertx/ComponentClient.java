@@ -334,9 +334,18 @@ public class ComponentClient {
     final Promise<T> promise = Promise.promise();
     final var actionId = this.createActionId(method, url);
     Logger.trace("{} STARTED", actionId);
-    this.client.requestAbs(method, url).send()
-        .onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId))
-        .onFailure(this.createRequestFailureHandler(promise, actionId));
+    try {
+
+      this.client.requestAbs(method, url).send()
+          .onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId))
+          .onFailure(this.createRequestFailureHandler(promise, actionId));
+
+    } catch (final Throwable throwable) {
+
+      promise.tryFail(throwable);
+
+    }
+
     return promise.future();
 
   }
@@ -359,9 +368,18 @@ public class ComponentClient {
     final Promise<T> promise = Promise.promise();
     final var actionId = this.createActionId(method, url, queryParams);
     Logger.trace("{} STARTED", actionId);
-    this.createRequestFor(method, url, queryParams).send()
-        .onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId))
-        .onFailure(this.createRequestFailureHandler(promise, actionId));
+    try {
+
+      this.createRequestFor(method, url, queryParams).send()
+          .onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId))
+          .onFailure(this.createRequestFailureHandler(promise, actionId));
+
+    } catch (final Throwable throwable) {
+
+      promise.tryFail(throwable);
+
+    }
+
     return promise.future();
 
   }
