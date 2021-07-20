@@ -22,7 +22,8 @@ package eu.internetofus.common.components;
 import static org.assertj.core.api.Assertions.fail;
 
 import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.function.Supplier;
-import eu.internetofus.common.components.incentive_server.TaskStatus;
+import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBody;
+import eu.internetofus.common.components.incentive_server.TaskTypeStatusBody;
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulator;
 import eu.internetofus.common.components.interaction_protocol_engine.State;
 import eu.internetofus.common.components.interaction_protocol_engine.WeNetInteractionProtocolEngine;
@@ -435,24 +436,25 @@ public abstract class AbstractProtocolITC {
   }
 
   /**
-   * Check that is send the specified task status.
+   * Check that is send the specified task transaction status.
    *
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
-   * @param checkStatus this predicate is true when the task status has the
-   *                    expected values.
+   * @param checkStatus this predicate is true when the task transaction status
+   *                    has the expected values.
    *
-   * @return the future created task.
+   * @return the future notified task transaction.
    *
    * @see #waitUntilTask(Vertx, VertxTestContext, Predicate)
    */
-  protected Future<List<TaskStatus>> waitUntilTaskStatus(@NotNull final Vertx vertx,
-      @NotNull final VertxTestContext testContext, @NotNull final List<Predicate<TaskStatus>> checkStatus) {
+  protected Future<List<TaskTransactionStatusBody>> waitUntilIncentiveServerHasTaskTransactionStatus(@NotNull final Vertx vertx,
+      @NotNull final VertxTestContext testContext,
+      @NotNull final List<Predicate<TaskTransactionStatusBody>> checkStatus) {
 
-    return this.waitUntil(vertx, testContext, () -> WeNetIncentiveServerSimulator.createProxy(vertx).getTaskStatus(),
-        status -> {
+    return this.waitUntil(vertx, testContext,
+        () -> WeNetIncentiveServerSimulator.createProxy(vertx).getTaskTransactionStatus(), status -> {
 
-          final List<Predicate<TaskStatus>> copy = new ArrayList<>(checkStatus);
+          final List<Predicate<TaskTransactionStatusBody>> copy = new ArrayList<>(checkStatus);
           final var statusIter = status.iterator();
           while (statusIter.hasNext()) {
 
@@ -477,8 +479,56 @@ public abstract class AbstractProtocolITC {
           }
 
           return copy.isEmpty();
-        })
-        .compose(status -> WeNetIncentiveServerSimulator.createProxy(vertx).deleteTaskStatus().map(ignored -> status));
+        }).compose(status -> WeNetIncentiveServerSimulator.createProxy(vertx).deleteTaskTransactionStatus()
+            .map(ignored -> status));
+
+  }
+
+  /**
+   * Check that is send the specified task type status.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   * @param checkStatus this predicate is true when the task type status has the
+   *                    expected values.
+   *
+   * @return the future notified task type.
+   *
+   * @see #waitUntilTask(Vertx, VertxTestContext, Predicate)
+   */
+  protected Future<List<TaskTypeStatusBody>> waitUntilIncentiveServerHasTaskTypeStatus(@NotNull final Vertx vertx,
+      @NotNull final VertxTestContext testContext, @NotNull final List<Predicate<TaskTypeStatusBody>> checkStatus) {
+
+    return this.waitUntil(vertx, testContext,
+        () -> WeNetIncentiveServerSimulator.createProxy(vertx).getTaskTypeStatus(), status -> {
+
+          final List<Predicate<TaskTypeStatusBody>> copy = new ArrayList<>(checkStatus);
+          final var statusIter = status.iterator();
+          while (statusIter.hasNext()) {
+
+            var state = statusIter.next();
+            final var iter = copy.iterator();
+            while (iter.hasNext()) {
+
+              final var check = iter.next();
+              if (check.test(state)) {
+
+                iter.remove();
+                state = null;
+                break;
+              }
+            }
+
+            if (state != null) {
+
+              statusIter.remove();
+            }
+
+          }
+
+          return copy.isEmpty();
+        }).compose(
+            status -> WeNetIncentiveServerSimulator.createProxy(vertx).deleteTaskTypeStatus().map(ignored -> status));
 
   }
 
@@ -556,15 +606,47 @@ public abstract class AbstractProtocolITC {
   }
 
   /**
-   * Create the task status predicate over the current state of the test.
+   * Create the task transaction status predicate over the current state of the
+   * test.
    *
-   * @return the predicate for the status.
+   * @return the predicate for the task transaction status.
    *
    * @see #app
    * @see #task
    * @see #community
    */
-  protected Predicate<TaskStatus> createTaskStatusPredicate() {
+  protected Predicate<TaskTransactionStatusBody> createIncentiveServerTaskTransactionStatusPredicate() {
+
+    return state -> {
+
+      if (this.app != null && !this.app.appId.equals(state.app_id)) {
+
+        return false;
+      }
+      if (this.taskType != null && !this.taskType.id.equals(state.taskTypeId)) {
+
+        return false;
+      }
+      if (this.community != null && !this.community.id.equals(state.community_id)) {
+
+        return false;
+      }
+
+      return true;
+    };
+
+  }
+
+  /**
+   * Create the task type status predicate over the current state of the test.
+   *
+   * @return the predicate for the task type status.
+   *
+   * @see #app
+   * @see #task
+   * @see #community
+   */
+  protected Predicate<TaskTypeStatusBody> createIncentiveServerTaskTypeStatusPredicate() {
 
     return state -> {
 
