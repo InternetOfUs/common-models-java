@@ -23,11 +23,11 @@ package eu.internetofus.common.components.incentive_server;
 import java.util.function.Predicate;
 
 /**
- * Component to create predicates to check a task status.
+ * Component to create predicates to check a task transaction status.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public interface TaskStatusPredicates {
+public interface TaskTransactionStatusBodyPredicates {
 
   /**
    * Check that the task status has the specified label.
@@ -36,7 +36,7 @@ public interface TaskStatusPredicates {
    *
    * @return the predicate to do this match.
    */
-  static Predicate<TaskStatus> labelIs(final String label) {
+  static Predicate<TaskTransactionStatusBody> labelIs(final String label) {
 
     return msg -> {
 
@@ -52,7 +52,7 @@ public interface TaskStatusPredicates {
    *
    * @return the predicate to do this match.
    */
-  static Predicate<TaskStatus> countIs(final int count) {
+  static Predicate<TaskTransactionStatusBody> countIs(final int count) {
 
     return msg -> {
 
@@ -68,7 +68,7 @@ public interface TaskStatusPredicates {
    *
    * @return the predicate to do this match.
    */
-  static Predicate<TaskStatus> userIs(final String user) {
+  static Predicate<TaskTransactionStatusBody> userIs(final String user) {
 
     return msg -> {
 

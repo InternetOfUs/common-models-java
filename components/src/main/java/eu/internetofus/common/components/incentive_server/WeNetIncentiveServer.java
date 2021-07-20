@@ -21,7 +21,6 @@
 package eu.internetofus.common.components.incentive_server;
 
 import eu.internetofus.common.components.WeNetComponent;
-import eu.internetofus.common.model.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
@@ -83,27 +82,51 @@ public interface WeNetIncentiveServer extends WeNetComponent {
   void obtainApiUrl(final Handler<AsyncResult<String>> handler);
 
   /**
-   * Update the status of a task.
+   * Update the status of a task transaction.
    *
-   * @param status for the task.
+   * @param status for the task transaction.
    *
-   * @return the future task status.
+   * @return the future task transaction status.
    */
   @GenIgnore
-  default Future<TaskStatus> updateTaskStatus(final @NotNull TaskStatus status) {
+  default Future<JsonObject> updateTaskTransactionStatus(final @NotNull TaskTransactionStatusBody status) {
 
     final Promise<JsonObject> promise = Promise.promise();
-    this.updateTaskStatus(status.toJsonObject(), promise);
-    return Model.fromFutureJsonObject(promise.future(), TaskStatus.class);
+    this.updateTaskTransactionStatus(status.toJsonObject(), promise);
+    return promise.future();
 
   }
 
   /**
-   * Update the status of a task.
+   * Update the status of a task transaction.
    *
-   * @param status  for the task.
-   * @param handler for the task status.
+   * @param status  for the task transaction.
+   * @param handler for the task transaction status.
    */
-  void updateTaskStatus(@NotNull JsonObject status, Handler<AsyncResult<JsonObject>> handler);
+  void updateTaskTransactionStatus(@NotNull JsonObject status, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Update the status of a task type.
+   *
+   * @param status for the task type.
+   *
+   * @return the future task type status.
+   */
+  @GenIgnore
+  default Future<JsonObject> updateTaskTypeStatus(final @NotNull TaskTypeStatusBody status) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.updateTaskTypeStatus(status.toJsonObject(), promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Update the status of a task type.
+   *
+   * @param status  for the task type.
+   * @param handler for the task type status.
+   */
+  void updateTaskTypeStatus(@NotNull JsonObject status, Handler<AsyncResult<JsonObject>> handler);
 
 }

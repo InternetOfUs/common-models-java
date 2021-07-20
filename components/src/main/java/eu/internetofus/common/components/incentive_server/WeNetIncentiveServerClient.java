@@ -63,9 +63,19 @@ public class WeNetIncentiveServerClient extends ComponentClient implements WeNet
    * {@inheritDoc}
    */
   @Override
-  public void updateTaskStatus(final JsonObject status, final Handler<AsyncResult<JsonObject>> handler) {
+  public void updateTaskTransactionStatus(final JsonObject status, final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.post(status, "/Tasks/TaskStatus/").onComplete(handler);
+    this.post(status, "/Tasks/TaskTransactionStatus/").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void updateTaskTypeStatus(final JsonObject status, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(status, "/Tasks/TaskTypeStatus/").onComplete(handler);
 
   }
 

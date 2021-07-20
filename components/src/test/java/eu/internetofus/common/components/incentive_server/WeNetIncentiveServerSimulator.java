@@ -75,18 +75,18 @@ public interface WeNetIncentiveServerSimulator {
   }
 
   /**
-   * Update the status of a task.
+   * Update the status of a task transaction.
    *
-   * @param status for the task.
+   * @param status for the task transaction.
    *
-   * @return the future task status.
+   * @return the future task transaction status.
    */
   @GenIgnore
-  default Future<TaskStatus> updateTaskStatus(final @NotNull TaskStatus status) {
+  default Future<JsonObject> updateTaskTransactionStatus(final @NotNull TaskTransactionStatusBody status) {
 
     final Promise<JsonObject> promise = Promise.promise();
-    this.updateTaskStatus(status.toJsonObject(), promise);
-    return Model.fromFutureJsonObject(promise.future(), TaskStatus.class);
+    this.updateTaskTransactionStatus(status.toJsonObject(), promise);
+    return promise.future();
 
   }
 
@@ -96,48 +96,114 @@ public interface WeNetIncentiveServerSimulator {
    * @param status  for the task.
    * @param handler for the task status.
    */
-  void updateTaskStatus(@NotNull JsonObject status, Handler<AsyncResult<JsonObject>> handler);
+  void updateTaskTransactionStatus(@NotNull JsonObject status, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * Get the posted task status.
+   * Get the posted task transaction status.
    *
-   * @return the future task status.
+   * @return the future task transaction status.
    */
   @GenIgnore
-  default Future<List<TaskStatus>> getTaskStatus() {
+  default Future<List<TaskTransactionStatusBody>> getTaskTransactionStatus() {
 
     final Promise<JsonArray> promise = Promise.promise();
-    this.getTaskStatus(promise);
-    return Model.fromFutureJsonArray(promise.future(), TaskStatus.class);
+    this.getTaskTransactionStatus(promise);
+    return Model.fromFutureJsonArray(promise.future(), TaskTransactionStatusBody.class);
 
   }
 
   /**
-   * Get the status of a task.
+   * Get the status of a task transaction.
    *
-   * @param handler for the task status.
+   * @param handler for the task transaction status.
    */
-  void getTaskStatus(Handler<AsyncResult<JsonArray>> handler);
+  void getTaskTransactionStatus(Handler<AsyncResult<JsonArray>> handler);
 
   /**
-   * Delete the posted task status.
+   * Delete the posted task transaction status.
    *
-   * @return the future deleted task status.
+   * @return the future deleted task transaction status.
    */
   @GenIgnore
-  default Future<Void> deleteTaskStatus() {
+  default Future<Void> deleteTaskTransactionStatus() {
 
     final Promise<Void> promise = Promise.promise();
-    this.deleteTaskStatus(promise);
+    this.deleteTaskTransactionStatus(promise);
     return promise.future();
 
   }
 
   /**
-   * Delete the status of a task.
+   * Delete the status of a task transaction.
    *
-   * @param handler for the deleted task status.
+   * @param handler for the deleted task transaction status.
    */
-  void deleteTaskStatus(Handler<AsyncResult<Void>> handler);
+  void deleteTaskTransactionStatus(Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Update the status of a task type.
+   *
+   * @param status for the task type.
+   *
+   * @return the future task type status.
+   */
+  @GenIgnore
+  default Future<JsonObject> updateTaskTypeStatus(final @NotNull TaskTypeStatusBody status) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.updateTaskTypeStatus(status.toJsonObject(), promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Update the status of a task.
+   *
+   * @param status  for the task.
+   * @param handler for the task status.
+   */
+  void updateTaskTypeStatus(@NotNull JsonObject status, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Get the posted task type status.
+   *
+   * @return the future task type status.
+   */
+  @GenIgnore
+  default Future<List<TaskTypeStatusBody>> getTaskTypeStatus() {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    this.getTaskTypeStatus(promise);
+    return Model.fromFutureJsonArray(promise.future(), TaskTypeStatusBody.class);
+
+  }
+
+  /**
+   * Get the status of a task type.
+   *
+   * @param handler for the task type status.
+   */
+  void getTaskTypeStatus(Handler<AsyncResult<JsonArray>> handler);
+
+  /**
+   * Delete the posted task type status.
+   *
+   * @return the future deleted task type status.
+   */
+  @GenIgnore
+  default Future<Void> deleteTaskTypeStatus() {
+
+    final Promise<Void> promise = Promise.promise();
+    this.deleteTaskTypeStatus(promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Delete the status of a task type.
+   *
+   * @param handler for the deleted task type status.
+   */
+  void deleteTaskTypeStatus(Handler<AsyncResult<Void>> handler);
 
 }

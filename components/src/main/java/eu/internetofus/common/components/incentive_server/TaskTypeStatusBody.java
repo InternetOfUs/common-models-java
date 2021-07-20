@@ -25,12 +25,12 @@ import eu.internetofus.common.model.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Represents the status of a task.
+ * Represents the status of a task type.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "task_status", description = "The status of a task.")
-public class TaskStatus extends ReflectionModel implements Model {
+@Schema(hidden = true, name = "taskType_status_body", description = "The status of a task type.")
+public class TaskTypeStatusBody extends ReflectionModel implements Model {
 
   /**
    * Identifier of the user.
@@ -55,12 +55,6 @@ public class TaskStatus extends ReflectionModel implements Model {
    */
   @Schema(example = "ask4help")
   public String taskTypeId;
-
-  /**
-   * The action that update the task.
-   */
-  @Schema(example = "answerTransaction")
-  public String label;
 
   /**
    * The message of the status.

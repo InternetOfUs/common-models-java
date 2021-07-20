@@ -20,8 +20,6 @@
 
 package eu.internetofus.common.components.incentive_server;
 
-import javax.validation.constraints.NotNull;
-import eu.internetofus.common.model.Model;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -29,13 +27,15 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import javax.validation.constraints.NotNull;
 
 /**
  * Service used to interact with the {@link WeNetIncentiveServerSimulator}.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetIncentiveServerSimulatorClient extends WeNetIncentiveServerClient implements WeNetIncentiveServerSimulator, WeNetIncentiveServer {
+public class WeNetIncentiveServerSimulatorClient extends WeNetIncentiveServerClient
+    implements WeNetIncentiveServerSimulator, WeNetIncentiveServer {
 
   /**
    * Create a new service to interact with the WeNet incentive server.
@@ -53,11 +53,11 @@ public class WeNetIncentiveServerSimulatorClient extends WeNetIncentiveServerCli
    * {@inheritDoc}
    */
   @Override
-  public Future<TaskStatus> updateTaskStatus(final @NotNull TaskStatus status) {
+  public Future<JsonObject> updateTaskTransactionStatus(final @NotNull TaskTransactionStatusBody status) {
 
     final Promise<JsonObject> promise = Promise.promise();
-    this.updateTaskStatus(status.toJsonObject(), promise);
-    return Model.fromFutureJsonObject(promise.future(), TaskStatus.class);
+    this.updateTaskTransactionStatus(status.toJsonObject(), promise);
+    return promise.future();
 
   }
 
@@ -65,9 +65,9 @@ public class WeNetIncentiveServerSimulatorClient extends WeNetIncentiveServerCli
    * {@inheritDoc}
    */
   @Override
-  public void getTaskStatus(final Handler<AsyncResult<JsonArray>> handler) {
+  public void getTaskTransactionStatus(final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.getJsonArray("/Tasks/TaskStatus/").onComplete(handler);
+    this.getJsonArray("/Tasks/TaskTransactionStatus/").onComplete(handler);
 
   }
 
@@ -75,9 +75,42 @@ public class WeNetIncentiveServerSimulatorClient extends WeNetIncentiveServerCli
    * {@inheritDoc}
    */
   @Override
-  public void deleteTaskStatus(final Handler<AsyncResult<Void>> handler) {
+  public void deleteTaskTransactionStatus(final Handler<AsyncResult<Void>> handler) {
 
-    this.delete("/Tasks/TaskStatus/").onComplete(handler);
+    this.delete("/Tasks/TaskTransactionStatus/").onComplete(handler);
 
   }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<JsonObject> updateTaskTypeStatus(final @NotNull TaskTypeStatusBody status) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.updateTaskTypeStatus(status.toJsonObject(), promise);
+    return promise.future();
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void getTaskTypeStatus(final Handler<AsyncResult<JsonArray>> handler) {
+
+    this.getJsonArray("/Tasks/TaskTypeStatus/").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteTaskTypeStatus(final Handler<AsyncResult<Void>> handler) {
+
+    this.delete("/Tasks/TaskTypeStatus/").onComplete(handler);
+
+  }
+
 }

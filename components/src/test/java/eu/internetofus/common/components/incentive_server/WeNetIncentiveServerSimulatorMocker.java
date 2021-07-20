@@ -37,9 +37,14 @@ import javax.ws.rs.core.Response.Status;
 public class WeNetIncentiveServerSimulatorMocker extends AbstractComponentMocker {
 
   /**
-   * The posted status.
+   * The posted transaction status.
    */
-  protected JsonArray status = new JsonArray();
+  protected JsonArray transactionStatus = new JsonArray();
+
+  /**
+   * The posted type status.
+   */
+  protected JsonArray typeStatus = new JsonArray();
 
   /**
    * Start a mocker builder into a random port.
@@ -81,35 +86,69 @@ public class WeNetIncentiveServerSimulatorMocker extends AbstractComponentMocker
   @Override
   protected void fillInRouterHandler(final Router router) {
 
-    router.post("/Tasks/TaskStatus").handler(ctx -> {
+    router.post("/Tasks/TaskTransactionStatus").handler(ctx -> {
 
       final var value = ctx.getBodyAsJson();
-      final var state = Model.fromJsonObject(value, TaskStatus.class);
+      final var state = Model.fromJsonObject(value, TaskTransactionStatusBody.class);
       if (state == null) {
 
         final var response = ctx.response();
         response.setStatusCode(Status.BAD_REQUEST.getStatusCode());
-        response.end(new ErrorMessage("bad_status", "The body is not a valid task status").toBuffer());
+        response.end(new ErrorMessage("bad_status", "The body is not a valid task transaction status").toBuffer());
 
       } else {
 
-        this.status.add(value);
+        this.transactionStatus.add(value);
         final var response = ctx.response();
         response.setStatusCode(Status.CREATED.getStatusCode());
         response.end(value.toBuffer());
       }
 
     });
-    router.get("/Tasks/TaskStatus").handler(ctx -> {
+    router.get("/Tasks/TaskTransactionStatus").handler(ctx -> {
 
       final var response = ctx.response();
       response.setStatusCode(Status.OK.getStatusCode());
-      response.end(this.status.toBuffer());
+      response.end(this.transactionStatus.toBuffer());
 
     });
-    router.delete("/Tasks/TaskStatus").handler(ctx -> {
+    router.delete("/Tasks/TaskTransactionStatus").handler(ctx -> {
 
-      this.status.clear();
+      this.transactionStatus.clear();
+      final var response = ctx.response();
+      response.setStatusCode(Status.NO_CONTENT.getStatusCode());
+      response.end();
+    });
+
+    router.post("/Tasks/TaskTypeStatus").handler(ctx -> {
+
+      final var value = ctx.getBodyAsJson();
+      final var state = Model.fromJsonObject(value, TaskTypeStatusBody.class);
+      if (state == null) {
+
+        final var response = ctx.response();
+        response.setStatusCode(Status.BAD_REQUEST.getStatusCode());
+        response.end(new ErrorMessage("bad_status", "The body is not a valid task type status").toBuffer());
+
+      } else {
+
+        this.typeStatus.add(value);
+        final var response = ctx.response();
+        response.setStatusCode(Status.CREATED.getStatusCode());
+        response.end(value.toBuffer());
+      }
+
+    });
+    router.get("/Tasks/TaskTypeStatus").handler(ctx -> {
+
+      final var response = ctx.response();
+      response.setStatusCode(Status.OK.getStatusCode());
+      response.end(this.typeStatus.toBuffer());
+
+    });
+    router.delete("/Tasks/TaskTypeStatus").handler(ctx -> {
+
+      this.typeStatus.clear();
       final var response = ctx.response();
       response.setStatusCode(Status.NO_CONTENT.getStatusCode());
       response.end();
