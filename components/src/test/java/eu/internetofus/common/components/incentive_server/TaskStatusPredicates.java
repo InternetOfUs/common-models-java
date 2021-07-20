@@ -30,17 +30,17 @@ import java.util.function.Predicate;
 public interface TaskStatusPredicates {
 
   /**
-   * Check that the task status has the specified action.
+   * Check that the task status has the specified label.
    *
-   * @param action to match for the task status.
+   * @param label to match for the task status.
    *
    * @return the predicate to do this match.
    */
-  static Predicate<TaskStatus> actionIs(final String action) {
+  static Predicate<TaskStatus> labelIs(final String label) {
 
     return msg -> {
 
-      return msg.action.equals(action);
+      return msg.label.equals(label);
 
     };
   }

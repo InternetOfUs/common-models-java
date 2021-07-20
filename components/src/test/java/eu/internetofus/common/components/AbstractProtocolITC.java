@@ -21,6 +21,7 @@ package eu.internetofus.common.components;
 
 import static org.assertj.core.api.Assertions.fail;
 
+import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.function.Supplier;
 import eu.internetofus.common.components.incentive_server.TaskStatus;
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulator;
 import eu.internetofus.common.components.interaction_protocol_engine.State;
@@ -37,11 +38,13 @@ import eu.internetofus.common.components.service.WeNetServiceSimulator;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.model.Model;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Predicate;
 import javax.validation.constraints.NotNull;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -171,20 +174,22 @@ public abstract class AbstractProtocolITC {
 
     this.assertLastSuccessfulTestWas(0, testContext);
 
-    var future = Future.succeededFuture();
+    final Promise<Void> promise = Promise.promise();
     final var max = this.numberOfUsersToCreate();
     for (var i = 0; i < max; i++) {
 
       final var index = i;
-      future = future
-          .compose(ignored -> StoreServices.storeProfileExample(index, vertx, testContext).compose(createdUser -> {
-            this.users.add(createdUser);
-            return Future.succeededFuture(createdUser);
-          }));
+      StoreServices.storeProfileExample(index, vertx, testContext).onComplete(testContext.succeeding(createdUser -> {
 
+        this.users.add(createdUser);
+        if (this.users.size() >= max) {
+
+          promise.complete();
+        }
+      }));
     }
 
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+    promise.future().onComplete(testContext.succeeding(empty -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -210,16 +215,17 @@ public abstract class AbstractProtocolITC {
 
     this.assertLastSuccessfulTestWas(1, testContext);
 
-    testContext
-        .assertComplete(WeNetServiceSimulator.createProxy(vertx).createApp(this.createApp()).compose(addedApp -> {
-          this.app = addedApp;
-          final var appUsers = new JsonArray();
-          for (final WeNetUserProfile profile : this.users) {
+    WeNetServiceSimulator.createProxy(vertx).createApp(this.createApp()).compose(addedApp -> {
 
-            appUsers.add(profile.id);
-          }
-          return WeNetServiceSimulator.createProxy(vertx).addUsers(addedApp.appId, appUsers);
-        })).onComplete(added -> this.assertSuccessfulCompleted(testContext));
+      this.app = addedApp;
+      final var appUsers = new JsonArray();
+      for (final WeNetUserProfile profile : this.users) {
+
+        appUsers.add(profile.id);
+      }
+      return WeNetServiceSimulator.createProxy(vertx).addUsers(addedApp.appId, appUsers);
+
+    }).onComplete(testContext.succeeding(added -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -293,6 +299,53 @@ public abstract class AbstractProtocolITC {
   }
 
   /**
+   * The process that is waiting until the
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   * @param supplier    to obtain the model.
+   * @param check       the function to check if the obtained model is what is
+   *                    expected.
+   *
+   * @param <T>         type of the waiting data.
+   *
+   * @return the future model that satisfy the check.
+   */
+  protected <T> Future<T> waitUntil(final Vertx vertx, final VertxTestContext testContext,
+      final Supplier<Future<T>> supplier, final Predicate<T> check) {
+
+    final Promise<T> promise = Promise.promise();
+    final var address = UUID.randomUUID().toString();
+    final var consumer = vertx.eventBus().consumer(address);
+    consumer.handler(ignored -> {
+
+      supplier.get().onComplete(testContext.succeeding(target -> {
+
+        if (check.test(target)) {
+
+          consumer.unregister();
+          promise.complete(target);
+
+        } else if (testContext.completed()) {
+
+          consumer.unregister();
+          promise.fail("Test finished");
+
+        } else {
+
+          vertx.eventBus().send(address, "STEP");
+        }
+
+      }));
+
+    });
+    vertx.eventBus().send(address, "START");
+
+    return promise.future();
+
+  }
+
+  /**
    * Wait until the task satisfy the predicate.
    *
    * @param vertx       event bus to use.
@@ -305,23 +358,11 @@ public abstract class AbstractProtocolITC {
   protected Future<Task> waitUntilTask(final Vertx vertx, final VertxTestContext testContext,
       final Predicate<Task> checkTask) {
 
-    return WeNetTaskManager.createProxy(vertx).retrieveTask(this.task.id).compose(target -> {
-
-      this.task = target;
-      if (checkTask.test(target)) {
-
-        return Future.succeededFuture(target);
-
-      } else if (!testContext.completed()) {
-
-        return this.waitUntilTask(vertx, testContext, checkTask);
-
-      } else {
-
-        return Future.failedFuture("Test finished");
-      }
-
-    });
+    return this.waitUntil(vertx, testContext,
+        () -> WeNetTaskManager.createProxy(vertx).retrieveTask(this.task.id).map(target -> {
+          this.task = target;
+          return this.task;
+        }), checkTask);
 
   }
 
@@ -338,43 +379,34 @@ public abstract class AbstractProtocolITC {
   protected Future<List<Message>> waitUntilCallbacks(@NotNull final Vertx vertx,
       @NotNull final VertxTestContext testContext, @NotNull final List<Predicate<Message>> checkMessages) {
 
-    return WeNetServiceSimulator.createProxy(vertx).retrieveCallbacks(this.app.appId).compose(callbacks -> {
+    return this.waitUntil(vertx, testContext, () -> Model
+        .fromFutureJsonArray(WeNetServiceSimulator.createProxy(vertx).retrieveCallbacks(this.app.appId), Message.class),
+        callbacks -> {
 
-      final List<Predicate<Message>> copy = new ArrayList<>(checkMessages);
-      final List<Message> msgs = new ArrayList<>();
-      for (var i = 0; i < callbacks.size(); i++) {
+          final List<Predicate<Message>> copy = new ArrayList<>(checkMessages);
+          final var callbacksIter = callbacks.iterator();
+          while (callbacksIter.hasNext()) {
 
-        final var msg = Model.fromJsonObject(callbacks.getJsonObject(i), Message.class);
-        if (msg != null) {
+            final var msg = callbacksIter.next();
+            if (msg != null) {
 
-          final var iter = copy.iterator();
-          while (iter.hasNext()) {
-            final var checkMessage = iter.next();
-            if (checkMessage.test(msg)) {
+              final var iter = copy.iterator();
+              while (iter.hasNext()) {
+                final var checkMessage = iter.next();
+                if (checkMessage.test(msg)) {
 
-              msgs.add(msg);
-              iter.remove();
-              break;
+                  iter.remove();
+                  break;
+                }
+              }
             }
+            callbacksIter.remove();
           }
-        }
-      }
 
-      if (copy.isEmpty()) {
+          return copy.isEmpty();
 
-        return WeNetServiceSimulator.createProxy(vertx).deleteCallbacks(this.app.appId)
-            .compose(deleted -> Future.succeededFuture(msgs));
-
-      } else if (testContext.completed()) {
-
-        return Future.failedFuture("Closed by timeout");
-
-      } else {
-
-        return this.waitUntilCallbacks(vertx, testContext, checkMessages);
-      }
-
-    });
+        }).compose(callbacks -> WeNetServiceSimulator.createProxy(vertx).deleteCallbacks(this.app.appId)
+            .map(empty -> callbacks));
 
   }
 
@@ -417,46 +449,36 @@ public abstract class AbstractProtocolITC {
   protected Future<List<TaskStatus>> waitUntilTaskStatus(@NotNull final Vertx vertx,
       @NotNull final VertxTestContext testContext, @NotNull final List<Predicate<TaskStatus>> checkStatus) {
 
-    return WeNetIncentiveServerSimulator.createProxy(vertx).getTaskStatus().compose(status -> {
+    return this.waitUntil(vertx, testContext, () -> WeNetIncentiveServerSimulator.createProxy(vertx).getTaskStatus(),
+        status -> {
 
-      final List<Predicate<TaskStatus>> copy = new ArrayList<>(checkStatus);
-      final var statusIter = status.iterator();
-      while (statusIter.hasNext()) {
+          final List<Predicate<TaskStatus>> copy = new ArrayList<>(checkStatus);
+          final var statusIter = status.iterator();
+          while (statusIter.hasNext()) {
 
-        var state = statusIter.next();
-        final var iter = copy.iterator();
-        while (iter.hasNext()) {
+            var state = statusIter.next();
+            final var iter = copy.iterator();
+            while (iter.hasNext()) {
 
-          final var check = iter.next();
-          if (check.test(state)) {
+              final var check = iter.next();
+              if (check.test(state)) {
 
-            iter.remove();
-            state = null;
-            break;
+                iter.remove();
+                state = null;
+                break;
+              }
+            }
+
+            if (state != null) {
+
+              statusIter.remove();
+            }
+
           }
-        }
 
-        if (state != null) {
-
-          statusIter.remove();
-        }
-
-      }
-
-      if (copy.isEmpty()) {
-
-        return WeNetIncentiveServerSimulator.createProxy(vertx).deleteTaskStatus()
-            .compose(deleted -> Future.succeededFuture(status));
-
-      } else if (testContext.completed()) {
-
-        return Future.failedFuture("Closed by timeout");
-
-      } else {
-
-        return this.waitUntilTaskStatus(vertx, testContext, checkStatus);
-      }
-    });
+          return copy.isEmpty();
+        })
+        .compose(status -> WeNetIncentiveServerSimulator.createProxy(vertx).deleteTaskStatus().map(ignored -> status));
 
   }
 
@@ -550,7 +572,7 @@ public abstract class AbstractProtocolITC {
 
         return false;
       }
-      if (this.task != null && !this.task.id.equals(state.task_id)) {
+      if (this.taskType != null && !this.taskType.id.equals(state.taskTypeId)) {
 
         return false;
       }
@@ -680,23 +702,9 @@ public abstract class AbstractProtocolITC {
       @NotNull final VertxTestContext testContext, @NotNull final String userId,
       @NotNull final Predicate<State> checkState) {
 
-    return WeNetInteractionProtocolEngine.createProxy(vertx).retrieveCommunityUserState(this.community.id, userId)
-        .compose(state -> {
-
-          if (checkState.test(state)) {
-
-            return Future.succeededFuture(state);
-
-          } else if (!testContext.completed()) {
-
-            return this.waitUntilCommunityUserState(vertx, testContext, userId, checkState);
-
-          } else {
-
-            return Future.failedFuture("Test finished");
-          }
-
-        });
+    return this.waitUntil(vertx, testContext,
+        () -> WeNetInteractionProtocolEngine.createProxy(vertx).retrieveCommunityUserState(this.community.id, userId),
+        checkState);
 
   }
 

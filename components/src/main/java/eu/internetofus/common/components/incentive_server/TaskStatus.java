@@ -47,20 +47,20 @@ public class TaskStatus extends ReflectionModel implements Model {
   /**
    * Identifier of the app.
    */
-  @Schema(example = "WeNet_user5")
+  @Schema(example = "xAcauSmrhd")
   public String app_id = "-1";
 
   /**
-   * Identifier of the task.
+   * Identifier of the task type.
    */
-  @Schema(example = "WeNet_task")
-  public String task_id;
+  @Schema(example = "ask4help")
+  public String taskTypeId;
 
   /**
    * The action that update the task.
    */
-  @Schema(example = "Questions")
-  public String action;
+  @Schema(example = "answerTransaction")
+  public String label;
 
   /**
    * The message of the status.

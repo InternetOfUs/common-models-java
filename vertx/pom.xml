@@ -6,7 +6,7 @@
   <groupId>eu.internetofus</groupId>
   <artifactId>common-parent</artifactId>
   <relativePath>../pom.xml</relativePath>
-  <version>0.9.1</version>
+  <version>0.10.0</version>
  </parent>
  <organization>
   <name>UDT-IA, IIIA-CSIC</name>
@@ -56,12 +56,12 @@
   </dependency>
   <dependency>
    <groupId>org.tinylog</groupId>
-   <artifactId>jul-tinylog</artifactId>
+   <artifactId>slf4j-tinylog</artifactId>
    <version>${org.tinylog-version}</version>
   </dependency>
   <dependency>
    <groupId>org.tinylog</groupId>
-   <artifactId>slf4j-tinylog</artifactId>
+   <artifactId>jul-tinylog</artifactId>
    <version>${org.tinylog-version}</version>
   </dependency>
   <dependency>

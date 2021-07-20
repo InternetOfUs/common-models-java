@@ -42,8 +42,8 @@ public class TaskStatusTest extends ModelTestCase<TaskStatus> {
     model.app_id = "WeNet_app" + index;
     model.user_id = "WeNet_user" + index;
     model.community_id = "WeNet_community_" + index;
-    model.task_id = "WeNet_task" + index;
-    model.action = "Action" + index;
+    model.taskTypeId = "WeNet_task_type_" + index;
+    model.label = "Label_" + index;
     model.count = index;
     return model;
 

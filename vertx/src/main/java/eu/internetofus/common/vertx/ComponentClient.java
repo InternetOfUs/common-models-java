@@ -114,7 +114,7 @@ public class ComponentClient {
       }
 
       var element = String.valueOf(path).trim();
-      if (element.charAt(0) == '/') {
+      if (!element.isEmpty() && element.charAt(0) == '/') {
 
         element = element.substring(1);
       }
@@ -384,9 +384,18 @@ public class ComponentClient {
     final Promise<T> promise = Promise.promise();
     final var actionId = this.createActionId(method, url);
     Logger.trace("{} with {} STARTED", actionId, content);
-    this.client.requestAbs(method, url).sendJson(content)
-        .onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId))
-        .onFailure(this.createRequestFailureHandler(promise, actionId));
+    try {
+
+      this.client.requestAbs(method, url).sendJson(content)
+          .onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId))
+          .onFailure(this.createRequestFailureHandler(promise, actionId));
+
+    } catch (final Throwable throwable) {
+
+      promise.tryFail(throwable);
+
+    }
+
     return promise.future();
 
   }

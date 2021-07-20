@@ -137,7 +137,7 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))));
 
     final var checkStatus = new ArrayList<Predicate<TaskStatus>>();
-    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.actionIs("Questions 1"))
+    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.labelIs("Questions 1"))
         .and(TaskStatusPredicates.userIs(source.requesterId)));
 
     final var checkState = this.createCommunityUserIncentivesState(source.requesterId, 1l, 0l, 0l);
@@ -188,7 +188,7 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
                   .and(source -> source.id.equals(source.messages.get(0).attributes.getString("transactionId")))));
 
       final var checkStatus = new ArrayList<Predicate<TaskStatus>>();
-      checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.actionIs("Answers " + (i + 1)))
+      checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.labelIs("Answers " + (i + 1)))
           .and(TaskStatusPredicates.userIs(transaction.actioneerId)));
 
       final var checkState = this.createCommunityUserIncentivesState(transaction.actioneerId, index, index + 1, index);
@@ -354,7 +354,7 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
         ));
 
     final var checkStatus = new ArrayList<Predicate<TaskStatus>>();
-    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.actionIs("AnswersAccepted 4"))
+    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.labelIs("AnswersAccepted 4"))
         .and(TaskStatusPredicates.userIs(this.task.transactions.get(3).actioneerId)));
 
     final var checkState = this.createCommunityUserIncentivesState(this.task.transactions.get(3).actioneerId, 3l, 4l,
@@ -409,7 +409,7 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))));
 
     final var checkStatus = new ArrayList<Predicate<TaskStatus>>();
-    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.actionIs("Questions 2"))
+    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.labelIs("Questions 2"))
         .and(TaskStatusPredicates.userIs(source.requesterId)));
 
     final var checkState = this.createCommunityUserIncentivesState(source.requesterId, 2l, 0l, 0l);

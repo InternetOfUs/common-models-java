@@ -2,6 +2,12 @@
 
 All notable changes to `wenet-common` will be documented in this file
 
+
+## Version 0.10.0 (2021-07-20)
+
+ * Update to to the new incentive server API.
+
+
 ## Version 0.9.1 (2021-07-15)
 
  * Fix junit problems.

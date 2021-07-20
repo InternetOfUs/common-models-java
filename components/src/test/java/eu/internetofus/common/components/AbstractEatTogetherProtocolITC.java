@@ -123,7 +123,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))));
 
     final var checkStatus = new ArrayList<Predicate<TaskStatus>>();
-    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.actionIs("taskCreated"))
+    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.labelIs(createTransaction.label))
         .and(TaskStatusPredicates.userIs(source.requesterId)));
 
     final var future = this.waitUntilTaskCreated(source, vertx, testContext, checkTask)
@@ -160,7 +160,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
             this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
 
     final var checkStatus = new ArrayList<Predicate<TaskStatus>>();
-    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.actionIs("refuseTask"))
+    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.labelIs(transaction.label))
         .and(TaskStatusPredicates.userIs(volunteerId)));
 
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
@@ -247,14 +247,14 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
               .put("communityId", this.community.id).put("taskId", this.task.id).put("volunteerId", volunteerId)));
       checkMessages.add(checkMessage);
 
-      checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.actionIs("volunteerForTask"))
-          .and(TaskStatusPredicates.userIs(volunteerId)));
-
       final var taskTransaction = new TaskTransaction();
       taskTransaction.actioneerId = volunteerId;
       taskTransaction.taskId = this.task.id;
       taskTransaction.label = "volunteerForTask";
       taskTransaction.attributes = new JsonObject().put("volunteerId", volunteerId);
+
+      checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.labelIs(taskTransaction.label))
+          .and(TaskStatusPredicates.userIs(volunteerId)));
 
       final var checkTask = this.createTaskPredicate()
           .and(TaskPredicates.attributesSimilarTo(
@@ -334,7 +334,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
                 .and(TaskTransactionPredicates.messageAt(0, checkMessage))));
 
     final var checkStatus = new ArrayList<Predicate<TaskStatus>>();
-    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.actionIs("acceptVolunteer"))
+    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.labelIs(taskTransaction.label))
         .and(TaskStatusPredicates.userIs(volunteerId)));
 
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
@@ -403,7 +403,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
                 .and(TaskTransactionPredicates.messageAt(0, checkMessage))));
 
     final var checkStatus = new ArrayList<Predicate<TaskStatus>>();
-    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.actionIs("refuseVolunteer"))
+    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.labelIs(taskTransaction.label))
         .and(TaskStatusPredicates.userIs(volunteerId)));
 
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
@@ -477,7 +477,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))));
 
     final var checkStatus = new ArrayList<Predicate<TaskStatus>>();
-    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.actionIs("taskCompleted"))
+    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.labelIs(taskTransaction.label))
         .and(TaskStatusPredicates.userIs(this.task.requesterId)));
 
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
@@ -639,7 +639,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
         .and(task -> task.attributes.getLong("deadlineTs") < TimeManager.now());
 
     final var checkStatus = new ArrayList<Predicate<TaskStatus>>();
-    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.actionIs("taskCreated"))
+    checkStatus.add(this.createTaskStatusPredicate().and(TaskStatusPredicates.labelIs(createTransaction.label))
         .and(TaskStatusPredicates.userIs(source.requesterId)));
 
     final var future = this.waitUntilTaskCreated(source, vertx, testContext, checkTask)
