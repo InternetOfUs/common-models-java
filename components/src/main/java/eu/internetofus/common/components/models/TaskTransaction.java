@@ -27,6 +27,7 @@ import eu.internetofus.common.model.CreateUpdateTsDetails;
 import eu.internetofus.common.model.JsonObjectDeserializer;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.Validable;
+import eu.internetofus.common.model.ValidationErrorException;
 import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -35,6 +36,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -92,22 +94,105 @@ public class TaskTransaction extends CreateUpdateTsDetails implements Model, Val
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
 
-    future = Validations.composeValidateId(future, codePrefix, "taskId", this.taskId, true,
-        WeNetTaskManager.createProxy(vertx)::retrieveTask);
-
     if (this.actioneerId != null) {
 
       future = Validations.composeValidateId(future, codePrefix, "actioneerId", this.actioneerId, true,
           WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
     }
-    future = future.compose(empty -> Validations.validateStringField(codePrefix, "label", this.label).map(label -> {
-      this.label = label;
-      return null;
-    }));
 
-    // TODO verify the attributes are valid for the task transaction type
-    promise.complete();
+    final Promise<Void> checkLabel = Promise.promise();
+    future = future.compose(empty -> checkLabel.future());
+
+    if (this.label == null) {
+
+      promise.fail(new ValidationErrorException(codePrefix + ".label", "The transaction needs a label."));
+
+    } else {
+
+      WeNetTaskManager.createProxy(vertx).retrieveTask(this.taskId).onComplete(retrieveTask -> {
+
+        if (retrieveTask.failed()) {
+
+          checkLabel.fail(new ValidationErrorException(codePrefix + ".taskId",
+              "The task '" + this.taskId + "' is not defined.", retrieveTask.cause()));
+
+        } else {
+
+          final var task = retrieveTask.result();
+          WeNetTaskManager.createProxy(vertx).retrieveTaskType(task.taskTypeId).onComplete(retrieveTaskType -> {
+
+            if (retrieveTaskType.failed()) {
+
+              checkLabel.fail(new ValidationErrorException(codePrefix + ".taskId",
+                  "The task type of the task '" + this.taskId + "' is not defined.", retrieveTaskType.cause()));
+
+            } else {
+
+              final var taskType = retrieveTaskType.result();
+              if (taskType.transactions == null) {
+
+                checkLabel.fail(new ValidationErrorException(codePrefix + ".label",
+                    "The task type has not defined any transaction."));
+
+              } else {
+
+                final var labelDef = taskType.transactions.getJsonObject(this.label, null);
+                if (labelDef == null) {
+
+                  checkLabel.fail(new ValidationErrorException(codePrefix + ".label",
+                      "The label '" + this.label + "' is not defined on the type of the task."));
+
+                } else {
+
+                  final var attributesDef = labelDef.getJsonObject("properties", new JsonObject());
+                  if (attributesDef.isEmpty() && this.attributes != null && !this.attributes.isEmpty()) {
+
+                    checkLabel.fail(new ValidationErrorException(codePrefix + ".attributes",
+                        "The transaction does not allow to have attributes."));
+
+                  } else if (this.attributes == null || this.attributes.isEmpty()) {
+
+                    checkLabel.fail(new ValidationErrorException(codePrefix + ".attributes",
+                        "The transaction need the attributes " + attributesDef.fieldNames() + "."));
+
+                  } else {
+
+                    final var fields = new HashSet<>(attributesDef.fieldNames());
+                    for (final var attribute : this.attributes.fieldNames()) {
+
+                      if (!fields.remove(attribute)) {
+
+                        checkLabel.fail(new ValidationErrorException(codePrefix + ".attributes." + attribute,
+                            "The transaction does not have defined this attribute."));
+                        break;
+                      }
+
+                    }
+
+                    if (!fields.isEmpty()) {
+
+                      checkLabel.fail(new ValidationErrorException(codePrefix + ".attributes",
+                          "The attributes " + fields + " are not defined on the transaction."));
+
+                    } else {
+
+                      checkLabel.tryComplete();
+                    }
+                  }
+                }
+              }
+            }
+
+          });
+
+        }
+
+      });
+
+      promise.complete();
+
+    }
 
     return future;
   }

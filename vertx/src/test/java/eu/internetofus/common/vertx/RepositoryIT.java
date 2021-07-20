@@ -1146,8 +1146,8 @@ public class RepositoryIT {
     final var repository = new Repository(vertx, pool, "schemaVersion");
     final var query = new JsonObject().put("$undefinedAction", -1);
     final var order = new JsonObject();
-    testContext.assertFailure(repository.aggregatePageObject(EMPTY_COLLECTION, query, order, 0, 10, "models"))
-        .onFailure(error -> testContext.completeNow());
+    repository.aggregatePageObject(EMPTY_COLLECTION, query, order, 0, 10, "models")
+        .onComplete(testContext.failing(error -> testContext.completeNow()));
 
   }
 
@@ -1163,10 +1163,9 @@ public class RepositoryIT {
 
     final var repository = new Repository(vertx, pool, "schemaVersion");
     final var query = new JsonObject();
-    final var order = new JsonObject().put("$undefinedAction", new JsonObject().put("key", 1));
-    testContext
-        .assertFailure(repository.aggregatePageObject(TEN_AGGREGATIOMN_COLLECTION, query, order, 0, 10, "models"))
-        .onFailure(error -> testContext.completeNow());
+    final var order = new JsonObject().put("$undefinedAction", new JsonObject().put("field", -1));
+    repository.aggregatePageObject(TEN_AGGREGATIOMN_COLLECTION, query, order, 0, 10, "models")
+        .onComplete(testContext.failing(error -> testContext.completeNow()));
 
   }
 

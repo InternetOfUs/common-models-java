@@ -609,7 +609,7 @@ public interface Validations {
    *
    * @param <T>        type of {@link Validable} model to validate.
    *
-   * @return the mapper function that can validate teh model received from the
+   * @return the mapper function that can validate the model received from the
    *         future chain.
    *
    * @see Future#compose(Function)

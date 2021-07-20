@@ -23,27 +23,26 @@ package eu.internetofus.common.components.incentive_server;
 import eu.internetofus.common.model.ModelTestCase;
 
 /**
- * Test the {@link TaskStatus}
+ * Test the {@link TaskTypeStatusBody}
  *
- * @see TaskStatus
+ * @see TaskTypeStatusBody
  *
  * @author UDT-IA, IIIA-CSIC
  */
 
-public class TaskStatusTest extends ModelTestCase<TaskStatus> {
+public class TaskTypeStatusBodyTest extends ModelTestCase<TaskTypeStatusBody> {
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public TaskStatus createModelExample(final int index) {
+  public TaskTypeStatusBody createModelExample(final int index) {
 
-    final var model = new TaskStatus();
+    final var model = new TaskTypeStatusBody();
     model.app_id = "WeNet_app" + index;
     model.user_id = "WeNet_user" + index;
     model.community_id = "WeNet_community_" + index;
     model.taskTypeId = "WeNet_task_type_" + index;
-    model.label = "Label_" + index;
     model.count = index;
     return model;
 

@@ -3,9 +3,10 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
-## Version 0.10.0 (2021-07-20)
+## Version 0.10.0 (2021-07-21)
 
  * Update to to the new incentive server API.
+ * Validate label and attributes (only 1 level) of the task transaction.
 
 
 ## Version 0.9.1 (2021-07-15)

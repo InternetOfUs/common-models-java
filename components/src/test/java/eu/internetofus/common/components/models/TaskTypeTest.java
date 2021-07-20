@@ -535,9 +535,14 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   public Future<TaskType> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    model.transactions = new JsonObject().put("echo", new JsonObject().put("type", "object"));
-    model.callbacks = new JsonObject().put("echo", new JsonObject().put("type", "object"));
-    model.norms = null;
+    model.transactions = new JsonObject().put("echo",
+        new JsonObject().put("description", "Transaction for type " + index).put("type", "object").put("properties",
+            new JsonObject().put("index", new JsonObject().put("type", "integer"))));
+    model.callbacks = new JsonObject().put("echo",
+        new JsonObject().put("description", "Message for type " + index).put("type", "object").put("properties",
+            new JsonObject().put("index", new JsonObject().put("type", "integer"))));
+    model.norms = new ArrayList<>();
+    model.norms.add(new ProtocolNormTest().createModelExample(index));
     return Future.succeededFuture(model);
 
   }
