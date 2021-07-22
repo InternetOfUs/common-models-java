@@ -97,9 +97,7 @@ public class TaskTransaction extends CreateUpdateTsDetails implements Model, Val
   @Override
   public Future<Void> validate(final String codePrefix, final Vertx vertx) {
 
-    final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
-
+    Future<Void> future = Future.succeededFuture();
     if (this.actioneerId != null) {
 
       future = Validations.composeValidateId(future, codePrefix, "actioneerId", this.actioneerId, true,
@@ -108,11 +106,22 @@ public class TaskTransaction extends CreateUpdateTsDetails implements Model, Val
     }
 
     final Promise<Void> checkLabel = Promise.promise();
-    future = future.compose(empty -> checkLabel.future());
-
     if (this.label == null) {
 
-      promise.fail(new ValidationErrorException(codePrefix + ".label", "The transaction needs a label."));
+      checkLabel.fail(new ValidationErrorException(codePrefix + ".label", "The transaction needs a label."));
+
+    } else if (CREATE_TASK_LABEL.equals(this.label)) {
+
+      if (this.attributes == null || this.attributes.isEmpty()) {
+
+        checkLabel.complete();
+
+      } else {
+
+        checkLabel.fail(new ValidationErrorException(codePrefix + ".attributes",
+            "The created transaction can not have attributes."));
+
+      }
 
     } else {
 
@@ -195,10 +204,8 @@ public class TaskTransaction extends CreateUpdateTsDetails implements Model, Val
         }
 
       });
-
-      promise.complete();
-
     }
+    future = future.compose(empty -> checkLabel.future());
 
     return future;
   }

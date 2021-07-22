@@ -169,7 +169,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
@@ -188,7 +188,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
@@ -205,7 +205,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @Test
   public void shouldEmptyTransactionBeNotValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -219,7 +219,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithoutTaskId(final Vertx vertx, final VertxTestContext testContext) {
@@ -237,7 +237,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithoutTaskLabel(final Vertx vertx, final VertxTestContext testContext) {
@@ -255,7 +255,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithUndefinedTaskType(final Vertx vertx,
@@ -274,7 +274,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithTaskTypeWithoutTransactions(final Vertx vertx,
@@ -298,7 +298,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithTaskTypeWithoutLabelTransaction(final Vertx vertx,
@@ -323,7 +323,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithTaskTypeWithLabelButWithoutAttributes(final Vertx vertx,
@@ -349,7 +349,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithoutAttributesWhenTypeDefineAttributes(final Vertx vertx,
@@ -368,7 +368,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithEmptyAttributesWhenTypeDefineAttributes(final Vertx vertx,
@@ -387,7 +387,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithUndefinedAttributesOnTheType(final Vertx vertx,
@@ -406,7 +406,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see TaskTransaction#validate(String, Vertx)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithTaskTypeWithLabelButMissingAttributes(final Vertx vertx,
@@ -425,6 +425,61 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
             }))
             .onComplete(testContext.succeeding(empty -> assertIsNotValid(model, "attributes", vertx, testContext)))));
 
+  }
+
+  /**
+   * A creation transaction has not to be valid when has attributes.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskTransaction#validate(String, Vertx)
+   */
+  @Test
+  public void shouldTransactionIsNotValidWhenIsCreateTaskWithSomeAttributes(final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    final var model = new TaskTransaction();
+    model.label = TaskTransaction.CREATE_TASK_LABEL;
+    model.attributes = new JsonObject().put("key", "value");
+    assertIsNotValid(model, "attributes", vertx, testContext);
+  }
+
+  /**
+   * A creation transaction that is valid because is a
+   * {@link TaskTransaction#CREATE_TASK_LABEL} with empty attributes.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskTransaction#validate(String, Vertx)
+   */
+  @Test
+  public void shouldTransactionBeValidWhenIsCreateTaskWithEmptyAttributes(final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    final var model = new TaskTransaction();
+    model.label = TaskTransaction.CREATE_TASK_LABEL;
+    model.attributes = new JsonObject();
+    assertIsValid(model, vertx, testContext);
+  }
+
+  /**
+   * A creation transaction that is valid because is a
+   * {@link TaskTransaction#CREATE_TASK_LABEL} with {@code null} attributes.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskTransaction#validate(String, Vertx)
+   */
+  @Test
+  public void shouldTransactionBeValidWhenIsCreateTaskWithNullAttributes(final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    final var model = new TaskTransaction();
+    model.label = TaskTransaction.CREATE_TASK_LABEL;
+    assertIsValid(model, vertx, testContext);
   }
 
 }
