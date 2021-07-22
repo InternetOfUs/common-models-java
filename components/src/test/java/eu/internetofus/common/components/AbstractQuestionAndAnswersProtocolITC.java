@@ -23,9 +23,6 @@ import eu.internetofus.common.components.incentive_server.TaskTransactionStatusB
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBodyPredicates;
 import eu.internetofus.common.components.incentive_server.TaskTypeStatusBody;
 import eu.internetofus.common.components.incentive_server.TaskTypeStatusBodyPredicates;
-import eu.internetofus.common.components.interaction_protocol_engine.State;
-import eu.internetofus.common.components.interaction_protocol_engine.StatePredicates;
-import eu.internetofus.common.components.interaction_protocol_engine.WeNetInteractionProtocolEngine;
 import eu.internetofus.common.components.models.Message;
 import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTransaction;
@@ -75,32 +72,6 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
   }
 
   /**
-   * Create a predicate to check the incentives state of an user.
-   *
-   * @param userId          identifier of the state.
-   * @param questions       the number of questions that the incentive server is
-   *                        informed that the user has done.
-   * @param answers         the number of answers that the user has done.
-   * @param answersAccepted the number of answers that has been accepted.
-   *
-   * @return the predicate to check the incentive state.
-   */
-  protected Predicate<State> createCommunityUserIncentivesState(final String userId, final int questions,
-      final int answers, final int answersAccepted) {
-
-    return this.createCommunityUserStatePredicate(userId).and(StatePredicates.attributesAre(attributes -> {
-
-      final var stateQuestions = attributes.getInteger("incentiveServer#" + this.task.taskTypeId, 0);
-      final var stateAnswers = attributes.getInteger("incentiveServer#" + this.task.taskTypeId + "#answerTransaction",
-          0);
-      final var stateAnswersAccepted = attributes
-          .getInteger("incentiveServer#" + this.task.taskTypeId + "#AnsweredPickedMessage", 0);
-      return questions == stateQuestions && answers == stateAnswers && answersAccepted == stateAnswersAccepted;
-
-    }));
-  }
-
-  /**
    * Check that a task is created.
    *
    * @param vertx       event bus to use.
@@ -114,6 +85,9 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
 
     final var source = this.createTaskForProtocol();
     final var checkMessages = new ArrayList<Predicate<Message>>();
+    final var checkIncentiveTypeStatus = new ArrayList<Predicate<TaskTypeStatusBody>>();
+    final var checkIncentiveTransactionStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
+
     for (final var user : this.users) {
 
       if (!user.id.equals(source.requesterId)) {
@@ -127,10 +101,21 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
               return this.task.id.equals(target.getString("taskId"));
 
             })));
+
+        checkIncentiveTransactionStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+            .and(TaskTransactionStatusBodyPredicates.labelIs("QuestionToAnswerMessage"))
+            .and(TaskTransactionStatusBodyPredicates.userIs(user.id))
+            .and(TaskTransactionStatusBodyPredicates.countIs(1)));
+
+      } else {
+
+        checkIncentiveTypeStatus.add(this.createIncentiveServerTaskTypeStatusPredicate()
+            .and(TaskTypeStatusBodyPredicates.userIs(user.id)).and(TaskTypeStatusBodyPredicates.countIs(1)));
+
       }
     }
     final var createTransaction = new TaskTransaction();
-    createTransaction.label = "CREATE_TASK";
+    createTransaction.label = TaskTransaction.CREATE_TASK_LABEL;
     createTransaction.actioneerId = source.requesterId;
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.similarTo(source))
         .and(TaskPredicates.transactionSizeIs(1))
@@ -139,21 +124,13 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
                 .and(TaskTransactionPredicates.messagesSizeIs(this.users.size() - 1))
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))));
 
-    final var checkStatus = new ArrayList<Predicate<TaskTypeStatusBody>>();
-    checkStatus.add(this.createIncentiveServerTaskTypeStatusPredicate().and(TaskTypeStatusBodyPredicates.countIs(1))
-        .and(TaskTypeStatusBodyPredicates.userIs(source.requesterId)));
-
-    final var checkState = this.createCommunityUserIncentivesState(source.requesterId, 1, 0, 0);
-    final var newState = new State();
-    newState.attributes = new JsonObject().put("incentiveServer#" + source.taskTypeId, 0)
-        .put("incentiveServer#" + source.taskTypeId + "#", 0);
-    final var future = WeNetInteractionProtocolEngine.createProxy(vertx)
-        .mergeCommunityUserState(source.communityId, source.requesterId, newState)
-        .compose(ignored -> this.waitUntilTaskCreated(source, vertx, testContext, checkTask))
+    final Future<?> future = this.waitUntilTaskCreated(source, vertx, testContext, checkTask)
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTypeStatus(vertx, testContext, checkStatus))
-        .compose(ignored -> this.waitUntilCommunityUserState(vertx, testContext, source.requesterId, checkState));
-    testContext.assertComplete(future).onComplete(stored -> this.assertSuccessfulCompleted(testContext));
+        .compose(
+            ignored -> this.waitUntilIncentiveServerHasTaskTypeStatus(vertx, testContext, checkIncentiveTypeStatus))
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext,
+            checkIncentiveTransactionStatus));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -170,6 +147,7 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
     this.assertLastSuccessfulTestWas(5, testContext);
 
     final var checkMessages = new ArrayList<Predicate<Message>>();
+    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     Future<?> future = Future.succeededFuture();
     for (var i = 1; i < 4; i++) {
 
@@ -194,33 +172,23 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
                   .and(TaskTransactionPredicates.messageAt(0, checkMessage))
                   .and(source -> source.id.equals(source.messages.get(0).attributes.getString("transactionId")))));
 
-      final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
       checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+          .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId))
           .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
-          .and(TaskTransactionStatusBodyPredicates.countIs(i + 1))
-          .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId)));
+          .and(TaskTransactionStatusBodyPredicates.countIs(1)));
       checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+          .and(TaskTransactionStatusBodyPredicates.userIs(this.task.requesterId))
           .and(TaskTransactionStatusBodyPredicates.labelIs("AnsweredQuestionMessage"))
-          .and(TaskTransactionStatusBodyPredicates.countIs(i))
-          .and(TaskTransactionStatusBodyPredicates.userIs(this.task.requesterId)));
+          .and(TaskTransactionStatusBodyPredicates.countIs(index)));
 
-      final var checkState = this.createCommunityUserIncentivesState(transaction.actioneerId, index, index + 1, index);
-
-      final var newState = new State();
-      newState.attributes = new JsonObject().put("incentiveServer#" + this.task.taskTypeId + "#" + transaction.label,
-          index);
-      future = future
-          .compose(ignored -> WeNetInteractionProtocolEngine.createProxy(vertx)
-              .mergeCommunityUserState(this.community.id, transaction.actioneerId, newState))
-          .compose(ignored -> WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction))
-          .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
-          .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus)).compose(
-              ignored -> this.waitUntilCommunityUserState(vertx, testContext, transaction.actioneerId, checkState));
+      future = future.compose(ignored -> WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction))
+          .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
 
     }
 
-    future = future.compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
-    testContext.assertComplete(future).onComplete(ignored -> this.assertSuccessfulCompleted(testContext));
+    future = future.compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -240,13 +208,19 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
     transaction.actioneerId = this.users.get(this.users.size() - 1).id;
     transaction.taskId = this.task.id;
     transaction.label = "notAnswerTransaction";
+    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
+    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+        .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1))
+        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId)));
 
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(5)).and(TaskPredicates
         .transactionAt(4, this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
 
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
-        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
-    testContext.assertComplete(future).onComplete(ignored -> this.assertSuccessfulCompleted(testContext));
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -269,10 +243,16 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
 
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(6)).and(TaskPredicates
         .transactionAt(5, this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
+    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
+    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+        .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1))
+        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId)));
 
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
-        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
-    testContext.assertComplete(future).onComplete(ignored -> this.assertSuccessfulCompleted(testContext));
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -296,10 +276,16 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
 
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(7)).and(TaskPredicates
         .transactionAt(6, this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
+    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
+    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+        .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1))
+        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId)));
 
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
-        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
-    testContext.assertComplete(future).onComplete(ignored -> this.assertSuccessfulCompleted(testContext));
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -324,10 +310,16 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
 
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(8)).and(TaskPredicates
         .transactionAt(7, this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
+    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
+    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+        .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1))
+        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId)));
 
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
-        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
-    testContext.assertComplete(future).onComplete(ignored -> this.assertSuccessfulCompleted(testContext));
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -367,23 +359,20 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
         ));
 
     final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
-    checkStatus.add(
-        this.createIncentiveServerTaskTransactionStatusPredicate().and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
-            .and(TaskTransactionStatusBodyPredicates.countIs(4))
-            .and(TaskTransactionStatusBodyPredicates.userIs(this.task.transactions.get(3).actioneerId)));
     checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId))
+        .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1)));
+    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+        .and(TaskTransactionStatusBodyPredicates.userIs(this.task.transactions.get(3).actioneerId))
         .and(TaskTransactionStatusBodyPredicates.labelIs("AnsweredPickedMessage"))
-        .and(TaskTransactionStatusBodyPredicates.userIs(this.task.requesterId)));
-
-    final var checkState = this.createCommunityUserIncentivesState(this.task.transactions.get(3).actioneerId, 3, 4, 4);
+        .and(TaskTransactionStatusBodyPredicates.countIs(1)));
 
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus))
-        .compose(ignored -> this.waitUntilCommunityUserState(vertx, testContext,
-            this.task.transactions.get(3).actioneerId, checkState));
-    testContext.assertComplete(future).onComplete(ignored -> this.assertSuccessfulCompleted(testContext));
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -397,7 +386,8 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
   @Order(12)
   public void shouldCreateSecondTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.assertLastSuccessfulTestWas(11, testContext);
+    this.assertLastSuccessfulTestWas(5, testContext);
+    this.lastSuccessfulTest = 11;
 
     final var source = this.createTaskForProtocol();
     final var checkMessages = new ArrayList<Predicate<Message>>();
@@ -417,7 +407,7 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
       }
     }
     final var createTransaction = new TaskTransaction();
-    createTransaction.label = "CREATE_TASK";
+    createTransaction.label = TaskTransaction.CREATE_TASK_LABEL;
     createTransaction.actioneerId = source.requesterId;
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.similarTo(source))
         .and(TaskPredicates.transactionSizeIs(1))
@@ -430,13 +420,10 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
     checkStatus.add(this.createIncentiveServerTaskTypeStatusPredicate().and(TaskTypeStatusBodyPredicates.countIs(2))
         .and(TaskTypeStatusBodyPredicates.userIs(source.requesterId)));
 
-    final var checkState = this.createCommunityUserIncentivesState(source.requesterId, 2, 0, 0);
-
     final var future = this.waitUntilTaskCreated(source, vertx, testContext, checkTask)
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTypeStatus(vertx, testContext, checkStatus))
-        .compose(ignored -> this.waitUntilCommunityUserState(vertx, testContext, source.requesterId, checkState));
-    testContext.assertComplete(future).onComplete(stored -> this.assertSuccessfulCompleted(testContext));
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTypeStatus(vertx, testContext, checkStatus));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 

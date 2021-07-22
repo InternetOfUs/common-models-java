@@ -24,8 +24,6 @@ import eu.internetofus.common.components.incentive_server.TaskTransactionStatusB
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBodyPredicates;
 import eu.internetofus.common.components.incentive_server.TaskTypeStatusBody;
 import eu.internetofus.common.components.incentive_server.TaskTypeStatusBodyPredicates;
-import eu.internetofus.common.components.interaction_protocol_engine.State;
-import eu.internetofus.common.components.interaction_protocol_engine.WeNetInteractionProtocolEngine;
 import eu.internetofus.common.components.models.Message;
 import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTransaction;
@@ -97,7 +95,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
 
     final var source = this.createTaskForProtocol();
     final var checkMessages = new ArrayList<Predicate<Message>>();
-
+    final var checkTransactionStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     final var userIds = new JsonArray();
     for (final var user : this.users) {
 
@@ -111,12 +109,16 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
               return this.task.id.equals(target.getString("taskId"));
 
             })));
+        checkTransactionStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+            .and(TaskTransactionStatusBodyPredicates.userIs(user.id))
+            .and(TaskTransactionStatusBodyPredicates.labelIs("TaskProposalNotification"))
+            .and(TaskTransactionStatusBodyPredicates.countIs(1)));
         userIds.add(user.id);
       }
 
     }
     final var createTransaction = new TaskTransaction();
-    createTransaction.label = "CREATE_TASK";
+    createTransaction.label = TaskTransaction.CREATE_TASK_LABEL;
     createTransaction.actioneerId = source.requesterId;
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.similarTo(source))
         .and(TaskPredicates.attributesSimilarTo(new JsonObject().put("unanswered", userIds)))
@@ -127,17 +129,15 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))));
 
     final var checkStatus = new ArrayList<Predicate<TaskTypeStatusBody>>();
-    checkStatus.add(this.createIncentiveServerTaskTypeStatusPredicate().and(TaskTypeStatusBodyPredicates.countIs(21))
-        .and(TaskTypeStatusBodyPredicates.userIs(source.requesterId)));
+    checkStatus.add(this.createIncentiveServerTaskTypeStatusPredicate()
+        .and(TaskTypeStatusBodyPredicates.userIs(source.requesterId)).and(TaskTypeStatusBodyPredicates.countIs(1)));
 
-    final var newState = new State();
-    newState.attributes = new JsonObject().put("incentiveServer#" + source.taskTypeId, 20);
-    final var future = WeNetInteractionProtocolEngine.createProxy(vertx)
-        .mergeCommunityUserState(source.communityId, source.requesterId, newState)
-        .compose(ignored -> this.waitUntilTaskCreated(source, vertx, testContext, checkTask))
+    final var future = this.waitUntilTaskCreated(source, vertx, testContext, checkTask)
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTypeStatus(vertx, testContext, checkStatus));
-    testContext.assertComplete(future).onComplete(stored -> this.assertSuccessfulCompleted(testContext));
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTypeStatus(vertx, testContext, checkStatus))
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext,
+            checkTransactionStatus));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -170,15 +170,10 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
         .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
-        .and(TaskTransactionStatusBodyPredicates.countIs(11))
-        .and(TaskTransactionStatusBodyPredicates.userIs(volunteerId)));
+        .and(TaskTransactionStatusBodyPredicates.userIs(volunteerId))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1)));
 
-    final var newState = new State();
-    newState.attributes = new JsonObject().put("incentiveServer#" + this.task.taskTypeId + "#" + transaction.label, 10);
-
-    final var future = WeNetInteractionProtocolEngine.createProxy(vertx)
-        .mergeCommunityUserState(this.task.communityId, transaction.actioneerId, newState)
-        .compose(ignored -> WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction))
+    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
         .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
 
@@ -203,10 +198,16 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     final var checkMessages = new ArrayList<Predicate<Message>>();
     checkMessages.add(this.createMessagePredicate().and(MessagePredicates.labelIs("TextualMessage"))
         .and(MessagePredicates.receiverIs(taskTransaction.actioneerId)));
+    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
+    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+        .and(TaskTransactionStatusBodyPredicates.labelIs("TextualMessage"))
+        .and(TaskTransactionStatusBodyPredicates.userIs(taskTransaction.actioneerId))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1)));
+
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
         .compose(done -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
         .compose(done -> this.waitUntilTask(vertx, testContext, checkTask));
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -288,7 +289,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     future = future.compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
         .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
 
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -352,13 +353,18 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
         .and(TaskTransactionStatusBodyPredicates.labelIs(taskTransaction.label))
-        .and(TaskTransactionStatusBodyPredicates.userIs(volunteerId)));
+        .and(TaskTransactionStatusBodyPredicates.userIs(taskTransaction.actioneerId))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1)));
+    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+        .and(TaskTransactionStatusBodyPredicates.labelIs("TaskSelectionNotification"))
+        .and(TaskTransactionStatusBodyPredicates.userIs(volunteerId))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1)));
 
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
         .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -422,13 +428,18 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
         .and(TaskTransactionStatusBodyPredicates.labelIs(taskTransaction.label))
-        .and(TaskTransactionStatusBodyPredicates.userIs(volunteerId)));
+        .and(TaskTransactionStatusBodyPredicates.userIs(taskTransaction.actioneerId))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1)));
+    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+        .and(TaskTransactionStatusBodyPredicates.labelIs("TaskSelectionNotification"))
+        .and(TaskTransactionStatusBodyPredicates.userIs(volunteerId))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1)));
 
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
         .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -474,11 +485,15 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     taskTransaction.attributes = new JsonObject().put("outcome", outcome);
 
     final var checkMessages = new ArrayList<Predicate<Message>>();
+    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     for (final var id : new String[] { this.users.get(2).id, this.users.get(4).id, this.users.get(5).id }) {
 
       checkMessages.add(this.createMessagePredicate().and(MessagePredicates.labelIs("TaskConcludedNotification"))
           .and(MessagePredicates.receiverIs(id)).and(MessagePredicates.attributesAre(new JsonObject()
               .put("communityId", this.community.id).put("taskId", this.task.id).put("outcome", outcome))));
+      checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+          .and(TaskTransactionStatusBodyPredicates.labelIs("TaskConcludedNotification"))
+          .and(TaskTransactionStatusBodyPredicates.userIs(id)).and(TaskTransactionStatusBodyPredicates.countIs(1)));
 
     }
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.isClosed())
@@ -494,17 +509,17 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
                 .and(TaskTransactionPredicates.messagesSizeIs(checkMessages.size()))
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))));
 
-    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
         .and(TaskTransactionStatusBodyPredicates.labelIs(taskTransaction.label))
-        .and(TaskTransactionStatusBodyPredicates.userIs(this.task.requesterId)));
+        .and(TaskTransactionStatusBodyPredicates.userIs(this.task.requesterId))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1)));
 
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(taskTransaction)
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
         .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
 
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -570,7 +585,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
   @Order(22)
   public void shouldNotCreateTaskWithWithoutDeadline(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.assertAtLeastSuccessfulTestWas(4, testContext);
+    this.assertLastSuccessfulTestWas(4, testContext);
     this.lastSuccessfulTest = 21;
 
     final var task = this.createTaskForProtocol();
@@ -579,10 +594,11 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     final var checkMessages = new ArrayList<Predicate<Message>>();
     checkMessages.add(this.createMessagePredicate().and(MessagePredicates.labelIs("TextualMessage"))
         .and(MessagePredicates.receiverIs(task.requesterId)));
+
     final var future = WeNetTaskManager.createProxy(vertx).createTask(task)
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
 
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -596,7 +612,7 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
   @Order(23)
   public void shouldNotCreateTaskWithWithBadDeadline(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.assertAtLeastSuccessfulTestWas(4, testContext);
+    this.assertLastSuccessfulTestWas(4, testContext);
     this.lastSuccessfulTest = 22;
 
     final var task = this.createTaskForProtocol();
@@ -605,10 +621,11 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
     final var checkMessages = new ArrayList<Predicate<Message>>();
     checkMessages.add(this.createMessagePredicate().and(MessagePredicates.labelIs("TextualMessage"))
         .and(MessagePredicates.receiverIs(task.requesterId)));
+
     final var future = WeNetTaskManager.createProxy(vertx).createTask(task)
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
 
-    testContext.assertComplete(future).onSuccess(empty -> this.assertSuccessfulCompleted(testContext));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -622,12 +639,13 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
   @Order(24)
   public void shouldCreateTaskWithShortDeadline(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.assertAtLeastSuccessfulTestWas(4, testContext);
+    this.assertLastSuccessfulTestWas(4, testContext);
     this.lastSuccessfulTest = 23;
 
     final var source = this.createTaskForProtocol();
     source.attributes.put("deadlineTs", TimeManager.now() + 10);
     final var checkMessages = new ArrayList<Predicate<Message>>();
+    final var checkTransactionStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     final var userIds = new JsonArray();
     for (final var user : this.users) {
 
@@ -641,12 +659,17 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
               return this.task.id.equals(target.getString("taskId"));
 
             })));
+        checkTransactionStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+            .and(TaskTransactionStatusBodyPredicates.labelIs("TaskProposalNotification"))
+            .and(TaskTransactionStatusBodyPredicates.userIs(user.id))
+            .and(TaskTransactionStatusBodyPredicates.countIs(2)));
+
         userIds.add(user.id);
       }
 
     }
     final var createTransaction = new TaskTransaction();
-    createTransaction.label = "CREATE_TASK";
+    createTransaction.label = TaskTransaction.CREATE_TASK_LABEL;
     createTransaction.actioneerId = source.requesterId;
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.similarTo(source))
         .and(TaskPredicates.attributesSimilarTo(new JsonObject().put("unanswered", userIds)))
@@ -657,16 +680,17 @@ public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))))
         .and(task -> task.attributes.getLong("deadlineTs") < TimeManager.now());
 
-    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
-    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
-        .and(TaskTransactionStatusBodyPredicates.labelIs(createTransaction.label))
-        .and(TaskTransactionStatusBodyPredicates.userIs(source.requesterId)));
+    final var checkStatus = new ArrayList<Predicate<TaskTypeStatusBody>>();
+    checkStatus.add(this.createIncentiveServerTaskTypeStatusPredicate()
+        .and(TaskTypeStatusBodyPredicates.userIs(source.requesterId)).and(TaskTypeStatusBodyPredicates.countIs(2)));
 
     final var future = this.waitUntilTaskCreated(source, vertx, testContext, checkTask)
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTypeStatus(vertx, testContext, checkStatus))
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext,
+            checkTransactionStatus));
 
-    testContext.assertComplete(future).onComplete(stored -> this.assertSuccessfulCompleted(testContext));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 

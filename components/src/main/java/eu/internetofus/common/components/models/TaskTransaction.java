@@ -48,6 +48,12 @@ import java.util.List;
 public class TaskTransaction extends CreateUpdateTsDetails implements Model, Validable {
 
   /**
+   * The name of the label used for the transaction that mark is the first when
+   * the task is created.
+   */
+  public static final String CREATE_TASK_LABEL = "CREATE_TASK";
+
+  /**
    * The identifier of the task that it refers.
    */
   @Schema(description = "The unique identified of the transaction.", example = "9dihugkdjfgndfg", accessMode = AccessMode.READ_ONLY)

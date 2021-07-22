@@ -20,6 +20,10 @@
 
 package eu.internetofus.common.components;
 
+import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBody;
+import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBodyPredicates;
+import eu.internetofus.common.components.incentive_server.TaskTypeStatusBody;
+import eu.internetofus.common.components.incentive_server.TaskTypeStatusBodyPredicates;
 import eu.internetofus.common.components.models.Message;
 import eu.internetofus.common.components.models.TaskTransaction;
 import eu.internetofus.common.components.service.MessagePredicates;
@@ -80,10 +84,18 @@ public class EchoProtocolITC extends AbstractProtocolITC {
     final var expectedTransaction = new TaskTransaction();
     expectedTransaction.actioneerId = source.requesterId;
     expectedTransaction.label = source.requesterId;
-    final var future = this.waitUntilTaskCreated(source, vertx, testContext,
-        TaskPredicates.similarTo(source).and(TaskPredicates.transactionSizeIs(1))
-            .and(TaskPredicates.transactionAt(0, TaskTransactionPredicates.withoutMessages())));
-    testContext.assertComplete(future).onComplete(stored -> this.assertSuccessfulCompleted(testContext));
+
+    final var checkIncentiveTypeStatus = new ArrayList<Predicate<TaskTypeStatusBody>>();
+    checkIncentiveTypeStatus.add(this.createIncentiveServerTaskTypeStatusPredicate()
+        .and(TaskTypeStatusBodyPredicates.userIs(source.requesterId)).and(TaskTypeStatusBodyPredicates.countIs(1)));
+
+    final var future = this
+        .waitUntilTaskCreated(source, vertx, testContext,
+            TaskPredicates.similarTo(source).and(TaskPredicates.transactionSizeIs(1))
+                .and(TaskPredicates.transactionAt(0, TaskTransactionPredicates.withoutMessages())))
+        .compose(
+            ignored -> this.waitUntilIncentiveServerHasTaskTypeStatus(vertx, testContext, checkIncentiveTypeStatus));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -114,11 +126,20 @@ public class EchoProtocolITC extends AbstractProtocolITC {
         .and(TaskPredicates.transactionAt(1,
             TaskTransactionPredicates.similarTo(transaction).and(TaskTransactionPredicates.messagesSizeIs(1))
                 .and(TaskTransactionPredicates.messageAt(0, checkMessage))));
+    final var checkIncentiveTransactionStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
+    checkIncentiveTransactionStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId))
+        .and(TaskTransactionStatusBodyPredicates.labelIs("echo")).and(TaskTransactionStatusBodyPredicates.countIs(1)));
+    checkIncentiveTransactionStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId))
+        .and(TaskTransactionStatusBodyPredicates.labelIs("echo")).and(TaskTransactionStatusBodyPredicates.countIs(2)));
+
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask)).compose(ignored -> this
+            .waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkIncentiveTransactionStatus));
 
-    testContext.assertComplete(future).onComplete(removed -> this.assertSuccessfulCompleted(testContext));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 

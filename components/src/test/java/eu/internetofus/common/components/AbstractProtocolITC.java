@@ -41,9 +41,12 @@ import eu.internetofus.common.model.Model;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -104,28 +107,13 @@ public abstract class AbstractProtocolITC {
    */
   protected void assertLastSuccessfulTestWas(final int step, final VertxTestContext testContext) {
 
-    if (this.lastSuccessfulTest != step) {
+    if (step > this.lastSuccessfulTest) {
 
-      testContext.failNow("Previous test not succeeded");
-      fail("Previous test not succeeded");
+      final var msg = "Previous test not succeeded";
+      testContext.failNow(msg);
+      fail(msg);
     }
 
-  }
-
-  /**
-   * Assert that at least the successful test was the specified step.
-   *
-   * @param step        minimum step to be successful.
-   * @param testContext context to do the test.
-   */
-  protected void assertAtLeastSuccessfulTestWas(final int step, final VertxTestContext testContext) {
-
-    if (this.lastSuccessfulTest < step) {
-
-      testContext.failNow("Previous test not succeeded");
-      fail("Previous test not succeeded");
-
-    }
   }
 
   /**
@@ -272,13 +260,41 @@ public abstract class AbstractProtocolITC {
     this.assertLastSuccessfulTestWas(3, testContext);
 
     final var taskTypeId = this.getDefaultTaskTypeIdToUse();
-    testContext.assertComplete(WeNetTaskManager.createProxy(vertx).retrieveTaskType(taskTypeId))
-        .onSuccess(foundTaskType -> {
+    final var future = WeNetTaskManager.createProxy(vertx).retrieveTaskType(taskTypeId).compose(foundTaskType -> {
 
-          this.taskType = foundTaskType;
-          this.assertSuccessfulCompleted(testContext);
+      this.taskType = foundTaskType;
+      // empty all the incentive states to 0
+      final var state = new State();
+      state.attributes = new JsonObject().put("incentiveServer#" + this.taskType.id, 0);
+      final var labels = new HashSet<String>();
+      if (this.taskType.transactions != null) {
 
-        });
+        labels.addAll(this.taskType.transactions.fieldNames());
+
+      }
+      if (this.taskType.callbacks != null) {
+
+        labels.addAll(this.taskType.callbacks.fieldNames());
+
+      }
+      for (final var label : labels) {
+
+        state.attributes.put("incentiveServer#" + this.taskType.id + "#" + label, 0);
+
+      }
+
+      var updateIncentiveState = Future.succeededFuture();
+      for (final var user : this.users) {
+
+        updateIncentiveState = updateIncentiveState.compose(ignored -> WeNetInteractionProtocolEngine.createProxy(vertx)
+            .mergeCommunityUserState(this.community.id, user.id, state).map(any -> null));
+
+      }
+      return updateIncentiveState;
+
+    });
+
+    future.onComplete(testContext.succeeding(added -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
@@ -317,7 +333,9 @@ public abstract class AbstractProtocolITC {
 
     final Promise<T> promise = Promise.promise();
     final var address = UUID.randomUUID().toString();
-    final var consumer = vertx.eventBus().consumer(address);
+    final var consumer = vertx.eventBus().localConsumer(address);
+    final var options = new DeliveryOptions();
+    options.setLocalOnly(true);
     consumer.handler(ignored -> {
 
       supplier.get().onComplete(testContext.succeeding(target -> {
@@ -334,13 +352,13 @@ public abstract class AbstractProtocolITC {
 
         } else {
 
-          vertx.eventBus().send(address, "STEP");
+          vertx.eventBus().send(address, "STEP", options);
         }
 
       }));
 
     });
-    vertx.eventBus().send(address, "START");
+    vertx.eventBus().send(address, "START", options);
 
     return promise.future();
 
@@ -447,8 +465,8 @@ public abstract class AbstractProtocolITC {
    *
    * @see #waitUntilTask(Vertx, VertxTestContext, Predicate)
    */
-  protected Future<List<TaskTransactionStatusBody>> waitUntilIncentiveServerHasTaskTransactionStatus(@NotNull final Vertx vertx,
-      @NotNull final VertxTestContext testContext,
+  protected Future<List<TaskTransactionStatusBody>> waitUntilIncentiveServerHasTaskTransactionStatus(
+      @NotNull final Vertx vertx, @NotNull final VertxTestContext testContext,
       @NotNull final List<Predicate<TaskTransactionStatusBody>> checkStatus) {
 
     return this.waitUntil(vertx, testContext,
@@ -479,6 +497,7 @@ public abstract class AbstractProtocolITC {
           }
 
           return copy.isEmpty();
+
         }).compose(status -> WeNetIncentiveServerSimulator.createProxy(vertx).deleteTaskTransactionStatus()
             .map(ignored -> status));
 
@@ -494,7 +513,7 @@ public abstract class AbstractProtocolITC {
    *
    * @return the future notified task type.
    *
-   * @see #waitUntilTask(Vertx, VertxTestContext, Predicate)
+   * @see #waitUntil(Vertx, VertxTestContext, Supplier, Predicate)
    */
   protected Future<List<TaskTypeStatusBody>> waitUntilIncentiveServerHasTaskTypeStatus(@NotNull final Vertx vertx,
       @NotNull final VertxTestContext testContext, @NotNull final List<Predicate<TaskTypeStatusBody>> checkStatus) {
