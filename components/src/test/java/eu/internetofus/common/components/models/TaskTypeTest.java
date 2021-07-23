@@ -114,9 +114,14 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     model.transactions = new JsonObject().put("transaction_" + index, new JsonObject());
     model.callbacks = new JsonObject().put("callbacks_" + index, new JsonObject());
     model.norms = new ArrayList<>();
-    model.norms.add(new ProtocolNormTest().createModelExample(index));
-    model.norms.add(new ProtocolNormTest().createModelExample(index + 1));
-    model.norms.add(new ProtocolNormTest().createModelExample(index + 2));
+    model.norms.add(new ProtocolNorm());
+    model.norms.get(0).description = "Add transaction when is created an example of type " + index;
+    model.norms.get(0).whenever = "is_received_created_task()";
+    model.norms.get(0).thenceforth = "add_created_transaction()";
+    model.norms.add(new ProtocolNorm());
+    model.norms.get(1).description = "Allow any transaction that is done into an example of type " + index;
+    model.norms.get(1).whenever = "is_received_do_transaction(_,_)";
+    model.norms.get(1).thenceforth = "add_message_transaction()";
     return model;
 
   }
