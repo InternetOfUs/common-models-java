@@ -161,10 +161,17 @@ public class TaskTransaction extends CreateUpdateTsDetails implements Model, Val
                 } else {
 
                   final var attributesDef = labelDef.getJsonObject("properties", new JsonObject());
-                  if (attributesDef.isEmpty() && this.attributes != null && !this.attributes.isEmpty()) {
+                  if (attributesDef.isEmpty()) {
 
-                    checkLabel.fail(new ValidationErrorException(codePrefix + ".attributes",
-                        "The transaction does not allow to have attributes."));
+                    if (this.attributes != null && !this.attributes.isEmpty()) {
+
+                      checkLabel.fail(new ValidationErrorException(codePrefix + ".attributes",
+                          "The transaction does not allow to have attributes."));
+
+                    } else {
+                      // no attributes necessaries
+                      checkLabel.complete();
+                    }
 
                   } else if (this.attributes == null || this.attributes.isEmpty()) {
 

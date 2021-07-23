@@ -155,7 +155,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
       final var model = this.createModelExample(index);
       model.taskId = task.id;
       model.actioneerId = task.requesterId;
-      model.label = "echo";
+      model.label = "t_one";
       model.attributes = new JsonObject().put("index", index);
       return Future.succeededFuture(model);
 

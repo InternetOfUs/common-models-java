@@ -535,12 +535,28 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   public Future<TaskType> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    model.transactions = new JsonObject().put("echo",
-        new JsonObject().put("description", "Transaction for type " + index).put("type", "object").put("properties",
-            new JsonObject().put("index", new JsonObject().put("type", "integer"))));
-    model.callbacks = new JsonObject().put("echo",
-        new JsonObject().put("description", "Message for type " + index).put("type", "object").put("properties",
-            new JsonObject().put("index", new JsonObject().put("type", "integer"))));
+    model.transactions = new JsonObject()
+        .put("t_zero",
+            new JsonObject().put("description", "Transaction without argument for type " + index).put("type", "object"))
+        .put("t_one",
+            new JsonObject().put("description", "Transaction with one argument for type " + index).put("type", "object")
+                .put("properties", new JsonObject().put("index", new JsonObject().put("type", "integer"))))
+        .put("t_two",
+            new JsonObject().put("description", "Transaction with one argument for type " + index).put("type", "object")
+                .put("properties", new JsonObject().put("index", new JsonObject().put("type", "integer")).put("key",
+                    new JsonObject().put("type", "string").put("description", "Any string value"))));
+    model.callbacks = new JsonObject()
+        .put("m_zero",
+            new JsonObject().put("description", "Message without arguments for type " + index).put("type", "object")
+                .put("properties", new JsonObject()))
+        .put("m_one",
+            new JsonObject().put("description", "Message with one arguments for type " + index).put("type", "object")
+                .put("properties", new JsonObject().put("index", new JsonObject().put("type", "integer"))))
+        .put("m_two", new JsonObject().put("description", "Message with two arguments for type " + index)
+            .put("type", "object").put("properties",
+                new JsonObject().put("one", new JsonObject().put("type", "boolean").put("description", "Boolean value"))
+                    .put("two", new JsonObject().put("type", "object").put("description", "Object value")
+                        .put("properties", new JsonObject().put("a", new JsonObject().put("type", "integer"))))));
     model.norms = new ArrayList<>();
     model.norms.add(new ProtocolNormTest().createModelExample(index));
     return Future.succeededFuture(model);
