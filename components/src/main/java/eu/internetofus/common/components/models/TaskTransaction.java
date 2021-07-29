@@ -188,6 +188,19 @@ public class TaskTransaction extends CreateUpdateTsDetails implements Model, Val
                         checkLabel.fail(new ValidationErrorException(codePrefix + ".attributes." + attribute,
                             "The transaction does not have defined this attribute."));
                         break;
+
+                      }
+
+                    }
+
+                    // remove nullable fields
+                    final var i = fields.iterator();
+                    while (i.hasNext()) {
+
+                      final var field = i.next();
+                      if (attributesDef.getJsonObject(field, new JsonObject()).getBoolean("nullable", false)) {
+
+                        i.remove();
                       }
 
                     }

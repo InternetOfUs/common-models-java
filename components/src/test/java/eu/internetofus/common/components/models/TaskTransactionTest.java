@@ -428,6 +428,34 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   }
 
   /**
+   * A task transaction be valid when missing a nullable attribute.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskTransaction#validate(String, Vertx)
+   */
+  @Test
+  public void shouldTaskTransactionBeValidWithTaskTypeWithLabelButMissingNullableAttributes(final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext)
+        .onComplete(testContext.succeeding(model -> WeNetTaskManager.createProxy(vertx).retrieveTask(model.taskId)
+            .compose(task -> WeNetTaskManager.createProxy(vertx).deleteTaskType(task.taskTypeId).compose(empty -> {
+
+              final var newType = new TaskType();
+              newType.id = task.taskTypeId;
+              newType.transactions = new JsonObject().put(model.label,
+                  new JsonObject().put("properties",
+                      model.attributes.copy().put("arg1", new JsonObject().put("nullable", true)).put("arg2",
+                          new JsonObject().put("nullable", true))));
+              return WeNetTaskManager.createProxy(vertx).createTaskType(newType);
+
+            })).onComplete(testContext.succeeding(empty -> assertIsValid(model, vertx, testContext)))));
+
+  }
+
+  /**
    * A creation transaction has not to be valid when has attributes.
    *
    * @param vertx       event bus to use.
