@@ -22,10 +22,13 @@ package eu.internetofus.common.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.atIndex;
+import static org.junit.Assert.fail;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.format.DateTimeFormatter;
@@ -221,7 +224,7 @@ public class ValidationsTest {
    * @see Validations#validateNullableLocaleField(String, String, String)
    */
   @Test
-  public void shouldNotBeValidLocale(final VertxTestContext testContext) {
+  public void shouldNotBeValidOcale(final VertxTestContext testContext) {
 
     Validations.validateNullableLocaleField("codePrefix", "fieldName", "de-Gr")
         .onComplete(testContext.failing(error -> testContext.verify(() -> {
@@ -1281,6 +1284,390 @@ public class ValidationsTest {
           testContext.completeNow();
 
         })));
+
+  }
+
+  /**
+   * Decode the Json defined on the specified value.
+   *
+   * @param data to obtain the object.
+   *
+   * @return the json object defined on the data.
+   */
+  private JsonObject decodeJson(final String data) {
+
+    JsonObject object = null;
+    if (data != null) {
+
+      final var normalizedData = data.trim().replaceAll("'", "\"");
+      if (!normalizedData.isEmpty() && !"null".equals(normalizedData)) {
+
+        try {
+
+          object = (JsonObject) Json.decodeValue(normalizedData);
+
+        } catch (final Throwable cause) {
+
+          fail("Cannot obtain the JSON, because " + cause);
+        }
+
+      }
+    }
+
+    return object;
+
+  }
+
+  /**
+   * Check that a specification is not valid.
+   *
+   * @param data        to use on the test.
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateOpenAPISpecification(String,io.vertx.core.json.JsonObject)
+   */
+  @ParameterizedTest(name = "The specification {0} has to not be valid")
+  @ValueSource(strings = { "codePrefix#null", "codePrefix#{'field':null}", "codePrefix.type#{'nullable':true}",
+      "codePrefix.type#{'type':null}", "codePrefix.type#{'field':{'type':'undefined'}}",
+      "codePrefix.minimum#{'type':'integer','minimum':'1'}", "codePrefix.minimum#{'type':'string','minimum':1}",
+      "codePrefix.maximum#{'type':'integer','maximum':'1'}", "codePrefix.maximum#{'type':'string','maximum':1}",
+      "codePrefix.multipleOf#{'type':'integer','multipleOf':'1'}",
+      "codePrefix.multipleOf#{'type':'string','multipleOf':1}",
+      "codePrefix.exclusiveMinimum#{'type':'integer','exclusiveMinimum':'1'}",
+      "codePrefix.exclusiveMinimum#{'type':'string','exclusiveMinimum':1}",
+      "codePrefix.exclusiveMaximum#{'type':'integer','exclusiveMaximum':'1'}",
+      "codePrefix.exclusiveMaximum#{'type':'string','exclusiveMaximum':1}",
+      "codePrefix.minimum#{'type':'number','minimum':'1'}", "codePrefix.minimum#{'type':'string','minimum':1}",
+      "codePrefix.maximum#{'type':'number','maximum':'1'}", "codePrefix.maximum#{'type':'string','maximum':1}",
+      "codePrefix.multipleOf#{'type':'number','multipleOf':'1'}",
+      "codePrefix.multipleOf#{'type':'string','multipleOf':1}",
+      "codePrefix.exclusiveMinimum#{'type':'number','exclusiveMinimum':'1'}",
+      "codePrefix.exclusiveMinimum#{'type':'string','exclusiveMinimum':1}",
+      "codePrefix.exclusiveMaximum#{'type':'number','exclusiveMaximum':'1'}",
+      "codePrefix.exclusiveMaximum#{'type':'string','exclusiveMaximum':1}" })
+  public void shouldNotBeValidBadOpenAPISpecification(final String data, final VertxTestContext testContext) {
+
+    final var split = data.split("#");
+    final var specification = this.decodeJson(split[1]);
+    Validations.validateOpenAPISpecification("codePrefix", specification)
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo(split[0]);
+          testContext.completeNow();
+
+        })));
+
+  }
+
+  /**
+   * Check that a specification is not valid.
+   *
+   * @param data        to use on the test.
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateOpenAPIObjectSpecification(String, JsonObject)
+   */
+  @ParameterizedTest(name = "The specification {0} has to not be valid")
+  @ValueSource(strings = { "codePrefix#null", "codePrefix.field#{'field':null}",
+      "codePrefix.field.type#{'field':{'nullable':true}}", "codePrefix.field.type#{'field':{'type':null}}",
+      "codePrefix.field.type#{'field':{'type':'undefined'}}",
+      "codePrefix.field.minimum#{'field':{'type':'integer','minimum':'1'}}",
+      "codePrefix.field.minimum#{'field':{'type':'string','minimum':1}}",
+      "codePrefix.field.maximum#{'field':{'type':'integer','maximum':'1'}}",
+      "codePrefix.field.maximum#{'field':{'type':'string','maximum':1}}",
+      "codePrefix.field.multipleOf#{'field':{'type':'integer','multipleOf':'1'}}",
+      "codePrefix.field.multipleOf#{'field':{'type':'string','multipleOf':1}}",
+      "codePrefix.field.exclusiveMinimum#{'field':{'type':'integer','exclusiveMinimum':'1'}}",
+      "codePrefix.field.exclusiveMinimum#{'field':{'type':'string','exclusiveMinimum':1}}",
+      "codePrefix.field.exclusiveMaximum#{'field':{'type':'integer','exclusiveMaximum':'1'}}",
+      "codePrefix.field.exclusiveMaximum#{'field':{'type':'string','exclusiveMaximum':1}}",
+      "codePrefix.field.minimum#{'field':{'type':'number','minimum':'1'}}",
+      "codePrefix.field.minimum#{'field':{'type':'string','minimum':1}}",
+      "codePrefix.field.maximum#{'field':{'type':'number','maximum':'1'}}",
+      "codePrefix.field.maximum#{'field':{'type':'string','maximum':1}}",
+      "codePrefix.field.multipleOf#{'field':{'type':'number','multipleOf':'1'}}",
+      "codePrefix.field.multipleOf#{'field':{'type':'string','multipleOf':1}}",
+      "codePrefix.field.exclusiveMinimum#{'field':{'type':'number','exclusiveMinimum':'1'}}",
+      "codePrefix.field.exclusiveMinimum#{'field':{'type':'string','exclusiveMinimum':1}}",
+      "codePrefix.field.exclusiveMaximum#{'field':{'type':'number','exclusiveMaximum':'1'}}",
+      "codePrefix.field.exclusiveMaximum#{'field':{'type':'string','exclusiveMaximum':1}}" })
+  public void shouldNotBeValidBadOpenAPIObjectSpecification(final String data, final VertxTestContext testContext) {
+
+    final var split = data.split("#");
+    final var specification = this.decodeJson(split[1]);
+    Validations.validateOpenAPISpecification("codePrefix", specification)
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo(split[0]);
+          testContext.completeNow();
+
+        })));
+
+  }
+
+  /**
+   * Check that a specification is valid.
+   *
+   * @param data        to use on the test.
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateOpenAPISpecification(String,io.vertx.core.json.JsonObject)
+   */
+  @ParameterizedTest(name = "The specification {0} has to be valid")
+  @ValueSource(strings = { "{}", "{'type':'boolean'}", "{'type':'integer'}", "{'type':'integer','minimum':0}",
+      "{'type':'integer','maximum':100}", "{'type':'integer','minimum':0,'exclusiveMinimum':true}",
+      "{'type':'integer','maximum':100,'exclusiveMaximum':true}", "{'type':'integer','multipleOf':10}",
+      "{'type':'integer','minimum':0,'maximum':100,'multipleOf':10,'exclusiveMinimum':true,'exclusiveMaximum':true}",
+      "{'type':'number'}", "{'type':'number','minimum':0}", "{'type':'number','maximum':100}",
+      "{'type':'number','minimum':0,'exclusiveMinimum':true}",
+      "{'type':'number','maximum':100,'exclusiveMaximum':true}", "{'type':'number','multipleOf':10}",
+      "{'type':'number','minimum':0,'maximum':100,'multipleOf':10,'exclusiveMinimum':true,'exclusiveMaximum':true}",
+      "{'type':'object','properties':{}}", "{'type':'array','items':{}}" })
+  public void shouldIsValidOpenAPISpecification(final String data, final VertxTestContext testContext) {
+
+    final var specification = this.decodeJson(data);
+    Validations.validateOpenAPISpecification("codePrefix", specification)
+        .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
+
+  }
+
+  /**
+   * Check that a specification is valid.
+   *
+   * @param data        to use on the test.
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateOpenAPIObjectSpecification(String,io.vertx.core.json.JsonObject)
+   */
+  @ParameterizedTest(name = "The specification {0} has to be valid")
+  @ValueSource(strings = { "{}", "{'field':{}", "{'field':{'type':'boolean'}}", "{'field':{'type':'integer'}}",
+      "{'field':{'type':'integer','minimum':0}", "{'type':'integer','maximum':100}}",
+      "{'field':{'type':'integer','minimum':0,'exclusiveMinimum':true}}",
+      "{'field':{'type':'integer','maximum':100,'exclusiveMaximum':true}}",
+      "{'field':{'type':'integer','multipleOf':10}}",
+      "{'field':{'type':'integer','minimum':0,'maximum':100,'multipleOf':10,'exclusiveMinimum':true,'exclusiveMaximum':true}}",
+      "{'field':{'type':'number'}", "{'type':'number','minimum':0}}", "{'field':{'type':'number','maximum':100}}",
+      "{'field':{'type':'number','minimum':0,'exclusiveMinimum':true}}",
+      "{'field':{'type':'number','maximum':100,'exclusiveMaximum':true}}",
+      "{'field':{'type':'number','multipleOf':10}}",
+      "{'field':{'type':'number','minimum':0,'maximum':100,'multipleOf':10,'exclusiveMinimum':true,'exclusiveMaximum':true}}",
+      "{'field':{'type':'object','properties':{}}}", "{'field':{'type':'array','items':{}}}",
+      "{'field':{'type':'string','nullable':true}}", "{'field':{'type':'string','nullable':false}}" })
+  public void shouldIsValidOpenAPIObjectSpecification(final String data, final VertxTestContext testContext) {
+
+    final var specification = this.decodeJson(data);
+    Validations.validateOpenAPIObjectSpecification("codePrefix", specification)
+        .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
+
+  }
+
+  /**
+   * Decode a value.
+   *
+   * @param data to obtain the value.
+   *
+   * @return the value defined on the data.
+   */
+  private Object decodeValue(final String data) {
+
+    Object object = null;
+    if (data != null) {
+
+      final var normalizedData = data.trim().replaceAll("'", "\"");
+      if (!normalizedData.isEmpty() && !"null".equals(normalizedData)) {
+
+        if (normalizedData.charAt(0) == '"') {
+
+          return normalizedData.substring(1, normalizedData.length() - 1);
+
+        } else if (normalizedData.equalsIgnoreCase("true")) {
+
+          return Boolean.TRUE;
+
+        } else if (normalizedData.equalsIgnoreCase("false")) {
+
+          return Boolean.FALSE;
+
+        } else if (normalizedData.charAt(0) == '{' || normalizedData.charAt(0) == '[') {
+
+          try {
+
+            object = Json.decodeValue(normalizedData);
+
+          } catch (final Throwable cause) {
+
+            fail("Cannot obtain the JSON value, because " + cause);
+          }
+
+        } else {
+
+          try {
+
+            try {
+
+              object = Long.valueOf(normalizedData);
+
+            } catch (final Throwable cause) {
+
+              object = Double.valueOf(normalizedData);
+            }
+
+          } catch (final Throwable cause) {
+
+            fail("Cannot obtain the Number value, because " + cause);
+          }
+        }
+
+      }
+    }
+
+    return object;
+
+  }
+
+  /**
+   * Check that a value is not valid, because it not follow the OpenAPI
+   * specification.
+   *
+   * @param data        to use on the test.
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateOpenAPIValue(String,io.vertx.core.json.JsonObject,Object)
+   */
+  @ParameterizedTest(name = "The value {0} has to not be valid")
+  @ValueSource(strings = { "codePrefix#null#null", "codePrefix#null#{}", "codePrefix#{'type':'string'}#null",
+      "codePrefix#{'nullable':false}#null", "codePrefix#{'type':'string'}#1",
+      "codePrefix#{'type':'integer'}}}#{'field':1.0}", "codePrefix#{'type':'number'}}}#{'field':'1.0'}",
+      "codePrefix#{'type':'boolean'}}}#{'field':'true'}",
+      "codePrefix#{'type':'array','items':{'type':'string'}}}}#true",
+      "codePrefix#{'type':'array','items':{'type':'string'}}}}#[true]",
+      "codePrefix#{'type':'object','properties':{}}#[]", "codePrefix#{'type':'object','properties':{}}#1",
+      "codePrefix.field#{'type':'object','properties':{'field':{'nullable':false}}}#{'field':null}",
+      "codePrefix.field#{'type':'object','properties':{'field':{'type':'string'}}}#{'field':1}",
+      "codePrefix.field#{'type':'object','properties':{'field':{'type':'integer'}}}#{'field':1.0}",
+      "codePrefix.field#{'type':'object','properties':{'field':{'type':'number'}}}#{'field':'1.0'}",
+      "codePrefix.field#{'type':'object','properties':{'field':{'type':'boolean'}}}#{'field':'true'}",
+      "codePrefix.field#{'type':'object','properties':{'field':{'type':'array','items':{'type':'string'}}}}#{'field':'true'}",
+      "codePrefix.field#{'type':'object','properties':{'field':{'type':'array','items':{'type':'string'}}}}#{'field':[true]}",
+      "codePrefix.field#{'type':'object','properties':{'field':{'type':'object','properties':{}}}}#{'field':'true'}",
+      "codePrefix.field#{'type':'object','properties':{'field':{'type':'object','properties':{}}}}#{'field':[]}" })
+  public void shouldNotBeValidBadOpenAPIValue(final String data, final VertxTestContext testContext) {
+
+    final var split = data.split("#");
+    final var specification = this.decodeJson(split[1]);
+    final var value = this.decodeValue(split[2]);
+
+    Validations.validateOpenAPIValue("codePrefix", specification, value)
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo(split[0]);
+          testContext.completeNow();
+
+        })));
+
+  }
+
+  /**
+   * Check that a value is not valid, because it not follow the OpenAPI
+   * specification.
+   *
+   * @param data        to use on the test.
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateOpenAPIJsonObjectValue(String, JsonObject,
+   *      JsonObject)
+   */
+  @ParameterizedTest(name = "The value {0} has to not be valid")
+  @ValueSource(strings = { "codePrefix#null#null", "codePrefix#null#{}", "codePrefix#{'type':'string'}#null",
+      "codePrefix#{'nullable':false}#null", "codePrefix#{'type':'string'}#1",
+      "codePrefix#{'type':'integer'}}}#{'field':1.0}", "codePrefix#{'type':'number'}}}#{'field':'1.0'}",
+      "codePrefix#{'type':'boolean'}}}#{'field':'true'}",
+      "codePrefix#{'type':'array','items':{'type':'string'}}}}#true",
+      "codePrefix#{'type':'array','items':{'type':'string'}}}}#[true]",
+      "codePrefix#{'type':'object','properties':{}}#[]", "codePrefix#{'type':'object','properties':{}}#1",
+      "codePrefix.parent.field#{'parent':{'type':'object','properties':{'field':{'nullable':false}}}}#{'parent':{'field':null}}",
+      "codePrefix.parent.field#{'parent':{'type':'object','properties':{'field':{'type':'string'}}}}#{'parent':{'field':1}}",
+      "codePrefix.parent.field#{'parent':{'type':'object','properties':{'field':{'type':'integer'}}}}#{'parent':{'field':1.0}}",
+      "codePrefix.parent.field#{'parent':{'type':'object','properties':{'field':{'type':'number'}}}}#{'parent':{'field':'1.0'}}",
+      "codePrefix.parent.field#{'parent':{'type':'object','properties':{'field':{'type':'boolean'}}}}#{'parent':{'field':'true'}}",
+      "codePrefix.parent.field#{'parent':{'type':'object','properties':{'field':{'type':'array','items':{'type':'string'}}}}}#{'parent':{'field':'true'}}",
+      "codePrefix.parent.field#{'parent':{'type':'object','properties':{'field':{'type':'array','items':{'type':'string'}}}}}#{'parent':{'field':[true]}}",
+      "codePrefix.parent.field#{'parent':{'type':'object','properties':{'field':{'type':'object','properties':{}}}}}#{'parent':{'field':'true'}}",
+      "codePrefix.parent.field#{'parent':{'type':'object','properties':{'field':{'type':'object','properties':{}}}}}#{'parent':{'field':[]}}" })
+  public void shouldNotBeValidBadOpenAPIJsonObjectValue(final String data, final VertxTestContext testContext) {
+
+    final var split = data.split("#");
+    final var specification = this.decodeJson(split[1]);
+    final var value = this.decodeJson(split[2]);
+
+    Validations.validateOpenAPIValue("codePrefix", specification, value)
+        .onComplete(testContext.failing(error -> testContext.verify(() -> {
+
+          assertThat(error).isInstanceOf(ValidationErrorException.class);
+          final var code = ((ValidationErrorException) error).getCode();
+          assertThat(code).isEqualTo(split[0]);
+          testContext.completeNow();
+
+        })));
+
+  }
+
+  /**
+   * Check that a value follows an OpenAPI specification.
+   *
+   * @param data        to use on the test.
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateOpenAPIValue(String,io.vertx.core.json.JsonObject,Object)
+   */
+  @ParameterizedTest(name = "The value {0} has to be valid")
+  @ValueSource(strings = { "{}#null", "{}#{}", "{'nullable':true}#null", "{'type':'string'}#'value'",
+      "{'type':'integer'}#1", "{'type':'number'}#1.0", "{'type':'boolean'}#true", "{'type':'boolean'}#false",
+      "{'type':'object','properties':{'field':{'nullable':true}}}#{'field':null}",
+      "{'type':'object','properties':{'field':{'type':'string'}}}#{'field':'value'}",
+      "{'type':'object','properties':{'field':{'type':'integer'}}}#{'field':1}",
+      "{'type':'object','properties':{'field':{'type':'number'}}}#{'field':1.0}",
+      "{'type':'object','properties':{'field':{'type':'boolean'}}}#{'field':true}"
+
+  })
+  public void shouldIsValidOpenAPIValue(final String data, final VertxTestContext testContext) {
+
+    final var split = data.replaceAll("'", "\"").split("#");
+    final var specification = this.decodeJson(split[0]);
+    final var value = this.decodeValue(split[1]);
+
+    Validations.validateOpenAPIValue("codePrefix", specification, value)
+        .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
+
+  }
+
+  /**
+   * Check that a value follows an OpenAPI specification.
+   *
+   * @param data        to use on the test.
+   * @param testContext test context to use.
+   *
+   * @see Validations#validateOpenAPIJsonObjectValue(String, JsonObject,
+   *      JsonObject)
+   */
+  @ParameterizedTest(name = "The value {0} has to be valid")
+  @ValueSource(strings = { "{}#null", "{}#{}", "{'field':{'nullable':true}}#{'field':null}",
+      "{'field':{'type':'string'}}#{'field':'value'}", "{'field':{'type':'integer'}}#{'field':1}",
+      "{'field':{'type':'number'}}#{'field':1.0}", "{'field':{'type':'boolean'}}#{'field':true}" })
+  public void shouldIsValidOpenAPIJsonObectValue(final String data, final VertxTestContext testContext) {
+
+    final var split = data.replaceAll("'", "\"").split("#");
+    final var specification = this.decodeJson(split[0]);
+    final var value = this.decodeJson(split[1]);
+
+    Validations.validateOpenAPIValue("codePrefix", specification, value)
+        .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
 
   }
 

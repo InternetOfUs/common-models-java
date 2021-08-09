@@ -20,20 +20,19 @@
 
 package eu.internetofus.common.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 /**
  * A model that use reflections to do the basic operations.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@JsonInclude(Include.NON_EMPTY)
+@JsonInclude(Include.ALWAYS)
 public class ReflectionModel {
 
   /**
