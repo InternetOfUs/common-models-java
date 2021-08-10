@@ -28,6 +28,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 
@@ -633,23 +635,22 @@ public interface Validations {
    */
   static Future<Void> validateOpenAPISpecification(final String codePrefix, final JsonObject specification) {
 
+    final Promise<Void> promise = Promise.promise();
+    var future = promise.future();
+    ValidationErrorException error = null;
     if (specification == null) {
 
-      return Future
-          .failedFuture(new ValidationErrorException(codePrefix, "The OpenAPI specification can not be null."));
+      error = new ValidationErrorException(codePrefix, "The OpenAPI specification can not be null.");
 
-    } else {
+    } else if (!specification.isEmpty()) {
 
-      final Promise<Void> promise = Promise.promise();
-      final var future = promise.future();
       var foundType = false;
       for (final var fieldName : specification.fieldNames()) {
 
         final var value = specification.getValue(fieldName);
-        ValidationErrorException error = null;
         switch (fieldName) {
         case "type":
-          error = checkType(foundType, codePrefix, value, specification);
+          error = checkType(codePrefix, value, specification);
           foundType = true;
           break;
         case "minimum":
@@ -657,39 +658,339 @@ public interface Validations {
         case "multipleOf":
         case "exclusiveMinimum":
         case "exclusiveMaximum":
-          error = checkNumberFields(codePrefix, fieldName, value, specification);
+          error = checkTypeNumberArguments(codePrefix, fieldName, value, specification);
           break;
+        case "default":
+          future = future.compose(empty -> checkDefault(codePrefix, value, specification));
+          break;
+        case "properties":
+          if (value instanceof JsonObject) {
+
+            future = future.compose(empty -> validateOpenAPIProperties(codePrefix, (JsonObject) value));
+
+          } else {
+
+            error = new ValidationErrorException(codePrefix + ".properties", "Expecting a JSON object.");
+          }
+          break;
+        case "items":
+          if (value instanceof JsonObject) {
+
+            future = future.compose(empty -> validateOpenAPISpecification(codePrefix, (JsonObject) value));
+
+          } else {
+
+            error = new ValidationErrorException(codePrefix + ".items", "Expecting a JSON object.");
+          }
+          break;
+        case "nullable":
+          if (!(value instanceof Boolean)) {
+
+            error = new ValidationErrorException(codePrefix + ".nullable", "Expecting a boolean value.");
+          }
+          break;
+        case "required":
+          error = checkRequired(codePrefix, value, specification);
+          break;
+        case "uniqueItems":
+        case "minItems":
+        case "maxItems":
+          error = checkTypeArrayArguments(codePrefix, fieldName, value, specification);
+          break;
+        case "enum":
+          future = future.compose(empty -> checkEnum(codePrefix, value, specification));
+          break;
+        case "pattern":
+          error = checkPattern(codePrefix, value, specification);
+          break;
+        case "additionalProperties":
+        case "minProperties":
+        case "maxProperties":
+        case "format":
+        case "oneOf":
+        case "anyOf":
+        case "allOf":
+        case "not":
+        case "$ref":
+          error = new ValidationErrorException(codePrefix + "." + fieldName, "This feature is not supported yet.");
+          break;
+        default:
+          error = new ValidationErrorException(codePrefix + "." + fieldName, "Undefined specification field.");
         }
         if (error != null) {
 
-          promise.fail(error);
-
+          break;
         }
 
       }
 
-      if (!foundType) {
+      if (!foundType && error == null) {
 
-        promise.fail(new ValidationErrorException(codePrefix, "You must define the 'type' of the field."));
+        error = new ValidationErrorException(codePrefix, "You must define the 'type' of the field.");
 
       }
 
-      promise.tryComplete();
-      return future;
+    } // else accept any value
+
+    if (error != null) {
+
+      promise.fail(error);
+
+    } else {
+
+      promise.complete();
+    }
+    return future;
+  }
+
+  /**
+   * Check the pattern field.
+   *
+   * @param codePrefix    the prefix of the code to use for the error message.
+   * @param value         of the pattern field.
+   * @param specification that is checking.
+   *
+   * @return {@code null} if the pattern is right or an error that explains why it
+   *         is not right.
+   */
+  private static ValidationErrorException checkPattern(final String codePrefix, final Object value,
+      final JsonObject specification) {
+
+    if (!(value instanceof String)) {
+
+      return new ValidationErrorException(codePrefix + ".pattern", "Expecting a string value.");
+
+    } else if (!"string".equals(specification.getValue("type"))) {
+
+      return new ValidationErrorException(codePrefix + ".pattern", "You only can use pattern if the type is a string.");
+
+    } else {
+
+      try {
+
+        Pattern.compile((String) value);
+        return null;
+
+      } catch (final Throwable cause) {
+
+        return new ValidationErrorException(codePrefix + ".pattern", "You pattern is not right formatted.", cause);
+
+      }
+
     }
   }
 
   /**
-   * Check if the OpenAPI specification is right.
+   * Check that the enum filed is right.
    *
    * @param codePrefix    the prefix of the code to use for the error message.
-   * @param specification to validate.
+   * @param value         of the enum field.
+   * @param specification that is checking.
+   *
+   * @return the future that say if the enum is valid or not.
+   */
+  private static Future<Void> checkEnum(final String codePrefix, final Object value, final JsonObject specification) {
+
+    final Promise<Void> promise = Promise.promise();
+    var future = promise.future();
+    ValidationErrorException error = null;
+    if (value instanceof JsonArray) {
+
+      final var array = (JsonArray) value;
+      final var max = array.size();
+      if (max == 0) {
+
+        error = new ValidationErrorException(codePrefix + ".enum", "Expecting at least one value for the enum.");
+
+      } else {
+
+        I: for (var i = 0; i < max; i++) {
+
+          final var pos = i;
+          final var enumValue = array.getValue(pos);
+          for (var j = i + 1; j < max; j++) {
+
+            final var otherValue = array.getValue(j);
+            if (enumValue == otherValue || otherValue != null && otherValue.equals(enumValue)) {
+
+              error = new ValidationErrorException(codePrefix + ".enum[" + j + "]", "Duplicated enum value.");
+              break I;
+            }
+
+          }
+          if (enumValue == null) {
+
+            if (!specification.getBoolean("nullable", false)) {
+
+              error = new ValidationErrorException(codePrefix + ".enum[" + pos + "]",
+                  "The type not allow null values.");
+              break;
+            }
+
+          } else {
+
+            future = future
+                .compose(empty -> validateOpenAPIValue(codePrefix + ".enum[" + pos + "]", specification, enumValue));
+          }
+
+        }
+
+      }
+
+    } else {
+
+      error = new ValidationErrorException(codePrefix + ".enum", "Expecting an array of values.");
+    }
+
+    if (error != null) {
+
+      promise.fail(error);
+
+    } else {
+
+      promise.complete();
+    }
+    return future;
+  }
+
+  /**
+   * Check the arguments associated to an array.
+   *
+   * @param codePrefix    the prefix of the code to use for the error message.
+   * @param fieldName     name of the field to compare.
+   * @param value         of the field.
+   * @param specification that is checking.
+   *
+   * @return {@code null} if the array argument is right or an error that explains
+   *         why it is not right.
+   */
+  private static ValidationErrorException checkTypeArrayArguments(final String codePrefix, final String fieldName,
+      final Object value, final JsonObject specification) {
+
+    ValidationErrorException error = null;
+    if (!"array".equals(specification.getValue("type"))) {
+
+      return new ValidationErrorException(codePrefix + "." + fieldName,
+          "You only can use this if the type is an array.");
+
+    } else if ("uniqueItems".equals(fieldName)) {
+
+      if (!(value instanceof Boolean)) {
+
+        error = new ValidationErrorException(codePrefix + ".uniqueItems", "Expecting a boolean value.");
+      }
+
+    } else if (!(value instanceof Integer) && !(value instanceof Long)) {
+
+      error = new ValidationErrorException(codePrefix + "." + fieldName, "Expecting an integer value.");
+
+    } else if ("maxItems".equals(fieldName)
+        && ((Number) value).longValue() < specification.getNumber("minItems", 0).longValue()) {
+
+      error = new ValidationErrorException(codePrefix + ".maxItems", "The maximum can not be less that the minimum.");
+    }
+
+    return error;
+  }
+
+  /**
+   * Check that the default value is right.
+   *
+   * @param codePrefix    the prefix of the code to use for the error message.
+   * @param value         of the default field.
+   * @param specification that is checking.
+   *
+   * @return the future that say if the default value is valid or not.
+   */
+  private static Future<Void> checkDefault(final String codePrefix, final Object value,
+      final JsonObject specification) {
+
+    if (value instanceof String) {
+
+      try {
+
+        final var decoded = Json.decodeValue((String) value);
+        return validateOpenAPIValue(codePrefix + ".default", specification, decoded);
+
+      } catch (final Throwable cause) {
+
+        return Future
+            .failedFuture(new ValidationErrorException(codePrefix + ".default", "Bad encoded JSON value.", cause));
+      }
+
+    } else {
+
+      return Future.failedFuture(new ValidationErrorException(codePrefix + ".default", "Expecting a string value."));
+    }
+
+  }
+
+  /**
+   * Check the required field.
+   *
+   * @param codePrefix    the prefix of the code to use for the error message.
+   * @param value         of the required field.
+   * @param specification that is checking.
+   *
+   * @return {@code null} if the required is right or an error that explains why
+   *         it is not right.
+   */
+  private static ValidationErrorException checkRequired(final String codePrefix, final Object value,
+      final JsonObject specification) {
+
+    if (!"object".equals(specification.getValue("type"))) {
+
+      return new ValidationErrorException(codePrefix + ".required",
+          "The required field needs to be used with an object type.");
+
+    } else if (value instanceof JsonArray) {
+
+      final var array = (JsonArray) value;
+      final var max = array.size();
+      if (max == 0) {
+
+        return new ValidationErrorException(codePrefix + ".required",
+            "The required field needs at least one field name.");
+
+      } else {
+
+        final var properties = specification.getJsonObject("properties", null);
+        for (var i = 0; i < max; i++) {
+
+          final var property = array.getValue(i);
+          if (!(property instanceof String)) {
+
+            return new ValidationErrorException(codePrefix + ".required[" + i + "]", "Expecting a string value.");
+
+          } else if (properties != null && !properties.containsKey((String) property)) {
+
+            return new ValidationErrorException(codePrefix + ".required[" + i + "]",
+                "The required field is not defined in the properties.");
+          }
+
+        }
+      }
+
+      return null;
+
+    } else {
+
+      return new ValidationErrorException(codePrefix + ".required", "Expecting a JSON array.");
+    }
+
+  }
+
+  /**
+   * Check if the OpenAPI properties are right.
+   *
+   * @param codePrefix the prefix of the code to use for the error message.
+   * @param properties to validate.
    *
    * @return the future that says if the OpenAPI specification is valid or not.
    */
-  static Future<Void> validateOpenAPIObjectSpecification(final String codePrefix, final JsonObject specification) {
+  static Future<Void> validateOpenAPIProperties(final String codePrefix, final JsonObject properties) {
 
-    if (specification == null) {
+    if (properties == null) {
 
       return Future
           .failedFuture(new ValidationErrorException(codePrefix, "The OpenAPI specification can not be null."));
@@ -698,14 +999,14 @@ public interface Validations {
 
       final Promise<Void> promise = Promise.promise();
       var future = promise.future();
-      for (final var propertyName : specification.fieldNames()) {
+      for (final var propertyName : properties.fieldNames()) {
 
-        final var propertySpecification = specification.getJsonObject(propertyName);
+        final var propertySpecification = properties.getJsonObject(propertyName);
         future = future
             .compose(empty -> validateOpenAPISpecification(codePrefix + "." + propertyName, propertySpecification));
       }
 
-      promise.tryComplete();
+      promise.complete();
       return future;
     }
   }
@@ -721,8 +1022,8 @@ public interface Validations {
    * @return {@code null} if the type is valid or the exception that explains why
    *         the type is not valid.
    */
-  static ValidationErrorException checkNumberFields(final String codePrefix, final String fieldName, final Object value,
-      final JsonObject specification) {
+  private static ValidationErrorException checkTypeNumberArguments(final String codePrefix, final String fieldName,
+      final Object value, final JsonObject specification) {
 
     final var type = specification.getString("type");
     if (type != null && ("integer".equals(type) || "number".equals(type))) {
@@ -752,7 +1053,6 @@ public interface Validations {
   /**
    * Check the type specification.
    *
-   * @param foundType     is {@code true} if already has a type.
    * @param codePrefix    the prefix for the error codes.
    * @param value         of the type.
    * @param specification where the type is defined.
@@ -760,15 +1060,10 @@ public interface Validations {
    * @return {@code null} if the type is valid or the exception that explains why
    *         the type is not valid.
    */
-  static private ValidationErrorException checkType(final boolean foundType, final String codePrefix,
-      final Object value, final JsonObject specification) {
+  private static ValidationErrorException checkType(final String codePrefix, final Object value,
+      final JsonObject specification) {
 
-    if (foundType) {
-
-      return new ValidationErrorException(codePrefix + ".type",
-          "You already has defined the type with oneOf, anyOf or allOf.");
-
-    } else if (value instanceof String) {
+    if (value instanceof String) {
 
       final var typeName = (String) value;
       switch (typeName) {
@@ -776,19 +1071,11 @@ public interface Validations {
       case "number":
       case "integer":
       case "string":
+      case "object":
         // nothing more to check
         break;
-      case "object":
-        final var properties = specification.getJsonObject("properties");
-        if (properties == null) {
-
-          return new ValidationErrorException(codePrefix + ".properties",
-              "You must define the field 'properties' when the 'type' = 'object'.");
-        }
-        break;
       case "array":
-        final var items = specification.getJsonObject("items");
-        if (items == null) {
+        if (!specification.containsKey("items")) {
 
           return new ValidationErrorException(codePrefix + ".items",
               "You must define the field 'items' when the 'type' = 'array'.");
@@ -845,17 +1132,30 @@ public interface Validations {
                 error = new ValidationErrorException(codePrefix, "The value must be a boolean.");
               }
               break;
-            case "number":
             case "integer":
+              if (!(value instanceof Integer) && !(value instanceof Long)) {
+
+                error = new ValidationErrorException(codePrefix, "The value must be an integer.");
+                break;
+              }
+            case "number":
               if (!(value instanceof Number)) {
 
                 error = new ValidationErrorException(codePrefix, "The value must be a number.");
+
+              } else {
+
+                error = checkOpenAPINumber(codePrefix, specification, (Number) value);
               }
               break;
             case "string":
-              if (!(value instanceof Number)) {
+              if (!(value instanceof String)) {
 
                 error = new ValidationErrorException(codePrefix, "The value must be a string.");
+
+              } else {
+
+                error = checkOpenAPIString(codePrefix, specification, (String) value);
               }
               break;
             case "object":
@@ -865,9 +1165,7 @@ public interface Validations {
 
               } else {
 
-                final var properties = specification.getJsonObject("properties");
-                future = future
-                    .compose(empty -> validateOpenAPIJsonObjectValue(codePrefix, properties, (JsonObject) value));
+                future = future.compose(empty -> checkJsonObjectValue(codePrefix, specification, (JsonObject) value));
               }
               break;
             case "array":
@@ -877,22 +1175,19 @@ public interface Validations {
 
               } else {
 
-                final var array = (JsonArray) value;
-                final var max = array.size();
-                final var items = specification.getJsonObject("items");
-                for (var i = 0; i < max; i++) {
-
-                  final var pos = i;
-                  final var element = array.getValue(pos);
-                  future = future.compose(empty -> validateOpenAPIValue(codePrefix + "[" + pos + "]", items, element));
-
-                }
+                future = future.compose(empty -> checkJsonArrayValue(codePrefix, specification, (JsonArray) value));
               }
               break;
             default:
               error = new ValidationErrorException(codePrefix, "Unexpected 'type' specificationvalue.");
             }
           }
+        }
+
+        final var enumValues = specification.getJsonArray("enum", null);
+        if (enumValues != null && !enumValues.contains(value)) {
+
+          error = new ValidationErrorException(codePrefix, "Unexpected value for the enum type.");
         }
 
       } // else accept any value
@@ -915,64 +1210,70 @@ public interface Validations {
   }
 
   /**
-   * Check that a {@link JsonObject} value match an OpenAPI specification.
+   * Check that a JSON array match an OpenAPI specification.
    *
    * @param codePrefix    the prefix of the code to use for the error message.
-   * @param specification that has to satisfy the value.
+   * @param specification that has to satisfy the array.
    * @param value         to validate.
    *
-   * @return the future that says if the value follows or not the OpenAPI
-   *         specification.
+   * @return the future that says if the JSON Object value follows or not the
+   *         OpenAPI specification.
    */
-  static Future<Void> validateOpenAPIJsonObjectValue(final String codePrefix, final JsonObject specification,
-      final JsonObject value) {
+  private static Future<Void> checkJsonArrayValue(final String codePrefix, final JsonObject specification,
+      final JsonArray value) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
     ValidationErrorException error = null;
     try {
 
-      for (final var field : value.fieldNames()) {
+      final var max = value.size();
+      final var minItems = specification.getNumber("minItems", null);
+      if (minItems != null && minItems.intValue() > max) {
 
-        final var type = specification.getJsonObject(field);
-        if (type == null) {
+        error = new ValidationErrorException(codePrefix, "The value require at least " + minItems + " items.");
 
-          error = new ValidationErrorException(codePrefix + "." + field,
-              "The field is not defined on the specification.");
-          break;
+      } else {
+
+        final var maxItems = specification.getNumber("maxItems", null);
+        if (maxItems != null && maxItems.intValue() < max) {
+
+          error = new ValidationErrorException(codePrefix, "The value require at maximum " + maxItems + " items.");
 
         } else {
 
-          final var fieldValue = value.getValue(field);
-          future = future.compose(empty -> validateOpenAPIValue(codePrefix + "." + field, type, fieldValue));
-        }
+          final var items = specification.getJsonObject("items");
+          for (var i = 0; i < max; i++) {
 
-      }
+            final var pos = i;
+            final var element = value.getValue(pos);
+            future = future.compose(empty -> validateOpenAPIValue(codePrefix + "[" + pos + "]", items, element));
 
-      final var required = specification.getJsonArray("required");
-      if (required != null) {
-
-        final var max = required.size();
-        for (var i = 0; i < max; i++) {
-
-          final var property = required.getString(i);
-          final var type = specification.getJsonObject(property);
-          final var fieldValue = value.getValue(property);
-          if (fieldValue == null) {
-
-            try {
-
-              final var defaultValue = type.getString("default");
-              value.put(property, Json.decodeValue(defaultValue));
-
-            } catch (final Throwable t) {
-
-              error = new ValidationErrorException(codePrefix + "." + property, "The field is required.");
-              break;
-
-            }
           }
+          if (specification.getBoolean("uniqueItems", false)) {
 
+            future = future.compose(empty -> {
+
+              for (var i = 0; i < max; i++) {
+
+                for (var j = i + 1; j < max; j++) {
+
+                  final var a = value.getValue(i);
+                  final var b = value.getValue(j);
+                  if (a == null && b == null || a != null && a.equals(b)) {
+
+                    return Future
+                        .failedFuture(new ValidationErrorException(codePrefix + "[" + j + "]", "Duplicated value"));
+                  }
+                }
+
+              }
+
+              return Future.succeededFuture();
+
+            });
+
+          }
         }
       }
 
@@ -990,5 +1291,182 @@ public interface Validations {
       promise.complete();
     }
     return future;
+
   }
+
+  /**
+   * Check the string value.
+   *
+   * @param codePrefix    the prefix of the code to use for the error message.
+   * @param value         string to verify.
+   * @param specification that that the string has to satisfy.
+   *
+   * @return {@code null} if the value is right or an error that explains why it
+   *         is not right.
+   */
+  private static ValidationErrorException checkOpenAPIString(final String codePrefix, final JsonObject specification,
+      final String value) {
+
+    final var pattern = specification.getString("pattern", null);
+    if (pattern != null && !value.matches(pattern)) {
+
+      return new ValidationErrorException(codePrefix, "The value does not match the pattern.");
+
+    }
+    return null;
+  }
+
+  /**
+   * Check the number value.
+   *
+   * @param codePrefix    the prefix of the code to use for the error message.
+   * @param value         number to verify.
+   * @param specification that that the number has to satisfy.
+   *
+   * @return {@code null} if the value is right or an error that explains why it
+   *         is not right.
+   */
+  private static ValidationErrorException checkOpenAPINumber(final String codePrefix, final JsonObject specification,
+      final Number value) {
+
+    final var bigValue = new BigDecimal(value.doubleValue());
+    final var min = specification.getNumber("minimum", null);
+    if (min != null) {
+
+      final var bigMin = new BigDecimal(min.doubleValue());
+      final var compare = bigValue.compareTo(bigMin);
+      final var excludeMin = specification.getBoolean("exclusiveMinimum", false);
+      if (excludeMin && compare < 1) {
+
+        return new ValidationErrorException(codePrefix, "The value must be greater than the minimum.");
+
+      } else if (!excludeMin && compare < 0) {
+
+        return new ValidationErrorException(codePrefix, "The value must be equals or greater than the minimum.");
+      }
+    }
+
+    final var max = specification.getNumber("maximum", null);
+    if (max != null) {
+
+      final var bigMax = new BigDecimal(max.doubleValue());
+      final var compare = bigValue.compareTo(bigMax);
+      final var excludeMax = specification.getBoolean("exclusiveMaximum", false);
+      if (excludeMax && compare > -1) {
+
+        return new ValidationErrorException(codePrefix, "The value must be less than the maximum.");
+
+      } else if (!excludeMax && compare > 0) {
+
+        return new ValidationErrorException(codePrefix, "The value must be equals or less than the maximum.");
+      }
+    }
+
+    return null;
+
+  }
+
+  /**
+   * Check that a JSON object match an OpenAPI specification.
+   *
+   * @param codePrefix    the prefix of the code to use for the error message.
+   * @param specification that has to follow the object..
+   * @param value         to validate.
+   *
+   * @return the future that says if the JSON Object value follows or not the
+   *         OpenAPI specification.
+   */
+  private static Future<Void> checkJsonObjectValue(final String codePrefix, final JsonObject specification,
+      final JsonObject value) {
+
+    final Promise<Void> promise = Promise.promise();
+    var future = promise.future();
+    ValidationErrorException error = null;
+    try {
+
+      final var properties = specification.getJsonObject("properties");
+      final var required = specification.getJsonArray("required");
+      if (properties != null) {
+
+        if (required != null) {
+
+          final var max = required.size();
+          for (var i = 0; i < max; i++) {
+
+            final var property = required.getString(i);
+            final var fieldType = properties.getJsonObject(property);
+            final var fieldValue = value.getValue(property);
+            if (fieldValue == null) {
+
+              try {
+
+                final var defaultValue = fieldType.getString("default");
+                value.put(property, Json.decodeValue(defaultValue));
+
+              } catch (final Throwable t) {
+
+                error = new ValidationErrorException(codePrefix + "." + property, "The field is required.");
+                break;
+
+              }
+            }
+
+          }
+
+        }
+
+        for (final var field : value.fieldNames()) {
+
+          final var fieldType = properties.getJsonObject(field);
+          if (fieldType == null) {
+
+            error = new ValidationErrorException(codePrefix + "." + field,
+                "The field is not defined on the specification.");
+            break;
+
+          } else {
+
+            final var fieldValue = value.getValue(field);
+            future = future.compose(empty -> validateOpenAPIValue(codePrefix + "." + field, fieldType, fieldValue));
+          }
+        }
+
+      } else {
+
+        if (required != null) {
+
+          final var max = required.size();
+          for (var i = 0; i < max; i++) {
+
+            final var property = required.getString(i);
+            if (!value.containsKey(property)) {
+
+              error = new ValidationErrorException(codePrefix + "." + property, "The field is required.");
+              break;
+
+            }
+
+          }
+
+        }
+
+      }
+
+    } catch (final Throwable cause) {
+
+      error = new ValidationErrorException(codePrefix, "The OpenAPI specification is not valid.", cause);
+    }
+
+    if (error != null) {
+
+      promise.fail(error);
+
+    } else {
+
+      promise.complete();
+    }
+    return future;
+
+  }
+
 }
