@@ -708,8 +708,10 @@ public interface Validations {
         case "enum":
           future = future.compose(empty -> checkEnum(codePrefix, value, specification));
           break;
+        case "maxLength":
+        case "minLength":
         case "pattern":
-          error = checkPattern(codePrefix, value, specification);
+          error = checkTypeStringArguments(codePrefix, fieldName, value, specification);
           break;
         case "minProperties":
         case "maxProperties":
@@ -730,7 +732,7 @@ public interface Validations {
           break;
         case "example":
         case "examples":
-          // Allow free examples because are not used fro anything
+          // Allow free examples because are not used for anything
           break;
         default:
           error = new ValidationErrorException(codePrefix + "." + fieldName, "Undefined specification field.");
@@ -765,37 +767,49 @@ public interface Validations {
    * Check the pattern field.
    *
    * @param codePrefix    the prefix of the code to use for the error message.
+   * @param fieldName     the string argument to check.
    * @param value         of the pattern field.
    * @param specification that is checking.
    *
    * @return {@code null} if the pattern is right or an error that explains why it
    *         is not right.
    */
-  private static ValidationErrorException checkPattern(final String codePrefix, final Object value,
-      final JsonObject specification) {
+  private static ValidationErrorException checkTypeStringArguments(final String codePrefix, final String fieldName,
+      final Object value, final JsonObject specification) {
 
-    if (!(value instanceof String)) {
+    if (!"string".equals(specification.getValue("type"))) {
 
-      return new ValidationErrorException(codePrefix + ".pattern", "Expecting a string value.");
+      return new ValidationErrorException(codePrefix + "." + fieldName,
+          "You only can use pattern if the type is a string.");
 
-    } else if (!"string".equals(specification.getValue("type"))) {
+    } else if ("pattern".equals(fieldName)) {
 
-      return new ValidationErrorException(codePrefix + ".pattern", "You only can use pattern if the type is a string.");
+      if (!(value instanceof String)) {
+
+        return new ValidationErrorException(codePrefix + ".pattern", "Expecting a string value.");
+
+      } else {
+        try {
+
+          Pattern.compile((String) value);
+          return null;
+
+        } catch (final Throwable cause) {
+
+          return new ValidationErrorException(codePrefix + ".pattern", "You pattern is not right formatted.", cause);
+
+        }
+      }
+
+    } else if (!(value instanceof Integer) && !(value instanceof Long)) {
+
+      return new ValidationErrorException(codePrefix + "." + fieldName, "Expecting an integer value.");
 
     } else {
 
-      try {
-
-        Pattern.compile((String) value);
-        return null;
-
-      } catch (final Throwable cause) {
-
-        return new ValidationErrorException(codePrefix + ".pattern", "You pattern is not right formatted.", cause);
-
-      }
-
+      return null;
     }
+
   }
 
   /**
@@ -1184,7 +1198,7 @@ public interface Validations {
 
               } else {
 
-                error = checkOpenAPIString(codePrefix, specification, (String) value);
+                error = checkStringValue(codePrefix, specification, (String) value);
               }
               break;
             case "object":
@@ -1333,7 +1347,7 @@ public interface Validations {
    * @return {@code null} if the value is right or an error that explains why it
    *         is not right.
    */
-  private static ValidationErrorException checkOpenAPIString(final String codePrefix, final JsonObject specification,
+  private static ValidationErrorException checkStringValue(final String codePrefix, final JsonObject specification,
       final String value) {
 
     final var pattern = specification.getString("pattern", null);
@@ -1342,6 +1356,19 @@ public interface Validations {
       return new ValidationErrorException(codePrefix, "The value does not match the pattern.");
 
     }
+    final var min = specification.getInteger("minLength", null);
+    if (min != null && value.length() < min) {
+
+      return new ValidationErrorException(codePrefix,
+          "The value has to have a length equal or greater than " + min + ".");
+    }
+
+    final var max = specification.getInteger("maxLength", null);
+    if (max != null && value.length() > max) {
+
+      return new ValidationErrorException(codePrefix, "The value has to have a length equal or less than " + max + ".");
+    }
+
     return null;
   }
 

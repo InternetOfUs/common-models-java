@@ -1402,7 +1402,11 @@ public class ValidationsTest {
       "codePrefix.additionalProperties.type#{'type':'object','additionalProperties':{'type':'undefined'}}",
       "codePrefix.additionalProperties#{'type':'object','additionalProperties':{'type':'string'},'properties':{}}",
       "codePrefix.title#{'type':'object','title':{'name':'a'}}",
-      "codePrefix.description#{'type':'object','description':{'name':'a'}}" })
+      "codePrefix.description#{'type':'object','description':{'name':'a'}}",
+      "codePrefix.maxLength#{'type':'array','items':{},'maxLength':10}",
+      "codePrefix.minLength#{'type':'array','items':{},'minLength':1}",
+      "codePrefix.maxLength#{'type':'string','maxLength':1.1}",
+      "codePrefix.minLength#{'type':'string','minLength':0.1}" })
   public void shouldNotBeValidBadOpenAPISpecification(final String data, final VertxTestContext testContext) {
 
     final var split = data.split("#");
@@ -1502,7 +1506,9 @@ public class ValidationsTest {
       "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2,'uniqueItems':true}", "{'type':'object'}",
       "{'type':'object','required':['id']}", "{'type':'object','additionalProperties':{'type':'boolean'}}",
       "{'type':'object','additionalProperties':{'type':'object','properties':{'id':{'type':'string'}}}}",
-      "{'type':'string','example':'Hello world!'}", "{'type':'string','examples':{'en':'Hello!','hw':'Aloha'}}" })
+      "{'type':'string','example':'Hello world!'}", "{'type':'string','examples':{'en':'Hello!','hw':'Aloha'}}",
+      "{'type':'string','maxLength':10}", "{'type':'string','minLength':1}",
+      "{'type':'string','minLength':1,'maxLength':10}" })
   public void shouldIsValidOpenAPISpecification(final String data, final VertxTestContext testContext) {
 
     final var specification = this.decodeJsonObject(data);
@@ -1676,7 +1682,10 @@ public class ValidationsTest {
       "codePrefix.field#{'type':'object','properties':{'field':{'nullable':false}},'required':['field']}#{}",
       "codePrefix.undefined#{'type':'object','properties':{'field':{'nullable':false}}}#{'undefined':true}",
       "codePrefix.id#{'type':'object','required':['id']}#{'a':true,'b':{'c':1}}",
-      "codePrefix.b#{'type':'object','additionalProperties':{'type':'boolean'}}#{'a':true,'b':{'c':1}}" })
+      "codePrefix.b#{'type':'object','additionalProperties':{'type':'boolean'}}#{'a':true,'b':{'c':1}}",
+      "codePrefix#{'type':'string','maxLength':1}#'123'", "codePrefix#{'type':'string','minLength':1}#''",
+      "codePrefix#{'type':'string','minLength':1,'maxLength':10}#''",
+      "codePrefix#{'type':'string','minLength':1,'maxLength':10}#'12345678901'" })
   public void shouldNotBeValidBadOpenAPIValue(final String data, final VertxTestContext testContext) {
 
     final var split = data.split("#");
@@ -1743,7 +1752,12 @@ public class ValidationsTest {
       "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2,'uniqueItems':true}#['1','2']",
       "{'type':'object'}#{'a':true,'b':{'c':1}}",
       "{'type':'object','required':['id']}#{'a':true,'b':{'c':1},'id':{'r':0}}",
-      "{'type':'object','additionalProperties':{'type':'integer'}}#{'a':1,'b':2,'c':3}" })
+      "{'type':'object','additionalProperties':{'type':'integer'}}#{'a':1,'b':2,'c':3}",
+      "{'type':'string','maxLength':1}#'1'", "{'type':'string','minLength':1}#'1'",
+      "{'type':'string','minLength':1,'maxLength':10}#'1'",
+      "{'type':'string','minLength':1,'maxLength':10}#'1234567890'",
+      "{'type':'string','minLength':1,'maxLength':10}#'12345'",
+      "{'type':'string','minLength':1,'maxLength':10,'pattern':'\\\\d*'}#'12345'" })
   public void shouldIsValidOpenAPIValue(final String data, final VertxTestContext testContext) {
 
     final var split = data.replaceAll("'", "\"").split("#");
