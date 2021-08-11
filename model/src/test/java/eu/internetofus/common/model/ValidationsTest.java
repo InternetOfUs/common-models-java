@@ -1397,7 +1397,10 @@ public class ValidationsTest {
       "codePrefix.minItems#{'type':'array','items':{'type':'string'},'minItems':'2'}",
       "codePrefix.maxItems#{'type':'string','maxItems':2}",
       "codePrefix.maxItems#{'type':'array','items':{'type':'string'},'maxItems':'2'}",
-      "codePrefix.maxItems#{'type':'array','items':{'type':'string'},'minItems':10,'maxItems':2}" })
+      "codePrefix.maxItems#{'type':'array','items':{'type':'string'},'minItems':10,'maxItems':2}",
+      "codePrefix.additionalProperties#{'type':'object','additionalProperties':true}",
+      "codePrefix.additionalProperties.type#{'type':'object','additionalProperties':{'type':'undefined'}}",
+      "codePrefix.additionalProperties#{'type':'object','additionalProperties':{'type':'string'},'properties':{}}" })
   public void shouldNotBeValidBadOpenAPISpecification(final String data, final VertxTestContext testContext) {
 
     final var split = data.split("#");
@@ -1423,7 +1426,7 @@ public class ValidationsTest {
    * @see Validations#validateOpenAPIProperties(String, JsonObject)
    */
   @ParameterizedTest(name = "The specification {0} has to not be valid")
-  @ValueSource(strings = { "codePrefix#null", "codePrefix.field#{'field':null}",
+  @ValueSource(strings = { "codePrefix#null", "codePrefix.field#{'field':null}", "codePrefix.key#{'key':true}",
       "codePrefix.field#{'field':{'nullable':true}}", "codePrefix.field.type#{'field':{'type':null}}",
       "codePrefix.field.type#{'field':{'type':'undefined'}}",
       "codePrefix.field.minimum#{'field':{'type':'integer','minimum':'1'}}",
@@ -1445,7 +1448,7 @@ public class ValidationsTest {
       "codePrefix.field.exclusiveMinimum#{'field':{'type':'number','exclusiveMinimum':'1'}}",
       "codePrefix.field.exclusiveMinimum#{'field':{'type':'string','exclusiveMinimum':1}}",
       "codePrefix.field.exclusiveMaximum#{'field':{'type':'number','exclusiveMaximum':'1'}}",
-      "codePrefix.field.exclusiveMaximum#{'field':{'type':'string','exclusiveMaximum':1}}" })
+      "codePrefix.field.exclusiveMaximum#{'field':{'type':'string','exclusiveMaximum':1}}", })
   public void shouldNotBeValidBadOpenAPIProperties(final String data, final VertxTestContext testContext) {
 
     final var split = data.split("#");
@@ -1495,7 +1498,8 @@ public class ValidationsTest {
       "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2}",
       "{'type':'array','items':{'type':'string'},'minItems':2,'maxItems':2}",
       "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2,'uniqueItems':true}", "{'type':'object'}",
-      "{'type':'object','required':['id']}" })
+      "{'type':'object','required':['id']}", "{'type':'object','additionalProperties':{'type':'boolean'}}",
+      "{'type':'object','additionalProperties':{'type':'object','properties':{'id':{'type':'string'}}}}" })
   public void shouldIsValidOpenAPISpecification(final String data, final VertxTestContext testContext) {
 
     final var specification = this.decodeJsonObject(data);
@@ -1527,7 +1531,7 @@ public class ValidationsTest {
       "{'field':{'type':'object','properties':{}}}", "{'field':{'type':'array','items':{}}}",
       "{'field':{'type':'string','nullable':true}}", "{'field':{'type':'string','nullable':false}}",
       "{'field1':{},'field2':{'type':'boolean'},'field3':{'type':'integer'},'field4':{'type':'number','maximum':100,'exclusiveMaximum':true}}",
-      "{'field1':{'type':'object','properties':{'a':{'type':'string'},'b':{'type':'object','properties':{'d':{'type':'string'}}}}},'field2':{'type':'array','items':{'type':'integer'}},'field4':{'type':'number','maximum':100,'exclusiveMaximum':true}}" })
+      "{'field1':{'type':'object','properties':{'a':{'type':'string'},'b':{'type':'object','properties':{'d':{'type':'string'}}}}},'field2':{'type':'array','items':{'type':'integer'}},'field4':{'type':'number','maximum':100,'exclusiveMaximum':true}}", })
   public void shouldIsValidOpenAPIProperties(final String data, final VertxTestContext testContext) {
 
     final var specification = this.decodeJsonObject(data);
@@ -1668,7 +1672,8 @@ public class ValidationsTest {
       "codePrefix#{'type':'object','properties':[]}#{}",
       "codePrefix.field#{'type':'object','properties':{'field':{'nullable':false}},'required':['field']}#{}",
       "codePrefix.undefined#{'type':'object','properties':{'field':{'nullable':false}}}#{'undefined':true}",
-      "codePrefix.id#{'type':'object','required':['id']}#{'a':true,'b':{'c':1}}" })
+      "codePrefix.id#{'type':'object','required':['id']}#{'a':true,'b':{'c':1}}",
+      "codePrefix.b#{'type':'object','additionalProperties':{'type':'boolean'}}#{'a':true,'b':{'c':1}}" })
   public void shouldNotBeValidBadOpenAPIValue(final String data, final VertxTestContext testContext) {
 
     final var split = data.split("#");
@@ -1734,7 +1739,8 @@ public class ValidationsTest {
       "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2}#['1']",
       "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2,'uniqueItems':true}#['1','2']",
       "{'type':'object'}#{'a':true,'b':{'c':1}}",
-      "{'type':'object','required':['id']}#{'a':true,'b':{'c':1},'id':{'r':0}}" })
+      "{'type':'object','required':['id']}#{'a':true,'b':{'c':1},'id':{'r':0}}",
+      "{'type':'object','additionalProperties':{'type':'integer'}}#{'a':1,'b':2,'c':3}" })
   public void shouldIsValidOpenAPIValue(final String data, final VertxTestContext testContext) {
 
     final var split = data.replaceAll("'", "\"").split("#");

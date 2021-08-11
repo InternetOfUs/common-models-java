@@ -673,14 +673,22 @@ public interface Validations {
             error = new ValidationErrorException(codePrefix + ".properties", "Expecting a JSON object.");
           }
           break;
+        case "additionalProperties":
+          if (specification.containsKey("properties")) {
+
+            error = new ValidationErrorException(codePrefix + ".additionalProperties",
+                "You can not use additionalProperties when are properties defined.");
+            break;
+          }
         case "items":
           if (value instanceof JsonObject) {
 
-            future = future.compose(empty -> validateOpenAPISpecification(codePrefix, (JsonObject) value));
+            future = future
+                .compose(empty -> validateOpenAPISpecification(codePrefix + "." + fieldName, (JsonObject) value));
 
           } else {
 
-            error = new ValidationErrorException(codePrefix + ".items", "Expecting a JSON object.");
+            error = new ValidationErrorException(codePrefix + "." + fieldName, "Expecting a JSON object.");
           }
           break;
         case "nullable":
@@ -703,7 +711,6 @@ public interface Validations {
         case "pattern":
           error = checkPattern(codePrefix, value, specification);
           break;
-        case "additionalProperties":
         case "minProperties":
         case "maxProperties":
         case "format":
@@ -990,25 +997,36 @@ public interface Validations {
    */
   static Future<Void> validateOpenAPIProperties(final String codePrefix, final JsonObject properties) {
 
+    final Promise<Void> promise = Promise.promise();
+    var future = promise.future();
+
     if (properties == null) {
 
-      return Future
-          .failedFuture(new ValidationErrorException(codePrefix, "The OpenAPI specification can not be null."));
+      promise.fail(new ValidationErrorException(codePrefix, "The OpenAPI specification can not be null."));
 
     } else {
 
-      final Promise<Void> promise = Promise.promise();
-      var future = promise.future();
       for (final var propertyName : properties.fieldNames()) {
 
-        final var propertySpecification = properties.getJsonObject(propertyName);
-        future = future
-            .compose(empty -> validateOpenAPISpecification(codePrefix + "." + propertyName, propertySpecification));
+        final var value = properties.getValue(propertyName);
+        if (value instanceof JsonObject) {
+
+          final var propertySpecification = (JsonObject) value;
+          future = future
+              .compose(empty -> validateOpenAPISpecification(codePrefix + "." + propertyName, propertySpecification));
+
+        } else {
+
+          promise.fail(new ValidationErrorException(codePrefix + "." + propertyName, "Expecting a JSON object."));
+          break;
+
+        }
       }
 
-      promise.complete();
-      return future;
+      promise.tryComplete();
+
     }
+    return future;
   }
 
   /**
@@ -1432,6 +1450,19 @@ public interface Validations {
         }
 
       } else {
+
+        final var additionalProperties = specification.getJsonObject("additionalProperties");
+        if (additionalProperties != null) {
+
+          for (final var field : value.fieldNames()) {
+
+            final var fieldValue = value.getValue(field);
+            future = future
+                .compose(empty -> validateOpenAPIValue(codePrefix + "." + field, additionalProperties, fieldValue));
+
+          }
+
+        }
 
         if (required != null) {
 
