@@ -1400,7 +1400,9 @@ public class ValidationsTest {
       "codePrefix.maxItems#{'type':'array','items':{'type':'string'},'minItems':10,'maxItems':2}",
       "codePrefix.additionalProperties#{'type':'object','additionalProperties':true}",
       "codePrefix.additionalProperties.type#{'type':'object','additionalProperties':{'type':'undefined'}}",
-      "codePrefix.additionalProperties#{'type':'object','additionalProperties':{'type':'string'},'properties':{}}" })
+      "codePrefix.additionalProperties#{'type':'object','additionalProperties':{'type':'string'},'properties':{}}",
+      "codePrefix.title#{'type':'object','title':{'name':'a'}}",
+      "codePrefix.description#{'type':'object','description':{'name':'a'}}" })
   public void shouldNotBeValidBadOpenAPISpecification(final String data, final VertxTestContext testContext) {
 
     final var split = data.split("#");
@@ -1499,7 +1501,8 @@ public class ValidationsTest {
       "{'type':'array','items':{'type':'string'},'minItems':2,'maxItems':2}",
       "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2,'uniqueItems':true}", "{'type':'object'}",
       "{'type':'object','required':['id']}", "{'type':'object','additionalProperties':{'type':'boolean'}}",
-      "{'type':'object','additionalProperties':{'type':'object','properties':{'id':{'type':'string'}}}}" })
+      "{'type':'object','additionalProperties':{'type':'object','properties':{'id':{'type':'string'}}}}",
+      "{'type':'string','example':'Hello world!'}", "{'type':'string','examples':{'en':'Hello!','hw':'Aloha'}}" })
   public void shouldIsValidOpenAPISpecification(final String data, final VertxTestContext testContext) {
 
     final var specification = this.decodeJsonObject(data);

@@ -721,6 +721,17 @@ public interface Validations {
         case "$ref":
           error = new ValidationErrorException(codePrefix + "." + fieldName, "This feature is not supported yet.");
           break;
+        case "description":
+        case "title":
+          if (!(value instanceof String)) {
+
+            error = new ValidationErrorException(codePrefix + "." + fieldName, "Expecting a string value.");
+          }
+          break;
+        case "example":
+        case "examples":
+          // Allow free examples because are not used fro anything
+          break;
         default:
           error = new ValidationErrorException(codePrefix + "." + fieldName, "Undefined specification field.");
         }
