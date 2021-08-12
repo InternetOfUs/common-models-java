@@ -1216,6 +1216,11 @@ public interface Validations {
     public boolean checkingCompose;
 
     /**
+     * This number of succeed compose test.
+     */
+    public int succedCompose;
+
+    /**
      * Create a new context.
      *
      * @param codePrefix    the prefix of the code to use for the error message.
@@ -1230,6 +1235,7 @@ public interface Validations {
       this.value = value;
       this.fieldNames = null;
       this.checkingCompose = false;
+      this.succedCompose = 0;
 
     }
 
@@ -1520,7 +1526,44 @@ public interface Validations {
   static private Future<ValueValidationContext> validateAnyOfValue(
       @NotNull final Promise<ValueValidationContext> promise, @NotNull final ValueValidationContext context) {
 
-    return promise.future();
+    var future = promise.future();
+    final var allOf = context.specification.getJsonArray("anyOf");
+    final var max = allOf.size();
+    for (var i = 0; i < max; i++) {
+
+      final var type = allOf.getJsonObject(i);
+      final var subContext = new ValueValidationContext(context.codePrefix, type, context.value);
+      subContext.checkingCompose = true;
+      future = future.compose(chain -> composeValidation(Future.succeededFuture(subContext), Validations::validateValue)
+          .transform(subResult -> {
+
+            if (subResult.succeeded()) {
+
+              final var result = subResult.result();
+              chain.value = result.value;
+              chain.succedCompose++;
+              chain.addFieldNames(result);
+            }
+
+            return Future.succeededFuture(chain);
+          }));
+    }
+
+    future = future.compose(chain -> {
+
+      if (chain.succedCompose > 0) {
+
+        chain.succedCompose = 0;
+        return Future.succeededFuture(chain);
+
+      } else {
+
+        return Future.failedFuture(chain.notValid("The value does not match any of the possible values"));
+      }
+
+    });
+
+    return future;
 
   }
 
