@@ -1511,7 +1511,48 @@ public interface Validations {
   static private Future<ValueValidationContext> validateOneOfValue(
       @NotNull final Promise<ValueValidationContext> promise, @NotNull final ValueValidationContext context) {
 
-    return promise.future();
+    var future = promise.future();
+    final var oneOf = context.specification.getJsonArray("oneOf");
+    final var max = oneOf.size();
+    for (var i = 0; i < max; i++) {
+
+      final var type = oneOf.getJsonObject(i);
+      final var subContext = new ValueValidationContext(context.codePrefix, type, context.value);
+      // this not a checking compose because only one type has to be valid
+      future = future.compose(chain -> composeValidation(Future.succeededFuture(subContext), Validations::validateValue)
+          .transform(subResult -> {
+
+            if (subResult.succeeded()) {
+
+              final var result = subResult.result();
+              chain.value = result.value;
+              chain.succedCompose++;
+              chain.addFieldNames(result);
+              if (chain.succedCompose > 1) {
+
+                return Future.failedFuture(chain.notValid("The value match more that one of the possible values"));
+              }
+            }
+
+            return Future.succeededFuture(chain);
+          }));
+    }
+
+    future = future.compose(chain -> {
+
+      if (chain.succedCompose == 1) {
+
+        chain.succedCompose = 0;
+        return Future.succeededFuture(chain);
+
+      } else {
+
+        return Future.failedFuture(chain.notValid("The value does not match any of the possible values"));
+      }
+
+    });
+
+    return future;
 
   }
 
@@ -1527,11 +1568,11 @@ public interface Validations {
       @NotNull final Promise<ValueValidationContext> promise, @NotNull final ValueValidationContext context) {
 
     var future = promise.future();
-    final var allOf = context.specification.getJsonArray("anyOf");
-    final var max = allOf.size();
+    final var anyOf = context.specification.getJsonArray("anyOf");
+    final var max = anyOf.size();
     for (var i = 0; i < max; i++) {
 
-      final var type = allOf.getJsonObject(i);
+      final var type = anyOf.getJsonObject(i);
       final var subContext = new ValueValidationContext(context.codePrefix, type, context.value);
       subContext.checkingCompose = true;
       future = future.compose(chain -> composeValidation(Future.succeededFuture(subContext), Validations::validateValue)

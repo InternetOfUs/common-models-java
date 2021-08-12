@@ -35,6 +35,7 @@ import io.vertx.junit5.VertxTestContext;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -1707,7 +1708,9 @@ public class ValidationsTest {
       "codePrefix#{'type':'string','minLength':1,'maxLength':10}#''",
       "codePrefix#{'type':'string','minLength':1,'maxLength':10}#'12345678901'",
       "codePrefix#{'oneOf':[{'type':'string'},{'type':'integer'}]}#true",
+      "codePrefix#{'oneOf':[{'type':'number'},{'type':'integer'}]}#1",
       "codePrefix#{'anyOf':[{'type':'string'},{'type':'integer'}]}#true",
+      "codePrefix#{'oneOf':[{'type':'object','properties':{'name':{'type':'string'}}},{'type':'object','properties':{'id':{'type':'integer'}}}]}#{'id':1,'name':'Jane Doe'}",
       "codePrefix#{'allOf':[{'type':'object','properties':{'id':{'type':'string'}}},{'type':'object','properties':{'name':{'type':'integer'}}}]}#true", })
   public void shouldNotBeValidBadOpenAPIValue(final String data, final VertxTestContext testContext) {
 
@@ -1736,62 +1739,92 @@ public class ValidationsTest {
    * @see Validations#validateOpenAPIValue(String,io.vertx.core.json.JsonObject,Object)
    */
   @ParameterizedTest(name = "The value {0} has to be valid")
-  @ValueSource(strings = { "{}#null", "{}#{}", "{'nullable':true}#null", "{'type':'string'}#'value'",
-      "{'type':'integer'}#1", "{'type':'number'}#1.0", "{'type':'boolean'}#true", "{'type':'boolean'}#false",
-      "{'type':'object','properties':{'field':{'nullable':true}}}#{'field':null}",
-      "{'type':'object','properties':{'field':{'type':'string'}}}#{'field':'value'}",
-      "{'type':'object','properties':{'field':{'type':'integer'}}}#{'field':1}",
-      "{'type':'object','properties':{'field':{'type':'number'}}}#{'field':1.0}",
-      "{'type':'object','properties':{'field':{'type':'boolean'}}}#{'field':true}",
-      "{'type':'object','properties':{'field':{'type':'integer','default':'1'}}}#{}",
-      "{'type':'object','properties':{'id':{'type':'integer'}},'default':'{\\\"id\\\":0}'}#{}",
-      "{'type':'string','enum':['a','b','c']}#'a'", "{'type':'string','nullable':true,'enum':['a','b','c',null]}#null",
-      "{'type':'number','maximum':1,'minimum':0}#0", "{'type':'number','maximum':1,'minimum':0}#1",
-      "{'type':'number','maximum':1,'minimum':0}#0.5",
-      "{'type':'number','minimum':0,'exclusiveMinimum':true,'maximum':1}#1",
-      "{'type':'number','minimum':0,'exclusiveMinimum':true,'maximum':1}#0.5",
-      "{'type':'number','minimum':0,'maximum':1,'exclusiveMaximum':true}#0",
-      "{'type':'number','minimum':0,'maximum':1,'exclusiveMaximum':true}#0.5",
-      "{'type':'number','minimum':0,'exclusiveMinimum':true,'maximum':1,'exclusiveMaximum':true}#0.5",
-      "{'type':'integer','maximum':10,'minimum':0}#0", "{'type':'integer','maximum':10,'minimum':0}#10",
-      "{'type':'integer','maximum':10,'minimum':0}#5",
-      "{'type':'integer','minimum':0,'exclusiveMinimum':true,'maximum':10}#10",
-      "{'type':'integer','minimum':0,'exclusiveMinimum':true,'maximum':10}#5",
-      "{'type':'integer','minimum':0,'maximum':10,'exclusiveMaximum':true}#0",
-      "{'type':'integer','minimum':0,'maximum':10,'exclusiveMaximum':true}#5",
-      "{'type':'integer','minimum':0,'exclusiveMinimum':true,'maximum':10,'exclusiveMaximum':true}#5",
-      "{'type':'string','pattern':'^\\\\d{3}-\\\\d{2}-\\\\d{4}$'}#'123-12-1234'",
-      "{'type':'object','properties':{'id':{'type':'integer','default':'0'}},'required':['id']}#{}",
-      "{'type':'array','items':{'type':'string'},'uniqueItems':false}#['1','1','1']",
-      "{'type':'array','items':{'type':'string'},'uniqueItems':true}#['1','2','3']",
-      "{'type':'array','items':{'type':'string'},'minItems':2}#['1','1']",
-      "{'type':'array','items':{'type':'string'},'minItems':2}#['1','2','3']",
-      "{'type':'array','items':{'type':'string'},'maxItems':2}#['1','1']",
-      "{'type':'array','items':{'type':'string'},'maxItems':2}#['1']",
-      "{'type':'array','items':{'type':'string'},'maxItems':2}#[]",
-      "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2}#['1','1']",
-      "{'type':'array','items':{'type':'string'},'minItems':2,'maxItems':2}#['1','1']",
-      "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2}#['1']",
-      "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2,'uniqueItems':true}#['1','2']",
-      "{'type':'object'}#{'a':true,'b':{'c':1}}",
-      "{'type':'object','required':['id']}#{'a':true,'b':{'c':1},'id':{'r':0}}",
-      "{'type':'object','additionalProperties':{'type':'integer'}}#{'a':1,'b':2,'c':3}",
-      "{'type':'string','maxLength':1}#'1'", "{'type':'string','minLength':1}#'1'",
-      "{'type':'string','minLength':1,'maxLength':10}#'1'",
-      "{'type':'string','minLength':1,'maxLength':10}#'1234567890'",
-      "{'type':'string','minLength':1,'maxLength':10}#'12345'",
-      "{'type':'string','minLength':1,'maxLength':10,'pattern':'\\\\d*'}#'12345'",
-      "{'oneOf':[{'type':'string'},{'type':'integer'}]}#1", "{'oneOf':[{'type':'string'},{'type':'integer'}]}#'1'",
-      "{'anyOf':[{'type':'string'},{'type':'integer'}]}#2", "{'anyOf':[{'type':'string'},{'type':'integer'}]}#'2'",
-      "{'allOf':[{'type':'object','properties':{'name':{'type':'string'}}},{'type':'object','properties':{'id':{'type':'integer'}}}]}#{'id':1,'name':'Jane Doe'}" })
+  @ValueSource(strings = { "{}#null#null", "{}#{}#{}", "{'nullable':true}#null#null",
+      "{'nullable':true,'default':'\\'something\\''}#null#'something'", "{'type':'string'}#'value'#'value'",
+      "{'type':'string','default':'\\'value\\''}#null#'value'", "{'type':'integer'}#1#1",
+      "{'type':'integer','default':'1'}#null#1", "{'type':'number'}#1.0#1.0",
+      "{'type':'number','default':'1.0'}#null#1.0", "{'type':'boolean'}#true#true", "{'type':'boolean'}#false#false",
+      "{'type':'boolean','default':'false'}#null#false",
+      "{'type':'object','properties':{'field':{'nullable':true}}}#{'field':null}#{'field':null}#{'field':null}",
+      "{'type':'object','properties':{'field':{'type':'string'}}}#{'field':'value'}#{'field':'value'}",
+      "{'type':'object','properties':{'field':{'type':'integer'}}}#{'field':1}#{'field':1}",
+      "{'type':'object','properties':{'field':{'type':'number'}}}#{'field':1.0}#{'field':1.0}",
+      "{'type':'object','properties':{'field':{'type':'boolean'}}}#{'field':true}#{'field':true}",
+      "{'type':'object','properties':{'field':{'type':'integer','default':'1'}}}#{}#{'field':1}",
+      "{'type':'object','properties':{'id':{'type':'integer'}},'default':'{\\\"id\\\":0}'}#null#{'id':0}",
+      "{'type':'object','properties':{'id':{'type':'integer'}},'default':'{\\\"id\\\":0}'}#{}#{}",
+      "{'type':'string','enum':['a','b','c']}#'a'#'a'",
+      "{'type':'string','nullable':true,'enum':['a','b','c',null]}#null#null",
+      "{'type':'number','maximum':1,'minimum':0}#0#0", "{'type':'number','maximum':1,'minimum':0}#1#1",
+      "{'type':'number','maximum':1,'minimum':0}#0.5#0.5",
+      "{'type':'number','minimum':0,'exclusiveMinimum':true,'maximum':1}#1#1",
+      "{'type':'number','minimum':0,'exclusiveMinimum':true,'maximum':1}#0.5#0.5",
+      "{'type':'number','minimum':0,'maximum':1,'exclusiveMaximum':true}#0#0",
+      "{'type':'number','minimum':0,'maximum':1,'exclusiveMaximum':true}#0.5#0.5",
+      "{'type':'number','minimum':0,'exclusiveMinimum':true,'maximum':1,'exclusiveMaximum':true}#0.5#0.5",
+      "{'type':'integer','maximum':10,'minimum':0}#0#0", "{'type':'integer','maximum':10,'minimum':0}#10#10",
+      "{'type':'integer','maximum':10,'minimum':0}#5#5",
+      "{'type':'integer','minimum':0,'exclusiveMinimum':true,'maximum':10}#10#10",
+      "{'type':'integer','minimum':0,'exclusiveMinimum':true,'maximum':10}#5#5",
+      "{'type':'integer','minimum':0,'maximum':10,'exclusiveMaximum':true}#0#0",
+      "{'type':'integer','minimum':0,'maximum':10,'exclusiveMaximum':true}#5#5",
+      "{'type':'integer','minimum':0,'exclusiveMinimum':true,'maximum':10,'exclusiveMaximum':true}#5#5",
+      "{'type':'string','pattern':'^\\\\d{3}-\\\\d{2}-\\\\d{4}$'}#'123-12-1234'#'123-12-1234'",
+      "{'type':'object','properties':{'id':{'type':'integer','default':'0'}},'required':['id']}#{}#{'id':0}",
+      "{'type':'array','items':{'type':'string'},'uniqueItems':false}#['1','1','1']#['1','1','1']",
+      "{'type':'array','items':{'type':'string'},'uniqueItems':true}#['1','2','3']#['1','2','3']",
+      "{'type':'array','items':{'type':'string'},'minItems':2}#['1','1']#['1','1']",
+      "{'type':'array','items':{'type':'string'},'minItems':2}#['1','2','3']#['1','2','3']",
+      "{'type':'array','items':{'type':'string'},'maxItems':2}#['1','1']#['1','1']",
+      "{'type':'array','items':{'type':'string'},'maxItems':2}#['1']#['1']",
+      "{'type':'array','items':{'type':'string'},'maxItems':2}#[]#[]",
+      "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2}#['1','1']#['1','1']",
+      "{'type':'array','items':{'type':'string'},'minItems':2,'maxItems':2}#['1','1']#['1','1']",
+      "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2}#['1']#['1']",
+      "{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2,'uniqueItems':true}#['1','2']#['1','2']",
+      "{'type':'object'}#{'a':true,'b':{'c':1}}#{'a':true,'b':{'c':1}}",
+      "{'type':'object','required':['id']}#{'a':true,'b':{'c':1},'id':{'r':0}}#{'a':true,'b':{'c':1},'id':{'r':0}}",
+      "{'type':'object','additionalProperties':{'type':'integer'}}#{'a':1,'b':2,'c':3}#{'a':1,'b':2,'c':3}",
+      "{'type':'string','maxLength':1}#'1'#'1'", "{'type':'string','minLength':1}#'1'#'1'",
+      "{'type':'string','minLength':1,'maxLength':10}#'1'#'1'",
+      "{'type':'string','minLength':1,'maxLength':10}#'1234567890'#'1234567890'",
+      "{'type':'string','minLength':1,'maxLength':10}#'12345'#'12345'",
+      "{'type':'string','minLength':1,'maxLength':10,'pattern':'\\\\d*'}#'12345'#'12345'",
+      "{'oneOf':[{'type':'string'},{'type':'integer'}]}#1#1",
+      "{'oneOf':[{'type':'string'},{'type':'integer'}]}#'1'#'1'",
+      "{'anyOf':[{'type':'string'},{'type':'integer'}]}#2#2",
+      "{'anyOf':[{'type':'string'},{'type':'integer'}]}#'2'#'2'",
+      "{'anyOf':[{'type':'number'},{'type':'integer'}]}#2#2",
+      "{'oneOf':[{'type':'object','properties':{'name':{'type':'string'}}},{'type':'object','properties':{'id':{'type':'integer'}}}]}#{'name':'Jane Doe'}#{'name':'Jane Doe'}",
+      "{'oneOf':[{'type':'object','properties':{'name':{'type':'string'}}},{'type':'object','properties':{'id':{'type':'integer'}}}]}#{'id':1}#{'id':1}",
+      "{'anyOf':[{'type':'object','properties':{'name':{'type':'string'}}},{'type':'object','properties':{'id':{'type':'integer'}}}]}#{'name':'Jane Doe'}#{'name':'Jane Doe'}",
+      "{'anyOf':[{'type':'object','properties':{'name':{'type':'string'}}},{'type':'object','properties':{'id':{'type':'integer'}}}]}#{'id':1}#{'id':1}",
+      "{'anyOf':[{'type':'object','properties':{'name':{'type':'string'}}},{'type':'object','properties':{'id':{'type':'integer'}}}]}#{'id':1,'name':'Jane Doe'}#{'id':1,'name':'Jane Doe'}",
+      "{'allOf':[{'type':'object','properties':{'name':{'type':'string'}}},{'type':'object','properties':{'id':{'type':'integer'}}}]}#{'id':1,'name':'Jane Doe'}#{'id':1,'name':'Jane Doe'}",
+      "{'anyOf':[{'type':'object','properties':{'name':{'type':'string','default':'\\'Jane Doe\\''}}},{'type':'object','properties':{'id':{'type':'integer','default':'1'}}}]}#{}#{'id':1,'name':'Jane Doe'}",
+      "{'allOf':[{'type':'object','properties':{'name':{'type':'string','default':'\\'Jane Doe\\''}}},{'type':'object','properties':{'id':{'type':'integer','default':'1'}}}]}#{}#{'id':1,'name':'Jane Doe'}" })
   public void shouldIsValidOpenAPIValue(final String data, final VertxTestContext testContext) {
 
     final var split = data.replaceAll("'", "\"").split("#");
     final var specification = this.decodeJsonObject(split[0]);
     final var value = this.decodeValue(split[1]);
+    final var expectedValue = this.decodeValue(split[2]);
 
     Validations.validateOpenAPIValue("codePrefix", specification, value)
-        .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
+        .onComplete(testContext.succeeding(validValue -> testContext.verify(() -> {
+
+          if (expectedValue instanceof Number && validValue instanceof Number) {
+
+            assertThat(((Number) validValue).doubleValue()).isCloseTo(((Number) expectedValue).doubleValue(),
+                Offset.offset(0.00001));
+
+          } else {
+
+            assertThat(validValue).isEqualTo(expectedValue);
+          }
+          testContext.completeNow();
+
+        })));
 
   }
 
