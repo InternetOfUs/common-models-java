@@ -520,20 +520,23 @@ public class ValidationsTest {
   /**
    * Check that a {@code null} time stamp is valid.
    *
+   * @param value       that has to be valid.
    * @param testContext test context to use.
    *
    * @see Validations#validateTimeStamp(String, String, Long, boolean)
    */
-  @Test
-  public void shouldNullTimeStampBeValid(final VertxTestContext testContext) {
+  @ParameterizedTest(name = "The timestamp '{0}' has to be valid.")
+  @NullSource
+  @ValueSource(longs = { 0l, 1l, 200l, 43l })
+  public void shouldNullableTimeStampBeValid(final Long value, final VertxTestContext testContext) {
 
-    Validations.validateTimeStamp("codePrefix", "fieldName", null, true)
+    Validations.validateTimeStamp("codePrefix", "fieldName", value, true)
         .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
 
   }
 
   /**
-   * Check that a time stamp is valid.
+   * Check that a {@code null} time stamp is valid.
    *
    * @param value       that has to be valid.
    * @param testContext test context to use.
@@ -542,15 +545,15 @@ public class ValidationsTest {
    */
   @ParameterizedTest(name = "The timestamp '{0}' has to be valid.")
   @ValueSource(longs = { 0l, 1l, 200l, 43l })
-  public void shouldTimeStampBeValid(final Long value, final VertxTestContext testContext) {
+  public void shouldNotNullableimeStampBeValid(final Long value, final VertxTestContext testContext) {
 
-    Validations.validateTimeStamp("codePrefix", "fieldName", value, true)
+    Validations.validateTimeStamp("codePrefix", "fieldName", value, false)
         .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
 
   }
 
   /**
-   * Check that a time stamp is mot valid.
+   * Check that a time stamp is not valid.
    *
    * @param value       that has to be valid.
    * @param testContext test context to use.
@@ -558,10 +561,11 @@ public class ValidationsTest {
    * @see Validations#validateTimeStamp(String, String, Long, boolean)
    */
   @ParameterizedTest(name = "The timestamp '{0}' has not to be valid.")
+  @NullSource
   @ValueSource(longs = { -1l, -200l, -43l })
-  public void shouldTimeStampBeNotValid(final Long value, final VertxTestContext testContext) {
+  public void shouldNotNullableTimeStampBeNotValid(final Long value, final VertxTestContext testContext) {
 
-    Validations.validateTimeStamp("codePrefix", "fieldName", value, true)
+    Validations.validateTimeStamp("codePrefix", "fieldName", value, false)
         .onComplete(testContext.failing(error -> testContext.verify(() -> {
 
           assertThat(error).isInstanceOf(ValidationErrorException.class);
@@ -582,11 +586,10 @@ public class ValidationsTest {
    * @see Validations#validateTimeStamp(String, String, Long, boolean)
    */
   @ParameterizedTest(name = "The value '{0}' is not valid for as timestamp")
-  @NullSource
-  @ValueSource(longs = { -1l })
-  public void shouldNullTimeStampNotBeValid(final Long value, final VertxTestContext testContext) {
+  @ValueSource(longs = { -1l, -200l, -43l })
+  public void shouldNullableTimeStampNotBeValid(final Long value, final VertxTestContext testContext) {
 
-    Validations.validateTimeStamp("codePrefix", "fieldName", value, false)
+    Validations.validateTimeStamp("codePrefix", "fieldName", value, true)
         .onComplete(testContext.failing(error -> testContext.verify(() -> {
 
           assertThat(error).isInstanceOf(ValidationErrorException.class);
@@ -1391,7 +1394,9 @@ public class ValidationsTest {
       "codePrefix.default[1]#{'type':'array','items':{'type':'integer'},'uniqueItems':true,'default':'[1,1,1]'}",
       "codePrefix.uniqueItems#{'type':'string','uniqueItems':true}", "codePrefix.enum#{'type':'string','enum':true}",
       "codePrefix.enum#{'type':'string','enum':[]}", "codePrefix.enum[1]#{'type':'string','enum':['a','a']}",
-      "codePrefix.enum[1]#{'type':'string','enum':['a',null]}", "codePrefix.enum[1]#{'type':'string','enum':['a',2]}",
+      "codePrefix.enum[1]#{'type':'string','enum':['a',null]}",
+      "codePrefix.enum[2]#{'type':'string','nullable':true,'enum':['a',null,null]}",
+      "codePrefix.enum[1]#{'type':'string','enum':['a',2]}",
       "codePrefix.pattern#{'type':'integer','pattern':'^\\\\d{3}-\\\\d{2}-\\\\d{4}$'}",
       "codePrefix.pattern#{'type':'string','pattern':'^\\\\d{$'}", "codePrefix.pattern#{'type':'string','pattern':[]}",
       "codePrefix.uniqueItems#{'type':'string','uniqueItems':false}",
@@ -1423,7 +1428,8 @@ public class ValidationsTest {
       "codePrefix.allOf#{'allOf':[{}],'type':'object'}",
       "codePrefix.oneOf[1].type#{'oneOf':[{'type':'object'},{'type':'undefined'}]}",
       "codePrefix.anyOf[1].type#{'anyOf':[{'type':'object'},{'type':'undefined'}]}",
-      "codePrefix.allOf[1].type#{'allOf':[{'type':'object'},{'type':'undefined'}]}", })
+      "codePrefix.allOf[1].type#{'allOf':[{'type':'object'},{'type':'undefined'}]}",
+      "codePrefix.additionalProperties#{'type':'object','additionalProperties':false}" })
   public void shouldNotBeValidBadOpenAPISpecification(final String data, final VertxTestContext testContext) {
 
     final var split = data.split("#");
@@ -1699,6 +1705,7 @@ public class ValidationsTest {
       "codePrefix#{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2,'uniqueItems':true}#['1','2','1']",
       "codePrefix#{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2,'uniqueItems':true}#['1','2','3']",
       "codePrefix#{'type':'array','items':[],'minItems':1,'maxItems':2,'uniqueItems':true}#['1','2']",
+      "codePrefix[1]#{'type':'array','items':{'type':'string','nullable':true},'uniqueItems':true}#[null,null]",
       "codePrefix#{'type':'object','properties':[]}#{}",
       "codePrefix.field#{'type':'object','properties':{'field':{'nullable':true}},'required':['field']}#{}",
       "codePrefix.undefined#{'type':'object','properties':{'field':{'nullable':false}}}#{'undefined':true}",
@@ -1773,6 +1780,7 @@ public class ValidationsTest {
       "{'type':'object','properties':{'id':{'type':'integer','default':'0'}},'required':['id']}#{}#{'id':0}",
       "{'type':'array','items':{'type':'string'},'uniqueItems':false}#['1','1','1']#['1','1','1']",
       "{'type':'array','items':{'type':'string'},'uniqueItems':true}#['1','2','3']#['1','2','3']",
+      "{'type':'array','items':{'type':'string','nullable':true},'uniqueItems':true}#['1',null,'2','3']#['1',null,'2','3']",
       "{'type':'array','items':{'type':'string'},'minItems':2}#['1','1']#['1','1']",
       "{'type':'array','items':{'type':'string'},'minItems':2}#['1','2','3']#['1','2','3']",
       "{'type':'array','items':{'type':'string'},'maxItems':2}#['1','1']#['1','1']",
@@ -1802,7 +1810,14 @@ public class ValidationsTest {
       "{'anyOf':[{'type':'object','properties':{'name':{'type':'string'}}},{'type':'object','properties':{'id':{'type':'integer'}}}]}#{'id':1,'name':'Jane Doe'}#{'id':1,'name':'Jane Doe'}",
       "{'allOf':[{'type':'object','properties':{'name':{'type':'string'}}},{'type':'object','properties':{'id':{'type':'integer'}}}]}#{'id':1,'name':'Jane Doe'}#{'id':1,'name':'Jane Doe'}",
       "{'anyOf':[{'type':'object','properties':{'name':{'type':'string','default':'\\'Jane Doe\\''}}},{'type':'object','properties':{'id':{'type':'integer','default':'1'}}}]}#{}#{'id':1,'name':'Jane Doe'}",
-      "{'allOf':[{'type':'object','properties':{'name':{'type':'string','default':'\\'Jane Doe\\''}}},{'type':'object','properties':{'id':{'type':'integer','default':'1'}}}]}#{}#{'id':1,'name':'Jane Doe'}" })
+      "{'allOf':[{'type':'object','properties':{'name':{'type':'string','default':'\\'Jane Doe\\''}}},{'type':'object','properties':{'id':{'type':'integer','default':'1'}}}]}#{}#{'id':1,'name':'Jane Doe'}",
+      "{'anyOf':[{'type':'object','properties':{'name':{'type':'string','default':'\\'Jane Doe\\''}}},{'type':'object','properties':{'id':{'type':'integer','default':'1'}}}]}#{'id':null,'name':null}#{'id':1,'name':'Jane Doe'}",
+      "{'allOf':[{'type':'object','properties':{'name':{'type':'string','default':'\\'Jane Doe\\''}}},{'type':'object','properties':{'id':{'type':'integer','default':'1'}}}]}#{'id':null,'name':null}#{'id':1,'name':'Jane Doe'}",
+      "{'oneOf':[{'type':'object','properties':{'id':{'type':'number'}}},{'type':'object','properties':{'id':{'type':'string'}}}],'type':'object','properties':{'name':{'type':'string'}}}#{'id':0,'name':'Jane Doe'}#{'id':0,'name':'Jane Doe'}",
+      "{'anyOf':[{'type':'object','properties':{'id':{'type':'number'}}},{'type':'object','properties':{'id':{'type':'string'}}}],'type':'object','properties':{'name':{'type':'string'}}}#{'id':0,'name':'Jane Doe'}#{'id':0,'name':'Jane Doe'}",
+      "{'allOf':[{'type':'object','properties':{'id':{'oneOf':[{'type':'string'},{'type':'number','default':0}]}}}],'type':'object','properties':{'name':{'type':'string'}}}#{'id':0,'name':'Jane Doe'}#{'id':0,'name':'Jane Doe'}",
+      "{'type':'array','items':{'type':'string','default':'\\'1\\''},'maxItems':2}#[null,null]#['1','1']",
+      "{'type':'object','additionalProperties':{'type':'string','default':'\\'1\\''}}#{'a':null,'b':'2','c':null}#{'a':'1','b':'2','c':'1'}" })
   public void shouldIsValidOpenAPIValue(final String data, final VertxTestContext testContext) {
 
     final var split = data.replaceAll("'", "\"").split("#");

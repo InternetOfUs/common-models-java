@@ -1221,6 +1221,11 @@ public interface Validations {
     public int succedCompose;
 
     /**
+     * This is {@code true} when at least the value has done a match.
+     */
+    public boolean match;
+
+    /**
      * Create a new context.
      *
      * @param codePrefix    the prefix of the code to use for the error message.
@@ -1392,10 +1397,15 @@ public interface Validations {
 
           final var defaultValue = context.specification.getString("default");
           context.value = Json.decodeValue(defaultValue);
+          context.match = true;
 
         } else if (!context.specification.getBoolean("nullable", false)) {
 
           promise.fail(context.notValid("Not allowed a 'null' value."));
+
+        } else {
+
+          context.match = true;
         }
 
       } else {
@@ -1519,18 +1529,26 @@ public interface Validations {
       final var type = oneOf.getJsonObject(i);
       final var subContext = new ValueValidationContext(context.codePrefix, type, context.value);
       // this not a checking compose because only one type has to be valid
+      subContext.checkingCompose = true;
       future = future.compose(chain -> composeValidation(Future.succeededFuture(subContext), Validations::validateValue)
           .transform(subResult -> {
 
             if (subResult.succeeded()) {
 
               final var result = subResult.result();
-              chain.value = result.value;
-              chain.succedCompose++;
-              chain.addFieldNames(result);
-              if (chain.succedCompose > 1) {
+              if (result.match) {
 
-                return Future.failedFuture(chain.notValid("The value match more that one of the possible values"));
+                chain.succedCompose++;
+                if (chain.succedCompose > 1) {
+
+                  return Future.failedFuture(chain.notValid("The value match more that one of the possible values"));
+
+                } else {
+
+                  chain.value = result.value;
+                  chain.addFieldNames(result);
+
+                }
               }
             }
 
@@ -1629,6 +1647,7 @@ public interface Validations {
       subContext.checkingCompose = true;
       future = future.compose(chain -> composeValidation(Future.succeededFuture(subContext), Validations::validateValue)
           .map(validSubContext -> {
+            chain.value = validSubContext.value;
             chain.addFieldNames(validSubContext);
             return chain;
           }));
@@ -1653,19 +1672,29 @@ public interface Validations {
     final var type = context.specification.getString("type");
     switch (type) {
     case "boolean":
-      future = future.compose(chain -> isInstanceOf(Boolean.class, chain.value, chain.codePrefix).map(empty -> chain));
+      future = future.compose(chain -> isInstanceOf(Boolean.class, chain.value, chain.codePrefix).map(empty -> chain))
+          .compose(chain -> {
+            chain.match = true;
+            return Future.succeededFuture(chain);
+          });
       break;
     case "string":
       future = composeValidation(
           future.compose(chain -> isInstanceOf(String.class, chain.value, chain.codePrefix).map(empty -> chain)),
-          Validations::validateStringValue);
+          Validations::validateStringValue).compose(chain -> {
+            chain.match = true;
+            return Future.succeededFuture(chain);
+          });
       break;
     case "integer":
       future = future.compose(chain -> isInstanceOfInteger(chain.value, chain.codePrefix).map(empty -> chain));
     case "number":
       future = composeValidation(
           future.compose(chain -> isInstanceOf(Number.class, chain.value, chain.codePrefix).map(empty -> chain)),
-          Validations::validateNumberValue);
+          Validations::validateNumberValue).compose(chain -> {
+            chain.match = true;
+            return Future.succeededFuture(chain);
+          });
       break;
     case "object":
       future = composeValidation(
@@ -1811,6 +1840,7 @@ public interface Validations {
 
                   chainArray.set(pos, validElement);
                 }
+                chain.match = true;
                 return chain;
               }));
 
@@ -1880,6 +1910,7 @@ public interface Validations {
         final var fieldType = properties.getJsonObject(field);
         if (value.containsKey(field)) {
 
+          context.match = true;
           final var fieldValue = value.getValue(field);
           future = future.compose(
               chain -> validateOpenAPIValue(context.codePrefix + "." + field, fieldType, fieldValue).map(validValue -> {
@@ -1905,6 +1936,7 @@ public interface Validations {
 
                     ((JsonObject) chain.value).put(field, result);
                   }
+                  chain.match = true;
                 }
 
                 return Future.succeededFuture(chain);
@@ -1935,6 +1967,7 @@ public interface Validations {
 
                       ((JsonObject) chain.value).put(field, validValue);
                     }
+                    chain.match = true;
 
                     return chain;
                   }));
