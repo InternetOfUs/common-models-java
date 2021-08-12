@@ -33,11 +33,16 @@ import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 
@@ -637,177 +642,329 @@ public interface Validations {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    ValidationErrorException error = null;
     if (specification == null) {
 
-      error = new ValidationErrorException(codePrefix, "The OpenAPI specification can not be null.");
+      promise.fail(new ValidationErrorException(codePrefix, "The OpenAPI specification can not be null."));
 
     } else if (!specification.isEmpty()) {
 
-      var foundType = false;
-      for (final var fieldName : specification.fieldNames()) {
+      if (!specification.containsKey("type") && !specification.containsKey("oneOf")
+          && !specification.containsKey("anyOf") && !specification.containsKey("allOf")
+          && !specification.containsKey("$ref")) {
 
-        final var value = specification.getValue(fieldName);
-        switch (fieldName) {
-        case "type":
-          error = checkType(codePrefix, value, specification);
-          foundType = true;
-          break;
-        case "minimum":
-        case "maximum":
-        case "multipleOf":
-        case "exclusiveMinimum":
-        case "exclusiveMaximum":
-          error = checkTypeNumberArguments(codePrefix, fieldName, value, specification);
-          break;
-        case "default":
-          future = future.compose(empty -> checkDefault(codePrefix, value, specification));
-          break;
-        case "properties":
-          if (value instanceof JsonObject) {
+        promise.fail(new ValidationErrorException(codePrefix, "You must define the 'type'."));
 
-            future = future.compose(empty -> validateOpenAPIProperties(codePrefix, (JsonObject) value));
+      } else {
 
-          } else {
+        FIELDS: for (final var fieldName : specification.fieldNames()) {
 
-            error = new ValidationErrorException(codePrefix + ".properties", "Expecting a JSON object.");
-          }
-          break;
-        case "additionalProperties":
-          if (specification.containsKey("properties")) {
-
-            error = new ValidationErrorException(codePrefix + ".additionalProperties",
-                "You can not use additionalProperties when are properties defined.");
+          final var value = specification.getValue(fieldName);
+          final var fieldPrefix = codePrefix + "." + fieldName;
+          switch (fieldName) {
+          case "type":
+            future = future.compose(empty -> checkType(fieldPrefix, value, specification));
             break;
+          case "maximum":
+            future = future.compose(empty -> isNotLessThan("minimum", value, specification, fieldPrefix));
+          case "minimum":
+          case "multipleOf":
+            future = future.compose(empty -> ifTypeIs("integer", specification,
+                () -> isInstanceOf(Number.class, value, fieldPrefix), () -> typeIs("number", specification, fieldPrefix)
+                    .compose(empty2 -> isInstanceOf(Number.class, value, fieldPrefix))));
+            break;
+          case "exclusiveMinimum":
+          case "exclusiveMaximum":
+            future = future.compose(empty -> isInstanceOf(Boolean.class, value, fieldPrefix))
+                .compose(empty -> ifTypeIs("integer", specification, () -> Future.succeededFuture(),
+                    () -> typeIs("number", specification, fieldPrefix)));
+            break;
+          case "default":
+            future = future.compose(empty -> checkDefault(fieldPrefix, value, specification));
+            break;
+          case "properties":
+            future = future.compose(empty -> isInstanceOf(JsonObject.class, value, fieldPrefix))
+                .compose(empty -> validateOpenAPIProperties(fieldPrefix, (JsonObject) value));
+            break;
+          case "items":
+            future = future.compose(empty -> isInstanceOf(JsonObject.class, value, fieldPrefix))
+                .compose(empty -> validateOpenAPISpecification(fieldPrefix, (JsonObject) value));
+            break;
+          case "nullable":
+            future = future.compose(empty -> isInstanceOf(Boolean.class, value, fieldPrefix));
+            break;
+          case "required":
+            future = future.compose(empty -> typeIs("object", specification, fieldPrefix))
+                .compose(empty -> isInstanceOf(JsonArray.class, value, fieldPrefix))
+                .compose(empty -> checkRequired(fieldPrefix, (JsonArray) value, specification));
+            break;
+          case "uniqueItems":
+            future = future.compose(empty -> isInstanceOf(Boolean.class, value, fieldPrefix))
+                .compose(empty -> typeIs("array", specification, fieldPrefix));
+            break;
+          case "maxItems":
+            future = future.compose(empty -> isNotLessThan("minItems", value, specification, fieldPrefix));
+          case "minItems":
+            future = future.compose(empty -> isInstanceOfInteger(value, fieldPrefix))
+                .compose(empty -> typeIs("array", specification, fieldPrefix));
+            break;
+          case "enum":
+            future = future.compose(empty -> checkEnum(fieldPrefix, value, specification));
+            break;
+          case "maxLength":
+            future = future.compose(empty -> isNotLessThan("minLength", value, specification, fieldPrefix));
+          case "minLength":
+            future = future.compose(empty -> isInstanceOfInteger(value, fieldPrefix))
+                .compose(empty -> typeIs("string", specification, fieldPrefix));
+            break;
+          case "pattern":
+            future = future.compose(empty -> isInstanceOf(String.class, value, fieldPrefix))
+                .compose(empty -> typeIs("string", specification, fieldPrefix)).compose(empty -> {
+                  try {
+
+                    Pattern.compile((String) value);
+                    return Future.succeededFuture();
+
+                  } catch (final Throwable cause) {
+
+                    return Future.failedFuture(
+                        new ValidationErrorException(fieldPrefix, "You pattern is not right formatted.", cause));
+
+                  }
+
+                });
+            break;
+          case "additionalProperties":
+            if (value instanceof Boolean && ((Boolean) value).booleanValue()) {
+
+              future = future.compose(empty -> notContains("properties", specification, fieldPrefix));
+
+            } else {
+
+              future = future.compose(empty -> isInstanceOf(JsonObject.class, value, fieldPrefix))
+                  .compose(empty -> validateOpenAPISpecification(fieldPrefix, (JsonObject) value))
+                  .compose(empty -> typeIs("object", specification, fieldPrefix))
+                  .compose(empty -> notContains("properties", specification, fieldPrefix));
+            }
+            break;
+          case "maxProperties":
+            future = future.compose(empty -> isNotLessThan("minProperties", value, specification, fieldPrefix));
+          case "minProperties":
+            future = future.compose(empty -> isInstanceOfInteger(value, fieldPrefix))
+                .compose(empty -> typeIs("object", specification, fieldPrefix))
+                .compose(empty -> notContains("properties", specification, fieldPrefix));
+            break;
+          case "oneOf":
+          case "anyOf":
+          case "allOf":
+            future = future.compose(empty -> checkComposedType(value, specification, fieldPrefix))
+                .compose(empty -> notContains("type", specification, fieldPrefix));
+            break;
+          case "not":
+          case "$ref":
+            promise.fail(new ValidationErrorException(fieldPrefix, "This feature is not supported yet."));
+            break FIELDS;
+          case "description":
+          case "title":
+            future = future.compose(empty -> typeIs("string", specification, fieldPrefix));
+            break;
+          case "example":
+          case "examples":
+            // Allow free examples because are not used for anything
+          case "format":
+            // No format is validated so it is unused
+            break;
+          default:
+            promise.fail(new ValidationErrorException(fieldPrefix, "Unexpected OpenAPI field."));
+            break FIELDS;
           }
-        case "items":
-          if (value instanceof JsonObject) {
 
-            future = future
-                .compose(empty -> validateOpenAPISpecification(codePrefix + "." + fieldName, (JsonObject) value));
-
-          } else {
-
-            error = new ValidationErrorException(codePrefix + "." + fieldName, "Expecting a JSON object.");
-          }
-          break;
-        case "nullable":
-          if (!(value instanceof Boolean)) {
-
-            error = new ValidationErrorException(codePrefix + ".nullable", "Expecting a boolean value.");
-          }
-          break;
-        case "required":
-          error = checkRequired(codePrefix, value, specification);
-          break;
-        case "uniqueItems":
-        case "minItems":
-        case "maxItems":
-          error = checkTypeArrayArguments(codePrefix, fieldName, value, specification);
-          break;
-        case "enum":
-          future = future.compose(empty -> checkEnum(codePrefix, value, specification));
-          break;
-        case "maxLength":
-        case "minLength":
-        case "pattern":
-          error = checkTypeStringArguments(codePrefix, fieldName, value, specification);
-          break;
-        case "minProperties":
-        case "maxProperties":
-        case "format":
-        case "oneOf":
-        case "anyOf":
-        case "allOf":
-        case "not":
-        case "$ref":
-          error = new ValidationErrorException(codePrefix + "." + fieldName, "This feature is not supported yet.");
-          break;
-        case "description":
-        case "title":
-          if (!(value instanceof String)) {
-
-            error = new ValidationErrorException(codePrefix + "." + fieldName, "Expecting a string value.");
-          }
-          break;
-        case "example":
-        case "examples":
-          // Allow free examples because are not used for anything
-          break;
-        default:
-          error = new ValidationErrorException(codePrefix + "." + fieldName, "Undefined specification field.");
         }
-        if (error != null) {
-
-          break;
-        }
-
-      }
-
-      if (!foundType && error == null) {
-
-        error = new ValidationErrorException(codePrefix, "You must define the 'type' of the field.");
-
       }
 
     } // else accept any value
 
-    if (error != null) {
-
-      promise.fail(error);
-
-    } else {
-
-      promise.complete();
-    }
+    promise.tryComplete();
     return future;
   }
 
   /**
-   * Check the pattern field.
+   * Check the values that form a composed type.
    *
+   * @param value         of the composed type.
+   * @param specification where the composed type is defined.
    * @param codePrefix    the prefix of the code to use for the error message.
-   * @param fieldName     the string argument to check.
-   * @param value         of the pattern field.
-   * @param specification that is checking.
    *
-   * @return {@code null} if the pattern is right or an error that explains why it
-   *         is not right.
+   * @return The future that check if the value is of the specified type.
    */
-  private static ValidationErrorException checkTypeStringArguments(final String codePrefix, final String fieldName,
-      final Object value, final JsonObject specification) {
+  static Future<Void> checkComposedType(final Object value, final JsonObject specification, final String codePrefix) {
 
-    if (!"string".equals(specification.getValue("type"))) {
+    return isInstanceOf(JsonArray.class, value, codePrefix).compose(empty -> {
 
-      return new ValidationErrorException(codePrefix + "." + fieldName,
-          "You only can use pattern if the type is a string.");
+      final Promise<Void> promise = Promise.promise();
+      var future = promise.future();
+      final var array = (JsonArray) value;
+      final var max = array.size();
+      if (max == 0) {
 
-    } else if ("pattern".equals(fieldName)) {
-
-      if (!(value instanceof String)) {
-
-        return new ValidationErrorException(codePrefix + ".pattern", "Expecting a string value.");
+        promise.fail(new ValidationErrorException(codePrefix, "Expecting at least one type definition."));
 
       } else {
-        try {
 
-          Pattern.compile((String) value);
-          return null;
+        for (var i = 0; i < max; i++) {
 
-        } catch (final Throwable cause) {
-
-          return new ValidationErrorException(codePrefix + ".pattern", "You pattern is not right formatted.", cause);
-
+          final var pos = i;
+          final var element = array.getValue(pos);
+          final var elementPrefix = codePrefix + "[" + pos + "]";
+          future = future.compose(empty2 -> isInstanceOf(JsonObject.class, element, elementPrefix))
+              .compose(empty2 -> validateOpenAPISpecification(elementPrefix, (JsonObject) element));
         }
+
+        promise.complete();
       }
+      return future;
+    });
 
-    } else if (!(value instanceof Integer) && !(value instanceof Long)) {
+  }
 
-      return new ValidationErrorException(codePrefix + "." + fieldName, "Expecting an integer value.");
+  /**
+   * Check that a value is of the specified class type.
+   *
+   * @param clazz      that the value has to be instance of.
+   * @param value      to validate.
+   * @param codePrefix the prefix of the code to use for the error message.
+   *
+   * @return The future that check if the value is of the specified type.
+   */
+  private static Future<Void> isInstanceOf(@NotNull final Class<?> clazz, final Object value,
+      @NotNull final String codePrefix) {
+
+    if (clazz.isInstance(value)) {
+
+      return Future.succeededFuture();
 
     } else {
 
-      return null;
+      return Future
+          .failedFuture(new ValidationErrorException(codePrefix, "Expecting a '" + clazz.getSimpleName() + "'."));
+    }
+
+  }
+
+  /**
+   * Check that a value is of the specified is an integer value.
+   *
+   * @param value      to validate.
+   * @param codePrefix the prefix of the code to use for the error message.
+   *
+   * @return The future that check if the value is an integer.
+   */
+  private static Future<Void> isInstanceOfInteger(@NotNull final Object value, @NotNull final String codePrefix) {
+
+    if (value instanceof Long || value instanceof Integer) {
+
+      return Future.succeededFuture();
+
+    } else {
+
+      return Future.failedFuture(new ValidationErrorException(codePrefix, "Expecting an 'integer'."));
+    }
+
+  }
+
+  /**
+   * Check that the type of the specification is the expected one.
+   *
+   * @param type          that is expected.
+   * @param specification where the type has to be defined.
+   * @param codePrefix    the prefix of the code to use for the error message.
+   *
+   * @return The future that check if the value is an integer.
+   */
+  private static Future<Void> typeIs(@NotNull final String type, @NotNull final JsonObject specification,
+      @NotNull final String codePrefix) {
+
+    if (type.equals(specification.getString("type", null))) {
+
+      return Future.succeededFuture();
+
+    } else {
+
+      return Future.failedFuture(
+          new ValidationErrorException(codePrefix, "You only can use this feature if 'type'='" + type + "'."));
+    }
+
+  }
+
+  /**
+   * Do an action if the type is the specified.
+   *
+   * @param type          that is expected.
+   * @param specification where the type has to be defined.
+   * @param success       to use if the type is the expected one.
+   * @param failure       to use if the type is not the expected one.
+   *
+   * @return The success future if is the specified type or the failure future
+   *         otherwise.
+   */
+  private static Future<Void> ifTypeIs(@NotNull final String type, @NotNull final JsonObject specification,
+      @NotNull final Supplier<Future<Void>> success, @NotNull final Supplier<Future<Void>> failure) {
+
+    if (type.equals(specification.getString("type", null))) {
+
+      return success.get();
+
+    } else {
+
+      return failure.get();
+    }
+
+  }
+
+  /**
+   * Check that a value is not less taht the value defined in another element.
+   *
+   * @param min           name of the field that the value can not be less than.
+   * @param max           value to compare.
+   * @param specification where the value is defined.
+   * @param codePrefix    the prefix of the code to use for the error message.
+   *
+   * @return The future that check if the value is an integer.
+   */
+  private static Future<Void> isNotLessThan(@NotNull final String min, final Object max,
+      @NotNull final JsonObject specification, @NotNull final String codePrefix) {
+
+    if (max instanceof Number && ((Number) max).longValue() >= specification.getNumber(min, 0).longValue()) {
+
+      return Future.succeededFuture();
+
+    } else {
+
+      return Future.failedFuture(new ValidationErrorException(codePrefix, "It can not be less than '" + min + "'."));
+    }
+
+  }
+
+  /**
+   * Check that the specification not contains the specified key.
+   *
+   * @param key           that has not be defined on the specification.
+   * @param specification where the value is defined.
+   * @param codePrefix    the prefix of the code to use for the error message.
+   *
+   * @return The future that check if the specification contains the key.
+   */
+  private static Future<Void> notContains(@NotNull final String key, @NotNull final JsonObject specification,
+      @NotNull final String codePrefix) {
+
+    if (specification.containsKey(key)) {
+
+      return Future
+          .failedFuture(new ValidationErrorException(codePrefix, "You can not use this feature with '" + key + "'."));
+
+    } else {
+
+      return Future.succeededFuture();
+
     }
 
   }
@@ -823,16 +980,15 @@ public interface Validations {
    */
   private static Future<Void> checkEnum(final String codePrefix, final Object value, final JsonObject specification) {
 
-    final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
-    ValidationErrorException error = null;
-    if (value instanceof JsonArray) {
+    return isInstanceOf(JsonArray.class, value, codePrefix).compose(empty -> {
 
+      final Promise<Void> promise = Promise.promise();
+      var future = promise.future();
       final var array = (JsonArray) value;
       final var max = array.size();
       if (max == 0) {
 
-        error = new ValidationErrorException(codePrefix + ".enum", "Expecting at least one value for the enum.");
+        promise.fail(new ValidationErrorException(codePrefix, "Expecting at least one value for the enum."));
 
       } else {
 
@@ -845,7 +1001,7 @@ public interface Validations {
             final var otherValue = array.getValue(j);
             if (enumValue == otherValue || otherValue != null && otherValue.equals(enumValue)) {
 
-              error = new ValidationErrorException(codePrefix + ".enum[" + j + "]", "Duplicated enum value.");
+              promise.fail(new ValidationErrorException(codePrefix + "[" + j + "]", "Duplicated enum value."));
               break I;
             }
 
@@ -854,75 +1010,26 @@ public interface Validations {
 
             if (!specification.getBoolean("nullable", false)) {
 
-              error = new ValidationErrorException(codePrefix + ".enum[" + pos + "]",
-                  "The type not allow null values.");
+              promise
+                  .fail(new ValidationErrorException(codePrefix + "[" + pos + "]", "The type not allow null values."));
               break;
             }
 
           } else {
 
             future = future
-                .compose(empty -> validateOpenAPIValue(codePrefix + ".enum[" + pos + "]", specification, enumValue));
+                .compose(empty2 -> validateOpenAPIValue(codePrefix + "[" + pos + "]", specification, enumValue)
+                    .map(any -> null));
           }
 
         }
 
+        promise.tryComplete();
+
       }
 
-    } else {
-
-      error = new ValidationErrorException(codePrefix + ".enum", "Expecting an array of values.");
-    }
-
-    if (error != null) {
-
-      promise.fail(error);
-
-    } else {
-
-      promise.complete();
-    }
-    return future;
-  }
-
-  /**
-   * Check the arguments associated to an array.
-   *
-   * @param codePrefix    the prefix of the code to use for the error message.
-   * @param fieldName     name of the field to compare.
-   * @param value         of the field.
-   * @param specification that is checking.
-   *
-   * @return {@code null} if the array argument is right or an error that explains
-   *         why it is not right.
-   */
-  private static ValidationErrorException checkTypeArrayArguments(final String codePrefix, final String fieldName,
-      final Object value, final JsonObject specification) {
-
-    ValidationErrorException error = null;
-    if (!"array".equals(specification.getValue("type"))) {
-
-      return new ValidationErrorException(codePrefix + "." + fieldName,
-          "You only can use this if the type is an array.");
-
-    } else if ("uniqueItems".equals(fieldName)) {
-
-      if (!(value instanceof Boolean)) {
-
-        error = new ValidationErrorException(codePrefix + ".uniqueItems", "Expecting a boolean value.");
-      }
-
-    } else if (!(value instanceof Integer) && !(value instanceof Long)) {
-
-      error = new ValidationErrorException(codePrefix + "." + fieldName, "Expecting an integer value.");
-
-    } else if ("maxItems".equals(fieldName)
-        && ((Number) value).longValue() < specification.getNumber("minItems", 0).longValue()) {
-
-      error = new ValidationErrorException(codePrefix + ".maxItems", "The maximum can not be less that the minimum.");
-    }
-
-    return error;
+      return future;
+    });
   }
 
   /**
@@ -937,23 +1044,18 @@ public interface Validations {
   private static Future<Void> checkDefault(final String codePrefix, final Object value,
       final JsonObject specification) {
 
-    if (value instanceof String) {
+    return isInstanceOf(String.class, value, codePrefix).compose(empty -> {
 
       try {
 
         final var decoded = Json.decodeValue((String) value);
-        return validateOpenAPIValue(codePrefix + ".default", specification, decoded);
+        return validateOpenAPIValue(codePrefix, specification, decoded).map(any -> null);
 
       } catch (final Throwable cause) {
 
-        return Future
-            .failedFuture(new ValidationErrorException(codePrefix + ".default", "Bad encoded JSON value.", cause));
+        return Future.failedFuture(new ValidationErrorException(codePrefix, "Bad encoded JSON value.", cause));
       }
-
-    } else {
-
-      return Future.failedFuture(new ValidationErrorException(codePrefix + ".default", "Expecting a string value."));
-    }
+    });
 
   }
 
@@ -964,51 +1066,41 @@ public interface Validations {
    * @param value         of the required field.
    * @param specification that is checking.
    *
-   * @return {@code null} if the required is right or an error that explains why
-   *         it is not right.
+   * @return The future that says if the required value is valid or not.
    */
-  private static ValidationErrorException checkRequired(final String codePrefix, final Object value,
+  private static Future<Void> checkRequired(final String codePrefix, final JsonArray value,
       final JsonObject specification) {
 
-    if (!"object".equals(specification.getValue("type"))) {
+    final Promise<Void> promise = Promise.promise();
+    final var array = value;
+    final var max = array.size();
+    if (max == 0) {
 
-      return new ValidationErrorException(codePrefix + ".required",
-          "The required field needs to be used with an object type.");
-
-    } else if (value instanceof JsonArray) {
-
-      final var array = (JsonArray) value;
-      final var max = array.size();
-      if (max == 0) {
-
-        return new ValidationErrorException(codePrefix + ".required",
-            "The required field needs at least one field name.");
-
-      } else {
-
-        final var properties = specification.getJsonObject("properties", null);
-        for (var i = 0; i < max; i++) {
-
-          final var property = array.getValue(i);
-          if (!(property instanceof String)) {
-
-            return new ValidationErrorException(codePrefix + ".required[" + i + "]", "Expecting a string value.");
-
-          } else if (properties != null && !properties.containsKey((String) property)) {
-
-            return new ValidationErrorException(codePrefix + ".required[" + i + "]",
-                "The required field is not defined in the properties.");
-          }
-
-        }
-      }
-
-      return null;
+      promise.fail(new ValidationErrorException(codePrefix, "The required field needs at least one field name."));
 
     } else {
 
-      return new ValidationErrorException(codePrefix + ".required", "Expecting a JSON array.");
+      final var properties = specification.getJsonObject("properties", null);
+      for (var i = 0; i < max; i++) {
+
+        final var property = array.getValue(i);
+        if (!(property instanceof String)) {
+
+          promise.fail(new ValidationErrorException(codePrefix + "[" + i + "]", "Expecting a string value."));
+          break;
+
+        } else if (properties != null && !properties.containsKey((String) property)) {
+
+          promise.fail(new ValidationErrorException(codePrefix + "[" + i + "]",
+              "The required field is not defined in the properties."));
+          break;
+        }
+
+      }
+      promise.tryComplete();
     }
+
+    return promise.future();
 
   }
 
@@ -1024,7 +1116,6 @@ public interface Validations {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-
     if (properties == null) {
 
       promise.fail(new ValidationErrorException(codePrefix, "The OpenAPI specification can not be null."));
@@ -1055,59 +1146,19 @@ public interface Validations {
   }
 
   /**
-   * Check the type specification field is valid for a number type.
-   *
-   * @param codePrefix    the prefix for the error codes.
-   * @param fieldName     the name of the checking specification field.
-   * @param value         of the specification field name.
-   * @param specification where the field is defined.
-   *
-   * @return {@code null} if the type is valid or the exception that explains why
-   *         the type is not valid.
-   */
-  private static ValidationErrorException checkTypeNumberArguments(final String codePrefix, final String fieldName,
-      final Object value, final JsonObject specification) {
-
-    final var type = specification.getString("type");
-    if (type != null && ("integer".equals(type) || "number".equals(type))) {
-
-      if (fieldName.startsWith("exclusive")) {
-
-        if (!(value instanceof Boolean)) {
-
-          return new ValidationErrorException(codePrefix + "." + fieldName, "Requires a boolean value.");
-        }
-
-      } else if (!(value instanceof Number)) {
-
-        return new ValidationErrorException(codePrefix + "." + fieldName, "Requires a numeric value.");
-
-      }
-
-    } else {
-
-      return new ValidationErrorException(codePrefix + "." + fieldName,
-          "This field only can be used when the type is 'integer' or 'number'.");
-    }
-
-    return null;
-  }
-
-  /**
    * Check the type specification.
    *
    * @param codePrefix    the prefix for the error codes.
    * @param value         of the type.
    * @param specification where the type is defined.
    *
-   * @return {@code null} if the type is valid or the exception that explains why
-   *         the type is not valid.
+   * @return The future that say if the type is valid or not.
    */
-  private static ValidationErrorException checkType(final String codePrefix, final Object value,
-      final JsonObject specification) {
+  private static Future<Void> checkType(final String codePrefix, final Object value, final JsonObject specification) {
 
-    if (value instanceof String) {
+    return isInstanceOf(String.class, value, codePrefix).compose(empty -> {
 
+      final Promise<Void> promise = Promise.promise();
       final var typeName = (String) value;
       switch (typeName) {
       case "boolean":
@@ -1120,20 +1171,159 @@ public interface Validations {
       case "array":
         if (!specification.containsKey("items")) {
 
-          return new ValidationErrorException(codePrefix + ".items",
-              "You must define the field 'items' when the 'type' = 'array'.");
+          promise.fail(
+              new ValidationErrorException(codePrefix, "You must define the field 'items' when the 'type' = 'array'."));
         }
         break;
       default:
-        return new ValidationErrorException(codePrefix + ".type", "Unexpected 'type' value.");
+        promise.fail(new ValidationErrorException(codePrefix, "Undefined 'type' value."));
       }
-      return null;
 
-    } else {
+      promise.tryComplete();
+      return promise.future();
 
-      return new ValidationErrorException(codePrefix + ".type", "Unexpected 'type' value.");
+    });
+  }
+
+  /**
+   * Create the context to validate the value.
+   */
+  public class ValueValidationContext {
+
+    /**
+     * The prefix of the code to use for the error message.
+     */
+    public String codePrefix;
+
+    /**
+     * The specification that has to satisfy the value
+     */
+    public JsonObject specification;
+
+    /**
+     * The value to validate
+     */
+    public Object value;
+
+    /**
+     * The names of the fields that has been defined.
+     */
+    public Set<String> fieldNames;
+
+    /**
+     * Create a new context.
+     *
+     * @param codePrefix    the prefix of the code to use for the error message.
+     * @param specification that has to satisfy the value.
+     * @param value         to validate.
+     */
+    public ValueValidationContext(@NotNull final String codePrefix, @NotNull final JsonObject specification,
+        final Object value) {
+
+      this.codePrefix = codePrefix;
+      this.specification = specification;
+      this.value = value;
+      this.fieldNames = null;
 
     }
+
+    /**
+     * Create an exception that explains why the context is not valid.
+     *
+     * @param message a brief description of the error to be read by a human.
+     *
+     * @return the exception with the message.
+     */
+    public ValidationErrorException notValid(final String message) {
+
+      return this.notValid("", message, null);
+    }
+
+    /**
+     * Create an exception that explains why the context is not valid.
+     *
+     * @param message a brief description of the error to be read by a human.
+     * @param cause   because the model is not right.
+     *
+     * @return the exception with the message and the cause.
+     */
+    public ValidationErrorException notValid(final String message, final Throwable cause) {
+
+      return this.notValid("", message, cause);
+    }
+
+    /**
+     * Create an exception that explains why the context is not valid.
+     *
+     * @param partialPrefix prefix to append to the code prefix.
+     * @param message       a brief description of the error to be read by a human.
+     *
+     * @return the exception with the message and the cause.
+     */
+    public ValidationErrorException notValid(final String partialPrefix, final String message) {
+
+      return this.notValid(partialPrefix, message, null);
+    }
+
+    /**
+     * Create an exception that explains why the context is not valid.
+     *
+     * @param partialPrefix prefix to append to the code prefix.
+     * @param message       a brief description of the error to be read by a human.
+     * @param cause         because the model is not right.
+     *
+     * @return the exception with the message and the cause.
+     */
+    public ValidationErrorException notValid(final String partialPrefix, final String message, final Throwable cause) {
+
+      return new ValidationErrorException(this.codePrefix + partialPrefix, message, cause);
+    }
+
+    /**
+     * Add the filed names of the specified component.
+     *
+     * @param properties to get the field names.
+     */
+    public void addFieldNames(final JsonObject properties) {
+
+      if (this.fieldNames == null) {
+
+        this.fieldNames = new HashSet<>();
+      }
+      this.fieldNames.addAll(properties.fieldNames());
+    }
+
+  }
+
+  /**
+   * Compose a value validation.
+   *
+   * @param future    to compose.
+   * @param validator to execute.
+   *
+   * @return the future with the valid context.
+   */
+  private static Future<ValueValidationContext> composeValidation(final Future<ValueValidationContext> future,
+      final BiFunction<Promise<ValueValidationContext>, ValueValidationContext, Future<ValueValidationContext>> validator) {
+
+    return future.compose(context -> {
+
+      final Promise<ValueValidationContext> promise = Promise.promise();
+      var chain = promise.future();
+      try {
+
+        chain = validator.apply(promise, context);
+
+      } catch (final Throwable cause) {
+
+        promise.fail(context.notValid("The OpenAPI specification is not valid.", cause));
+      }
+
+      promise.tryComplete(context);
+      return chain;
+
+    });
+
   }
 
   /**
@@ -1146,395 +1336,507 @@ public interface Validations {
    * @return the future that says if the value follows or not the OpenAPI
    *         specification.
    */
-  static Future<Void> validateOpenAPIValue(final String codePrefix, final JsonObject specification,
+  static Future<Object> validateOpenAPIValue(@NotNull final String codePrefix, @NotNull final JsonObject specification,
       final Object value) {
 
-    final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
-    ValidationErrorException error = null;
-    try {
+    return composeValidation(Future.succeededFuture(new ValueValidationContext(codePrefix, specification, value)),
+        (promise, context) -> {
 
-      if (!specification.isEmpty()) {
+          var future = promise.future();
+          if (!specification.isEmpty()) {
 
-        if (value == null) {
-          // check if specification is nullable
-          if (!specification.getBoolean("nullable", false)) {
+            if (value == null) {
 
-            error = new ValidationErrorException(codePrefix, "The value cannot be null.");
-          }
+              if (context.specification.containsKey("default")) {
 
-        } else {
+                final var defaultValue = specification.getString("default");
+                context.value = Json.decodeValue(defaultValue);
 
-          final var type = specification.getString("type");
-          if (type != null) {
+              } else if (!context.specification.getBoolean("nullable", false)) {
 
-            switch (type) {
-            case "boolean":
-              if (!(value instanceof Boolean)) {
-
-                error = new ValidationErrorException(codePrefix, "The value must be a boolean.");
+                promise.fail(context.notValid("Not allowed a 'null' value."));
               }
-              break;
-            case "integer":
-              if (!(value instanceof Integer) && !(value instanceof Long)) {
 
-                error = new ValidationErrorException(codePrefix, "The value must be an integer.");
-                break;
+            } else {
+
+              if (specification.containsKey("oneOf")) {
+
+                future = composeValidation(future, Validations::validateOneOfValue);
+
               }
-            case "number":
-              if (!(value instanceof Number)) {
 
-                error = new ValidationErrorException(codePrefix, "The value must be a number.");
+              if (specification.containsKey("anyOf")) {
 
-              } else {
+                future = composeValidation(future, Validations::validateAnyOfValue);
 
-                error = checkOpenAPINumber(codePrefix, specification, (Number) value);
               }
-              break;
-            case "string":
-              if (!(value instanceof String)) {
 
-                error = new ValidationErrorException(codePrefix, "The value must be a string.");
+              if (specification.containsKey("allOf")) {
 
-              } else {
+                future = composeValidation(future, Validations::validateAllOfValue);
 
-                error = checkStringValue(codePrefix, specification, (String) value);
               }
-              break;
-            case "object":
-              if (!(value instanceof JsonObject)) {
 
-                error = new ValidationErrorException(codePrefix, "The value must be a JSON object.");
+              if (specification.containsKey("type")) {
 
-              } else {
+                future = composeValidation(future, Validations::validateTypeValue);
 
-                future = future.compose(empty -> checkJsonObjectValue(codePrefix, specification, (JsonObject) value));
               }
-              break;
-            case "array":
-              if (!(value instanceof JsonArray)) {
 
-                error = new ValidationErrorException(codePrefix, "The value must be a JSON array.");
+              if (specification.containsKey("enum")) {
 
-              } else {
+                future = composeValidation(future, Validations::validateEnumValue);
 
-                future = future.compose(empty -> checkJsonArrayValue(codePrefix, specification, (JsonArray) value));
               }
-              break;
-            default:
-              error = new ValidationErrorException(codePrefix, "Unexpected 'type' specificationvalue.");
+              if (specification.containsKey("required")) {
+
+                future = composeValidation(future, Validations::validateRequiredValue);
+
+              }
+
+              future = composeValidation(future, Validations::validateUndefinedFieldsInValue);
+
             }
-          }
-        }
 
-        final var enumValues = specification.getJsonArray("enum", null);
-        if (enumValues != null && !enumValues.contains(value)) {
+          } // else accept any value
 
-          error = new ValidationErrorException(codePrefix, "Unexpected value for the enum type.");
-        }
+          return future;
 
-      } // else accept any value
-
-    } catch (final Throwable cause) {
-
-      error = new ValidationErrorException(codePrefix, "The OpenAPI specification is not valid.", cause);
-    }
-
-    if (error != null) {
-
-      promise.fail(error);
-
-    } else {
-
-      promise.complete();
-    }
-    return future;
+        }).map(context -> context.value);
 
   }
 
   /**
-   * Check that a JSON array match an OpenAPI specification.
+   * Validate that the value has the required properties.
    *
-   * @param codePrefix    the prefix of the code to use for the error message.
-   * @param specification that has to satisfy the array.
-   * @param value         to validate.
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
    *
-   * @return the future that says if the JSON Object value follows or not the
-   *         OpenAPI specification.
+   * @return the future that says if the value is valid or not.
    */
-  private static Future<Void> checkJsonArrayValue(final String codePrefix, final JsonObject specification,
-      final JsonArray value) {
+  static Future<ValueValidationContext> validateRequiredValue(@NotNull final Promise<ValueValidationContext> promise,
+      @NotNull final ValueValidationContext context) {
 
-    final Promise<Void> promise = Promise.promise();
+    final var object = (JsonObject) context.value;
+    final var required = context.specification.getJsonArray("required");
+    final var max = required.size();
+    for (var i = 0; i < max; i++) {
+
+      final var key = required.getString(i);
+      if (!object.containsKey(key)) {
+
+        promise.fail(context.notValid("." + key, "The field '" + key + "' is required."));
+        break;
+      }
+
+    }
+
+    return promise.future();
+
+  }
+
+  /**
+   * Validate that the value is one of the enumerated ones.
+   *
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
+   *
+   * @return the future that says if the value is valid or not.
+   */
+  static Future<ValueValidationContext> validateEnumValue(@NotNull final Promise<ValueValidationContext> promise,
+      @NotNull final ValueValidationContext context) {
+
+    final var enumValues = context.specification.getJsonArray("enum");
+    if (!enumValues.contains(context.value)) {
+
+      promise.fail(new ValidationErrorException(context.codePrefix, "Expecting a value in " + enumValues + "."));
+
+    }
+
+    return promise.future();
+
+  }
+
+  /**
+   * Validate that the value is one of the specified values.
+   *
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
+   *
+   * @return the future that says if the value is valid or not.
+   */
+  static private Future<ValueValidationContext> validateOneOfValue(
+      @NotNull final Promise<ValueValidationContext> promise, @NotNull final ValueValidationContext context) {
+
+    return promise.future();
+
+  }
+
+  /**
+   * Validate that the value is any of the specified values.
+   *
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
+   *
+   * @return the future that says if the value is valid or not.
+   */
+  static private Future<ValueValidationContext> validateAnyOfValue(
+      @NotNull final Promise<ValueValidationContext> promise, @NotNull final ValueValidationContext context) {
+
+    return promise.future();
+
+  }
+
+  /**
+   * Validate that the value is all of the specified values.
+   *
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
+   *
+   * @return the future that says if the value is valid or not.
+   */
+  static private Future<ValueValidationContext> validateAllOfValue(
+      @NotNull final Promise<ValueValidationContext> promise, @NotNull final ValueValidationContext context) {
+
+    return promise.future();
+
+  }
+
+  /**
+   * Validate that the value is type of the specified values.
+   *
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
+   *
+   * @return the future that says if the value is valid or not.
+   */
+  static private Future<ValueValidationContext> validateTypeValue(
+      @NotNull final Promise<ValueValidationContext> promise, @NotNull final ValueValidationContext context) {
+
     var future = promise.future();
-    ValidationErrorException error = null;
-    try {
+    final var type = context.specification.getString("type");
+    switch (type) {
+    case "boolean":
+      future = future.compose(chain -> isInstanceOf(Boolean.class, chain.value, chain.codePrefix).map(empty -> chain));
+      break;
+    case "string":
+      future = composeValidation(
+          future.compose(chain -> isInstanceOf(String.class, chain.value, chain.codePrefix).map(empty -> chain)),
+          Validations::validateStringValue);
+      break;
+    case "integer":
+      future = future.compose(chain -> isInstanceOfInteger(chain.value, chain.codePrefix).map(empty -> chain));
+    case "number":
+      future = composeValidation(
+          future.compose(chain -> isInstanceOf(Number.class, chain.value, chain.codePrefix).map(empty -> chain)),
+          Validations::validateNumberValue);
+      break;
+    case "object":
+      future = composeValidation(
+          future.compose(chain -> isInstanceOf(JsonObject.class, chain.value, chain.codePrefix).map(empty -> chain)),
+          Validations::validateObjectValue);
+      break;
+    case "array":
+      future = composeValidation(
+          future.compose(chain -> isInstanceOf(JsonArray.class, chain.value, chain.codePrefix).map(empty -> chain)),
+          Validations::validateArrayValue);
+      break;
+    default:
+      promise.fail(context.notValid("Bad OpenAPI definition with an unexpected 'type' for the value."));
 
-      final var max = value.size();
-      final var minItems = specification.getNumber("minItems", null);
-      if (minItems != null && minItems.intValue() > max) {
+    }
 
-        error = new ValidationErrorException(codePrefix, "The value require at least " + minItems + " items.");
+    return future;
+  }
+
+  /**
+   * Validate that the value is a valid string.
+   *
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
+   *
+   * @return the future that says if the string is valid or not.
+   */
+  static Future<ValueValidationContext> validateStringValue(@NotNull final Promise<ValueValidationContext> promise,
+      @NotNull final ValueValidationContext context) {
+
+    final var value = (String) context.value;
+    final var pattern = context.specification.getString("pattern", null);
+    if (pattern != null && !value.matches(pattern)) {
+
+      promise.fail(context.notValid("The value does not match the pattern."));
+
+    } else {
+
+      final var min = context.specification.getInteger("minLength", null);
+      if (min != null && value.length() < min) {
+
+        promise.fail(context.notValid("The value has to have a length equal or greater than " + min + "."));
 
       } else {
 
-        final var maxItems = specification.getNumber("maxItems", null);
-        if (maxItems != null && maxItems.intValue() < max) {
+        final var max = context.specification.getInteger("maxLength", null);
+        if (max != null && value.length() > max) {
 
-          error = new ValidationErrorException(codePrefix, "The value require at maximum " + maxItems + " items.");
-
-        } else {
-
-          final var items = specification.getJsonObject("items");
-          for (var i = 0; i < max; i++) {
-
-            final var pos = i;
-            final var element = value.getValue(pos);
-            future = future.compose(empty -> validateOpenAPIValue(codePrefix + "[" + pos + "]", items, element));
-
-          }
-          if (specification.getBoolean("uniqueItems", false)) {
-
-            future = future.compose(empty -> {
-
-              for (var i = 0; i < max; i++) {
-
-                for (var j = i + 1; j < max; j++) {
-
-                  final var a = value.getValue(i);
-                  final var b = value.getValue(j);
-                  if (a == null && b == null || a != null && a.equals(b)) {
-
-                    return Future
-                        .failedFuture(new ValidationErrorException(codePrefix + "[" + j + "]", "Duplicated value"));
-                  }
-                }
-
-              }
-
-              return Future.succeededFuture();
-
-            });
-
-          }
+          promise.fail(context.notValid("The value has to have a length equal or less than " + max + "."));
         }
       }
-
-    } catch (final Throwable cause) {
-
-      error = new ValidationErrorException(codePrefix, "The OpenAPI specification is not valid.", cause);
     }
 
-    if (error != null) {
-
-      promise.fail(error);
-
-    } else {
-
-      promise.complete();
-    }
-    return future;
-
+    return promise.future();
   }
 
   /**
-   * Check the string value.
+   * Validate that the value is a valid number.
    *
-   * @param codePrefix    the prefix of the code to use for the error message.
-   * @param value         string to verify.
-   * @param specification that that the string has to satisfy.
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
    *
-   * @return {@code null} if the value is right or an error that explains why it
-   *         is not right.
+   * @return the future that says if the number is valid or not.
    */
-  private static ValidationErrorException checkStringValue(final String codePrefix, final JsonObject specification,
-      final String value) {
+  static Future<ValueValidationContext> validateNumberValue(@NotNull final Promise<ValueValidationContext> promise,
+      @NotNull final ValueValidationContext context) {
 
-    final var pattern = specification.getString("pattern", null);
-    if (pattern != null && !value.matches(pattern)) {
-
-      return new ValidationErrorException(codePrefix, "The value does not match the pattern.");
-
-    }
-    final var min = specification.getInteger("minLength", null);
-    if (min != null && value.length() < min) {
-
-      return new ValidationErrorException(codePrefix,
-          "The value has to have a length equal or greater than " + min + ".");
-    }
-
-    final var max = specification.getInteger("maxLength", null);
-    if (max != null && value.length() > max) {
-
-      return new ValidationErrorException(codePrefix, "The value has to have a length equal or less than " + max + ".");
-    }
-
-    return null;
-  }
-
-  /**
-   * Check the number value.
-   *
-   * @param codePrefix    the prefix of the code to use for the error message.
-   * @param value         number to verify.
-   * @param specification that that the number has to satisfy.
-   *
-   * @return {@code null} if the value is right or an error that explains why it
-   *         is not right.
-   */
-  private static ValidationErrorException checkOpenAPINumber(final String codePrefix, final JsonObject specification,
-      final Number value) {
-
+    final var value = (Number) context.value;
     final var bigValue = new BigDecimal(value.doubleValue());
-    final var min = specification.getNumber("minimum", null);
+    final var min = context.specification.getNumber("minimum", null);
     if (min != null) {
 
       final var bigMin = new BigDecimal(min.doubleValue());
       final var compare = bigValue.compareTo(bigMin);
-      final var excludeMin = specification.getBoolean("exclusiveMinimum", false);
+      final var excludeMin = context.specification.getBoolean("exclusiveMinimum", false);
       if (excludeMin && compare < 1) {
 
-        return new ValidationErrorException(codePrefix, "The value must be greater than the minimum.");
+        promise.fail(context.notValid("The value must be greater than the minimum."));
 
       } else if (!excludeMin && compare < 0) {
 
-        return new ValidationErrorException(codePrefix, "The value must be equals or greater than the minimum.");
+        promise.fail(context.notValid("The value must be equals or greater than the minimum."));
       }
     }
 
-    final var max = specification.getNumber("maximum", null);
+    final var max = context.specification.getNumber("maximum", null);
     if (max != null) {
 
       final var bigMax = new BigDecimal(max.doubleValue());
       final var compare = bigValue.compareTo(bigMax);
-      final var excludeMax = specification.getBoolean("exclusiveMaximum", false);
+      final var excludeMax = context.specification.getBoolean("exclusiveMaximum", false);
       if (excludeMax && compare > -1) {
 
-        return new ValidationErrorException(codePrefix, "The value must be less than the maximum.");
+        promise.tryFail(context.notValid("The value must be less than the maximum."));
 
       } else if (!excludeMax && compare > 0) {
 
-        return new ValidationErrorException(codePrefix, "The value must be equals or less than the maximum.");
+        promise.tryFail(context.notValid("The value must be equals or less than the maximum."));
       }
     }
 
-    return null;
-
+    return promise.future();
   }
 
   /**
-   * Check that a JSON object match an OpenAPI specification.
+   * Validate that the value is a valid array.
    *
-   * @param codePrefix    the prefix of the code to use for the error message.
-   * @param specification that has to follow the object..
-   * @param value         to validate.
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
    *
-   * @return the future that says if the JSON Object value follows or not the
-   *         OpenAPI specification.
+   * @return the future that says if the array is valid or not.
    */
-  private static Future<Void> checkJsonObjectValue(final String codePrefix, final JsonObject specification,
-      final JsonObject value) {
+  static Future<ValueValidationContext> validateArrayValue(@NotNull final Promise<ValueValidationContext> promise,
+      @NotNull final ValueValidationContext context) {
 
-    final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    ValidationErrorException error = null;
-    try {
+    final var value = (JsonArray) context.value;
+    final var max = value.size();
+    final var minItems = context.specification.getNumber("minItems", null);
+    if (minItems != null && minItems.intValue() > max) {
 
-      final var properties = specification.getJsonObject("properties");
-      final var required = specification.getJsonArray("required");
-      if (properties != null) {
+      promise.fail(context.notValid("The value require at least " + minItems + " items."));
 
-        if (required != null) {
+    } else {
 
-          final var max = required.size();
-          for (var i = 0; i < max; i++) {
+      final var maxItems = context.specification.getNumber("maxItems", null);
+      if (maxItems != null && maxItems.intValue() < max) {
 
-            final var property = required.getString(i);
-            final var fieldType = properties.getJsonObject(property);
-            final var fieldValue = value.getValue(property);
-            if (fieldValue == null) {
-
-              try {
-
-                final var defaultValue = fieldType.getString("default");
-                value.put(property, Json.decodeValue(defaultValue));
-
-              } catch (final Throwable t) {
-
-                error = new ValidationErrorException(codePrefix + "." + property, "The field is required.");
-                break;
-
-              }
-            }
-
-          }
-
-        }
-
-        for (final var field : value.fieldNames()) {
-
-          final var fieldType = properties.getJsonObject(field);
-          if (fieldType == null) {
-
-            error = new ValidationErrorException(codePrefix + "." + field,
-                "The field is not defined on the specification.");
-            break;
-
-          } else {
-
-            final var fieldValue = value.getValue(field);
-            future = future.compose(empty -> validateOpenAPIValue(codePrefix + "." + field, fieldType, fieldValue));
-          }
-        }
+        promise.fail(context.notValid("The value require at maximum " + maxItems + " items."));
 
       } else {
 
-        final var additionalProperties = specification.getJsonObject("additionalProperties");
-        if (additionalProperties != null) {
+        final var items = context.specification.getJsonObject("items");
+        for (var i = 0; i < max; i++) {
 
-          for (final var field : value.fieldNames()) {
+          final var pos = i;
+          final var element = value.getValue(pos);
+          future = future.compose(
+              chain -> validateOpenAPIValue(context.codePrefix + "[" + pos + "]", items, element).map(validElement -> {
 
-            final var fieldValue = value.getValue(field);
-            future = future
-                .compose(empty -> validateOpenAPIValue(codePrefix + "." + field, additionalProperties, fieldValue));
+                final var chainArray = (JsonArray) chain.value;
+                if (chainArray.getValue(pos) != validElement) {
 
-          }
+                  chainArray.set(pos, validElement);
+                }
+                return chain;
+              }));
 
         }
 
-        if (required != null) {
+        if (context.specification.getBoolean("uniqueItems", false)) {
 
-          final var max = required.size();
-          for (var i = 0; i < max; i++) {
+          future = composeValidation(future, Validations::validateArrayUniqueItemsValue);
+        }
 
-            final var property = required.getString(i);
-            if (!value.containsKey(property)) {
+      }
+    }
 
-              error = new ValidationErrorException(codePrefix + "." + property, "The field is required.");
-              break;
+    return future;
+  }
 
-            }
+  /**
+   * Validate that the values or an array are unique.
+   *
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
+   *
+   * @return the future that says if the array values are uniques or not.
+   */
+  static Future<ValueValidationContext> validateArrayUniqueItemsValue(
+      @NotNull final Promise<ValueValidationContext> promise, @NotNull final ValueValidationContext context) {
 
-          }
+    final var value = (JsonArray) context.value;
+    final var max = value.size();
+
+    I: for (var i = 0; i < max; i++) {
+
+      for (var j = i + 1; j < max; j++) {
+
+        final var a = value.getValue(i);
+        final var b = value.getValue(j);
+        if (a == null && b == null || a != null && a.equals(b)) {
+
+          promise.fail(context.notValid("[" + j + "]", "Duplicated value"));
+          break I;
+        }
+      }
+
+    }
+
+    return promise.future();
+  }
+
+  /**
+   * Validate that the value is a valid object.
+   *
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
+   *
+   * @return the future that says if the value is valid object or not.
+   */
+  static Future<ValueValidationContext> validateObjectValue(@NotNull final Promise<ValueValidationContext> promise,
+      @NotNull final ValueValidationContext context) {
+
+    var future = promise.future();
+    final var value = (JsonObject) context.value;
+    final var properties = context.specification.getJsonObject("properties");
+    if (properties != null) {
+
+      for (final var field : properties.fieldNames()) {
+
+        final var fieldType = properties.getJsonObject(field);
+        if (value.containsKey(field)) {
+
+          final var fieldValue = value.getValue(field);
+          future = future.compose(
+              chain -> validateOpenAPIValue(context.codePrefix + "." + field, fieldType, fieldValue).map(validValue -> {
+
+                if (((JsonObject) chain.value).getValue(field) != validValue) {
+
+                  ((JsonObject) chain.value).put(field, validValue);
+                }
+
+                return chain;
+              }));
+
+        } else {
+          // the fields are optional by default, but if they are not defined and has a
+          // default value it has to be set
+          future = future.compose(
+              chain -> validateOpenAPIValue(context.codePrefix + "." + field, fieldType, null).transform(validated -> {
+
+                if (validated.succeeded()) {
+
+                  final var result = validated.result();
+                  if (result != null) {
+
+                    ((JsonObject) chain.value).put(field, result);
+                  }
+                }
+
+                return Future.succeededFuture(chain);
+
+              }));
+
+        }
+      }
+
+      future = future.compose(chain -> {
+        chain.addFieldNames(properties);
+        return Future.succeededFuture(chain);
+      });
+
+    } else {
+
+      final var additionalProperties = context.specification.getJsonObject("additionalProperties");
+      if (additionalProperties != null) {
+
+        for (final var field : value.fieldNames()) {
+
+          final var fieldValue = value.getValue(field);
+          future = future
+              .compose(chain -> validateOpenAPIValue(context.codePrefix + "." + field, additionalProperties, fieldValue)
+                  .map(validValue -> {
+
+                    if (fieldValue != validValue) {
+
+                      ((JsonObject) chain.value).put(field, validValue);
+                    }
+
+                    return chain;
+                  }));
 
         }
 
       }
-
-    } catch (final Throwable cause) {
-
-      error = new ValidationErrorException(codePrefix, "The OpenAPI specification is not valid.", cause);
-    }
-
-    if (error != null) {
-
-      promise.fail(error);
-
-    } else {
-
-      promise.complete();
     }
     return future;
+  }
+
+  /**
+   * Validate that the value does not contains any unexpected field.
+   *
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
+   *
+   * @return the future that says if the value has all the expected fields or not.
+   */
+  static Future<ValueValidationContext> validateUndefinedFieldsInValue(
+      @NotNull final Promise<ValueValidationContext> promise, @NotNull final ValueValidationContext context) {
+
+    if (context.value instanceof JsonObject && context.fieldNames != null) {
+
+      final var value = (JsonObject) context.value;
+      for (final var field : value.fieldNames()) {
+
+        if (!context.fieldNames.contains(field)) {
+
+          promise.fail(context.notValid("." + field, "The field is not defined on the specification."));
+          break;
+
+        }
+      }
+
+    }
+
+    return promise.future();
 
   }
 

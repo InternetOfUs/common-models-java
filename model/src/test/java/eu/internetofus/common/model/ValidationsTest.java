@@ -1356,10 +1356,12 @@ public class ValidationsTest {
    * @see Validations#validateOpenAPISpecification(String,io.vertx.core.json.JsonObject)
    */
   @ParameterizedTest(name = "The specification {0} has to not be valid")
-  @ValueSource(strings = { "codePrefix#null", "codePrefix.undefined#{'undefined':'something'}",
-      "codePrefix#{'nullable':true}", "codePrefix.type#{'type':null}", "codePrefix.type#{'type':'undefined'}",
+  @ValueSource(strings = { "codePrefix#null", "codePrefix#{'undefined':'something'}",
+      "codePrefix.undefined#{'type':'object','undefined':'something'}", "codePrefix#{'nullable':true}",
+      "codePrefix.type#{'type':null}", "codePrefix.type#{'type':'undefined'}",
       "codePrefix.minimum#{'type':'integer','minimum':'1'}", "codePrefix.minimum#{'type':'string','minimum':1}",
       "codePrefix.maximum#{'type':'integer','maximum':'1'}", "codePrefix.maximum#{'type':'string','maximum':1}",
+      "codePrefix.maximum#{'type':'integer','minimum':10,'maximum':1}",
       "codePrefix.multipleOf#{'type':'integer','multipleOf':'1'}",
       "codePrefix.multipleOf#{'type':'string','multipleOf':1}",
       "codePrefix.exclusiveMinimum#{'type':'integer','exclusiveMinimum':'1'}",
@@ -1367,15 +1369,15 @@ public class ValidationsTest {
       "codePrefix.exclusiveMaximum#{'type':'integer','exclusiveMaximum':'1'}",
       "codePrefix.exclusiveMaximum#{'type':'string','exclusiveMaximum':1}",
       "codePrefix.minimum#{'type':'number','minimum':'1'}", "codePrefix.minimum#{'type':'string','minimum':1}",
-      "codePrefix.maximum#{'type':'number','maximum':'1'}", "codePrefix.maximum#{'type':'string','maximum':1}",
-      "codePrefix.multipleOf#{'type':'number','multipleOf':'1'}",
+      "codePrefix.maximum#{'type':'number','minimum':10,'maximum':1}",
+      "codePrefix.maximum#{'type':'string','maximum':1}", "codePrefix.multipleOf#{'type':'number','multipleOf':'1'}",
       "codePrefix.multipleOf#{'type':'string','multipleOf':1}",
       "codePrefix.exclusiveMinimum#{'type':'number','exclusiveMinimum':'1'}",
       "codePrefix.exclusiveMinimum#{'type':'string','exclusiveMinimum':1}",
       "codePrefix.exclusiveMaximum#{'type':'number','exclusiveMaximum':'1'}",
       "codePrefix.exclusiveMaximum#{'type':'string','exclusiveMaximum':1}",
       "codePrefix.default#{'type':'string','default':true}", "codePrefix.default#{'type':'string','default':'[]'}",
-      "codePrefix.items#{'type':'array'}", "codePrefix.default#{'type':'string','default':'{'}",
+      "codePrefix.type#{'type':'array'}", "codePrefix.default#{'type':'string','default':'{'}",
       "codePrefix.properties#{'type':'object','properties':[]}", "codePrefix.items#{'type':'array','items':[]}",
       "codePrefix.nullable#{'type':'string','nullable':[]}",
       "codePrefix.required#{'type':'object','properties':{'id':{'type':'string'}},'required':[]}",
@@ -1384,8 +1386,8 @@ public class ValidationsTest {
       "codePrefix.required#{'type':'object','properties':{'id':{'type':'string'}},'required':{'id':true}}",
       "codePrefix.required[1]#{'type':'object','properties':{'id':{'type':'string'}},'required':['id',1]}",
       "codePrefix.required[1]#{'type':'object','properties':{'id':{'type':'string'}},'required':['id','undefined']}",
-      "codePrefix.uniqueItems#{'type':'array','items':{'type':'integer'},'default':'[1,2,3]','uniqueItems':{}}",
-      "codePrefix.default[1]#{'type':'array','items':{'type':'integer'},'default':'[1,1,1]','uniqueItems':true}",
+      "codePrefix.uniqueItems#{'type':'array','items':{'type':'integer'},'uniqueItems':{},'default':'[1,2,3]'}",
+      "codePrefix.default[1]#{'type':'array','items':{'type':'integer'},'uniqueItems':true,'default':'[1,1,1]'}",
       "codePrefix.uniqueItems#{'type':'string','uniqueItems':true}", "codePrefix.enum#{'type':'string','enum':true}",
       "codePrefix.enum#{'type':'string','enum':[]}", "codePrefix.enum[1]#{'type':'string','enum':['a','a']}",
       "codePrefix.enum[1]#{'type':'string','enum':['a',null]}", "codePrefix.enum[1]#{'type':'string','enum':['a',2]}",
@@ -1398,7 +1400,7 @@ public class ValidationsTest {
       "codePrefix.maxItems#{'type':'string','maxItems':2}",
       "codePrefix.maxItems#{'type':'array','items':{'type':'string'},'maxItems':'2'}",
       "codePrefix.maxItems#{'type':'array','items':{'type':'string'},'minItems':10,'maxItems':2}",
-      "codePrefix.additionalProperties#{'type':'object','additionalProperties':true}",
+      "codePrefix.additionalProperties#{'type':'object','additionalProperties':true,'properties':{}}",
       "codePrefix.additionalProperties.type#{'type':'object','additionalProperties':{'type':'undefined'}}",
       "codePrefix.additionalProperties#{'type':'object','additionalProperties':{'type':'string'},'properties':{}}",
       "codePrefix.title#{'type':'object','title':{'name':'a'}}",
@@ -1406,7 +1408,21 @@ public class ValidationsTest {
       "codePrefix.maxLength#{'type':'array','items':{},'maxLength':10}",
       "codePrefix.minLength#{'type':'array','items':{},'minLength':1}",
       "codePrefix.maxLength#{'type':'string','maxLength':1.1}",
-      "codePrefix.minLength#{'type':'string','minLength':0.1}" })
+      "codePrefix.minLength#{'type':'string','minLength':0.1}",
+      "codePrefix.maxLength#{'type':'string','minLength':10,'maxLength':1}",
+      "codePrefix.minProperties#{'type':'object','minProperties':2.01}",
+      "codePrefix.maxProperties#{'type':'object','maxProperties':20.1}",
+      "codePrefix.minProperties#{'type':'string','minProperties':2}",
+      "codePrefix.maxProperties#{'type':'string','maxProperties':20}",
+      "codePrefix.maxProperties#{'type':'object','minProperties':2,'maxProperties':1}",
+      "codePrefix.$ref#{'$ref':'components/schemas/Task'}", "codePrefix.oneOf#{'oneOf':{}}",
+      "codePrefix.anyOf#{'anyOf':{}}", "codePrefix.allOf#{'allOf':{}}", "codePrefix.oneOf#{'oneOf':[]}",
+      "codePrefix.anyOf#{'anyOf':[]}", "codePrefix.allOf#{'allOf':[]}",
+      "codePrefix.oneOf#{'oneOf':[{}],'type':'object'}", "codePrefix.anyOf#{'anyOf':[{}],'type':'object'}",
+      "codePrefix.allOf#{'allOf':[{}],'type':'object'}",
+      "codePrefix.oneOf[1].type#{'oneOf':[{'type':'object'},{'type':'undefined'}]}",
+      "codePrefix.anyOf[1].type#{'anyOf':[{'type':'object'},{'type':'undefined'}]}",
+      "codePrefix.allOf[1].type#{'allOf':[{'type':'object'},{'type':'undefined'}]}", })
   public void shouldNotBeValidBadOpenAPISpecification(final String data, final VertxTestContext testContext) {
 
     final var split = data.split("#");
@@ -1508,7 +1524,11 @@ public class ValidationsTest {
       "{'type':'object','additionalProperties':{'type':'object','properties':{'id':{'type':'string'}}}}",
       "{'type':'string','example':'Hello world!'}", "{'type':'string','examples':{'en':'Hello!','hw':'Aloha'}}",
       "{'type':'string','maxLength':10}", "{'type':'string','minLength':1}",
-      "{'type':'string','minLength':1,'maxLength':10}" })
+      "{'type':'string','minLength':1,'maxLength':10}", "{'type':'string','format':'email'}",
+      "{'type':'object','minProperties':2}", "{'type':'object','maxProperties':20}",
+      "{'type':'object','minProperties':2,'maxProperties':20}", "{'oneOf':[{'type':'string'},{'type':'integer'}]}",
+      "{'anyOf':[{'type':'string'},{'type':'integer'}]}",
+      "{'allOf':[{'type':'object','properties':{'id':{'type':'string'}}},{'type':'object','properties':{'name':{'type':'integer'}}}]}", })
   public void shouldIsValidOpenAPISpecification(final String data, final VertxTestContext testContext) {
 
     final var specification = this.decodeJsonObject(data);
@@ -1679,13 +1699,16 @@ public class ValidationsTest {
       "codePrefix#{'type':'array','items':{'type':'string'},'minItems':1,'maxItems':2,'uniqueItems':true}#['1','2','3']",
       "codePrefix#{'type':'array','items':[],'minItems':1,'maxItems':2,'uniqueItems':true}#['1','2']",
       "codePrefix#{'type':'object','properties':[]}#{}",
-      "codePrefix.field#{'type':'object','properties':{'field':{'nullable':false}},'required':['field']}#{}",
+      "codePrefix.field#{'type':'object','properties':{'field':{'nullable':true}},'required':['field']}#{}",
       "codePrefix.undefined#{'type':'object','properties':{'field':{'nullable':false}}}#{'undefined':true}",
       "codePrefix.id#{'type':'object','required':['id']}#{'a':true,'b':{'c':1}}",
       "codePrefix.b#{'type':'object','additionalProperties':{'type':'boolean'}}#{'a':true,'b':{'c':1}}",
       "codePrefix#{'type':'string','maxLength':1}#'123'", "codePrefix#{'type':'string','minLength':1}#''",
       "codePrefix#{'type':'string','minLength':1,'maxLength':10}#''",
-      "codePrefix#{'type':'string','minLength':1,'maxLength':10}#'12345678901'" })
+      "codePrefix#{'type':'string','minLength':1,'maxLength':10}#'12345678901'",
+      "codePrefix#{'oneOf':[{'type':'string'},{'type':'integer'}]}#true",
+      "codePrefix#{'anyOf':[{'type':'string'},{'type':'integer'}]}#true",
+      "codePrefix#{'allOf':[{'type':'object','properties':{'id':{'type':'string'}}},{'type':'object','properties':{'name':{'type':'integer'}}}]}#true", })
   public void shouldNotBeValidBadOpenAPIValue(final String data, final VertxTestContext testContext) {
 
     final var split = data.split("#");
@@ -1757,7 +1780,10 @@ public class ValidationsTest {
       "{'type':'string','minLength':1,'maxLength':10}#'1'",
       "{'type':'string','minLength':1,'maxLength':10}#'1234567890'",
       "{'type':'string','minLength':1,'maxLength':10}#'12345'",
-      "{'type':'string','minLength':1,'maxLength':10,'pattern':'\\\\d*'}#'12345'" })
+      "{'type':'string','minLength':1,'maxLength':10,'pattern':'\\\\d*'}#'12345'",
+      "{'oneOf':[{'type':'string'},{'type':'integer'}]}#1", "{'oneOf':[{'type':'string'},{'type':'integer'}]}#'1'",
+      "{'anyOf':[{'type':'string'},{'type':'integer'}]}#2", "{'anyOf':[{'type':'string'},{'type':'integer'}]}#'2'",
+      "{'allOf':[{'type':'object','properties':{'name':{'type':'string'}}},{'type':'object','properties':{'id':{'type':'integer'}}}]}#{'id':1,'name':'Jane Doe'}" })
   public void shouldIsValidOpenAPIValue(final String data, final VertxTestContext testContext) {
 
     final var split = data.replaceAll("'", "\"").split("#");
