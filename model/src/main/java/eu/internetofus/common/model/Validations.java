@@ -1211,6 +1211,11 @@ public interface Validations {
     public Set<String> fieldNames;
 
     /**
+     * This is {@code true} when is checking a compose element.
+     */
+    public boolean checkingCompose;
+
+    /**
      * Create a new context.
      *
      * @param codePrefix    the prefix of the code to use for the error message.
@@ -1224,6 +1229,7 @@ public interface Validations {
       this.specification = specification;
       this.value = value;
       this.fieldNames = null;
+      this.checkingCompose = false;
 
     }
 
@@ -1280,7 +1286,7 @@ public interface Validations {
     }
 
     /**
-     * Add the filed names of the specified component.
+     * Add the names of the properties fields.
      *
      * @param properties to get the field names.
      */
@@ -1293,6 +1299,22 @@ public interface Validations {
       this.fieldNames.addAll(properties.fieldNames());
     }
 
+    /**
+     * Add the field names of another context.
+     *
+     * @param context to get the field names.
+     */
+    public void addFieldNames(final ValueValidationContext context) {
+
+      if (context.fieldNames != null) {
+
+        if (this.fieldNames == null) {
+
+          this.fieldNames = new HashSet<>();
+        }
+        this.fieldNames.addAll(context.fieldNames);
+      }
+    }
   }
 
   /**
@@ -1340,69 +1362,84 @@ public interface Validations {
       final Object value) {
 
     return composeValidation(Future.succeededFuture(new ValueValidationContext(codePrefix, specification, value)),
-        (promise, context) -> {
+        Validations::validateValue).map(context -> context.value);
 
-          var future = promise.future();
-          if (!specification.isEmpty()) {
+  }
 
-            if (value == null) {
+  /**
+   * Validate that the value has the required properties.
+   *
+   * @param promise to inform of the validation.
+   * @param context to use for the validation.
+   *
+   * @return the future that says if the value is valid or not.
+   */
+  static Future<ValueValidationContext> validateValue(@NotNull final Promise<ValueValidationContext> promise,
+      @NotNull final ValueValidationContext context) {
 
-              if (context.specification.containsKey("default")) {
+    var future = promise.future();
+    if (!context.specification.isEmpty()) {
 
-                final var defaultValue = specification.getString("default");
-                context.value = Json.decodeValue(defaultValue);
+      if (context.value == null) {
 
-              } else if (!context.specification.getBoolean("nullable", false)) {
+        if (context.specification.containsKey("default")) {
 
-                promise.fail(context.notValid("Not allowed a 'null' value."));
-              }
+          final var defaultValue = context.specification.getString("default");
+          context.value = Json.decodeValue(defaultValue);
 
-            } else {
+        } else if (!context.specification.getBoolean("nullable", false)) {
 
-              if (specification.containsKey("oneOf")) {
+          promise.fail(context.notValid("Not allowed a 'null' value."));
+        }
 
-                future = composeValidation(future, Validations::validateOneOfValue);
+      } else {
 
-              }
+        if (context.specification.containsKey("oneOf")) {
 
-              if (specification.containsKey("anyOf")) {
+          future = composeValidation(future, Validations::validateOneOfValue);
 
-                future = composeValidation(future, Validations::validateAnyOfValue);
+        }
 
-              }
+        if (context.specification.containsKey("anyOf")) {
 
-              if (specification.containsKey("allOf")) {
+          future = composeValidation(future, Validations::validateAnyOfValue);
 
-                future = composeValidation(future, Validations::validateAllOfValue);
+        }
 
-              }
+        if (context.specification.containsKey("allOf")) {
 
-              if (specification.containsKey("type")) {
+          future = composeValidation(future, Validations::validateAllOfValue);
 
-                future = composeValidation(future, Validations::validateTypeValue);
+        }
 
-              }
+        if (context.specification.containsKey("type")) {
 
-              if (specification.containsKey("enum")) {
+          future = composeValidation(future, Validations::validateTypeValue);
 
-                future = composeValidation(future, Validations::validateEnumValue);
+        }
 
-              }
-              if (specification.containsKey("required")) {
+        if (context.specification.containsKey("enum")) {
 
-                future = composeValidation(future, Validations::validateRequiredValue);
+          future = composeValidation(future, Validations::validateEnumValue);
 
-              }
+        }
+        if (context.specification.containsKey("required")) {
 
-              future = composeValidation(future, Validations::validateUndefinedFieldsInValue);
+          future = composeValidation(future, Validations::validateRequiredValue);
 
-            }
+        }
 
-          } // else accept any value
+        if (!context.checkingCompose) {
 
-          return future;
+          future = composeValidation(future, Validations::validateUndefinedFieldsInValue);
 
-        }).map(context -> context.value);
+        }
+
+      }
+
+    } // else accept any value
+
+    return future;
 
   }
 
@@ -1498,7 +1535,22 @@ public interface Validations {
   static private Future<ValueValidationContext> validateAllOfValue(
       @NotNull final Promise<ValueValidationContext> promise, @NotNull final ValueValidationContext context) {
 
-    return promise.future();
+    var future = promise.future();
+    final var allOf = context.specification.getJsonArray("allOf");
+    final var max = allOf.size();
+    for (var i = 0; i < max; i++) {
+
+      final var type = allOf.getJsonObject(i);
+      final var subContext = new ValueValidationContext(context.codePrefix, type, context.value);
+      subContext.checkingCompose = true;
+      future = future.compose(chain -> composeValidation(Future.succeededFuture(subContext), Validations::validateValue)
+          .map(validSubContext -> {
+            chain.addFieldNames(validSubContext);
+            return chain;
+          }));
+    }
+
+    return future;
 
   }
 
