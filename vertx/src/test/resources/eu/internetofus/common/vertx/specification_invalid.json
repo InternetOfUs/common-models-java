@@ -20,7 +20,7 @@
 		"specification": {
 			"nullable": true
 		},
-		"codePrefix": "undefined"
+		"codePrefix": "type"
 	},
 	"4": {
 		"specification": {
@@ -34,6 +34,837 @@
 		},
 		"codePrefix": "type"
 	},
-	"6": null,
-	"7": null
+	"6": {
+		"specification": {
+			"type": "integer",
+			"minimum": "one"
+		},
+		"codePrefix": "minimum"
+	},
+	"7": {
+		"specification": {
+			"type": "string",
+			"minimum": 1
+		},
+		"codePrefix": "minimum"
+	},
+	"8": {
+		"specification": {
+			"type": "integer",
+			"maximum": "one"
+		},
+		"codePrefix": "maximum"
+	},
+	"9": {
+		"specification": {
+			"type": "string",
+			"maximum": 1
+		},
+		"codePrefix": "maximum"
+	},
+	"10": {
+		"specification": {
+			"type": "integer",
+			"minimum": 2,
+			"maximum": 1
+		},
+		"codePrefix": "maximum"
+	},
+	"11": {
+		"specification": {
+			"type": "integer",
+			"multipleOf": "one"
+		},
+		"codePrefix": "multipleOf"
+	},
+	"12": {
+		"specification": {
+			"type": "string",
+			"multipleOf": 1
+		},
+		"codePrefix": "multipleOf"
+	},
+	"13": {
+		"specification": {
+			"type": "integer",
+			"exclusiveMinimum": "one"
+		},
+		"codePrefix": "exclusiveMinimum"
+	},
+	"14": {
+		"specification": {
+			"type": "string",
+			"exclusiveMinimum": 1
+		},
+		"codePrefix": "exclusiveMinimum"
+	},
+	"15": {
+		"specification": {
+			"type": "integer",
+			"exclusiveMaximum": "one"
+		},
+		"codePrefix": "exclusiveMaximum"
+	},
+	"16": {
+		"specification": {
+			"type": "string",
+			"exclusiveMaximum": 1
+		},
+		"codePrefix": "exclusiveMaximum"
+	},
+	"17": {
+		"specification": {
+			"type": "number",
+			"minimum": "one"
+		},
+		"codePrefix": "minimum"
+	},
+	"18": {
+		"specification": {
+			"type": "number",
+			"maximum": "one"
+		},
+		"codePrefix": "maximum"
+	},
+	"19": {
+		"specification": {
+			"type": "number",
+			"minimum": 2,
+			"maximum": 1
+		},
+		"codePrefix": "maximum"
+	},
+	"20": {
+		"specification": {
+			"type": "number",
+			"multipleOf": "one"
+		},
+		"codePrefix": "multipleOf"
+	},
+	"21": {
+		"specification": {
+			"type": "number",
+			"exclusiveMinimum": "one"
+		},
+		"codePrefix": "exclusiveMinimum"
+	},
+	"22": {
+		"specification": {
+			"type": "number",
+			"exclusiveMaximum": "one"
+		},
+		"codePrefix": "exclusiveMaximum"
+	},
+	"23": {
+		"specification": {
+			"type": "string",
+			"default": "1"
+		},
+		"codePrefix": "default"
+	},
+	"24": {
+		"specification": {
+			"type": "boolean",
+			"default": "\"1\""
+		},
+		"codePrefix": "default"
+	},
+	"25": {
+		"specification": {
+			"type": "integer",
+			"default": "1.1"
+		},
+		"codePrefix": "default"
+	},
+	"26": {
+		"specification": {
+			"type": "number",
+			"default": "true"
+		},
+		"codePrefix": "default"
+	},
+	"27": {
+		"specification": {
+			"type": "object",
+			"default": "[]"
+		},
+		"codePrefix": "default"
+	},
+	"28": {
+		"specification": {
+			"type": "array",
+			"items": {
+				
+			},
+			"default": "{}"
+		},
+		"codePrefix": "default"
+	},
+	"29": {
+		"specification": {
+			"type": "array"
+		},
+		"codePrefix": "type"
+	},
+	"30": {
+		"specification": {
+			"type": "array",
+			"items": []
+		},
+		"codePrefix": "items"
+	},
+	"31": {
+		"specification": {
+			"type": "string",
+			"nullable": []
+		},
+		"codePrefix": "nullable"
+	},
+	"32": {
+		"specification": {
+			"type": "object",
+			"properties": []
+		},
+		"codePrefix": "properties"
+	},
+	"33": {
+		"specification": {
+			"type": "object",
+			"properties": []
+		},
+		"codePrefix": "properties"
+	},
+	"34": {
+		"specification": {
+			"type": "string",
+			"required": [
+				"id"
+			]
+		},
+		"codePrefix": "required"
+	},
+	"35": {
+		"specification": {
+			"type": "object",
+			"required": [
+				{
+					"id": true
+				}
+			]
+		},
+		"codePrefix": "required"
+	},
+	"36": {
+		"specification": {
+			"type": "object",
+			"required": [
+				"id"
+			]
+		},
+		"codePrefix": "required"
+	},
+	"37": {
+		"specification": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "string"
+				}
+			},
+			"required": []
+		},
+		"codePrefix": "required"
+	},
+	"38": {
+		"specification": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "string"
+				}
+			},
+			"required": {
+				"id": true
+			}
+		},
+		"codePrefix": "required"
+	},
+	"39": {
+		"specification": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"id",
+				1
+			]
+		},
+		"codePrefix": "required[1]"
+	},
+	"40": {
+		"specification": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"id",
+				"undefined"
+			]
+		},
+		"codePrefix": "required[1]"
+	},
+	"41": {
+		"specification": {
+			"type": "array",
+			"itemas": {
+				"type": "integer"
+			},
+			"uniqueItems": {
+				
+			}
+		},
+		"codePrefix": "uniqueItems"
+	},
+	"42": {
+		"specification": {
+			"type": "array",
+			"itemas": {
+				"type": "integer"
+			},
+			"uniqueItems": true,
+			"default": [
+				1,
+				1,
+				1
+			]
+		},
+		"codePrefix": "default[1]"
+	},
+	"43": {
+		"specification": {
+			"type": "string",
+			"uniqueItems": false
+		},
+		"codePrefix": "uniqueItems"
+	},
+	"44": {
+		"specification": {
+			"type": "string",
+			"enum": true
+		},
+		"codePrefix": "enum"
+	},
+	"45": {
+		"specification": {
+			"type": "string",
+			"enum": []
+		},
+		"codePrefix": "enum"
+	},
+	"46": {
+		"specification": {
+			"type": "string",
+			"enum": [
+				"a",
+				"a"
+			]
+		},
+		"codePrefix": "enum[1]"
+	},
+	"47": {
+		"specification": {
+			"type": "string",
+			"enum": [
+				"a",
+				null
+			]
+		},
+		"codePrefix": "enum[1]"
+	},
+	"48": {
+		"specification": {
+			"type": "string",
+			"enum": [
+				"a",
+				2
+			]
+		},
+		"codePrefix": "enum[1]"
+	},
+	"49": {
+		"specification": {
+			"type": "string",
+			"nullable": true,
+			"enum": [
+				"a",
+				null,
+				null
+			]
+		},
+		"codePrefix": "enum[2]"
+	},
+	"50": {
+		"specification": {
+			"type": "integer",
+			"pattern": "^\\d{3}-\\d{2}\\d{4}$"
+		},
+		"codePrefix": "pattern"
+	},
+	"51": {
+		"specification": {
+			"type": "integer",
+			"pattern": "^\\d{3$"
+		},
+		"codePrefix": "pattern"
+	},
+	"52": {
+		"specification": {
+			"type": "integer",
+			"pattern": []
+		},
+		"codePrefix": "pattern"
+	},
+	"53": {
+		"specification": {
+			"type": "string",
+			"minItems": 2
+		},
+		"codePrefix": "minItems"
+	},
+	"54": {
+		"specification": {
+			"type": "array",
+			"items": {
+				
+			},
+			"minItems": "Two"
+		},
+		"codePrefix": "minItems"
+	},
+	"55": {
+		"specification": {
+			"type": "array",
+			"items": {
+				
+			},
+			"minItems": -1
+		},
+		"codePrefix": "minItems"
+	},
+	"56": {
+		"specification": {
+			"type": "string",
+			"maxItems": 2
+		},
+		"codePrefix": "maxItems"
+	},
+	"57": {
+		"specification": {
+			"type": "array",
+			"items": {
+				
+			},
+			"maxItems": "Two"
+		},
+		"codePrefix": "maxItems"
+	},
+	"58": {
+		"specification": {
+			"type": "array",
+			"items": {
+				
+			},
+			"minItems": 2,
+			"maxItems": 1
+		},
+		"codePrefix": "maxItems"
+	},
+	"59": {
+		"specification": {
+			"type": "object",
+			"additionalProperties": true,
+			"properties": {
+				
+			}
+		},
+		"codePrefix": "additionalProperties"
+	},
+	"60": {
+		"specification": {
+			"type": "object",
+			"additionalProperties": {
+				"type": "undefined"
+			}
+		},
+		"codePrefix": "additionalProperties.type"
+	},
+	"61": {
+		"specification": {
+			"type": "object",
+			"additionalProperties": {
+				"type": "string"
+			},
+			"properties": {
+				
+			}
+		},
+		"codePrefix": "additionalProperties.type"
+	},
+	"62": {
+		"specification": {
+			"type": "object",
+			"additionalProperties": false
+		},
+		"codePrefix": "additionalProperties"
+	},
+	"63": {
+		"specification": {
+			"type": "object",
+			"title": false
+		},
+		"codePrefix": "title"
+	},
+	"64": {
+		"specification": {
+			"type": "object",
+			"description": false
+		},
+		"codePrefix": "description"
+	},
+	"65": {
+		"specification": {
+			"type": "array",
+			"items": {
+				
+			},
+			"minLength": 10
+		},
+		"codePrefix": "minLength"
+	},
+	"66": {
+		"specification": {
+			"type": "array",
+			"items": {
+				
+			},
+			"maxLength": 10
+		},
+		"codePrefix": "maxLength"
+	},
+	"67": {
+		"specification": {
+			"type": "string",
+			"minLength": "Ten"
+		},
+		"codePrefix": "minLength"
+	},
+	"68": {
+		"specification": {
+			"type": "string",
+			"maxLength": "Ten"
+		},
+		"codePrefix": "maxLength"
+	},
+	"69": {
+		"specification": {
+			"type": "string",
+			"minLength": 1.1
+		},
+		"codePrefix": "minLength"
+	},
+	"70": {
+		"specification": {
+			"type": "string",
+			"maxLength": 1.1
+		},
+		"codePrefix": "maxLength"
+	},
+	"71": {
+		"specification": {
+			"type": "string",
+			"minLength": -1
+		},
+		"codePrefix": "minLength"
+	},
+	"72": {
+		"specification": {
+			"type": "string",
+			"minLength": 2,
+			"maxLength": 1
+		},
+		"codePrefix": "maxLength"
+	},
+	"73": {
+		"specification": {
+			"type": "object",
+			"minProperties": "Ten"
+		},
+		"codePrefix": "minProperties"
+	},
+	"74": {
+		"specification": {
+			"type": "object",
+			"minProperties": -1
+		},
+		"codePrefix": "minProperties"
+	},
+	"75": {
+		"specification": {
+			"type": "string",
+			"minProperties": 1
+		},
+		"codePrefix": "minProperties"
+	},
+	"76": {
+		"specification": {
+			"type": "object",
+			"maxProperties": "Ten"
+		},
+		"codePrefix": "maxProperties"
+	},
+	"77": {
+		"specification": {
+			"type": "object",
+			"minProperties": 2,
+			"maxProperties": 1
+		},
+		"codePrefix": "maxProperties"
+	},
+	"78": {
+		"specification": {
+			"type": "string",
+			"maxProperties": 1
+		},
+		"codePrefix": "maxProperties"
+	},
+	"79": {
+		"specification": {
+			"type": "string",
+			"minProperties": 1.1
+		},
+		"codePrefix": "minProperties"
+	},
+	"80": {
+		"specification": {
+			"type": "string",
+			"maxProperties": 1.1
+		},
+		"codePrefix": "maxProperties"
+	},
+	"81": {
+		"specification": {
+			"oneOf": []
+		},
+		"codePrefix": "oneOf"
+	},
+	"82": {
+		"specification": {
+			"oneOf": {
+				"type": "integer"
+			}
+		},
+		"codePrefix": "oneOf"
+	},
+	"83": {
+		"specification": {
+			"oneOf": [
+				{
+					
+				}
+			]
+		},
+		"codePrefix": "oneOf"
+	},
+	"84": {
+		"specification": {
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "undefined"
+				}
+			]
+		},
+		"codePrefix": "oneOf[1].type"
+	},
+	"85": {
+		"specification": {
+			"anyOf": []
+		},
+		"codePrefix": "anyOf"
+	},
+	"86": {
+		"specification": {
+			"anyOf": {
+				"type": "integer"
+			}
+		},
+		"codePrefix": "anyOf"
+	},
+	"87": {
+		"specification": {
+			"anyOf": [
+				{
+					
+				}
+			]
+		},
+		"codePrefix": "anyOf"
+	},
+	"88": {
+		"specification": {
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "undefined"
+				}
+			]
+		},
+		"codePrefix": "anyOf[1].type"
+	},
+	"89": {
+		"specification": {
+			"allOf": []
+		},
+		"codePrefix": "allOf"
+	},
+	"90": {
+		"specification": {
+			"allOf": {
+				"type": "integer"
+			}
+		},
+		"codePrefix": "allOf"
+	},
+	"91": {
+		"specification": {
+			"allOf": [
+				{
+					
+				}
+			]
+		},
+		"codePrefix": "allOf"
+	},
+	"92": {
+		"specification": {
+			"allOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "undefined"
+				}
+			]
+		},
+		"codePrefix": "allOf[1].type"
+	},
+	"93": {
+		"specification": {
+			"allOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "integer"
+				}
+			]
+		},
+		"codePrefix": "allOf"
+	},
+	"94": {
+		"specification": {
+			"allOf": [
+				{
+					"type": "string"
+				},
+				{
+					"anyOf": [
+						{
+							"type": "integer"
+						},
+						{
+							"type": "number"
+						}
+					]
+				}
+			]
+		},
+		"codePrefix": "allOf"
+	},
+	"95": {
+		"specification": {
+			"$ref": []
+		},
+		"codePrefix": "$ref"
+	},
+	"96": {
+		"specification": {
+			"$ref": "undefined"
+		},
+		"codePrefix": "$ref"
+	},
+	"97": {
+		"specification": {
+			"$ref": "http://localhost/undefined.json"
+		},
+		"codePrefix": "$ref"
+	},
+	"98": {
+		"specification": {
+			"$ref": "http://localhost/undefined.json#/components/schemas/GeneralError"
+		},
+		"codePrefix": "$ref"
+	},
+	"99": {
+		"specification": {
+			"$ref": "#/components/schemas/GeneralError"
+		},
+		"codePrefix": "$ref"
+	},
+	"100": {
+		"specification": {
+			"type": "integer",
+			"minimum": 1,
+			"exclusiveMinimum": false,
+			"default": "1"
+		},
+		"codePrefix": "default"
+	},
+	"101": {
+		"specification": {
+			"type": "integer",
+			"maximum": 1,
+			"exclusiveMaximum": false,
+			"default": "1"
+		},
+		"codePrefix": "default"
+	},
+	"102": {
+		"specification": {
+			"type": "number",
+			"minimum": 1.0,
+			"exclusiveMinimum": false,
+			"default": "1.0"
+		},
+		"codePrefix": "default"
+	},
+	"103": {
+		"specification": {
+			"type": "number",
+			"maximum": 1.0,
+			"exclusiveMaximum": false,
+			"default": "1.0"
+		},
+		"codePrefix": "default"
+	}
 }
