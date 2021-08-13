@@ -294,7 +294,7 @@ public class OpenAPIValidatorTest {
   private static Stream<Arguments> validValues() {
 
     return loadArguments("value_valid", (id, data) -> Arguments.of(id, data.getJsonObject("specification"),
-        data.getValue("value"), data.getValue("expectedValue")));
+        data.getValue("value"), data.getValue("expected")));
 
   }
 

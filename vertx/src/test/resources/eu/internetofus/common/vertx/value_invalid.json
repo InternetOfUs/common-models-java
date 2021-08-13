@@ -1204,5 +1204,111 @@
 		},
 		"value": true,
 		"codePrefix": null
+	},
+	"92": {
+		"specification": {
+			"type": "object",
+			"additionalProperties": {
+				"type": "integer",
+				"default": "0"
+			},
+			"minProperties": 5
+		},
+		"value": {
+			"a": null,
+			"b": 2,
+			"c": null,
+			"d": 4
+		},
+		"codePrefix": null
+	},
+	"93": {
+		"specification": {
+			"type": "object",
+			"additionalProperties": {
+				"type": "integer",
+				"default": "0"
+			},
+			"maxProperties": 3
+		},
+		"value": {
+			"a": null,
+			"b": 2,
+			"c": null,
+			"d": 4
+		},
+		"codePrefix": null
+	},
+	"94": {
+		"specification": {
+			"type": "object",
+			"additionalProperties": {
+				"type": "integer",
+				"default": "0"
+			},
+			"minProperties": 1,
+			"maxProperties": 3
+		},
+		"value": {
+			"a": null,
+			"b": 2,
+			"c": null,
+			"d": 4
+		},
+		"codePrefix": null
+	},
+	"95": {
+		"specification": {
+			"type": "array",
+			"items": {
+				"type": "integer",
+				"default": "0"
+			},
+			"uniqueItems": true
+		},
+		"value": [
+			1,
+			2,
+			null,
+			4,
+			null
+		],
+		"codePrefix": "[4]"
+	},
+	"96": {
+		"specification": {
+			"type": "array",
+			"items": {
+				"type": "integer",
+				"default": "0"
+			},
+			"uniqueItems": true
+		},
+		"value": [
+			0,
+			1,
+			2,
+			4,
+			null
+		],
+		"codePrefix": "[4]"
+	},
+	"97": {
+		"specification": {
+			"type": "array",
+			"items": {
+				"type": "integer",
+				"nullable": true
+			},
+			"uniqueItems": true
+		},
+		"value": [
+			1,
+			2,
+			null,
+			4,
+			null
+		],
+		"codePrefix": "[4]"
 	}
 }
