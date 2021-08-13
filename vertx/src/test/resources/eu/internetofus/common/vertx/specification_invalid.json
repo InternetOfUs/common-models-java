@@ -1,0 +1,39 @@
+{
+	"0": {
+		"specification": null,
+		"codePrefix": null
+	},
+	"1": {
+		"specification": {
+			"undefined": "something"
+		},
+		"codePrefix": null
+	},
+	"2": {
+		"specification": {
+			"type": "object",
+			"undefined": "something"
+		},
+		"codePrefix": "undefined"
+	},
+	"3": {
+		"specification": {
+			"nullable": true
+		},
+		"codePrefix": "undefined"
+	},
+	"4": {
+		"specification": {
+			"type": null
+		},
+		"codePrefix": "type"
+	},
+	"5": {
+		"specification": {
+			"type": "undefined"
+		},
+		"codePrefix": "type"
+	},
+	"6": null,
+	"7": null
+}
