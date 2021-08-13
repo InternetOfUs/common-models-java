@@ -1,5 +1,64 @@
 {
 	"0": {
 		
+	},
+	"1": {
+		"field": {
+			
+		}
+	},
+	"2": {
+		"field1": {
+			
+		},
+		"field2": {
+			"type": "object"
+		},
+		"field3": {
+			"type": "object",
+			"properties": {
+				
+			}
+		},
+		"field4": {
+			"type": "object",
+			"additionalProperties": {
+				
+			}
+		}
+	},
+	"3": {
+		"bool": {
+			"type": "boolean",
+			"nullable": true
+		},
+		"string": {
+			"type": "string",
+			"nullable": false,
+			"default": "\"\""
+		},
+		"number": {
+			"oneOf": [
+				{
+					"type": "integer",
+					"minimum": 1
+				},
+				{
+					"type": "number",
+					"maximum": 13.14
+				}
+			]
+		},
+		"array": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"additionalProperties": {
+					"type": "boolean",
+					"required": true
+				}
+			},
+			"uniqueItems": true
+		}
 	}
 }

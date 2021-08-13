@@ -2,5 +2,52 @@
 	"0": {
 		"specification": null,
 		"codePrefix": null
+	},
+	"1": {
+		"specification": {
+			"field": null
+		},
+		"codePrefix": "field"
+	},
+	"2": {
+		"specification": {
+			"field": true
+		},
+		"codePrefix": "field"
+	},
+	"3": {
+		"specification": {
+			"field1": {
+				"type": "string"
+			},
+			"fiel2": {
+				"type": "undefined"
+			}
+		},
+		"codePrefix": "field2.type"
+	},
+	"4": {
+		"specification": {
+			"field1": {
+				"type": "string"
+			},
+			"fiel2": {
+				"type": "number"
+			},
+			"fiel3": {
+				
+			},
+			"fiel4": {
+				"oneOf": [
+					{
+						"type": "string"
+					},
+					{
+						"type": "undefined"
+					}
+				]
+			}
+		},
+		"codePrefix": "field4.oneOf[1].type"
 	}
 }
