@@ -866,5 +866,12 @@
 			"default": "1.0"
 		},
 		"codePrefix": "default"
+	},
+	"104": {
+		"specification": {
+			"type": "integer",
+			"multipleOf": -1
+		},
+		"codePrefix": "multipleOf"
 	}
 }
