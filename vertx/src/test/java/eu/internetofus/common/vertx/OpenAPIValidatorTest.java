@@ -83,7 +83,12 @@ public class OpenAPIValidatorTest {
       final var code = ((ValidationErrorException) error).getCode();
       var expectedErrorCode = ROOT;
       if (codePrefix != null) {
-        expectedErrorCode += "." + codePrefix;
+
+        if (!codePrefix.startsWith("[")) {
+
+          expectedErrorCode += ".";
+        }
+        expectedErrorCode += codePrefix;
       }
       assertThat(code).isEqualTo(expectedErrorCode);
       testContext.completeNow();

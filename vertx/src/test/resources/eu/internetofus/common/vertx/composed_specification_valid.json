@@ -54,8 +54,7 @@
 			"items": {
 				"type": "object",
 				"additionalProperties": {
-					"type": "boolean",
-					"required": true
+					"type": "boolean"
 				}
 			},
 			"uniqueItems": true

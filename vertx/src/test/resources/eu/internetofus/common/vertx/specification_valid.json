@@ -85,22 +85,22 @@
 	},
 	"19": {
 		"type": "boolean",
-		"nullable": true,
+		"nullable": false,
 		"default": "true"
 	},
 	"20": {
 		"type": "string",
-		"nullable": true,
-		"default": "\"a\""
+		"nullable": false,
+		"default": "\"\""
 	},
 	"21": {
 		"type": "integer",
-		"nullable": true,
+		"nullable": false,
 		"default": "1"
 	},
 	"22": {
 		"type": "number",
-		"nullable": true,
+		"nullable": false,
 		"default": "1.1"
 	},
 	"23": {
@@ -108,12 +108,12 @@
 		"items": {
 			
 		},
-		"nullable": true,
+		"nullable": false,
 		"default": "[]"
 	},
 	"24": {
 		"type": "object",
-		"nullable": true,
+		"nullable": false,
 		"default": "{}"
 	},
 	"25": {
@@ -129,7 +129,7 @@
 		]
 	},
 	"26": {
-		"onyOf": [
+		"anyOf": [
 			{
 				"type": "object",
 				"nullable": true,
@@ -152,7 +152,7 @@
 						"oneOf": [
 							{
 								"type": "integer",
-								"default": 0
+								"default": "0"
 							},
 							{
 								"type": "string",
@@ -177,7 +177,7 @@
 				"multipleOf": 10
 			},
 			{
-				"type": "numberr"
+				"type": "number"
 			}
 		]
 	},
@@ -459,7 +459,7 @@
 				"type": "integer"
 			}
 		},
-		"default": "{\\\"id\\\":0}"
+		"default": "{\"id\":0}"
 	},
 	"72": {
 		"type": "object",
@@ -535,5 +535,58 @@
 			"id",
 			"name"
 		]
+	},
+	"80": {
+		"type": "object",
+		"required": [
+			"id"
+		]
+	},
+	"81": {
+		"allOf": [
+			{
+				
+			}
+		]
+	},
+	"82": {
+		"type": "object",
+		"properties": {
+			"id": {
+				"type": "string"
+			}
+		},
+		"required": [
+			"id",
+			"undefined"
+		]
+	},
+	"83": {
+		"type": "object",
+		"required": [
+			"id",
+			"undefined"
+		]
+	},
+	"84": {
+		"type": "object",
+		"additionalProperties": {
+			
+		},
+		"required": [
+			"id",
+			"undefined"
+		]
+	},
+	"86": {
+		"oneOf": [
+			{
+				
+			}
+		]
+	},
+	"87": {
+		"type": "object",
+		"additionalProperties": false
 	}
 }

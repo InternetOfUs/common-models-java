@@ -20,7 +20,7 @@
 		"specification": {
 			"nullable": true
 		},
-		"codePrefix": "type"
+		"codePrefix": null
 	},
 	"4": {
 		"specification": {
@@ -252,14 +252,12 @@
 				}
 			]
 		},
-		"codePrefix": "required"
+		"codePrefix": "required[0]"
 	},
 	"36": {
 		"specification": {
 			"type": "object",
-			"required": [
-				"id"
-			]
+			"required": []
 		},
 		"codePrefix": "required"
 	},
@@ -314,7 +312,7 @@
 			},
 			"required": [
 				"id",
-				"undefined"
+				null
 			]
 		},
 		"codePrefix": "required[1]"
@@ -322,7 +320,7 @@
 	"41": {
 		"specification": {
 			"type": "array",
-			"itemas": {
+			"items": {
 				"type": "integer"
 			},
 			"uniqueItems": {
@@ -334,15 +332,11 @@
 	"42": {
 		"specification": {
 			"type": "array",
-			"itemas": {
+			"items": {
 				"type": "integer"
 			},
 			"uniqueItems": true,
-			"default": [
-				1,
-				1,
-				1
-			]
+			"default": "[1,1,1]"
 		},
 		"codePrefix": "default[1]"
 	},
@@ -514,13 +508,6 @@
 				
 			}
 		},
-		"codePrefix": "additionalProperties.type"
-	},
-	"62": {
-		"specification": {
-			"type": "object",
-			"additionalProperties": false
-		},
 		"codePrefix": "additionalProperties"
 	},
 	"63": {
@@ -674,12 +661,10 @@
 	"83": {
 		"specification": {
 			"oneOf": [
-				{
-					
-				}
+				"#/components/schemas/Task"
 			]
 		},
-		"codePrefix": "oneOf"
+		"codePrefix": "oneOf[0]"
 	},
 	"84": {
 		"specification": {
@@ -711,12 +696,10 @@
 	"87": {
 		"specification": {
 			"anyOf": [
-				{
-					
-				}
+				"#/components/schemas/Task"
 			]
 		},
-		"codePrefix": "anyOf"
+		"codePrefix": "anyOf[0]"
 	},
 	"88": {
 		"specification": {
@@ -749,17 +732,20 @@
 		"specification": {
 			"allOf": [
 				{
-					
+					"type": "string"
+				},
+				{
+					"type": "undefined"
 				}
 			]
 		},
-		"codePrefix": "allOf"
+		"codePrefix": "allOf[1].type"
 	},
 	"92": {
 		"specification": {
 			"allOf": [
 				{
-					"type": "string"
+					
 				},
 				{
 					"type": "undefined"
@@ -835,7 +821,7 @@
 		"specification": {
 			"type": "integer",
 			"minimum": 1,
-			"exclusiveMinimum": false,
+			"exclusiveMinimum": true,
 			"default": "1"
 		},
 		"codePrefix": "default"
@@ -844,7 +830,7 @@
 		"specification": {
 			"type": "integer",
 			"maximum": 1,
-			"exclusiveMaximum": false,
+			"exclusiveMaximum": true,
 			"default": "1"
 		},
 		"codePrefix": "default"
@@ -853,7 +839,7 @@
 		"specification": {
 			"type": "number",
 			"minimum": 1.0,
-			"exclusiveMinimum": false,
+			"exclusiveMinimum": true,
 			"default": "1.0"
 		},
 		"codePrefix": "default"
@@ -862,7 +848,7 @@
 		"specification": {
 			"type": "number",
 			"maximum": 1.0,
-			"exclusiveMaximum": false,
+			"exclusiveMaximum": true,
 			"default": "1.0"
 		},
 		"codePrefix": "default"

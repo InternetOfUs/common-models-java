@@ -300,7 +300,7 @@
 			"type": "integer",
 			"maximum": 1
 		},
-		"value": 0,
+		"value": 2,
 		"codePrefix": null
 	},
 	"38": {
@@ -308,7 +308,7 @@
 			"type": "integer",
 			"maximum": "1"
 		},
-		"value": 1,
+		"value": 2,
 		"codePrefix": null
 	},
 	"39": {
@@ -326,7 +326,7 @@
 			"maximum": 1,
 			"exclusiveMaximum": false
 		},
-		"value": 0,
+		"value": 2,
 		"codePrefix": null
 	},
 	"41": {
@@ -337,7 +337,7 @@
 			"maximum": 10,
 			"exclusiveMaximum": false
 		},
-		"value": 1,
+		"value": 0,
 		"codePrefix": null
 	},
 	"42": {
@@ -348,7 +348,7 @@
 			"maximum": 10,
 			"exclusiveMaximum": false
 		},
-		"value": 10,
+		"value": 11,
 		"codePrefix": null
 	},
 	"43": {
@@ -390,7 +390,7 @@
 			"type": "number",
 			"maximum": 1.0
 		},
-		"value": 0.0,
+		"value": 1.01,
 		"codePrefix": null
 	},
 	"48": {
@@ -416,7 +416,7 @@
 			"maximum": 1.0,
 			"exclusiveMaximum": false
 		},
-		"value": 0.0,
+		"value": 1.01,
 		"codePrefix": null
 	},
 	"51": {
@@ -427,7 +427,7 @@
 			"maximum": 10.0,
 			"exclusiveMaximum": false
 		},
-		"value": 1.0,
+		"value": 0.9,
 		"codePrefix": null
 	},
 	"52": {
@@ -438,7 +438,7 @@
 			"maximum": 10.0,
 			"exclusiveMaximum": false
 		},
-		"value": 10.0,
+		"value": 10.01,
 		"codePrefix": null
 	},
 	"53": {
@@ -601,7 +601,7 @@
 				"id": "2"
 			}
 		],
-		"codePrefix": "[0]"
+		"codePrefix": "[0].id"
 	},
 	"66": {
 		"specification": {
@@ -804,7 +804,7 @@
 				"type": "integer",
 				"nullable": true
 			},
-			"maxItems": 1
+			"maxProperties": 1
 		},
 		"value": {
 			"child1": 1,
@@ -819,7 +819,7 @@
 				"type": "integer",
 				"nullable": true
 			},
-			"minItems": 10
+			"minProperties": 10
 		},
 		"value": {
 			"child1": 1,
@@ -949,14 +949,17 @@
 								}
 							]
 						}
-					}
+					},
+					"required": [
+						"id"
+					]
 				}
 			]
 		},
 		"value": {
 			"name": null
 		},
-		"codePrefix": "name"
+		"codePrefix": null
 	},
 	"85": {
 		"specification": {
@@ -991,7 +994,7 @@
 		"value": {
 			"id": -1
 		},
-		"codePrefix": "id"
+		"codePrefix": null
 	},
 	"86": {
 		"specification": {
@@ -1026,7 +1029,7 @@
 		"value": {
 			"id": ""
 		},
-		"codePrefix": "id"
+		"codePrefix": null
 	},
 	"87": {
 		"specification": {
@@ -1128,14 +1131,17 @@
 								}
 							]
 						}
-					}
+					},
+					"required":[
+						"id"
+					]
 				}
 			]
 		},
 		"value": {
 			"name": "Jane Doe"
 		},
-		"codePrefix": null
+		"codePrefix": "id"
 	},
 	"90": {
 		"specification": {
@@ -1146,7 +1152,10 @@
 						"name": {
 							"type": "string"
 						}
-					}
+					},
+					"required":[
+						"name"
+					]
 				},
 				{
 					"type": "object",
@@ -1170,7 +1179,7 @@
 		"value": {
 			"id": 1
 		},
-		"codePrefix": null
+		"codePrefix": "name"
 	},
 	"91": {
 		"specification": {
@@ -1310,5 +1319,49 @@
 			null
 		],
 		"codePrefix": "[4]"
+	},
+	"98": {
+		"specification": {
+			"type": "integer",
+			"minimum": 1,
+			"exclusiveMinimum": true,
+			"maximum": 10,
+			"exclusiveMaximum": true
+		},
+		"value": 1,
+		"codePrefix": null
+	},
+	"99": {
+		"specification": {
+			"type": "integer",
+			"minimum": 1,
+			"exclusiveMinimum": true,
+			"maximum": 10,
+			"exclusiveMaximum": true
+		},
+		"value": 10,
+		"codePrefix": null
+	},
+	"100": {
+		"specification": {
+			"type": "number",
+			"minimum": 1.0,
+			"exclusiveMinimum": true,
+			"maximum": 10.0,
+			"exclusiveMaximum": true
+		},
+		"value": 1.0,
+		"codePrefix": null
+	},
+	"101": {
+		"specification": {
+			"type": "number",
+			"minimum": 1.0,
+			"exclusiveMinimum": true,
+			"maximum": 10.0,
+			"exclusiveMaximum": true
+		},
+		"value": 10.0,
+		"codePrefix": null
 	}
 }

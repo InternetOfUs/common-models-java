@@ -20,7 +20,7 @@
 			"field1": {
 				"type": "string"
 			},
-			"fiel2": {
+			"field2": {
 				"type": "undefined"
 			}
 		},
@@ -31,13 +31,13 @@
 			"field1": {
 				"type": "string"
 			},
-			"fiel2": {
+			"field2": {
 				"type": "number"
 			},
-			"fiel3": {
+			"field3": {
 				
 			},
-			"fiel4": {
+			"field4": {
 				"oneOf": [
 					{
 						"type": "string"
