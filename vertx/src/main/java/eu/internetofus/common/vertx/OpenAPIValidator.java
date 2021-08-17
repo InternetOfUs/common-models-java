@@ -95,6 +95,8 @@ public class OpenAPIValidator {
    *                      validation process, for this reason the future return a
    *                      new value.
    *
+   * @param <T>           type of environment.
+   *
    * @return the future with the validated value or an error if it is not valid.
    */
   @SuppressWarnings("unchecked")
@@ -124,7 +126,7 @@ public class OpenAPIValidator {
   /**
    * The environment used to do the validation.
    */
-  private static abstract class Environment {
+  private static class Environment {
 
     /**
      * The event bus that is using.
@@ -308,7 +310,7 @@ public class OpenAPIValidator {
 
           final var name = ref.substring(index + SCHEMAS_PREFIX.length());
           final var path = ref.substring(0, index);
-          String url = null;
+          String url;
           if (index == 0) {
 
             url = OpenAPIValidator.class.getClassLoader().getResource(COMMON_MODELS_RESOURCE_NAME).toString();
@@ -1059,18 +1061,19 @@ public class OpenAPIValidator {
   /**
    * Check a composed type.
    *
-   * @param field  name of the composed type.
-   * @param future to compose.
-   * @param env    validation environment to use.
+   * @param field           name of the composed type.
+   * @param futureToCompose future to compose.
+   * @param env             validation environment to use.
    *
    * @throws ValidationErrorException if it is not an instance of.
    *
    * @return the future to check the composed type.
    */
   static Future<SpecificationEnvironment> checkComposedType(@NotNull final String field,
-      @NotNull Future<SpecificationEnvironment> future, @NotNull final SpecificationEnvironment env)
+      @NotNull final Future<SpecificationEnvironment> futureToCompose, @NotNull final SpecificationEnvironment env)
       throws ValidationErrorException {
 
+    var future = futureToCompose;
     final var value = env.specification.getValue(field);
     if (value instanceof JsonArray) {
 
@@ -1131,16 +1134,18 @@ public class OpenAPIValidator {
   /**
    * Check that the enum filed is right.
    *
-   * @param future to compose.
-   * @param env    validation environment to use.
+   * @param futureToCompose to compose.
+   * @param env             validation environment to use.
    *
    * @throws ValidationErrorException if it is not an instance of.
    *
    * @return the future to check the enum values.
    */
-  private static Future<SpecificationEnvironment> checkEnum(@NotNull Future<SpecificationEnvironment> future,
-      @NotNull final SpecificationEnvironment env) throws ValidationErrorException {
+  private static Future<SpecificationEnvironment> checkEnum(
+      @NotNull final Future<SpecificationEnvironment> futureToCompose, @NotNull final SpecificationEnvironment env)
+      throws ValidationErrorException {
 
+    var future = futureToCompose;
     final var value = env.specification.getValue("enum");
     if (value instanceof JsonArray) {
 
@@ -1184,17 +1189,18 @@ public class OpenAPIValidator {
   /**
    * Check that the addition properties field is right.
    *
-   * @param future to compose.
-   * @param env    validation environment to use.
+   * @param futureToCompose future to compose.
+   * @param env             validation environment to use.
    *
    * @throws ValidationErrorException if it is not an instance of.
    *
    * @return the future to check the additional properties.
    */
   private static Future<SpecificationEnvironment> checkAdditionalProperties(
-      @NotNull Future<SpecificationEnvironment> future, @NotNull final SpecificationEnvironment env)
+      @NotNull final Future<SpecificationEnvironment> futureToCompose, @NotNull final SpecificationEnvironment env)
       throws ValidationErrorException {
 
+    var future = futureToCompose;
     if (env.specification.containsKey("properties")) {
 
       throw env.notValid("additionalProperties", "You cannot mix 'additionalProperties' with some  'properties'.");
@@ -1233,22 +1239,20 @@ public class OpenAPIValidator {
    *
    * @return the future to check the 'not'.
    */
-  private static Future<SpecificationEnvironment> checkNot(@NotNull Future<SpecificationEnvironment> future,
+  private static Future<SpecificationEnvironment> checkNot(@NotNull final Future<SpecificationEnvironment> future,
       @NotNull final SpecificationEnvironment env) throws ValidationErrorException {
 
     final var value = env.specification.getValue("not");
     if (value instanceof JsonObject) {
 
       final var not = (JsonObject) value;
-      future = future
-          .compose(chain -> validateSpecification(chain.prefixFor("not"), chain.vertx, not).map(any -> chain));
+      return future.compose(chain -> validateSpecification(chain.prefixFor("not"), chain.vertx, not).map(any -> chain));
 
     } else {
 
       throw env.notValid("not", "Expecting a 'JsonObject' value.");
     }
 
-    return future;
   }
 
   /**
@@ -1261,21 +1265,20 @@ public class OpenAPIValidator {
    *
    * @return the future to check the 'not'.
    */
-  private static Future<SpecificationEnvironment> checkRef(@NotNull Future<SpecificationEnvironment> future,
+  private static Future<SpecificationEnvironment> checkRef(@NotNull final Future<SpecificationEnvironment> future,
       @NotNull final SpecificationEnvironment env) throws ValidationErrorException {
 
     final var value = env.specification.getValue("$ref");
     if (value instanceof String) {
 
       final var ref = (String) value;
-      future = future.compose(chain -> env.obtainSchemaFor(ref).map(any -> chain));
+      return future.compose(chain -> env.obtainSchemaFor(ref).map(any -> chain));
 
     } else {
 
       throw env.notValid("$ref", "Expecting a 'string' value.");
     }
 
-    return future;
   }
 
   /**
@@ -1288,7 +1291,7 @@ public class OpenAPIValidator {
    *
    * @return the future that say if the default value is valid or not.
    */
-  private static Future<SpecificationEnvironment> checkDefault(@NotNull Future<SpecificationEnvironment> future,
+  private static Future<SpecificationEnvironment> checkDefault(@NotNull final Future<SpecificationEnvironment> future,
       @NotNull final SpecificationEnvironment env) throws ValidationErrorException {
 
     final var value = env.specification.getValue("default");
@@ -1297,7 +1300,7 @@ public class OpenAPIValidator {
       try {
 
         final var decoded = Json.decodeValue((String) value);
-        future = future
+        return future
             .compose(chain -> validateValue(null, chain.vertx, chain.specification, decoded).transform(validation -> {
 
               final Promise<SpecificationEnvironment> promise = Promise.promise();
@@ -1331,8 +1334,6 @@ public class OpenAPIValidator {
 
     }
 
-    return future;
-
   }
 
   /**
@@ -1345,14 +1346,16 @@ public class OpenAPIValidator {
    *
    * @return the future that say if the properties value is valid or not.
    */
-  private static Future<SpecificationEnvironment> checkProperties(@NotNull Future<SpecificationEnvironment> future,
-      @NotNull final SpecificationEnvironment env) throws ValidationErrorException {
+  private static Future<SpecificationEnvironment> checkProperties(
+      @NotNull final Future<SpecificationEnvironment> future, @NotNull final SpecificationEnvironment env)
+      throws ValidationErrorException {
 
     final var value = env.specification.getValue("properties");
     if (value instanceof JsonObject) {
 
       checkIfTypeIs("properties", env, "object");
 
+      var propertiesFuture = future;
       final var properties = (JsonObject) value;
       for (final var propertyName : properties.fieldNames()) {
 
@@ -1361,7 +1364,7 @@ public class OpenAPIValidator {
         if (propertyValue instanceof JsonObject) {
 
           final var propertySpecification = (JsonObject) propertyValue;
-          future = future.compose(
+          propertiesFuture = propertiesFuture.compose(
               chain -> validateSpecification(chain.prefixFor(propertyPrefix), chain.vertx, propertySpecification)
                   .map(empty -> chain));
 
@@ -1371,13 +1374,14 @@ public class OpenAPIValidator {
         }
       }
 
+      return propertiesFuture;
+
     } else {
 
       throw env.notValid("properties", "Expecting a 'JsonObject' value.");
 
     }
 
-    return future;
   }
 
   /**
@@ -1390,7 +1394,7 @@ public class OpenAPIValidator {
    *
    * @return the future that say if the items value is valid or not.
    */
-  private static Future<SpecificationEnvironment> checkItems(@NotNull Future<SpecificationEnvironment> future,
+  private static Future<SpecificationEnvironment> checkItems(@NotNull final Future<SpecificationEnvironment> future,
       @NotNull final SpecificationEnvironment env) throws ValidationErrorException {
 
     final var value = env.specification.getValue("items");
@@ -1398,7 +1402,7 @@ public class OpenAPIValidator {
 
       checkIfTypeIs("items", env, "array");
 
-      future = future.compose(chain -> validateSpecification(chain.prefixFor("items"), chain.vertx, (JsonObject) value)
+      return future.compose(chain -> validateSpecification(chain.prefixFor("items"), chain.vertx, (JsonObject) value)
           .map(empty -> chain));
 
     } else {
@@ -1407,7 +1411,6 @@ public class OpenAPIValidator {
 
     }
 
-    return future;
   }
 
   /**
