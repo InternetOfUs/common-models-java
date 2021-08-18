@@ -17,7 +17,7 @@
  *
  * -----------------------------------------------------------------------------
  */
-package eu.internetofus.common.components;
+package eu.internetofus.common.protocols;
 
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBody;
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBodyPredicates;
@@ -40,13 +40,13 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 /**
- * Check the eat together protocol. ATTENTION: This test is sequential and
- * maintains the state between methods. In other words, you must to run the
- * entire test methods on the specified order to work.
+ * Check the {@link DefaultProtocols#ASK_4_HELP_V2} protocol. ATTENTION: This
+ * test is sequential and maintains the state between methods. In other words,
+ * you must to run the entire test methods on the specified order to work.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProtocolITC {
+public class AskForHelpV2ProtocolITC extends AbstractProtocolITC {
 
   /**
    * {@inheritDoc}
@@ -57,6 +57,17 @@ public abstract class AbstractQuestionAndAnswersProtocolITC extends AbstractProt
   protected int numberOfUsersToCreate() {
 
     return 6;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @return {@link DefaultProtocols#ASK_4_HELP_V2}
+   */
+  @Override
+  protected DefaultProtocols getDefaultProtocolsToUse() {
+
+    return DefaultProtocols.ASK_4_HELP_V2;
   }
 
   /**

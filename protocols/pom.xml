@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
  <modelVersion>4.0.0</modelVersion>
- <artifactId>common-dummy</artifactId>
  <parent>
   <groupId>eu.internetofus</groupId>
   <artifactId>common-parent</artifactId>
   <relativePath>../pom.xml</relativePath>
   <version>0.10.0</version>
  </parent>
+ <artifactId>common-protocols</artifactId>
+ <packaging>jar</packaging>
+ <description>The common protocols that will be used on WeNet.</description>
  <organization>
   <name>UDT-IA, IIIA-CSIC</name>
   <url>http://www.iiia.csic.es/</url>
@@ -21,11 +23,6 @@
  <dependencies>
   <dependency>
    <groupId>eu.internetofus</groupId>
-   <artifactId>common-vertx</artifactId>
-   <version>${project.version}</version>
-  </dependency>
-  <dependency>
-   <groupId>eu.internetofus</groupId>
    <artifactId>common-components</artifactId>
    <version>${project.version}</version>
   </dependency>
@@ -37,28 +34,7 @@
   </dependency>
   <dependency>
    <groupId>eu.internetofus</groupId>
-   <artifactId>common-model</artifactId>
-   <version>${project.version}</version>
-   <type>test-jar</type>
-   <scope>test</scope>
-  </dependency>
-  <dependency>
-   <groupId>eu.internetofus</groupId>
-   <artifactId>common-vertx</artifactId>
-   <version>${project.version}</version>
-   <type>test-jar</type>
-   <scope>test</scope>
-  </dependency>
-  <dependency>
-   <groupId>eu.internetofus</groupId>
    <artifactId>common-components</artifactId>
-   <version>${project.version}</version>
-   <type>test-jar</type>
-   <scope>test</scope>
-  </dependency>
-  <dependency>
-   <groupId>eu.internetofus</groupId>
-   <artifactId>common-protocols</artifactId>
    <version>${project.version}</version>
    <type>test-jar</type>
    <scope>test</scope>
@@ -67,25 +43,6 @@
  <build>
   <finalName>${project.artifactId}-${project.version}</finalName>
   <plugins>
-   <plugin>
-    <groupId>io.swagger.core.v3</groupId>
-    <artifactId>swagger-maven-plugin</artifactId>
-    <version>${io.swagger.core.v3-version}</version>
-    <executions>
-     <execution>
-      <phase>compile</phase>
-      <goals>
-       <goal>resolve</goal>
-      </goals>
-     </execution>
-    </executions>
-    <configuration>
-     <outputPath>${basedir}/target/classes</outputPath>
-     <outputFileName>wenet-dummy-openapi</outputFileName>
-     <outputFormat>YAML</outputFormat>
-     <configurationFilePath>${basedir}/src/main/swagger/wenet-dummy-configuration.yaml</configurationFilePath>
-    </configuration>
-   </plugin>
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-source-plugin</artifactId>
@@ -115,50 +72,6 @@
      <useIncrementalCompilation>false</useIncrementalCompilation>
      <compilerArgument>-Xlint:all</compilerArgument>
     </configuration>
-    <executions>
-     <execution>
-      <id>default-compile</id>
-      <configuration>
-       <annotationProcessors>
-        <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
-       </annotationProcessors>
-       <compilerArgs>
-        <arg>-Acodegen.output=${project.basedir}/src/main</arg>
-       </compilerArgs>
-      </configuration>
-     </execution>
-    </executions>
-   </plugin>
-   <plugin>
-    <groupId>org.codehaus.mojo</groupId>
-    <artifactId>build-helper-maven-plugin</artifactId>
-    <version>${build-helper-maven-plugin-version}</version>
-    <executions>
-     <execution>
-      <id>add-source</id>
-      <phase>generate-sources</phase>
-      <goals>
-       <goal>add-source</goal>
-      </goals>
-      <configuration>
-       <sources>
-        <source>${project.build.directory}/generated-sources/annotations/</source>
-       </sources>
-      </configuration>
-     </execution>
-     <execution>
-      <id>add-test-source</id>
-      <phase>generate-test-sources</phase>
-      <goals>
-       <goal>add-test-source</goal>
-      </goals>
-      <configuration>
-       <sources>
-        <source>${project.build.directory}/generated-test-sources/test-annotations/</source>
-       </sources>
-      </configuration>
-     </execution>
-    </executions>
    </plugin>
    <plugin>
     <artifactId>maven-pmd-plugin</artifactId>
@@ -329,59 +242,4 @@
    </plugin>
   </plugins>
  </build>
- <reporting>
-  <excludeDefaults>true</excludeDefaults>
-  <plugins>
-   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-project-info-reports-plugin</artifactId>
-    <version>${maven-project-info-reports-plugin-version}</version>
-   </plugin>
-   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-surefire-report-plugin</artifactId>
-    <version>${maven-surefire-report-plugin-version}</version>
-   </plugin>
-   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-pmd-plugin</artifactId>
-    <version>${maven-pmd-plugin-version}</version>
-    <configuration>
-     <skipEmptyReport>false</skipEmptyReport>
-    </configuration>
-   </plugin>
-   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-javadoc-plugin</artifactId>
-    <version>${maven-javadoc-plugin-version}</version>
-    <configuration>
-     <source>${compiler.source}</source>
-    </configuration>
-   </plugin>
-   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-jxr-plugin</artifactId>
-    <version>${maven-jxr-plugin-version}</version>
-   </plugin>
-   <plugin>
-    <groupId>org.jacoco</groupId>
-    <artifactId>jacoco-maven-plugin</artifactId>
-    <version>${org.jacoco-version}</version>
-    <configuration>
-     <excludes>
-      <!-- Classes that has been generated by vertx -->
-      <exclude>**/*Vertx*</exclude>
-     </excludes>
-    </configuration>
-    <reportSets>
-     <reportSet>
-      <reports>
-       <!-- select non-aggregate reports -->
-       <report>report</report>
-      </reports>
-     </reportSet>
-    </reportSets>
-   </plugin>
-  </plugins>
- </reporting>
 </project>

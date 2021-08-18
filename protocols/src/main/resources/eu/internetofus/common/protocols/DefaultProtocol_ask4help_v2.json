@@ -1,0 +1,188 @@
+{
+	"id": "ask4help v2",
+	"name": "Ask for Help",
+	"description": "Ask a question into your community to helps you",
+	"keywords": [
+		"question",
+		"answer",
+		"help"
+	],
+	"attributes": {
+		"type": "object",
+		"properties": {
+			"kindOfAnswerer": {
+				"type": "string",
+				"description": "The type of user shoud answer the question",
+				"enum": [
+					"different than me",
+					"similar to me",
+					"anyone"
+				]
+			}
+		}
+	},
+	"transactions": {
+		"answerTransaction": {
+			"type": "object",
+			"description": "Answer to a question",
+			"properties": {
+				"answer": {
+					"type": "string",
+					"description": "The answer to the question"
+				}
+			}
+		},
+		"notAnswerTransaction": {
+			"description": "Ignore a question"
+		},
+		"bestAnswerTransaction": {
+			"type": "object",
+			"description": "Pick the best answer",
+			"properties": {
+				"transactionId": {
+					"type": "string",
+					"description": "The id of the picked answer transaction"
+				},
+				"reason": {
+					"type": "string",
+					"nullable": "true",
+					"description": "The reason why the specific answer was picked"
+				}
+			}
+		},
+		"moreAnswerTransaction": {
+			"description": "Ask some more users"
+		},
+		"reportQuestionTransaction": {
+			"type": "object",
+			"description": "Report question",
+			"properties": {
+				"reason": {
+					"type": "string",
+					"nullable": "true",
+					"description": "The reason why the specific answer was picked"
+				},
+				"comment": {
+					"type": "string",
+					"nullable": "true",
+					"description": "A specific comment by the reporting user"
+				}
+			}
+		},
+		"reportAnswerTransaction": {
+			"type": "object",
+			"description": "Report answer",
+			"properties": {
+				"transactionId": {
+					"type": "string",
+					"description": "The id of the picked answer transaction"
+				},
+				"reason": {
+					"type": "string",
+					"nullable": "true",
+					"description": "The reason why the specific answer was picked"
+				},
+				"comment": {
+					"type": "string",
+					"nullable": "true",
+					"description": "A specific comment by the reporting user"
+				}
+			}
+		}
+	},
+	"callbacks": {
+		"QuestionToAnswerMessage": {
+			"description": "Question to answer",
+			"properties": {
+				"taskId": {
+					"type": "string",
+					"description": "The id of the task assiciated with the question"
+				},
+				"question": {
+					"type": "string",
+					"description": "The question to answer to"
+				},
+				"userId": {
+					"type": "string",
+					"description": "The id of the user who proposed the question"
+				}
+			}
+		},
+		"AnsweredQuestionMessage": {
+			"description": "Answer to question",
+			"properties": {
+				"taskId": {
+					"type": "string",
+					"description": "The id of the task assiciated with the question"
+				},
+				"answer": {
+					"type": "string",
+					"description": "The answer to the question"
+				},
+				"transactionId": {
+					"type": "string",
+					"description": "The id of the transaction associated to the answer"
+				},
+				"userId": {
+					"type": "string",
+					"description": "The id of the user who answered the question"
+				}
+			}
+		},
+		"AnsweredPickedMessage": {
+			"description": "Answer picked",
+			"properties": {
+				"taskId": {
+					"type": "string",
+					"description": "The id of the task assiciated with the question"
+				},
+				"transactionId": {
+					"type": "string",
+					"description": "The id of the transaction associated to the answer"
+				}
+			}
+		}
+	},
+	"norms": [
+		{
+			"whenever": "is_received_created_task() and get_app_users_except_me(Unanswered)",
+			"thenceforth": "add_created_transaction() and send_messages(Unanswered,'notifyNewQuestionAndAnswer',json([]))"
+		},
+		{
+			"whenever": "is_received(_,'notifyNewQuestionAndAnswer',_) and get_task_id(TaskId) and get_task_goal_name(Question) and get_task_requester_id(RequesterId)",
+			"thenceforth": "send_user_message('QuestionToAnswerMessage',json([taskId=TaskId,question=Question,userId=RequesterId]))"
+		},
+		{
+			"whenever": "is_received_do_transaction('answerTransaction',Attributes) and not(is_task_closed()) and get_attribute(Answer,answer,Attributes) and get_task_requester_id(RequesterId)",
+			"thenceforth": "add_message_transaction() and send_message(RequesterId,'answerTransaction',json([answer=Answer]))"
+		},
+		{
+			"whenever": "is_received(SenderId,'answerTransaction',Attributes) and get_attribute(Answer,answer,Attributes) and get_task_id(TaskId) and get_transaction_id(TransactionId)",
+			"thenceforth": "send_user_message('AnsweredQuestionMessage',json([taskId=TaskId,answer=Answer,transactionId=TransactionId,userId=SenderId]))"
+		},
+		{
+			"whenever": "is_received_do_transaction('bestAnswerTransaction',Attributes) and not(is_task_closed()) and get_attribute(TransactionId,transactionId,Attributes) and get_transaction(Transaction,TransactionId) and wenet_actioneer_id_of_transaction(ActioneerId,Transaction)",
+			"thenceforth": "add_message_transaction() and close_task() and send_message(ActioneerId,'bestAnswerTransaction',json([transactionId=TransactionId]))"
+		},
+		{
+			"whenever": "is_received(_,'bestAnswerTransaction',Attributes) and get_attribute(TransactionId,transactionId,Attributes) and get_task_id(TaskId)",
+			"thenceforth": "send_user_message('AnsweredPickedMessage',json([taskId=TaskId,transactionId=TransactionId]))"
+		},
+		{
+			"whenever": "is_received_do_transaction('notAnswerTransaction',_) and not(is_task_closed())",
+			"thenceforth": "add_message_transaction()"
+		},
+		{
+			"whenever": "is_received_do_transaction('moreAnswerTransaction',_) and not(is_task_closed())",
+			"thenceforth": "add_message_transaction()"
+		},
+		{
+			"whenever": "is_received_do_transaction('reportQuestionTransaction',_) and not(is_task_closed())",
+			"thenceforth": "add_message_transaction()"
+		},
+		{
+			"whenever": "is_received_do_transaction('reportAnswerTransaction',Attributes) and not(is_task_closed()) and get_attribute(TransactionId,transactionId,Attributes) and get_transaction(_,TransactionId)",
+			"thenceforth": "add_message_transaction()"
+		}
+	]
+}

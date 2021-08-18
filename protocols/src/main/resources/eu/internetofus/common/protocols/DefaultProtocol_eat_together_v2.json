@@ -1,0 +1,351 @@
+{
+	"id": "eat together v2",
+	"name": "Eat together",
+	"description": "Make a social event to share some food and fun.",
+	"keywords": [
+		"Social event",
+		"Eat",
+		"hardcoded"
+	],
+	"attributes": {
+		"type": "object",
+		"properties": {
+			"deadlineTs": {
+				"type": "integer",
+				"description": "The maximum time epoch that any user can accept to be a volunteer"
+			},
+			"startTs": {
+				"type": "integer",
+				"description": "The time epoch when the social event is going to start"
+			},
+			"endTs": {
+				"type": "integer",
+				"description": "The time epoch when the social event will end"
+			}
+		}
+	},
+	"transactions": {
+		"volunteerForTask": {
+			"type": "object",
+			"description": "Accept to attent the event",
+			"properties": {
+				"volunteerId": {
+					"type": "string",
+					"description": "The identifier of the volunteer that want to be a volunteer"
+				}
+			}
+		},
+		"refuseTask": {
+			"type": "object",
+			"description": "Refuse to attent the event",
+			"properties": {
+				"volunteerId": {
+					"type": "string",
+					"description": "The identifier of the volunteer that not want to be a volunteer"
+				}
+			}
+		},
+		"acceptVolunteer": {
+			"type": "object",
+			"description": "Accept a volunteer to attend the event",
+			"properties": {
+				"volunteerId": {
+					"type": "string",
+					"description": "The identifier of the volunteer that was accepted"
+				}
+			}
+		},
+		"refuseVolunteer": {
+			"type": "object",
+			"description": "Refuse a volunteer to attend the event",
+			"properties": {
+				"volunteerId": {
+					"type": "string",
+					"description": "The identifier of the volunteer that was refused"
+				}
+			}
+		},
+		"taskCompleted": {
+			"type": "object",
+			"description": "Finish the task",
+			"properties": {
+				"outcome": {
+					"type": "string",
+					"enum": [
+						"cancelled",
+						"completed",
+						"failed"
+					],
+					"description": "The reason why the task is completed"
+				}
+			}
+		}
+	},
+	"callbacks": {
+		"TextualMessage": {
+			"description": "A simple textual message from WeNet to the user",
+			"properties": {
+				"title": {
+					"type": "string",
+					"description": "The title of the message"
+				},
+				"text": {
+					"type": "string",
+					"description": "The text of the message"
+				},
+				"communityId": {
+					"type": "string",
+					"description": "ID of the community related to the message",
+					"nullable": true
+				},
+				"taskId": {
+					"type": "string",
+					"description": "The identifier of the target task",
+					"example": "28961582-84d2-41d1-b555-c09dce046831",
+					"nullable": true
+				}
+			}
+		},
+		"TaskProposalNotification": {
+			"description": "This notification is used in order to propose a user to volunteer to a newly created task",
+			"properties": {
+				"communityId": {
+					"type": "string",
+					"description": "ID of the community related to the message",
+					"nullable": true
+				},
+				"taskId": {
+					"type": "string",
+					"description": "The identifier of the target task",
+					"example": "28961582-84d2-41d1-b555-c09dce046831",
+					"nullable": true
+				}
+			}
+		},
+		"TaskVolunteerNotification": {
+			"description": "This notification is used in order to notify the task creator that a new volunteer is proposing to participate to the task",
+			"properties": {
+				"volunteerId": {
+					"type": "string",
+					"description": "The Wenet ID of the volunteer that is applying to the task"
+				},
+				"communityId": {
+					"type": "string",
+					"description": "ID of the community related to the message",
+					"nullable": true
+				},
+				"taskId": {
+					"type": "string",
+					"description": "The identifier of the target task",
+					"example": "28961582-84d2-41d1-b555-c09dce046831",
+					"nullable": true
+				}
+			}
+		},
+		"TaskSelectionNotification": {
+			"description": "This notification is used in order to notify the user who volunteered about the decision of the task creator",
+			"properties": {
+				"outcome": {
+					"type": "string",
+					"enum": [
+						"accepted",
+						"refused"
+					],
+					"example": "accepted"
+				},
+				"communityId": {
+					"type": "string",
+					"description": "ID of the community related to the message",
+					"nullable": true
+				},
+				"taskId": {
+					"type": "string",
+					"description": "The identifier of the target task",
+					"example": "28961582-84d2-41d1-b555-c09dce046831",
+					"nullable": true
+				}
+			}
+		},
+		"TaskConcludedNotification": {
+			"description": "This notification is used in order to notify task participants that a task has been completed, the outcome could be\n* completed (if completed correctly)\n* failed (if something went wrong)\n* cancelled (the creator cancelled the task)",
+			"properties": {
+				"outcome": {
+					"type": "string",
+					"description": "The outcome of the task (has it been completed with success or not)",
+					"enum": [
+						"cancelled",
+						"completed",
+						"failed"
+					],
+					"example": "completed"
+				},
+				"communityId": {
+					"type": "string",
+					"description": "ID of the community related to the message",
+					"nullable": true
+				},
+				"taskId": {
+					"type": "string",
+					"description": "The identifier of the target task",
+					"nullable": true,
+					"example": "28961582-84d2-41d1-b555-c09dce046831"
+				}
+			}
+		},
+		"IncentiveMessage": {
+			"description": "This message contains an incentive for an user",
+			"properties": {
+				"issuer": {
+					"type": "string",
+					"description": "The issuer of the incentive"
+				},
+				"content": {
+					"type": "string",
+					"description": "The content of the incentive",
+					"example": "we are happy to see your participation in the I-log app, you are doing a great job!"
+				},
+				"communityId": {
+					"type": "string",
+					"description": "ID of the community related to the message",
+					"nullable": true
+				},
+				"taskId": {
+					"type": "string",
+					"description": "The identifier of the target task",
+					"example": "28961582-84d2-41d1-b555-c09dce046831",
+					"nullable": true
+				}
+			}
+		},
+		"IncentiveBadge": {
+			"description": "This is a badge of an incentive",
+			"properties": {
+				"issuer": {
+					"type": "string",
+					"description": "The issuer of the incentive"
+				},
+				"badgeClass": {
+					"type": "string",
+					"description": "the class of the badge",
+					"example": "hpqAdI7hQf2maQ13AW1jXA"
+				},
+				"imageUrl": {
+					"type": "string",
+					"description": "the URL of the image of the badge",
+					"example": "https://wenet.server/media/uploads/badges/assertion-OYmfmtDFSIKG-qeZfXz4QQ.png"
+				},
+				"criteria": {
+					"type": "string",
+					"description": "the criteria with which the badge was assigned",
+					"example": "The user will get this badge for 50 relations in Twitter"
+				},
+				"message": {
+					"type": "string",
+					"description": "a human-readable text to be shown to the user when she receives the badge",
+					"example": "Congratulations! you just earned a new badge for your relations on Twitter"
+				},
+				"communityId": {
+					"type": "string",
+					"description": "ID of the community related to the message",
+					"nullable": true
+				},
+				"taskId": {
+					"type": "string",
+					"description": "The identifier of the target task",
+					"example": "28961582-84d2-41d1-b555-c09dce046831",
+					"nullable": true
+				}
+			}
+		}
+	},
+	"norms": [
+		{
+			"whenever": "is_received_created_task() and not(get_task_attribute_value(_,deadlineTs))",
+			"thenceforth": "send_user_message('TextualMessage',json([title='No deadline defined',text='You must define a deadline for the task']))"
+		},
+		{
+			"whenever": "is_received_created_task() and get_task_attribute_value(Deadline,deadlineTs) and is_now_greater_than_or_equal_to(Deadline)",
+			"thenceforth": "send_user_message('TextualMessage',json([title='Bad deadline',text='You must define a deadline that is after now']))"
+		},
+		{
+			"whenever": "is_received_created_task() and get_task_attribute_value(Deadline,deadlineTs) and is_now_less_than(Deadline) and get_app_users_except_me(Unanswered) and length(Unanswered,Size) and =(Size,0)",
+			"thenceforth": "send_user_message('TextualMessage',json([title='No users',text='I do not found other users to eat together']))"
+		},
+		{
+			"whenever": "is_received_created_task() and get_task_attribute_value(Deadline,deadlineTs) and is_now_less_than(Deadline) and get_app_users_except_me(Unanswered) and length(Unanswered,Size) and >(Size,0)",
+			"thenceforth": "add_created_transaction() and put_task_attribute(unanswered,Unanswered) and put_task_attribute(volunteers,[]) and put_task_attribute(declined,[]) and put_task_attribute(accepted,[]) and put_task_attribute(refused,[]) and send_messages(Unanswered,'notifyNewEatTogether',json([]))"
+		},
+		{
+			"whenever": "is_received(_,'notifyNewEatTogether',_) and get_community_id(CommunityId) and get_task_id(TaskId)",
+			"thenceforth": "send_user_message('TaskProposalNotification',json([communityId=CommunityId,taskId=TaskId]))"
+		},
+		{
+			"whenever": "is_received_do_transaction(_,_) and is_task_closed()",
+			"thenceforth": "send_user_message('TextualMessage',json([title='Task already closed',text='It is too late the task is already completed.']))"
+		},
+		{
+			"whenever": "is_received_do_transaction('volunteerForTask',_) and not(is_task_closed()) and  get_task_attribute_value(Deadline,deadlineTs) and is_now_greater_than_or_equal_to(Deadline)",
+			"thenceforth": "send_user_message('TextualMessage',json([title='Deadline reached',text='It is too late to be a volunteer.']))"
+		},
+		{
+			"whenever": "is_received_do_transaction('volunteerForTask',_) and not(is_task_closed()) and  get_task_attribute_value(Deadline,deadlineTs) and is_now_less_than(Deadline) and get_task_attribute_value(Unanswered,unanswered) and get_profile_id(Me) and not(member(Me,Unanswered))",
+			"thenceforth": "send_user_message('TextualMessage',json([title='Volunteer not allowed',text='You cannot be a volunteer, because you already are or you are not a person that can provide help.']))"
+		},
+		{
+			"whenever": "is_received_do_transaction('volunteerForTask',_) and not(is_task_closed()) and  get_task_attribute_value(Deadline,deadlineTs) and is_now_less_than(Deadline) and get_task_attribute_value(Unanswered,unanswered) and get_profile_id(Me) and member(Me,Unanswered) and get_task_attribute_value(Volunteers,volunteers) and get_task_requester_id(RequesterId)",
+			"thenceforth": "add_message_transaction() and wenet_remove(NewUnanswered,Me,Unanswered) and put_task_attribute(unanswered,NewUnanswered) and wenet_add(NewVolunteers,Me,Volunteers) and put_task_attribute(volunteers,NewVolunteers) and notify_volunteers_to_social_context_builder(NewVolunteers,Me) and send_message(RequesterId,'volunteerForTask',@(null))"
+		},
+		{
+			"whenever": "is_received(SenderId,'volunteerForTask',_) and get_social_explanation(Explanation,SenderId) and get_community_id(CommunityId) and get_task_id(TaskId)",
+			"thenceforth": "send_user_message('TaskVolunteerNotification',json([communityId=CommunityId,taskId=TaskId,volunteerId=SenderId,explanation=Explanation]))"
+		},
+		{
+			"whenever": "is_received(SenderId,'volunteerForTask',_) and not(get_social_explanation(_,SenderId)) and get_community_id(CommunityId) and get_task_id(TaskId)",
+			"thenceforth": "send_user_message('TaskVolunteerNotification',json([communityId=CommunityId,taskId=TaskId,volunteerId=SenderId]))"
+		},
+		{
+			"whenever": "is_received_do_transaction('refuseTask',_) and not(is_task_closed()) and get_task_attribute_value(Deadline,deadlineTs) and is_now_greater_than_or_equal_to(Deadline)",
+			"thenceforth": "send_user_message('TextualMessage',json([title='Deadline reached',text='It is too late to refuse to be a volunteer.']))"
+		},
+		{
+			"whenever": "is_received_do_transaction('refuseTask',_) and not(is_task_closed()) and  get_task_attribute_value(Deadline,deadlineTs) and is_now_less_than(Deadline) and get_task_attribute_value(Unanswered,unanswered) and get_profile_id(Me) and not(member(Me,Unanswered))",
+			"thenceforth": "send_user_message('TextualMessage',json([title='Refuse not allowed',text='You cannot refuse to be a volunteer, because you already refused or you are not a person that can provide help.']))"
+		},
+		{
+			"whenever": "is_received_do_transaction('refuseTask',_) and not(is_task_closed()) and  get_task_attribute_value(Deadline,deadlineTs) and is_now_less_than(Deadline) and get_task_attribute_value(Unanswered,unanswered) and get_profile_id(Me) and member(Me,Unanswered) and get_task_attribute_value(Declined,declined)",
+			"thenceforth": "add_message_transaction() and wenet_remove(NewUnanswered,Me,Unanswered) and put_task_attribute(unanswered,NewUnanswered) and wenet_add(NewDeclined,Me,Declined) and put_task_attribute(declined,NewDeclined)"
+		},
+		{
+			"whenever": "is_received_do_transaction('acceptVolunteer',Attributes) and not(is_task_closed()) and  get_task_attribute_value(Volunteers,volunteers) and get_attribute(VolunteerId,volunteerId,Attributes) and not(member(VolunteerId,Volunteers))",
+			"thenceforth": "send_user_message('TextualMessage',json([title='Unexpected volunteer to accept',text='The selected user is not a volunteer, so you can not accept it.']))"
+		},
+		{
+			"whenever": "is_received_do_transaction('acceptVolunteer',Attributes) and not(is_task_closed()) and  get_task_attribute_value(Volunteers,volunteers) and get_attribute(VolunteerId,volunteerId,Attributes) and member(VolunteerId,Volunteers) and get_task_attribute_value(Accepted,accepted)",
+			"thenceforth": "add_message_transaction() and wenet_remove(NewVolunteers,VolunteerId,Volunteers) and put_task_attribute(volunteers,NewVolunteers) and wenet_add(NewAccepted,VolunteerId,Accepted) and put_task_attribute(accepted,NewAccepted) and send_message(VolunteerId,'acceptVolunteer',@(null))"
+		},
+		{
+			"whenever": "is_received(_,'acceptVolunteer',_) and get_community_id(CommunityId) and get_task_id(TaskId)",
+			"thenceforth": "send_user_message('TaskSelectionNotification',json([communityId=CommunityId,taskId=TaskId,outcome='accepted']))"
+		},
+		{
+			"whenever": "is_received_do_transaction('refuseVolunteer',Attributes) and not(is_task_closed()) and  get_task_attribute_value(Volunteers,volunteers) and get_attribute(VolunteerId,volunteerId,Attributes) and not(member(VolunteerId,Volunteers))",
+			"thenceforth": "send_user_message('TextualMessage',json([title='Unexpected volunteer to refuse',text='The selected user is not a volunteer, so you can not refuse it.']))"
+		},
+		{
+			"whenever": "is_received_do_transaction('refuseVolunteer',Attributes) and not(is_task_closed()) and  get_task_attribute_value(Volunteers,volunteers) and get_attribute(VolunteerId,volunteerId,Attributes) and member(VolunteerId,Volunteers) and get_task_attribute_value(Refused,refused)",
+			"thenceforth": "add_message_transaction() and wenet_remove(NewVolunteers,VolunteerId,Volunteers) and put_task_attribute(volunteers,NewVolunteers) and wenet_add(NewRefused,VolunteerId,Refused) and put_task_attribute(refused,NewRefused) and send_message(VolunteerId,'refuseVolunteer',@(null))"
+		},
+		{
+			"whenever": "is_received(_,'refuseVolunteer',_) and get_community_id(CommunityId) and get_task_id(TaskId)",
+			"thenceforth": "send_user_message('TaskSelectionNotification',json([communityId=CommunityId,taskId=TaskId,outcome='refused']))"
+		},
+		{
+			"whenever": "is_received_do_transaction('taskCompleted',Attributes) and not(is_task_closed()) and get_attribute(Outcome,outcome,Attributes) and get_task_attribute_value(Unanswered,unanswered) and get_task_attribute_value(Volunteers,volunteers) and get_task_attribute_value(Accepted,accepted)",
+			"thenceforth": "add_message_transaction() and close_task() and put_task_attribute(outcome,Outcome) and send_messages(Unanswered,'taskCompleted',Attributes) and send_messages(Volunteers,'taskCompleted',Attributes) and send_messages(Accepted,'taskCompleted',Attributes)"
+		},
+		{
+			"whenever": "is_received(_,'taskCompleted',Attributes) and get_community_id(CommunityId) and get_task_id(TaskId) and get_attribute(Outcome,outcome,Attributes)",
+			"thenceforth": "send_user_message('TaskConcludedNotification',json([communityId=CommunityId,taskId=TaskId,outcome=Outcome]))"
+		}
+	]
+}

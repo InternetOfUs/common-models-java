@@ -18,7 +18,7 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components;
+package eu.internetofus.common.protocols;
 
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBody;
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBodyPredicates;
@@ -40,11 +40,13 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 /**
- * Check the Echo protocol.
+ * Check the {@link DefaultProtocols#ECHO_V1} protocol. ATTENTION: This test is
+ * sequential and maintains the state between methods. In other words, you must
+ * to run the entire test methods on the specified order to work.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class EchoProtocolITC extends AbstractProtocolITC {
+public class EchoV1ProtocolITC extends AbstractProtocolITC {
 
   /**
    * {@inheritDoc}
@@ -60,12 +62,12 @@ public class EchoProtocolITC extends AbstractProtocolITC {
   /**
    * {@inheritDoc}
    *
-   * @return {@link WeNetTaskManager#ECHO_V1_TASK_TYPE_ID}
+   * @return {@link DefaultProtocols#ECHO_V1}
    */
   @Override
-  protected String getDefaultTaskTypeIdToUse() {
+  protected DefaultProtocols getDefaultProtocolsToUse() {
 
-    return WeNetTaskManager.ECHO_V1_TASK_TYPE_ID;
+    return DefaultProtocols.ECHO_V1;
   }
 
   /**

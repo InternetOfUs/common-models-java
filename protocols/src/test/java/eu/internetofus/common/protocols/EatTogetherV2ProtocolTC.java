@@ -18,7 +18,7 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components;
+package eu.internetofus.common.protocols;
 
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBody;
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBodyPredicates;
@@ -45,13 +45,24 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 /**
- * Check the eat together protocol. ATTENTION: This test is sequential and
- * maintains the state between methods. In other words, you must to run the
- * entire test methods on the specified order to work.
+ * Check the {@link DefaultProtocols#EAT_TOGETHER_V2} protocol. ATTENTION: This test is
+ * sequential and maintains the state between methods. In other words, you must
+ * to run the entire test methods on the specified order to work.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class AbstractEatTogetherProtocolITC extends AbstractProtocolITC {
+public class EatTogetherV2ProtocolTC extends AbstractProtocolITC {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @return {@link DefaultProtocols#EAT_TOGETHER_V2}
+   */
+  @Override
+  protected DefaultProtocols getDefaultProtocolsToUse() {
+
+    return DefaultProtocols.EAT_TOGETHER_V2;
+  }
 
   /**
    * {@inheritDoc}

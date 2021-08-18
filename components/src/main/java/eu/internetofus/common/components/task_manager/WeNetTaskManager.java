@@ -52,41 +52,6 @@ public interface WeNetTaskManager extends WeNetComponent {
   String ADDRESS = "wenet_component.taskManager";
 
   /**
-   * The identifier of the task type that contains the hardcoded version of the
-   * dinner protocol.
-   */
-  String HARDCODED_DINNER_TASK_TYPE_ID = "1";
-
-  /**
-   * The identifier of the task type that contains the question and answer
-   * protocol.
-   */
-  String QUESTION_AND_ANSWER_TASK_TYPE_ID = "ask4help";
-
-  /**
-   * The identifier of the task type that contains the echo protocol with norms.
-   */
-  String ECHO_V1_TASK_TYPE_ID = "wenet_echo_v1";
-
-  /**
-   * The identifier of the task type that contains the eat together protocol with
-   * norms.
-   */
-  String EAT_TOGETHER_WITH_NORMS_V1_TASK_TYPE_ID = "wenet_eat_together_with_norms_v1";
-
-  /**
-   * The identifier of the task type that contains the question and answer
-   * protocol done with norms.
-   */
-  String QUESTION_AND_ANSWER_WITH_NORMS_V1_TASK_TYPE_ID = "wenet_ask_4_help_with_norms_v1";
-
-  /**
-   * The identifier of the task type that contains the English auction protocol
-   * done with norms.
-   */
-  String ENGLISH_AUCTION_WITH_NORMS_V1_TASK_TYPE_ID = "wenet_english_auction_with_norms_v1";
-
-  /**
    * Create a proxy of the {@link WeNetTaskManager}.
    *
    * @param vertx where the service has to be used.

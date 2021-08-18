@@ -104,6 +104,7 @@
   <module>model</module>
   <module>vertx</module>
   <module>components</module>
+  <module>protocols</module>
   <module>dummy</module>
  </modules>
  <build>

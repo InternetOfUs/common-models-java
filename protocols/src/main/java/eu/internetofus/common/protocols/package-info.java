@@ -18,28 +18,9 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components;
-
-import eu.internetofus.common.components.task_manager.WeNetTaskManager;
-
 /**
- * Check the hardcoded question and answer with norms protocol. ATTENTION: This
- * test is sequential and maintains the state between methods. In other words,
- * you must to run the entire test methods on the specified order to work.
+ * The common protocols.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class QuestionAndAnswersWithNormsProtocolITC extends AbstractQuestionAndAnswersProtocolITC {
-
-  /**
-   * {@inheritDoc}
-   *
-   * @return {@link WeNetTaskManager#QUESTION_AND_ANSWER_WITH_NORMS_V1_TASK_TYPE_ID}
-   */
-  @Override
-  protected String getDefaultTaskTypeIdToUse() {
-
-    return WeNetTaskManager.QUESTION_AND_ANSWER_WITH_NORMS_V1_TASK_TYPE_ID;
-  }
-
-}
+package eu.internetofus.common.protocols;

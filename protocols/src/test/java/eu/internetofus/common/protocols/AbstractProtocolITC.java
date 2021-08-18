@@ -17,11 +17,12 @@
  *
  * -----------------------------------------------------------------------------
  */
-package eu.internetofus.common.components;
+package eu.internetofus.common.protocols;
 
 import static org.assertj.core.api.Assertions.fail;
 
 import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.function.Supplier;
+import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBody;
 import eu.internetofus.common.components.incentive_server.TaskTypeStatusBody;
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulator;
@@ -241,58 +242,65 @@ public abstract class AbstractProtocolITC {
   }
 
   /**
-   * The identifier of the task type to use.
+   * The default protocol to test.
    *
-   * @return the identifier of the task type to use.
+   * @return the default protocol to test.
    */
-  protected abstract String getDefaultTaskTypeIdToUse();
+  protected abstract DefaultProtocols getDefaultProtocolsToUse();
 
   /**
-   * Create the task type.
+   * Create a new instance of the task type to test.
    *
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
    */
   @Test
   @Order(4)
-  public void shouldGetTaskType(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldCreateTaskType(final Vertx vertx, final VertxTestContext testContext) {
 
     this.assertLastSuccessfulTestWas(3, testContext);
 
-    final var taskTypeId = this.getDefaultTaskTypeIdToUse();
-    final var future = WeNetTaskManager.createProxy(vertx).retrieveTaskType(taskTypeId).compose(foundTaskType -> {
+    final var protocol = this.getDefaultProtocolsToUse();
 
-      this.taskType = foundTaskType;
-      // empty all the incentive states to 0
-      final var state = new State();
-      state.attributes = new JsonObject().put("incentiveServer#" + this.taskType.id, 0);
-      final var labels = new HashSet<String>();
-      if (this.taskType.transactions != null) {
+    final var future = protocol.load(vertx).map(foundTaskType -> {
 
-        labels.addAll(this.taskType.transactions.fieldNames());
+      foundTaskType.id = null;
+      return foundTaskType;
 
-      }
-      if (this.taskType.callbacks != null) {
+    }).compose(foundTaskType -> WeNetTaskManager.createProxy(vertx).createTaskType(foundTaskType))
+        .compose(createdTaskType -> {
 
-        labels.addAll(this.taskType.callbacks.fieldNames());
+          this.taskType = createdTaskType;
+          // empty all the incentive states to 0
+          final var state = new State();
+          state.attributes = new JsonObject().put("incentiveServer#" + this.taskType.id, 0);
+          final var labels = new HashSet<String>();
+          if (this.taskType.transactions != null) {
 
-      }
-      for (final var label : labels) {
+            labels.addAll(this.taskType.transactions.fieldNames());
 
-        state.attributes.put("incentiveServer#" + this.taskType.id + "#" + label, 0);
+          }
+          if (this.taskType.callbacks != null) {
 
-      }
+            labels.addAll(this.taskType.callbacks.fieldNames());
 
-      var updateIncentiveState = Future.succeededFuture();
-      for (final var user : this.users) {
+          }
+          for (final var label : labels) {
 
-        updateIncentiveState = updateIncentiveState.compose(ignored -> WeNetInteractionProtocolEngine.createProxy(vertx)
-            .mergeCommunityUserState(this.community.id, user.id, state).map(any -> null));
+            state.attributes.put("incentiveServer#" + this.taskType.id + "#" + label, 0);
 
-      }
-      return updateIncentiveState;
+          }
 
-    });
+          var updateIncentiveState = Future.succeededFuture();
+          for (final var user : this.users) {
+
+            updateIncentiveState = updateIncentiveState.compose(ignored -> WeNetInteractionProtocolEngine
+                .createProxy(vertx).mergeCommunityUserState(this.community.id, user.id, state).map(any -> null));
+
+          }
+          return updateIncentiveState;
+
+        });
 
     future.onComplete(testContext.succeeding(added -> this.assertSuccessfulCompleted(testContext)));
 

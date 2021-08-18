@@ -68,6 +68,17 @@
    </dependency>
    <dependency>
     <groupId>eu.internetofus</groupId>
+    <artifactId>common-protocols</artifactId>
+    <version>${project.version}</version>
+   </dependency>
+   <dependency>
+    <groupId>eu.internetofus</groupId>
+    <artifactId>common-protocols</artifactId>
+    <version>${project.version}</version>
+    <type>test-jar</type>
+   </dependency>
+   <dependency>
+    <groupId>eu.internetofus</groupId>
     <artifactId>common-dummy</artifactId>
     <version>${project.version}</version>
    </dependency>
