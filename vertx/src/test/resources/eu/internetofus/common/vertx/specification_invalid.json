@@ -859,5 +859,169 @@
 			"multipleOf": -1
 		},
 		"codePrefix": "multipleOf"
+	},
+	"105": {
+		"specification": {
+			"type": "integer",
+			"minimum": 2,
+			"maximum": 1
+		},
+		"codePrefix": "maximum"
+	},
+	"106": {
+		"specification": {
+			"type": "number",
+			"minimum": 2,
+			"maximum": 1
+		},
+		"codePrefix": "maximum"
+	},
+	"107": {
+		"specification": {
+			"not": "number"
+		},
+		"codePrefix": "not"
+	},
+	"108": {
+		"specification": {
+			"not": {
+				"type": "undefined"
+			}
+		},
+		"codePrefix": "not.type"
+	},
+	"109": {
+		"specification": {
+			"$ref": {
+				"type": "undefined"
+			}
+		},
+		"codePrefix": "$ref"
+	},
+	"110": {
+		"specification": {
+			"$ref": "undefined"
+		},
+		"codePrefix": "$ref"
+	},
+	"111": {
+		"specification": {
+			"$ref": "#/components/schemas/undefined"
+		},
+		"codePrefix": "$ref"
+	},
+	"112": {
+		"specification": {
+			"$ref": "http://localhost:34567u8/openapi.json#/components/schemas/Task"
+		},
+		"codePrefix": "$ref"
+	},
+	"113": {
+		"specification": {
+			"$ref": "http://localhost:34567u8/openapi.yaml#/components/schemas/Task"
+		},
+		"codePrefix": "$ref"
+	},
+	"114": {
+		"specification": {
+			"$ref": null
+		},
+		"codePrefix": "$ref"
+	},
+	"115": {
+		"specification": {
+			"not": null
+		},
+		"codePrefix": "not"
+	},
+	"118": {
+		"specification": {
+			"type": "number",
+			"title": "A number",
+			"description": "A bad specification because the maximum = minimum when exclude min",
+			"exclusiveMinimum": true,
+			"minimum": 1,
+			"maximum": 1
+		},
+		"codePrefix": "maximum"
+	},
+	"119": {
+		"specification": {
+			"type": "number",
+			"title": {
+				"A number": 2
+			},
+			"description": "A bad specification because the title is not a string"
+		},
+		"codePrefix": "title"
+	},
+	"120": {
+		"specification": {
+			"type": "number",
+			"title": "A bad specification because the description is not a string",
+			"description": {
+				"A number": 2
+			}
+		},
+		"codePrefix": "description"
+	},
+	"121": {
+		"specification": {
+			"type": "object",
+			"title": "A bad additional properties value",
+			"additionalProperties": 2
+		},
+		"codePrefix": "additionalProperties"
+	},
+	"122": {
+		"specification": {
+			"type": "string",
+			"title": "A bad additional properties because type is not object",
+			"additionalProperties": true
+		},
+		"codePrefix": "additionalProperties"
+	},
+	"123": {
+		"specification": {
+			"type": "string",
+			"title": "A bad default json encoded value",
+			"default": "{"
+		},
+		"codePrefix": "default"
+	},
+	"124": {
+		"specification": {
+			"type": "integer",
+			"title": "A bad default expecting string",
+			"default": 1
+		},
+		"codePrefix": "default"
+	},
+	"125": {
+		"specification": {
+			"type": "object",
+			"title": "Bad properties all elemenets has to be JsonObjects",
+			"properties": {
+				"one": {
+					
+				},
+				"two": 2
+			}
+		},
+		"codePrefix": "properties.two"
+	},
+	"126": {
+		"specification": {
+			"type": "string",
+			"title": "Duplicated enum values",
+			"nullable": true,
+			"enum": [
+				"one",
+				"two",
+				null,
+				null
+			]
+		},
+		"codePrefix": "enum[3]"
 	}
 }

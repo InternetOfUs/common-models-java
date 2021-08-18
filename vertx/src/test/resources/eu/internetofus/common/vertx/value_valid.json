@@ -1426,5 +1426,36 @@
 		"expected": {
 			"name": "Jane Doe"
 		}
+	},
+	"83": {
+		"specification": {
+			"not":{
+				"type": "number"
+			}
+		},
+		"value": {
+			"name": "Jane Doe"
+		},
+		"expected": {
+			"name": "Jane Doe"
+		}
+	},
+	"84": {
+		"specification": {
+			"$ref":"#/components/schemas/Task"
+		},
+		"value": {
+		},
+		"expected": {
+		}
+	},
+	"85": {
+		"specification": {
+			"$ref":"https://bitbucket.org/wenet/wenet-components-documentation/raw/e98ade66fca42ce46a8738cece1595d6058410d8/sources/wenet-models-openapi.yaml#/components/schemas/Task"
+		},
+		"value": {
+		},
+		"expected": {
+		}
 	}
 }

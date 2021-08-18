@@ -1363,5 +1363,46 @@
 		},
 		"value": 10.0,
 		"codePrefix": null
+	},
+	"102": {
+		"specification": {
+			"not": {
+				"type": "number"
+			}
+		},
+		"value": 10.0,
+		"codePrefix": null
+	},
+	"103": {
+		"specification": {
+			"$ref": {
+				"type": "number"
+			}
+		},
+		"value": 10.0,
+		"codePrefix": null
+	},
+	"104": {
+		"specification": {
+			"$ref": "number"
+		},
+		"value": 10.0,
+		"codePrefix": null
+	},
+	"105": {
+		"specification": {
+			"$ref": "#/components/schemas/Task"
+		},
+		"value": 10.0,
+		"codePrefix": null
+	},
+	"106": {
+		"specification": {
+			"$ref": "#/components/schemas/Task"
+		},
+		"value": {
+			"appId": 1
+		},
+		"codePrefix": "appId"
 	}
 }

@@ -385,7 +385,7 @@ public class OpenAPIValidator {
   /**
    * Create the environment to validate the value.
    */
-  public static class SpecificationEnvironment extends Environment {
+  private static class SpecificationEnvironment extends Environment {
 
     /**
      * The types that has been found.
@@ -471,7 +471,7 @@ public class OpenAPIValidator {
   /**
    * Create the environment to validate the value.
    */
-  public static class ValueEnvironment extends Environment {
+  private static class ValueEnvironment extends Environment {
 
     /**
      * The value to validate
@@ -602,7 +602,7 @@ public class OpenAPIValidator {
 
       if (!env.specification.containsKey("type") && !env.specification.containsKey("oneOf")
           && !env.specification.containsKey("anyOf") && !env.specification.containsKey("allOf")
-          && !env.specification.containsKey("$ref")) {
+          && !env.specification.containsKey("$ref") && !env.specification.containsKey("not")) {
 
         promise.fail(env.notValid("You must define the 'type'."));
 
@@ -1508,6 +1508,18 @@ public class OpenAPIValidator {
 
         }
 
+        if (environment.specification.containsKey("not")) {
+
+          future = composeValidation(future, OpenAPIValidator::validateNotValue);
+
+        }
+
+        if (environment.specification.containsKey("$ref")) {
+
+          future = composeValidation(future, OpenAPIValidator::validateRefValue);
+
+        }
+
         if (environment.specification.containsKey("type")) {
 
           future = composeValidation(future, OpenAPIValidator::validateTypeValue);
@@ -2210,6 +2222,76 @@ public class OpenAPIValidator {
     }
 
     return promise.future();
+
+  }
+
+  /**
+   * Validate that the value is not of the specified type.
+   *
+   * @param promise to inform of the validation.
+   * @param env     environment to use for the validation.
+   *
+   * @return the future that says if the value is valid or not.
+   */
+  static private Future<ValueEnvironment> validateNotValue(@NotNull final Promise<ValueEnvironment> promise,
+      @NotNull final ValueEnvironment env) {
+
+    final var not = env.specification.getJsonObject("not");
+    return promise.future()
+        .compose(chain -> validateValue(chain.codePrefix, chain.vertx, not, chain.value).transform(validation -> {
+
+          final Promise<ValueEnvironment> notPromise = Promise.promise();
+          if (!validation.failed()) {
+
+            notPromise.fail(env.notValid("Required a value that is not of this type."));
+
+          } else {
+
+            notPromise.complete(chain);
+          }
+
+          return notPromise.future();
+        }));
+
+  }
+
+  /**
+   * Validate that the value is valid for a reference type.
+   *
+   * @param promise to inform of the validation.
+   * @param env     environment to use for the validation.
+   *
+   * @return the future that says if the value is valid with the reference type or
+   *         not.
+   */
+  static private Future<ValueEnvironment> validateRefValue(@NotNull final Promise<ValueEnvironment> promise,
+      @NotNull final ValueEnvironment env) {
+
+    final var ref = env.specification.getString("$ref");
+    return promise.future().compose(chain -> chain.obtainSchemaFor(ref).transform(get -> {
+
+      final Promise<ValueEnvironment> refPromise = Promise.promise();
+      var future = refPromise.future();
+      if (get.failed()) {
+
+        refPromise.fail(chain.notValid("Cannot obtain the reference type to check the value.", get.cause()));
+
+      } else {
+
+        refPromise.complete();
+        final var type = get.result();
+        future = future
+            .compose(empty -> validateValue(chain.codePrefix, chain.vertx, type, chain.value).map(validValue -> {
+
+              chain.value = validValue;
+              return chain;
+
+            }));
+      }
+
+      return future;
+
+    }));
 
   }
 

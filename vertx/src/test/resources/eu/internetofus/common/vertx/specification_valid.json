@@ -588,5 +588,30 @@
 	"87": {
 		"type": "object",
 		"additionalProperties": false
+	},
+	"88": {
+		"not": {
+			"type": "object",
+			"additionalProperties": {
+				
+			}
+		}
+	},
+	"89": {
+		"type": "object",
+		"additionalProperties": true
+	},
+	"90": {
+		"anyOf": [
+			{
+				"type": "object",
+				"maxProperties": 3
+			},
+			{
+				"type": "object",
+				"minProperties": 2
+			}
+		],
+		"additionalProperties": true
 	}
 }
