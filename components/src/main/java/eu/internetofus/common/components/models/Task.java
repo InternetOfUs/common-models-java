@@ -32,6 +32,7 @@ import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
 import eu.internetofus.common.model.ValidationErrorException;
 import eu.internetofus.common.model.Validations;
+import eu.internetofus.common.vertx.OpenAPIValidator;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
@@ -126,9 +127,6 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
           WeNetTaskManager.createProxy(vertx)::retrieveTask);
     }
 
-    future = Validations.composeValidateId(future, codePrefix, "taskTypeId", this.taskTypeId, true,
-        WeNetTaskManager.createProxy(vertx)::retrieveTaskType);
-
     future = Validations.composeValidateId(future, codePrefix, "requesterId", this.requesterId, true,
         WeNetProfileManager.createProxy(vertx)::retrieveProfile);
 
@@ -170,7 +168,25 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
 
         future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
 
-        // TODO check the attributes fetch the attributes on the type
+        future = Validations.composeValidateIdAndGet(future, codePrefix, "taskTypeId", this.taskTypeId, true,
+            WeNetTaskManager.createProxy(vertx)::retrieveTaskType).compose(taskType -> {
+
+              if (taskType.attributes == null) {
+
+                return Future.succeededFuture();
+
+              } else {
+
+                return OpenAPIValidator
+                    .validateValue(codePrefix + ".attributes", vertx, taskType.attributes, this.attributes)
+                    .map(validAttributes -> {
+
+                      this.attributes = validAttributes;
+                      return null;
+                    });
+              }
+
+            });
 
         promise.complete();
 

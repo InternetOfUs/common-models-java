@@ -37,6 +37,7 @@ import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -545,11 +546,14 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
             new JsonObject().put("description", "Transaction without argument for type " + index).put("type", "object"))
         .put("t_one",
             new JsonObject().put("description", "Transaction with one argument for type " + index).put("type", "object")
-                .put("properties", new JsonObject().put("index", new JsonObject().put("type", "integer"))))
+                .put("properties", new JsonObject().put("index", new JsonObject().put("type", "integer")))
+                .put("required", new JsonArray().add("index")))
         .put("t_two",
             new JsonObject().put("description", "Transaction with one argument for type " + index).put("type", "object")
-                .put("properties", new JsonObject().put("index", new JsonObject().put("type", "integer")).put("key",
-                    new JsonObject().put("type", "string").put("description", "Any string value"))));
+                .put("properties",
+                    new JsonObject().put("index", new JsonObject().put("type", "integer"))
+                        .put("key", new JsonObject().put("type", "string").put("description", "Any string value"))
+                        .put("required", new JsonArray().add("index").add("key"))));
     model.callbacks = new JsonObject()
         .put("m_zero",
             new JsonObject().put("description", "Message without arguments for type " + index).put("type", "object")

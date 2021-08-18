@@ -500,9 +500,29 @@ public interface Validations {
   static <T> Future<Void> composeValidateId(final Future<Void> future, final String codePrefix, final String fieldName,
       final String id, final boolean exist, final Function<String, Future<T>> searcher) {
 
+    return composeValidateIdAndGet(future, codePrefix, fieldName, id, exist, searcher).map(any -> null);
+  }
+
+  /**
+   * Validate that an identifier is valid and return the model if exist.
+   *
+   * @param future     to compose.
+   * @param codePrefix the prefix of the code to use for the error message.
+   * @param fieldName  name of the checking field.
+   * @param id         value to verify.
+   * @param exist      is {@code true} if the identifier has to exist.
+   * @param searcher   component to search for the model.
+   *
+   * @param <T>        type of model associated to the id.
+   *
+   * @return the mapper that will check the identifier.
+   */
+  static <T> Future<T> composeValidateIdAndGet(final Future<Void> future, final String codePrefix,
+      final String fieldName, final String id, final boolean exist, final Function<String, Future<T>> searcher) {
+
     return future.compose(map -> {
 
-      final Promise<Void> promise = Promise.promise();
+      final Promise<T> promise = Promise.promise();
 
       if (id == null) {
 
@@ -527,7 +547,7 @@ public interface Validations {
 
           } else if (exist) {
 
-            promise.complete();
+            promise.complete(search.result());
 
           } else {
 

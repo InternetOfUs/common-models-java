@@ -318,32 +318,6 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   }
 
   /**
-   * A task transaction not be valid when type has label without attributes.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see TaskTransaction#validate(String, Vertx)
-   */
-  @Test
-  public void shouldTaskTransactionBeNotValidWithTaskTypeWithLabelButWithoutAttributes(final Vertx vertx,
-      final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext)
-        .onComplete(testContext.succeeding(model -> WeNetTaskManager.createProxy(vertx).retrieveTask(model.taskId)
-            .compose(task -> WeNetTaskManager.createProxy(vertx).deleteTaskType(task.taskTypeId).compose(empty -> {
-
-              final var newType = new TaskType();
-              newType.id = task.taskTypeId;
-              newType.transactions = new JsonObject().put(model.label, new JsonObject());
-              return WeNetTaskManager.createProxy(vertx).createTaskType(newType);
-
-            }))
-            .onComplete(testContext.succeeding(empty -> assertIsNotValid(model, "attributes", vertx, testContext)))));
-
-  }
-
-  /**
    * A task transaction without attributes when the type define attributes.
    *
    * @param vertx       event bus to use.
@@ -376,7 +350,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
 
     this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> {
       model.attributes = new JsonObject();
-      assertIsNotValid(model, "attributes", vertx, testContext);
+      assertIsNotValid(model, "attributes.index", vertx, testContext);
 
     }));
   }
@@ -398,33 +372,6 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
       assertIsNotValid(model, "attributes.undefined", vertx, testContext);
 
     }));
-  }
-
-  /**
-   * A task transaction not be valid when missing a required attribute.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext test context to use.
-   *
-   * @see TaskTransaction#validate(String, Vertx)
-   */
-  @Test
-  public void shouldTaskTransactionBeNotValidWithTaskTypeWithLabelButMissingAttributes(final Vertx vertx,
-      final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext)
-        .onComplete(testContext.succeeding(model -> WeNetTaskManager.createProxy(vertx).retrieveTask(model.taskId)
-            .compose(task -> WeNetTaskManager.createProxy(vertx).deleteTaskType(task.taskTypeId).compose(empty -> {
-
-              final var newType = new TaskType();
-              newType.id = task.taskTypeId;
-              newType.transactions = new JsonObject().put(model.label, new JsonObject().put("properties",
-                  model.attributes.copy().put("arg1", new JsonObject()).put("arg2", new JsonObject())));
-              return WeNetTaskManager.createProxy(vertx).createTaskType(newType);
-
-            }))
-            .onComplete(testContext.succeeding(empty -> assertIsNotValid(model, "attributes", vertx, testContext)))));
-
   }
 
   /**
