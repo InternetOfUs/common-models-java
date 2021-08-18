@@ -45,17 +45,54 @@ public class DefaultProtocolsTest {
    * @param vertx       event bus to use.
    * @param testContext context that manage the test.
    */
-  @ParameterizedTest(name = "Check load specification of {0}")
+  @ParameterizedTest(name = "Should load {0}")
   @EnumSource(DefaultProtocols.class)
   public void shouldLoad(final DefaultProtocols protocol, final Vertx vertx, final VertxTestContext testContext) {
 
     protocol.load(vertx).onComplete(testContext.succeeding(taskType -> testContext.verify(() -> {
 
       assertThat(taskType).isNotNull();
+      testContext.completeNow();
+
+    })));
+
+  }
+
+  /**
+   * Check that the task type identifier id the same that the loaded one.
+   *
+   * @param protocol    to load.
+   * @param vertx       event bus to use.
+   * @param testContext context that manage the test.
+   */
+  @ParameterizedTest(name = "Should task type id of {0} match the id of the loaded one")
+  @EnumSource(DefaultProtocols.class)
+  public void shouldTaskTypeIdMatchLoadedOne(final DefaultProtocols protocol, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    protocol.load(vertx).onComplete(testContext.succeeding(taskType -> testContext.verify(() -> {
+
       assertThat(protocol.taskTypeId()).isEqualTo(taskType.id);
       testContext.completeNow();
 
     })));
+
+  }
+
+  /**
+   * Check that the task type associated to the protocol are valid.
+   *
+   * @param protocol    to load.
+   * @param vertx       event bus to use.
+   * @param testContext context that manage the test.
+   */
+  @ParameterizedTest(name = "Should {0} be valid")
+  @EnumSource(DefaultProtocols.class)
+  public void shouldProtocolsBeValid(final DefaultProtocols protocol, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    protocol.load(vertx).compose(taskType -> taskType.validate("root", vertx))
+        .onComplete(testContext.succeeding(taskType -> testContext.completeNow()));
 
   }
 }
