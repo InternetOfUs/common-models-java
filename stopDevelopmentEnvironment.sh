@@ -4,7 +4,9 @@ if [ -f /.dockerenv ]; then
 else
 	DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 	pushd $DIR >/dev/null
-	docker stop wenet_common_dev
-	docker rm wenet_common_dev
+	if [ "$(docker container ls |grep wenet_common_dev |wc -l)" -gt "0" ]
+	then
+		docker stop wenet_common_dev
+	fi
 	popd >/dev/null
 fi

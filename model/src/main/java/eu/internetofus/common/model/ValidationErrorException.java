@@ -20,6 +20,9 @@
 
 package eu.internetofus.common.model;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 /**
  * This exception explains why a model is not valid.
  *
@@ -86,6 +89,16 @@ public class ValidationErrorException extends RuntimeException {
   public String getCode() {
 
     return this.code;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String toString() {
+
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+
   }
 
 }

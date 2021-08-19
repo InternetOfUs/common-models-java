@@ -103,16 +103,24 @@ public class ValidableAsserts {
   public static <T extends Validable> void assertIsValid(final T model, final Vertx vertx,
       final VertxTestContext testContext, final Runnable expected) {
 
-    model.validate("codePrefix", vertx).onComplete(testContext.succeeding(empty -> testContext.verify(() -> {
+    model.validate("codePrefix", vertx).onComplete(validation -> testContext.verify(() -> {
 
-      if (expected != null) {
+      if (validation.failed()) {
 
-        expected.run();
+        final var cause = validation.cause();
+        testContext.failNow(cause);
+
+      } else {
+
+        if (expected != null) {
+
+          expected.run();
+        }
+
+        testContext.completeNow();
       }
 
-      testContext.completeNow();
-
-    })));
+    }));
 
   }
 

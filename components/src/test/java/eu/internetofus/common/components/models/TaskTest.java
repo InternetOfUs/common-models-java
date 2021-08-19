@@ -138,7 +138,7 @@ public class TaskTest extends ModelTestCase<Task> {
     model.goal = new HumanDescriptionTest().createModelExample(index);
     model.norms = new ArrayList<>();
     model.norms.add(new ProtocolNormTest().createModelExample(index));
-    model.attributes = new JsonObject().put("index", index);
+    model.attributes = new JsonObject().put("a_int", index);
     model.transactions = new ArrayList<>();
     model.transactions.add(new TaskTransactionTest().createModelExample(index));
     model._creationTs = 1234567891 + index;
@@ -809,11 +809,11 @@ public class TaskTest extends ModelTestCase<Task> {
     StoreServices.storeTaskExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new Task();
-      source.attributes = new JsonObject().put("index", 2);
+      source.attributes = new JsonObject().put("a_int", 2);
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-        target.attributes = new JsonObject().put("index", 2);
+        target.attributes = new JsonObject().put("a_int", 2);
         assertThat(merged).isEqualTo(target).isNotEqualTo(source);
       });
 
@@ -1220,11 +1220,11 @@ public class TaskTest extends ModelTestCase<Task> {
     StoreServices.storeTaskExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
-      source.attributes = new JsonObject().put("index", 2);
+      source.attributes = new JsonObject().put("a_int", 2);
       assertCanUpdate(target, source, vertx, testContext, updated -> {
 
         assertThat(updated).isNotEqualTo(target).isEqualTo(source);
-        target.attributes = new JsonObject().put("index", 2);
+        target.attributes = new JsonObject().put("a_int", 2);
         assertThat(updated).isEqualTo(target);
       });
 

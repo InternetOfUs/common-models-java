@@ -33,6 +33,7 @@ import static org.assertj.core.api.Assertions.atIndex;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.components.task_manager.WeNetTaskManagerMocker;
+import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
@@ -111,9 +112,39 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     model.keywords.add("keyword_" + index);
     model.keywords.add("keyword_" + (index + 1));
     model.keywords.add("keyword_" + (index + 2));
-    model.attributes = new JsonObject().put("key", index);
-    model.transactions = new JsonObject().put("transaction_" + index, new JsonObject());
-    model.callbacks = new JsonObject().put("callbacks_" + index, new JsonObject());
+    model.attributes = new JsonObject().put("type", "object").put("properties",
+        new JsonObject().put("a_" + index, new JsonObject().put("type", "object").put("nullable", true))
+            .put("a_int",
+                new JsonObject().put("type", "integer").put("nullable", true).put("default", String.valueOf(index)))
+            .put("a_str", new JsonObject().put("type", "string").put("nullable", true)));
+    model.transactions = new JsonObject()
+        .put("t_" + index,
+            new JsonObject().put("nullable", true).put("type", "object").put("additionalProperties", new JsonObject()))
+        .put("t_zero",
+            new JsonObject().put("description", "Transaction without argument for type " + index).put("type", "object"))
+        .put("t_one",
+            new JsonObject().put("description", "Transaction with one argument for type " + index).put("type", "object")
+                .put("properties", new JsonObject().put("index", new JsonObject().put("type", "integer")))
+                .put("required", new JsonArray().add("index")))
+        .put("t_two",
+            new JsonObject().put("description", "Transaction with one argument for type " + index).put("type", "object")
+                .put("required", new JsonArray().add("index").add("key"))
+                .put("properties", new JsonObject().put("index", new JsonObject().put("type", "integer")).put("key",
+                    new JsonObject().put("type", "string").put("description", "Any string value"))));
+    model.callbacks = new JsonObject()
+        .put("m_" + index,
+            new JsonObject().put("nullable", true).put("type", "object").put("additionalProperties", new JsonObject()))
+        .put("m_zero",
+            new JsonObject().put("description", "Message without arguments for type " + index).put("type", "object")
+                .put("properties", new JsonObject()))
+        .put("m_one",
+            new JsonObject().put("description", "Message with one arguments for type " + index).put("type", "object")
+                .put("properties", new JsonObject().put("index", new JsonObject().put("type", "integer"))))
+        .put("m_two", new JsonObject().put("description", "Message with two arguments for type " + index)
+            .put("type", "object").put("properties",
+                new JsonObject().put("one", new JsonObject().put("type", "boolean").put("description", "Boolean value"))
+                    .put("two", new JsonObject().put("type", "object").put("description", "Object value")
+                        .put("properties", new JsonObject().put("a", new JsonObject().put("type", "integer"))))));
     model.norms = new ArrayList<>();
     model.norms.add(new ProtocolNorm());
     model.norms.get(0).description = "Add transaction when is created an example of type " + index;
@@ -215,8 +246,9 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     assertCanMerge(target, source, vertx, testContext, merged -> {
 
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-      target.transactions.forEach(entry -> source.transactions.put(entry.getKey(), entry.getValue()));
-      target.callbacks.forEach(entry -> source.callbacks.put(entry.getKey(), entry.getValue()));
+      source.attributes = Merges.mergeJsonObjects(target.attributes, source.attributes);
+      source.transactions = Merges.mergeJsonObjects(target.transactions, source.transactions);
+      source.callbacks = Merges.mergeJsonObjects(target.callbacks, source.callbacks);
       assertThat(merged).isEqualTo(source);
 
     });
@@ -541,31 +573,6 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
   public Future<TaskType> createModelExample(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    model.transactions = new JsonObject()
-        .put("t_zero",
-            new JsonObject().put("description", "Transaction without argument for type " + index).put("type", "object"))
-        .put("t_one",
-            new JsonObject().put("description", "Transaction with one argument for type " + index).put("type", "object")
-                .put("properties", new JsonObject().put("index", new JsonObject().put("type", "integer")))
-                .put("required", new JsonArray().add("index")))
-        .put("t_two",
-            new JsonObject().put("description", "Transaction with one argument for type " + index).put("type", "object")
-                .put("properties",
-                    new JsonObject().put("index", new JsonObject().put("type", "integer"))
-                        .put("key", new JsonObject().put("type", "string").put("description", "Any string value"))
-                        .put("required", new JsonArray().add("index").add("key"))));
-    model.callbacks = new JsonObject()
-        .put("m_zero",
-            new JsonObject().put("description", "Message without arguments for type " + index).put("type", "object")
-                .put("properties", new JsonObject()))
-        .put("m_one",
-            new JsonObject().put("description", "Message with one arguments for type " + index).put("type", "object")
-                .put("properties", new JsonObject().put("index", new JsonObject().put("type", "integer"))))
-        .put("m_two", new JsonObject().put("description", "Message with two arguments for type " + index)
-            .put("type", "object").put("properties",
-                new JsonObject().put("one", new JsonObject().put("type", "boolean").put("description", "Boolean value"))
-                    .put("two", new JsonObject().put("type", "object").put("description", "Object value")
-                        .put("properties", new JsonObject().put("a", new JsonObject().put("type", "integer"))))));
     model.norms = new ArrayList<>();
     model.norms.add(new ProtocolNormTest().createModelExample(index));
     return Future.succeededFuture(model);

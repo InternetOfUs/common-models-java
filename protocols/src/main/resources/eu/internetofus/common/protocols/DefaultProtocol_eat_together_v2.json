@@ -84,6 +84,7 @@
 	"callbacks": {
 		"TextualMessage": {
 			"description": "A simple textual message from WeNet to the user",
+			"type":"object",
 			"properties": {
 				"title": {
 					"type": "string",
@@ -108,6 +109,7 @@
 		},
 		"TaskProposalNotification": {
 			"description": "This notification is used in order to propose a user to volunteer to a newly created task",
+			"type":"object",
 			"properties": {
 				"communityId": {
 					"type": "string",
@@ -124,6 +126,7 @@
 		},
 		"TaskVolunteerNotification": {
 			"description": "This notification is used in order to notify the task creator that a new volunteer is proposing to participate to the task",
+			"type":"object",
 			"properties": {
 				"volunteerId": {
 					"type": "string",
@@ -144,6 +147,7 @@
 		},
 		"TaskSelectionNotification": {
 			"description": "This notification is used in order to notify the user who volunteered about the decision of the task creator",
+			"type":"object",
 			"properties": {
 				"outcome": {
 					"type": "string",
@@ -168,6 +172,7 @@
 		},
 		"TaskConcludedNotification": {
 			"description": "This notification is used in order to notify task participants that a task has been completed, the outcome could be\n* completed (if completed correctly)\n* failed (if something went wrong)\n* cancelled (the creator cancelled the task)",
+			"type":"object",
 			"properties": {
 				"outcome": {
 					"type": "string",
@@ -194,6 +199,7 @@
 		},
 		"IncentiveMessage": {
 			"description": "This message contains an incentive for an user",
+			"type":"object",
 			"properties": {
 				"issuer": {
 					"type": "string",
@@ -219,6 +225,7 @@
 		},
 		"IncentiveBadge": {
 			"description": "This is a badge of an incentive",
+			"type":"object",
 			"properties": {
 				"issuer": {
 					"type": "string",

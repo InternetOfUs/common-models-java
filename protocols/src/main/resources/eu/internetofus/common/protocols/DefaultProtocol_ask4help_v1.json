@@ -33,7 +33,8 @@
 			}
 		},
 		"notAnswerTransaction": {
-			"description": "Ignore a question"
+			"description": "Ignore a question",
+			"type":"object"
 		},
 		"bestAnswerTransaction": {
 			"type": "object",
@@ -45,13 +46,14 @@
 				},
 				"reason": {
 					"type": "string",
-					"nullable": "true",
+					"nullable": true,
 					"description": "The reason why the specific answer was picked"
 				}
 			}
 		},
 		"moreAnswerTransaction": {
-			"description": "Ask some more users"
+			"description": "Ask some more users",
+			"type":"object"
 		},
 		"reportQuestionTransaction": {
 			"type": "object",
@@ -59,12 +61,12 @@
 			"properties": {
 				"reason": {
 					"type": "string",
-					"nullable": "true",
+					"nullable": true,
 					"description": "The reason why the specific answer was picked"
 				},
 				"comment": {
 					"type": "string",
-					"nullable": "true",
+					"nullable": true,
 					"description": "A specific comment by the reporting user"
 				}
 			}
@@ -79,12 +81,12 @@
 				},
 				"reason": {
 					"type": "string",
-					"nullable": "true",
+					"nullable": true,
 					"description": "The reason why the specific answer was picked"
 				},
 				"comment": {
 					"type": "string",
-					"nullable": "true",
+					"nullable": true,
 					"description": "A specific comment by the reporting user"
 				}
 			}
@@ -93,6 +95,7 @@
 	"callbacks": {
 		"QuestionToAnswerMessage": {
 			"description": "Question to answer",
+			"type":"object",
 			"properties": {
 				"taskId": {
 					"type": "string",
@@ -110,6 +113,7 @@
 		},
 		"AnsweredQuestionMessage": {
 			"description": "Answer to question",
+			"type":"object",
 			"properties": {
 				"taskId": {
 					"type": "string",
@@ -131,10 +135,11 @@
 		},
 		"AnsweredPickedMessage": {
 			"description": "Answer picked",
+			"type":"object",
 			"properties": {
 				"taskId": {
 					"type": "string",
-					"description": "The id of the task assiciated with the question"
+					"description": "The id of the task associated with the question"
 				},
 				"transactionId": {
 					"type": "string",

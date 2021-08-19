@@ -30,6 +30,7 @@ import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
 import eu.internetofus.common.model.Validations;
+import eu.internetofus.common.vertx.OpenAPIValidator;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
@@ -110,6 +111,24 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
           return null;
         }));
     future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+
+    if (this.callbacks != null) {
+
+      future = future
+          .compose(empty -> OpenAPIValidator.validateComposedSpecification("callbacks", vertx, this.callbacks));
+    }
+
+    if (this.transactions != null) {
+
+      future = future
+          .compose(empty -> OpenAPIValidator.validateComposedSpecification("transactions", vertx, this.transactions));
+    }
+
+    if (this.attributes != null) {
+
+      future = future.compose(empty -> OpenAPIValidator.validateSpecification("attributes", vertx, this.attributes));
+    }
+
     promise.complete();
 
     return future;
