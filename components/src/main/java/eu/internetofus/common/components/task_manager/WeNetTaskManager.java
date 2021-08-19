@@ -283,6 +283,60 @@ public interface WeNetTaskManager extends WeNetComponent {
   }
 
   /**
+   * Update a {@link TaskType} in Json format.
+   *
+   * @param id       identifier of the taskType to get.
+   * @param taskType the new values for the taskType.
+   * @param handler  to the updated taskType.
+   */
+  void updateTaskType(@NotNull String id, @NotNull JsonObject taskType,
+      @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Update a taskType.
+   *
+   * @param id       identifier of the taskType to get.
+   * @param taskType the new values for the taskType.
+   *
+   * @return the future updated taskType.
+   */
+  @GenIgnore
+  default Future<TaskType> updateTaskType(@NotNull final String id, @NotNull final TaskType taskType) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.updateTaskType(id, taskType.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), TaskType.class);
+
+  }
+
+  /**
+   * Merge a {@link TaskType} in Json format.
+   *
+   * @param id       identifier of the taskType to get.
+   * @param taskType the new values for the taskType.
+   * @param handler  to the merged taskType.
+   */
+  void mergeTaskType(@NotNull String id, @NotNull JsonObject taskType,
+      @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Merge a taskType.
+   *
+   * @param id       identifier of the taskType to get.
+   * @param taskType the new values for the taskType.
+   *
+   * @return the future merged taskType.
+   */
+  @GenIgnore
+  default Future<TaskType> mergeTaskType(@NotNull final String id, @NotNull final TaskType taskType) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.mergeTaskType(id, taskType.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), TaskType.class);
+
+  }
+
+  /**
    * Do a transaction over a task.
    *
    * @param taskTransaction to do.

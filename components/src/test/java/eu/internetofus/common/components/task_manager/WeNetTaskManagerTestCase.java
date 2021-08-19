@@ -29,10 +29,12 @@ import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTest;
 import eu.internetofus.common.components.models.TaskTransaction;
 import eu.internetofus.common.components.models.TaskTransactionTest;
+import eu.internetofus.common.components.models.TaskType;
 import eu.internetofus.common.components.models.TaskTypeTest;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -166,12 +168,13 @@ public class WeNetTaskManagerTestCase extends WeNetComponentTestCase<WeNetTaskMa
                   assertThat(updatedTask).isEqualTo(taskToUpdate);
 
                   final var taskToMerge = new Task();
-                  taskToMerge.attributes = new JsonObject().put("newKey2", "value2");
+                  final var newAttributeValue = UUID.randomUUID().toString();
+                  taskToMerge.attributes = new JsonObject().put("a_str", newAttributeValue);
                   testContext.assertComplete(service.mergeTask(id, taskToMerge))
                       .onSuccess(mergedTask -> testContext.verify(() -> {
 
                         taskToUpdate._lastUpdateTs = mergedTask._lastUpdateTs;
-                        taskToUpdate.attributes.put("newKey2", "value2");
+                        taskToUpdate.attributes.put("a_str", newAttributeValue);
                         assertThat(mergedTask).isEqualTo(taskToUpdate);
                         testContext.assertComplete(service.deleteTask(id)).onSuccess(empty -> {
 
@@ -353,6 +356,90 @@ public class WeNetTaskManagerTestCase extends WeNetComponentTestCase<WeNetTaskMa
 
                 }));
           });
+
+    });
+  }
+
+  /**
+   * Should not update undefined task type.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotUpdateUndefinedTaskType(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext
+        .assertFailure(this.createComponentProxy(vertx).updateTaskType("undefined-taskType-identifier", new TaskType()))
+        .onFailure(handler -> testContext.completeNow());
+  }
+
+  /**
+   * Should not merge undefined task type.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotMergeUndefinedTaskType(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext
+        .assertFailure(this.createComponentProxy(vertx).mergeTaskType("undefined-taskType-identifier", new TaskType()))
+        .onFailure(handler -> testContext.completeNow());
+  }
+
+  /**
+   * Should create, retrieve, update, merge and delete a task type.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldCreateRetrieveUpdateMergeAndDeleteTaskType(final Vertx vertx, final VertxTestContext testContext) {
+
+    new TaskTypeTest().createModelExample(1, vertx, testContext).onSuccess(taskType -> {
+
+      taskType.id = null;
+      final var service = this.createComponentProxy(vertx);
+      testContext.assertComplete(service.createTaskType(taskType)).onSuccess(createdTaskType -> {
+
+        final var id = createdTaskType.id;
+        testContext.assertComplete(service.retrieveTaskType(id)).onSuccess(retrieve -> testContext.verify(() -> {
+
+          assertThat(createdTaskType).isEqualTo(retrieve);
+
+          new TaskTypeTest().createModelExample(2, vertx, testContext).onSuccess(taskTypeToUpdate -> {
+            testContext.assertComplete(service.updateTaskType(id, taskTypeToUpdate))
+                .onSuccess(updatedTaskType -> testContext.verify(() -> {
+
+                  taskTypeToUpdate.id = createdTaskType.id;
+                  taskTypeToUpdate._creationTs = createdTaskType._creationTs;
+                  taskTypeToUpdate._lastUpdateTs = updatedTaskType._lastUpdateTs;
+                  assertThat(updatedTaskType).isEqualTo(taskTypeToUpdate);
+
+                  final var taskTypeToMerge = new TaskType();
+                  taskTypeToMerge.attributes = new JsonObject().put("properties",
+                      new JsonObject().put("newKey", new JsonObject()));
+                  testContext.assertComplete(service.mergeTaskType(id, taskTypeToMerge))
+                      .onSuccess(mergedTaskType -> testContext.verify(() -> {
+
+                        taskTypeToUpdate._lastUpdateTs = mergedTaskType._lastUpdateTs;
+                        taskTypeToUpdate.attributes.getJsonObject("properties").put("newKey", new JsonObject());
+                        assertThat(mergedTaskType).isEqualTo(taskTypeToUpdate);
+                        testContext.assertComplete(service.deleteTaskType(id)).onSuccess(empty -> {
+
+                          testContext.assertFailure(service.retrieveTaskType(id))
+                              .onFailure(handler -> testContext.completeNow());
+
+                        });
+
+                      }));
+
+                }));
+          });
+        }));
+
+      });
 
     });
   }

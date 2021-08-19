@@ -153,8 +153,8 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
    * {@inheritDoc}
    */
   @Override
-  public void addTransactionIntoTask(@NotNull String taskId, @NotNull JsonObject taskTransaction,
-      @NotNull Handler<AsyncResult<JsonObject>> handler) {
+  public void addTransactionIntoTask(@NotNull final String taskId, @NotNull final JsonObject taskTransaction,
+      @NotNull final Handler<AsyncResult<JsonObject>> handler) {
 
     this.post(taskTransaction, "/tasks", taskId, "/transactions").onComplete(handler);
 
@@ -164,10 +164,31 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
    * {@inheritDoc}
    */
   @Override
-  public void addMessageIntoTransaction(@NotNull String taskId, @NotNull String taskTransactionId,
-      @NotNull JsonObject message, @NotNull Handler<AsyncResult<JsonObject>> handler) {
+  public void addMessageIntoTransaction(@NotNull final String taskId, @NotNull final String taskTransactionId,
+      @NotNull final JsonObject message, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
 
     this.post(message, "/tasks", taskId, "/transactions", taskTransactionId, "/messages").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void updateTaskType(final String id, final JsonObject taskType,
+      final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.put(taskType, "/taskTypes", id).onComplete(handler);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void mergeTaskType(final String id, final JsonObject taskType,
+      final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.patch(taskType, "/taskTypes", id).onComplete(handler);
 
   }
 
