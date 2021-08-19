@@ -34,6 +34,8 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -108,17 +110,16 @@ public class ComponentClient {
     builder.append(this.componentURL);
     for (final Object path : paths) {
 
-      if (builder.charAt(builder.length() - 1) != '/') {
+      for (final var element : String.valueOf(path).split("/")) {
 
-        builder.append('/');
+        if (builder.charAt(builder.length() - 1) != '/') {
+
+          builder.append('/');
+        }
+        final var encoded = URLEncoder.encode(element, Charset.defaultCharset());
+        builder.append(encoded);
+
       }
-
-      var element = String.valueOf(path).trim();
-      if (!element.isEmpty() && element.charAt(0) == '/') {
-
-        element = element.substring(1);
-      }
-      builder.append(element);
 
     }
 

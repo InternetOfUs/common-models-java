@@ -478,12 +478,16 @@ public class ComponentClientTest {
    * @param testContext  context that manage the test.
    */
   @ParameterizedTest(name = "Should the absolute URL for component {0} with parameters {1} be equals to {2}")
-  @CsvSource({ "https://localhost:8080,     ,https://localhost:8080",
+  @CsvSource({ "https://localhost:8080,,https://localhost:8080",
       "https://localhost:8080,a:b:c,https://localhost:8080/a/b/c",
-      "https://localhost:8080,   a  :  b  : c  ,https://localhost:8080/a/b/c",
-      "https://localhost:8080/,/a/:/b:c/,https://localhost:8080/a/b/c/",
-      "https://localhost:8080/,  /a/  :  b/  :  /c  ,https://localhost:8080/a/b/c",
-      "https://localhost:8080/,  a/  :  /b/  :  /c  ,https://localhost:8080/a/b/c" })
+      "https://localhost:8080,a:b:c,https://localhost:8080/a/b/c",
+      "https://localhost:8080/,/a/:/b:c/,https://localhost:8080/a/b/c",
+      "https://localhost:8080/,/a/:b/:/c,https://localhost:8080/a/b/c",
+      "https://localhost:8080/,a/:/b/:/c,https://localhost:8080/a/b/c",
+      "https://localhost:8080/,a/b:/c,https://localhost:8080/a/b/c",
+      "https://localhost:8080/,/a/b/:/c,https://localhost:8080/a/b/c",
+      "https://localhost:8080/,a/:/b/c:d,https://localhost:8080/a/b/c/d",
+      "https://localhost:8080/,/a/:b / d /:/c,https://localhost:8080/a/b+/+d+/c" })
   public void shouldCreateAbsoluteUrlWith(final String componentURL, final String values, final String expectedURL,
       final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
