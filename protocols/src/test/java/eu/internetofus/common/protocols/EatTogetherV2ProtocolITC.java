@@ -45,13 +45,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 /**
- * Check the {@link DefaultProtocols#EAT_TOGETHER_V2} protocol. ATTENTION: This test is
- * sequential and maintains the state between methods. In other words, you must
- * to run the entire test methods on the specified order to work.
+ * Check the {@link DefaultProtocols#EAT_TOGETHER_V2} protocol. ATTENTION: This
+ * test is sequential and maintains the state between methods. In other words,
+ * you must to run the entire test methods on the specified order to work.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class EatTogetherV2ProtocolTC extends AbstractProtocolITC {
+public class EatTogetherV2ProtocolITC extends AbstractProtocolITC {
 
   /**
    * {@inheritDoc}

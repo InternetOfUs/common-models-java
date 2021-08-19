@@ -46,7 +46,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class AskForHelpV2ProtocolITC extends AbstractProtocolITC {
+public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
 
   /**
    * {@inheritDoc}
