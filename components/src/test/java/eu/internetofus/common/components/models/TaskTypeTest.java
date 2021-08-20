@@ -121,7 +121,8 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
         .put("t_" + index,
             new JsonObject().put("nullable", true).put("type", "object").put("additionalProperties", new JsonObject()))
         .put("t_zero",
-            new JsonObject().put("description", "Transaction without argument for type " + index).put("type", "object"))
+            new JsonObject().put("description", "Transaction without argument for type " + index).put("type", "object")
+                .put("nullable", true))
         .put("t_one",
             new JsonObject().put("description", "Transaction with one argument for type " + index).put("type", "object")
                 .put("properties", new JsonObject().put("index", new JsonObject().put("type", "integer")))
