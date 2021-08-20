@@ -21,6 +21,57 @@
 			"endTs": {
 				"type": "integer",
 				"description": "The time epoch when the social event will end"
+			},
+			"unanswered": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "The identifiers of the users that has not answered",
+				"default": "[]"
+			},
+			"volunteers": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "The identifiers of the users that are volunteers",
+				"default": "[]"
+			},
+			"refused": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "The identifiers of the users that has been refused to come",
+				"default": "[]"
+			},
+			"accepted": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "The identifiers of the users that has accepted to come",
+				"default": "[]"
+			},
+			"declined": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "The identifiers of the users that has declined to come",
+				"default": "[]"
+			},
+			"outcome": {
+				"type": "string",
+				"nullable": true,
+				"default": "null",
+				"enum": [
+					null,
+					"cancelled",
+					"completed",
+					"failed"
+				]
 			}
 		}
 	},
@@ -84,7 +135,7 @@
 	"callbacks": {
 		"TextualMessage": {
 			"description": "A simple textual message from WeNet to the user",
-			"type":"object",
+			"type": "object",
 			"properties": {
 				"title": {
 					"type": "string",
@@ -109,7 +160,7 @@
 		},
 		"TaskProposalNotification": {
 			"description": "This notification is used in order to propose a user to volunteer to a newly created task",
-			"type":"object",
+			"type": "object",
 			"properties": {
 				"communityId": {
 					"type": "string",
@@ -126,7 +177,7 @@
 		},
 		"TaskVolunteerNotification": {
 			"description": "This notification is used in order to notify the task creator that a new volunteer is proposing to participate to the task",
-			"type":"object",
+			"type": "object",
 			"properties": {
 				"volunteerId": {
 					"type": "string",
@@ -147,7 +198,7 @@
 		},
 		"TaskSelectionNotification": {
 			"description": "This notification is used in order to notify the user who volunteered about the decision of the task creator",
-			"type":"object",
+			"type": "object",
 			"properties": {
 				"outcome": {
 					"type": "string",
@@ -172,7 +223,7 @@
 		},
 		"TaskConcludedNotification": {
 			"description": "This notification is used in order to notify task participants that a task has been completed, the outcome could be\n* completed (if completed correctly)\n* failed (if something went wrong)\n* cancelled (the creator cancelled the task)",
-			"type":"object",
+			"type": "object",
 			"properties": {
 				"outcome": {
 					"type": "string",
@@ -199,7 +250,7 @@
 		},
 		"IncentiveMessage": {
 			"description": "This message contains an incentive for an user",
-			"type":"object",
+			"type": "object",
 			"properties": {
 				"issuer": {
 					"type": "string",
@@ -225,7 +276,7 @@
 		},
 		"IncentiveBadge": {
 			"description": "This is a badge of an incentive",
-			"type":"object",
+			"type": "object",
 			"properties": {
 				"issuer": {
 					"type": "string",
@@ -280,7 +331,7 @@
 		},
 		{
 			"whenever": "is_received_created_task() and get_task_attribute_value(Deadline,deadlineTs) and is_now_less_than(Deadline) and get_app_users_except_me(Unanswered) and length(Unanswered,Size) and >(Size,0)",
-			"thenceforth": "add_created_transaction() and put_task_attribute(unanswered,Unanswered) and put_task_attribute(volunteers,[]) and put_task_attribute(declined,[]) and put_task_attribute(accepted,[]) and put_task_attribute(refused,[]) and send_messages(Unanswered,'notifyNewEatTogether',json([]))"
+			"thenceforth": "add_created_transaction() and put_task_attribute(unanswered,Unanswered) and send_messages(Unanswered,'notifyNewEatTogether',json([]))"
 		},
 		{
 			"whenever": "is_received(_,'notifyNewEatTogether',_) and get_community_id(CommunityId) and get_task_id(TaskId)",
