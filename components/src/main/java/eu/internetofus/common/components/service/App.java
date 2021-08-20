@@ -23,6 +23,7 @@ package eu.internetofus.common.components.service;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import eu.internetofus.common.components.models.CommunityMember;
 import eu.internetofus.common.components.models.CommunityProfile;
+import eu.internetofus.common.components.models.ProtocolNorm;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.model.JsonObjectDeserializer;
 import eu.internetofus.common.model.Model;
@@ -128,6 +129,12 @@ public class App extends ReflectionModel implements Model {
                   community = new CommunityProfile();
                   community.appId = id;
                   community.name = "Community of " + id;
+                  community.norms = new ArrayList<>();
+                  final var incentiveNorm = new ProtocolNorm();
+                  incentiveNorm.description = "Send the incentive to the user";
+                  incentiveNorm.whenever = "is_received_send_incentive(Incentive)";
+                  incentiveNorm.thenceforth = "send_user_message('INCENTIVE',Incentive)";
+                  community.norms.add(incentiveNorm);
 
                 } else {
 
