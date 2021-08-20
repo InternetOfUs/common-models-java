@@ -34,7 +34,8 @@
 		},
 		"notAnswerTransaction": {
 			"description": "Ignore a question",
-			"type": "object"
+			"type": "object",
+			"nullable":true
 		},
 		"bestAnswerTransaction": {
 			"type": "object",
@@ -53,7 +54,8 @@
 		},
 		"moreAnswerTransaction": {
 			"description": "Ask some more users",
-			"type": "object"
+			"type": "object",
+			"nullable":true
 		},
 		"reportQuestionTransaction": {
 			"type": "object",
