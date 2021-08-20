@@ -30,24 +30,24 @@ public enum DefaultProtocols implements DefaultProtocol {
   /**
    * The second version of the protocol to create a social event.
    */
-  EAT_TOGETHER_V2("eat together v2"),
+  EAT_TOGETHER_V2("eat_together_v2"),
 
   /**
    * The first version of the protocol to ask for help.
    */
-  ASK_4_HELP_V1("ask4help v1"),
+  ASK_4_HELP_V1("ask4help_v1"),
 
   /**
    * The second version of the protocol to ask for help. This use the new
    * automatic predicates that notify the incentive server.
    */
-  ASK_4_HELP_V2("ask4help v2"),
+  ASK_4_HELP_V2("ask4help_v2"),
 
   /**
    * The second version of the protocol to ask for help. This use the new
    * automatic predicates that notify the incentive server.
    */
-  ECHO_V1("wenet_echo_v1");
+  ECHO_V1("echo_v1");
 
   /**
    * The default identifier associated to the protocol.

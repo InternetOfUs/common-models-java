@@ -1,5 +1,5 @@
 {
-	"id": "wenet_echo_v1",
+	"id": "echo_v1",
 	"name": "Echo",
 	"description": "This tasks echo the transaction messages",
 	"keywords": [

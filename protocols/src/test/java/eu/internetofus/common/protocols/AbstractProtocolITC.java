@@ -44,10 +44,8 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -262,47 +260,17 @@ public abstract class AbstractProtocolITC {
 
     final var protocol = this.getDefaultProtocolsToUse();
 
-    final var future = protocol.load(vertx).map(foundTaskType -> {
+    var future = protocol.load(vertx).map(foundTaskType -> {
 
       foundTaskType.id = null;
       return foundTaskType;
 
-    }).compose(foundTaskType -> WeNetTaskManager.createProxy(vertx).createTaskType(foundTaskType))
-        .compose(createdTaskType -> {
-
-          this.taskType = createdTaskType;
-          // empty all the incentive states to 0
-          final var state = new State();
-          state.attributes = new JsonObject().put("incentiveServer#" + this.taskType.id, 0);
-          final var labels = new HashSet<String>();
-          if (this.taskType.transactions != null) {
-
-            labels.addAll(this.taskType.transactions.fieldNames());
-
-          }
-          if (this.taskType.callbacks != null) {
-
-            labels.addAll(this.taskType.callbacks.fieldNames());
-
-          }
-          for (final var label : labels) {
-
-            state.attributes.put("incentiveServer#" + this.taskType.id + "#" + label, 0);
-
-          }
-
-          var updateIncentiveState = Future.succeededFuture();
-          for (final var user : this.users) {
-
-            updateIncentiveState = updateIncentiveState.compose(ignored -> WeNetInteractionProtocolEngine
-                .createProxy(vertx).mergeCommunityUserState(this.community.id, user.id, state).map(any -> null));
-
-          }
-          return updateIncentiveState;
-
-        });
-
-    future.onComplete(testContext.succeeding(added -> this.assertSuccessfulCompleted(testContext)));
+    });
+    future = future.compose(foundTaskType -> WeNetTaskManager.createProxy(vertx).createTaskType(foundTaskType));
+    future.onComplete(testContext.succeeding(createdTaskType -> {
+      this.taskType = createdTaskType;
+      this.assertSuccessfulCompleted(testContext);
+    }));
 
   }
 
