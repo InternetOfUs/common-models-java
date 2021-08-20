@@ -481,13 +481,13 @@ public class ComponentClientTest {
   @CsvSource({ "https://localhost:8080,,https://localhost:8080",
       "https://localhost:8080,a:b:c,https://localhost:8080/a/b/c",
       "https://localhost:8080,a:b:c,https://localhost:8080/a/b/c",
-      "https://localhost:8080/,/a/:/b:c/,https://localhost:8080/a/b/c",
+      "https://localhost:8080/,/a/:/b:c/,https://localhost:8080/a/b/c/",
       "https://localhost:8080/,/a/:b/:/c,https://localhost:8080/a/b/c",
       "https://localhost:8080/,a/:/b/:/c,https://localhost:8080/a/b/c",
       "https://localhost:8080/,a/b:/c,https://localhost:8080/a/b/c",
       "https://localhost:8080/,/a/b/:/c,https://localhost:8080/a/b/c",
       "https://localhost:8080/,a/:/b/c:d,https://localhost:8080/a/b/c/d",
-      "https://localhost:8080/,/a/:b / d /:/c,https://localhost:8080/a/b+/+d+/c" })
+      "https://localhost:8080/,/a/:b / d /:/c,https://localhost:8080/a/b%20/%20d%20/c" })
   public void shouldCreateAbsoluteUrlWith(final String componentURL, final String values, final String expectedURL,
       final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 

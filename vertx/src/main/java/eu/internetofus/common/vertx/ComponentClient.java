@@ -34,7 +34,6 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceException;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.UUID;
@@ -110,15 +109,38 @@ public class ComponentClient {
     builder.append(this.componentURL);
     for (final Object path : paths) {
 
-      for (final var element : String.valueOf(path).split("/")) {
+      final var pathSegment = String.valueOf(path);
+      final var max = pathSegment.length();
+      if (max > 0 && pathSegment.charAt(0) != '/' && builder.charAt(builder.length() - 1) != '/') {
 
-        if (builder.charAt(builder.length() - 1) != '/') {
+        builder.append('/');
+      }
 
-          builder.append('/');
+      for (var i = 0; i < max; i++) {
+
+        final var c = pathSegment.charAt(i);
+        if (Character.isLetterOrDigit(c) || c == '-' || c == '.' || c == '_' || c == '~') {
+
+          builder.append(c);
+
+        } else if (c == '/') {
+
+          if (builder.charAt(builder.length() - 1) != '/') {
+
+            builder.append(c);
+
+          } // else ignored
+
+        } else {
+
+          final var bytes = String.valueOf(c).getBytes(Charset.defaultCharset());
+          for (final byte b : bytes) {
+
+            builder.append('%');
+            builder.append(Integer.toHexString(b >> 4 & 0xf));
+            builder.append(Integer.toHexString(b & 0xf));
+          }
         }
-        final var encoded = URLEncoder.encode(element, Charset.defaultCharset());
-        builder.append(encoded);
-
       }
 
     }
