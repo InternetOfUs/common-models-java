@@ -35,7 +35,7 @@
 		"notAnswerTransaction": {
 			"description": "Ignore a question",
 			"type": "object",
-			"nullable":true
+			"nullable": true
 		},
 		"bestAnswerTransaction": {
 			"type": "object",
@@ -55,7 +55,7 @@
 		"moreAnswerTransaction": {
 			"description": "Ask some more users",
 			"type": "object",
-			"nullable":true
+			"nullable": true
 		},
 		"reportQuestionTransaction": {
 			"type": "object",
@@ -92,6 +92,11 @@
 					"description": "A specific comment by the reporting user"
 				}
 			}
+		},
+		"rankAnswers": {
+			"type": "object",
+			"nullable": true,
+			"description": "Calculate the ranking of the received answers"
 		}
 	},
 	"callbacks": {
@@ -148,6 +153,24 @@
 					"description": "The id of the transaction associated to the answer"
 				}
 			}
+		},
+		"AnswersRanking": {
+			"description": "The ranking of the answers",
+			"type": "object",
+			"properties": {
+				"taskId": {
+					"type": "string",
+					"description": "The id of the task associated with the question"
+				},
+				"ranking": {
+					"type": "array",
+					"description": "The ranking of the users by its answer",
+					"items": {
+						"type": "string",
+						"description": "The identifier of the user."
+					}
+				}
+			}
 		}
 	},
 	"norms": [
@@ -190,6 +213,15 @@
 		{
 			"whenever": "is_received_do_transaction('reportAnswerTransaction',Attributes) and not(is_task_closed()) and get_attribute(TransactionId,transactionId,Attributes) and get_transaction(_,TransactionId)",
 			"thenceforth": "add_message_transaction()"
+		},
+		{
+			"whenever": "is_received_do_transaction('rankAnswers',_) and not(is_task_closed()) and filter_transactions(UserAnswers,is_answer_transaction,answer_transaction_to_user_answer) and get_profile_id(Me)",
+			"thenceforth": "add_message_transaction() and answers_ranking(Ranking,UserAnswers) and send_message(Me,'answersRanking',json([ranking=Ranking]))",
+			"ontology": ":- dynamic is_answer_transaction/1, answer_transaction_to_user_answer/2. is_answer_transaction(T):- wenet_label_of_transaction('answerTransaction',T). answer_transaction_to_user_answer(UserAnswer,Transaction):- wenet_actioneer_id_of_transaction(UserId,Transaction), wenet_attributes_of_transaction(json(Attributes),Transaction), member(answer=answer,Attributes), wenet_new_user_answer(UserAnswer,UserId,Answer)."
+		},
+		{
+			"whenever": "is_received(_,'answersRanking',json([ranking=Ranking])) and get_task_id(TaskId)",
+			"thenceforth": "send_user_message('AnswersRanking',json([taskId=TaskId,ranking=Ranking]))"
 		}
 	]
-}
+} 

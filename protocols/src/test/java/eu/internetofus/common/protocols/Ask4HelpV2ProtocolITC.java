@@ -32,6 +32,7 @@ import eu.internetofus.common.components.task_manager.TaskTransactionPredicates;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
@@ -335,16 +336,64 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
   }
 
   /**
-   * Check that pick the best answer.
+   * Check that can rank the answers.
    *
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
    */
   @Test
   @Order(11)
+  public void shouldRankAnswers(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(6, testContext);
+    this.lastSuccessfulTest = 10;
+
+    final var transaction = new TaskTransaction();
+    transaction.actioneerId = this.task.requesterId;
+    transaction.taskId = this.task.id;
+    transaction.label = "rankAnswers";
+
+    final var ranking = new JsonArray();
+    for (var i = 1; i < 4; i++) {
+
+      final var userId = this.users.get(i).id;
+      ranking.add(userId);
+
+    }
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    final var checkMessage = this.createMessagePredicate().and(MessagePredicates.labelIs("AnswersRanking"))
+        .and(MessagePredicates.receiverIs(this.task.requesterId)).and(MessagePredicates
+            .attributesSimilarTo(new JsonObject().put("taskId", this.task.id).put("ranking", ranking)));
+    checkMessages.add(checkMessage);
+
+    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(8)).and(TaskPredicates
+        .transactionAt(7, this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
+    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
+    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+        .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
+        .and(TaskTransactionStatusBodyPredicates.countIs(1))
+        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId)));
+
+    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus))
+        .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
+    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
+
+  }
+
+  /**
+   * Check that pick the best answer.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @Test
+  @Order(12)
   public void shouldBestAnswer(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.assertLastSuccessfulTestWas(10, testContext);
+    this.assertLastSuccessfulTestWas(6, testContext);
+    this.lastSuccessfulTest = 11;
 
     final var transaction = new TaskTransaction();
     transaction.actioneerId = this.task.requesterId;
@@ -394,11 +443,11 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
    * @param testContext context to do the test.
    */
   @Test
-  @Order(12)
+  @Order(13)
   public void shouldCreateSecondTask(final Vertx vertx, final VertxTestContext testContext) {
 
     this.assertLastSuccessfulTestWas(5, testContext);
-    this.lastSuccessfulTest = 11;
+    this.lastSuccessfulTest = 12;
 
     final var source = this.createTaskForProtocol();
     final var checkMessages = new ArrayList<Predicate<Message>>();
