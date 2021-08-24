@@ -24,7 +24,6 @@ import static eu.internetofus.common.components.AbstractComponentMocker.createCl
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
@@ -134,7 +133,7 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
 
     final var userId = UUID.randomUUID().toString();
     final var taskId = UUID.randomUUID().toString();
-    final var preferences = new JsonArray();
+    final var preferences = new ArrayList<String>();
     testContext
         .assertComplete(
             WeNetSocialContextBuilderSimulator.createProxy(vertx).getPreferencesForUserOnTask(userId, taskId))
@@ -147,7 +146,7 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
 
           testContext
               .assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx)
-                  .updatePreferencesForUserOnTask(userId, taskId, preferences))
+                  .postSocialPreferencesForUserOnTask(userId, taskId, preferences))
               .onSuccess(storedPreferences -> testContext.verify(() -> {
 
                 assertThat(storedPreferences).isEqualTo(preferences);
@@ -192,6 +191,53 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
                     .onSuccess(retrieveExplanation2 -> testContext.verify(() -> {
 
                       assertThat(retrieveExplanation2).isEqualTo(explanation);
+                      testContext.completeNow();
+                    }));
+              }));
+        }));
+  }
+
+  /**
+   * Should set and get the social preferences answers.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldSetGetSocialPreferencesAnswers(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var userId = UUID.randomUUID().toString();
+    final var taskId = UUID.randomUUID().toString();
+    final var preferences = new ArrayList<UserAnswer>();
+    final var userIds = new ArrayList<String>();
+    testContext
+        .assertComplete(
+            WeNetSocialContextBuilderSimulator.createProxy(vertx).getPreferencesAnswersForUserOnTask(userId, taskId))
+        .onSuccess(ranking -> testContext.verify(() -> {
+
+          assertThat(ranking).isEqualTo(userIds);
+          for (var i = 0; i < 5; i++) {
+
+            final var userAnswer = new UserAnswer();
+            userAnswer.userId = "UserId_" + i;
+            userAnswer.answer = "Answer_" + i;
+            userIds.add(userAnswer.userId);
+            preferences.add(userAnswer);
+
+          }
+
+          testContext
+              .assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx)
+                  .postSocialPreferencesAnswersForUserOnTask(userId, taskId, preferences))
+              .onSuccess(storedPreferences -> testContext.verify(() -> {
+
+                assertThat(storedPreferences).isEqualTo(userIds);
+                testContext
+                    .assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx)
+                        .getPreferencesAnswersForUserOnTask(userId, taskId))
+                    .onSuccess(retrievePreferences2 -> testContext.verify(() -> {
+
+                      assertThat(retrievePreferences2).isEqualTo(preferences);
                       testContext.completeNow();
                     }));
               }));

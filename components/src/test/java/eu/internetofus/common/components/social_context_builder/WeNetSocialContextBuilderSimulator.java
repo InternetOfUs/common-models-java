@@ -20,9 +20,6 @@
 
 package eu.internetofus.common.components.social_context_builder;
 
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
 import eu.internetofus.common.model.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -35,6 +32,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
+import java.util.List;
+import javax.validation.constraints.NotNull;
 
 /**
  * The service to interact with the mocked version of the
@@ -123,42 +122,46 @@ public interface WeNetSocialContextBuilderSimulator {
    * @return the user relations.
    */
   @GenIgnore
-  default Future<List<UserRelation>> setSocialRelations(@NotNull final String userId, List<UserRelation> relations) {
+  default Future<List<UserRelation>> setSocialRelations(@NotNull final String userId,
+      final List<UserRelation> relations) {
 
     final Promise<JsonArray> promise = Promise.promise();
-    var relationsArray = Model.toJsonArray(relations);
+    final var relationsArray = Model.toJsonArray(relations);
     this.setSocialRelations(userId, relationsArray, promise);
     return Model.fromFutureJsonArray(promise.future(), UserRelation.class);
 
   }
 
   /**
-   * Update the preferences of an user.
+   * Post the preferences of an user. This calculate the social user ranking. In
+   * other words, from a set of volunteers it order form the best to the worst.
    *
    * @param userId     identifier of the user.
    * @param taskId     identifier of the task
    * @param volunteers the identifier of the volunteers of the task.
-   * @param handler    for the user relations.
+   * @param handler    to notify the ranking of the users.
    */
-  void updatePreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId, @NotNull JsonArray volunteers,
+  void postSocialPreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId, @NotNull JsonArray volunteers,
       @NotNull Handler<AsyncResult<JsonArray>> handler);
 
   /**
-   * Update the preferences of an user.
+   * Post the preferences of an user. This calculate the social user ranking. In
+   * other words, from a set of volunteers it order form the best to the worst.
    *
    * @param userId     identifier of the user.
    * @param taskId     identifier of the task
    * @param volunteers the identifier of the volunteers of the task.
    *
-   * @return the future with the set user preferences.
+   * @return the future with the ranking of the users.
    */
   @GenIgnore
-  default Future<JsonArray> updatePreferencesForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
-      @NotNull final JsonArray volunteers) {
+  default Future<List<String>> postSocialPreferencesForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, @NotNull final List<String> volunteers) {
 
     final Promise<JsonArray> promise = Promise.promise();
-    this.updatePreferencesForUserOnTask(userId, taskId, volunteers, promise);
-    return promise.future();
+    final var array = Model.toJsonArray(volunteers);
+    this.postSocialPreferencesForUserOnTask(userId, taskId, array, promise);
+    return Model.fromFutureJsonArray(promise.future(), String.class);
 
   }
 
@@ -181,11 +184,11 @@ public interface WeNetSocialContextBuilderSimulator {
    * @return the future with user preferences on task.
    */
   @GenIgnore
-  default Future<JsonArray> getPreferencesForUserOnTask(@NotNull final String userId, @NotNull final String taskId) {
+  default Future<List<String>> getPreferencesForUserOnTask(@NotNull final String userId, @NotNull final String taskId) {
 
     final Promise<JsonArray> promise = Promise.promise();
     this.getPreferencesForUserOnTask(userId, taskId, promise);
-    return promise.future();
+    return Model.fromFutureJsonArray(promise.future(), String.class);
 
   }
 
@@ -231,7 +234,7 @@ public interface WeNetSocialContextBuilderSimulator {
    */
   @GenIgnore
   default Future<SocialExplanation> setSocialExplanation(@NotNull final String userId, @NotNull final String taskId,
-      @NotNull SocialExplanation explanation) {
+      @NotNull final SocialExplanation explanation) {
 
     final Promise<JsonObject> promise = Promise.promise();
     this.setSocialExplanation(userId, taskId, explanation.toJsonObject(), promise);
@@ -250,5 +253,69 @@ public interface WeNetSocialContextBuilderSimulator {
    */
   void setSocialExplanation(@NotNull final String userId, @NotNull final String taskId, @NotNull JsonObject explanation,
       @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Post the preferences answers of an user. This calculate the ranking of that
+   * answers that an user has received. In other words, from a set of answers an
+   * user has received it order form the best to the worst.
+   *
+   * @param userId      identifier of the user.
+   * @param taskId      identifier of the task
+   * @param userAnswers the array of {@link UserAnswer}'s that the user has
+   *                    received.
+   * @param handler     to notify the ranking of the users.
+   *
+   */
+  void postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull JsonArray userAnswers, @NotNull Handler<AsyncResult<JsonArray>> handler);
+
+  /**
+   * Post the preferences of an user. This calculate the social user ranking. In
+   * other words, from a set of volunteers it order form the best to the worst.
+   *
+   * @param userId      identifier of the user.
+   * @param taskId      identifier of the task.
+   * @param userAnswers the answers of the users.
+   *
+   * @return the future with the ranking of the users.
+   */
+  @GenIgnore
+  default Future<List<String>> postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, @NotNull final List<UserAnswer> userAnswers) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    final var array = Model.toJsonArray(userAnswers);
+    this.postSocialPreferencesAnswersForUserOnTask(userId, taskId, array, promise);
+    return Model.fromFutureJsonArray(promise.future(), String.class);
+
+  }
+
+  /**
+   * Get the preferences answers of an user.
+   *
+   * @param userId  identifier of the user.
+   * @param taskId  identifier of the task
+   * @param handler for the user preferences answers on task.
+   */
+  void getPreferencesAnswersForUserOnTask(@NotNull String userId, @NotNull String taskId,
+      @NotNull Handler<AsyncResult<JsonArray>> handler);
+
+  /**
+   * Get the preferences answers of an user.
+   *
+   * @param userId identifier of the user.
+   * @param taskId identifier of the task
+   *
+   * @return the future with user preferences answers on task.
+   */
+  @GenIgnore
+  default Future<List<UserAnswer>> getPreferencesAnswersForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    this.getPreferencesAnswersForUserOnTask(userId, taskId, promise);
+    return Model.fromFutureJsonArray(promise.future(), UserAnswer.class);
+
+  }
 
 }

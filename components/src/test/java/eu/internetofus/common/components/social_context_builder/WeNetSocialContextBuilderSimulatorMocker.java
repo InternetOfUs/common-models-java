@@ -21,7 +21,6 @@
 package eu.internetofus.common.components.social_context_builder;
 
 import eu.internetofus.common.components.AbstractComponentMocker;
-import eu.internetofus.common.components.GetSetContext;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
@@ -40,7 +39,7 @@ public class WeNetSocialContextBuilderSimulatorMocker extends AbstractComponentM
   /**
    * The context with the values stored on the mocker.
    */
-  protected GetSetContext context = new GetSetContext();
+  protected WeNetSocialContextBuilderSimulatorMockerGetSetContext context = new WeNetSocialContextBuilderSimulatorMockerGetSetContext();
 
   /**
    * Start a mocker builder into a random port.
@@ -86,15 +85,20 @@ public class WeNetSocialContextBuilderSimulatorMocker extends AbstractComponentM
         .handler(this.context.createGetHandler("SOCIAL_RELATION", new JsonArray(), "userId"));
     router.post("/social/relations/:userId/").handler(this.context.createSetHandler("SOCIAL_RELATION", "userId"));
 
+    router.get("/social/explanations/:userId/:taskId/")
+        .handler(this.context.createGetHandler("SOCIAL_EXPLANATIONS", new JsonObject(), "userId", "taskId"));
+    router.post("/social/explanations/:userId/:taskId/")
+        .handler(this.context.createSetHandler("SOCIAL_EXPLANATIONS", "userId", "taskId"));
+
     router.get("/social/preferences/:userId/:taskId/")
         .handler(this.context.createGetHandler("SOCIAL_PREFERENCES", new JsonArray(), "userId", "taskId"));
     router.post("/social/preferences/:userId/:taskId/")
         .handler(this.context.createSetHandler("SOCIAL_PREFERENCES", "userId", "taskId"));
 
-    router.get("/social/explanations/:userId/:taskId/")
-        .handler(this.context.createGetHandler("SOCIAL_EXPLANATIONS", new JsonObject(), "userId", "taskId"));
-    router.post("/social/explanations/:userId/:taskId/")
-        .handler(this.context.createSetHandler("SOCIAL_EXPLANATIONS", "userId", "taskId"));
+    router.get("/social/preferences/answers/:userId/:taskId/")
+        .handler(this.context.createGetHandler("SOCIAL_PREFERENCES_ANSWERS", new JsonArray(), "userId", "taskId"));
+    router.post("/social/preferences/answers/:userId/:taskId/")
+        .handler(this.context.createSocialPreferencesAnswersPostHandler());
 
   }
 

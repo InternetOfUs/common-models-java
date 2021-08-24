@@ -26,6 +26,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import javax.validation.constraints.NotNull;
 
 /**
  * Implementation of the {@link WeNetSocialContextBuilder}.
@@ -40,7 +41,8 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   public static final String DEFAULT_SOCIAL_CONTEXT_BUILDER_API_URL = "https://wenet.u-hopper.com/prod/social_context_builder";
 
   /**
-   * The name of the configuration property that contains the URL to the social context builder API.
+   * The name of the configuration property that contains the URL to the social
+   * context builder API.
    */
   public static final String SOCIAL_CONTEXT_BUILDER_CONF_KEY = "socialContextBuilder";
 
@@ -70,7 +72,8 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
    * {@inheritDoc}
    */
   @Override
-  public void updatePreferencesForUserOnTask(final String userId, final String taskId, final JsonArray volunteers, final Handler<AsyncResult<JsonArray>> handler) {
+  public void postSocialPreferencesForUserOnTask(final String userId, final String taskId, final JsonArray volunteers,
+      final Handler<AsyncResult<JsonArray>> handler) {
 
     this.post(volunteers, "/social/preferences", userId, taskId, "/").onComplete(handler);
 
@@ -80,9 +83,21 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
    * {@inheritDoc}
    */
   @Override
-  public void retrieveSocialExplanation(final String userId, final String taskId, final Handler<AsyncResult<JsonObject>> handler) {
+  public void retrieveSocialExplanation(final String userId, final String taskId,
+      final Handler<AsyncResult<JsonObject>> handler) {
 
     this.getJsonObject("/social/explanations", userId, taskId, "/").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull final JsonArray userAnswers, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
+
+    this.post(userAnswers, "/social/preferences/answers", userId, taskId, "/").onComplete(handler);
 
   }
 

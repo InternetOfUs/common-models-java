@@ -20,9 +20,6 @@
 
 package eu.internetofus.common.components.social_context_builder;
 
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
 import eu.internetofus.common.model.Model;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -31,6 +28,8 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import java.util.List;
+import javax.validation.constraints.NotNull;
 
 /**
  * Service used to interact with the {@link WeNetSocialContextBuilderSimulator}.
@@ -69,12 +68,13 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
    * {@inheritDoc}
    */
   @Override
-  public Future<JsonArray> updatePreferencesForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
-      @NotNull final JsonArray volunteers) {
+  public Future<List<String>> postSocialPreferencesForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, @NotNull final List<String> volunteers) {
 
     final Promise<JsonArray> promise = Promise.promise();
-    this.updatePreferencesForUserOnTask(userId, taskId, volunteers, promise);
-    return promise.future();
+    final var array = Model.toJsonArray(volunteers);
+    this.postSocialPreferencesForUserOnTask(userId, taskId, array, promise);
+    return Model.fromFutureJsonArray(promise.future(), String.class);
 
   }
 
@@ -95,8 +95,8 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
    * {@inheritDoc}
    */
   @Override
-  public void setSocialRelations(@NotNull String userId, @NotNull JsonArray relations,
-      @NotNull Handler<AsyncResult<JsonArray>> handler) {
+  public void setSocialRelations(@NotNull final String userId, @NotNull final JsonArray relations,
+      @NotNull final Handler<AsyncResult<JsonArray>> handler) {
 
     this.post(relations, "/social/relations", userId, "/").onComplete(handler);
 
@@ -106,8 +106,8 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
    * {@inheritDoc}
    */
   @Override
-  public void getPreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId,
-      @NotNull Handler<AsyncResult<JsonArray>> handler) {
+  public void getPreferencesForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull final Handler<AsyncResult<JsonArray>> handler) {
 
     this.getJsonArray("/social/preferences", userId, taskId, "/").onComplete(handler);
 
@@ -117,11 +117,35 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
    * {@inheritDoc}
    */
   @Override
-  public void setSocialExplanation(@NotNull String userId, @NotNull String taskId, @NotNull JsonObject explanation,
-      @NotNull Handler<AsyncResult<JsonObject>> handler) {
+  public void setSocialExplanation(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull final JsonObject explanation, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
 
     this.post(explanation, "/social/explanations", userId, taskId, "/").onComplete(handler);
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<List<String>> postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, @NotNull final List<UserAnswer> userAnswers) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    final var array = Model.toJsonArray(userAnswers);
+    this.postSocialPreferencesAnswersForUserOnTask(userId, taskId, array, promise);
+    return Model.fromFutureJsonArray(promise.future(), String.class);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void getPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull final Handler<AsyncResult<JsonArray>> handler) {
+
+    this.getJsonArray("/social/preferences/answers", userId, taskId, "/").onComplete(handler);
+
+  }
 }

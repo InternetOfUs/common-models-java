@@ -109,32 +109,35 @@ public interface WeNetSocialContextBuilder extends WeNetComponent {
   }
 
   /**
-   * Update the preferences of an user.
+   * Post the preferences of an user. This calculate the social user ranking. In
+   * other words, from a set of volunteers it order form the best to the worst.
    *
    * @param userId     identifier of the user.
    * @param taskId     identifier of the task
    * @param volunteers the identifier of the volunteers of the task.
-   * @param handler    for the user relations.
+   * @param handler    to notify the ranking of the users.
    */
-  void updatePreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId, @NotNull JsonArray volunteers,
+  void postSocialPreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId, @NotNull JsonArray volunteers,
       @NotNull Handler<AsyncResult<JsonArray>> handler);
 
   /**
-   * Update the preferences of an user.
+   * Post the preferences of an user. This calculate the social user ranking. In
+   * other words, from a set of volunteers it order form the best to the worst.
    *
    * @param userId     identifier of the user.
    * @param taskId     identifier of the task
    * @param volunteers the identifier of the volunteers of the task.
    *
-   * @return the future with the user relations.
+   * @return the future with the ranking of the users.
    */
   @GenIgnore
-  default Future<JsonArray> updatePreferencesForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
-      @NotNull final JsonArray volunteers) {
+  default Future<List<String>> postSocialPreferencesForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, @NotNull final List<String> volunteers) {
 
     final Promise<JsonArray> promise = Promise.promise();
-    this.updatePreferencesForUserOnTask(userId, taskId, volunteers, promise);
-    return promise.future();
+    final var array = Model.toJsonArray(volunteers);
+    this.postSocialPreferencesForUserOnTask(userId, taskId, array, promise);
+    return Model.fromFutureJsonArray(promise.future(), String.class);
 
   }
 
@@ -167,5 +170,41 @@ public interface WeNetSocialContextBuilder extends WeNetComponent {
    */
   void retrieveSocialExplanation(@NotNull final String userId, @NotNull final String taskId,
       @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Post the preferences answers of an user. This calculate the ranking of that
+   * answers that an user has received. In other words, from a set of answers an
+   * user has received it order form the best to the worst.
+   *
+   * @param userId      identifier of the user.
+   * @param taskId      identifier of the task
+   * @param userAnswers the array of {@link UserAnswer}'s that the user has
+   *                    received.
+   * @param handler     to notify the ranking of the users.
+   *
+   */
+  void postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull JsonArray userAnswers, @NotNull Handler<AsyncResult<JsonArray>> handler);
+
+  /**
+   * Post the preferences of an user. This calculate the social user ranking. In
+   * other words, from a set of volunteers it order form the best to the worst.
+   *
+   * @param userId      identifier of the user.
+   * @param taskId      identifier of the task.
+   * @param userAnswers the answers of the users.
+   *
+   * @return the future with the ranking of the users.
+   */
+  @GenIgnore
+  default Future<List<String>> postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, @NotNull final List<UserAnswer> userAnswers) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    final var array = Model.toJsonArray(userAnswers);
+    this.postSocialPreferencesAnswersForUserOnTask(userId, taskId, array, promise);
+    return Model.fromFutureJsonArray(promise.future(), String.class);
+
+  }
 
 }

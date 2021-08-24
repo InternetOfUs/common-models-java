@@ -28,6 +28,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.jackson.DatabindCodec;
+import io.vertx.core.shareddata.impl.ClusterSerializable;
 import io.vertx.ext.web.client.HttpResponse;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -76,17 +77,9 @@ public interface Model {
    *
    * @return the model defined on the object or {@code null} if can not obtain it.
    */
-  public static <T extends Model> T fromJsonObject(final JsonObject value, final Class<T> type) {
+  public static <T> T fromJsonObject(final JsonObject value, final Class<T> type) {
 
-    if (value == null) {
-
-      Logger.trace("CANNOT obtain model from a 'null' value.");
-
-    } else if (type == null) {
-
-      Logger.trace("CANNOT obtain model from a 'null' type.");
-
-    } else {
+    if (value != null) {
 
       try {
 
@@ -95,7 +88,9 @@ public interface Model {
       } catch (final Throwable throwable) {
 
         Logger.trace(throwable);
+
       }
+
     }
     // No model found
     return null;
@@ -147,7 +142,8 @@ public interface Model {
    *
    * @return the future model defined on the array.
    */
-  public static <T extends Model> Future<List<T>> fromFutureJsonArray(@NotNull final Future<JsonArray> futureArray,
+  @SuppressWarnings("unchecked")
+  public static <T> Future<List<T>> fromFutureJsonArray(@NotNull final Future<JsonArray> futureArray,
       @NotNull final Class<T> type) {
 
     return futureArray.compose(array -> {
@@ -160,9 +156,23 @@ public interface Model {
           final var max = array.size();
           for (var i = 0; i < max; i++) {
 
-            final var element = array.getJsonObject(i);
-            final var value = Json.decodeValue(element.toBuffer(), type);
-            values.add(value);
+            final var element = array.getValue(i);
+            if (type.isInstance(element) || element == null) {
+
+              values.add((T) element);
+
+            } else if (element instanceof ClusterSerializable) {
+
+              final var buffer = Json.encodeToBuffer(element);
+              final var value = Json.decodeValue(buffer, type);
+              values.add(value);
+
+            } else {
+
+              return Future.failedFuture("The value '" + element + "' at '" + i + "' is not of the expected type '"
+                  + type.getSimpleName() + "'.");
+
+            }
 
           }
 
@@ -316,7 +326,7 @@ public interface Model {
    *
    * @return the array that represents the models.
    */
-  public static <T extends Model> JsonArray toJsonArray(final Iterable<T> models) {
+  public static <T> JsonArray toJsonArray(final Iterable<T> models) {
 
     if (models == null) {
 
@@ -327,8 +337,15 @@ public interface Model {
       final var array = new JsonArray();
       for (final T model : models) {
 
-        final var object = model.toJsonObject();
-        array.add(object);
+        if (model instanceof Model) {
+
+          final var object = ((Model) model).toJsonObject();
+          array.add(object);
+
+        } else {
+
+          array.add(model);
+        }
 
       }
       return array;
@@ -346,7 +363,7 @@ public interface Model {
    * @return the models of the array, or {@code null} if it can not obtain all the
    *         models.
    */
-  public static <T extends Model> List<T> fromJsonArray(final JsonArray array, final Class<T> type) {
+  public static <T> List<T> fromJsonArray(final JsonArray array, final Class<T> type) {
 
     if (array == null) {
 
@@ -389,7 +406,7 @@ public interface Model {
    * @return the models of the array, or {@code null} if it can not obtain all the
    *         models.
    */
-  public static <T extends Model> List<T> fromJsonArray(final Buffer buffer, final Class<T> type) {
+  public static <T> List<T> fromJsonArray(final Buffer buffer, final Class<T> type) {
 
     if (buffer != null) {
 

@@ -24,8 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.WeNetComponentTestCase;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.junit5.VertxTestContext;
+import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -80,9 +80,9 @@ public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<We
 
     final var userId = UUID.randomUUID().toString();
     final var taskId = UUID.randomUUID().toString();
-    final var volunteers = new JsonArray();
+    final var volunteers = new ArrayList<String>();
     testContext
-        .assertComplete(this.createComponentProxy(vertx).updatePreferencesForUserOnTask(userId, taskId, volunteers))
+        .assertComplete(this.createComponentProxy(vertx).postSocialPreferencesForUserOnTask(userId, taskId, volunteers))
         .onSuccess(updated -> testContext.verify(() -> {
 
           assertThat(updated).isNotNull();
@@ -107,6 +107,30 @@ public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<We
         .onSuccess(relations -> testContext.verify(() -> {
 
           assertThat(relations).isNotNull();
+          testContext.completeNow();
+
+        }));
+
+  }
+
+  /**
+   * Should update preferences answers for user on task.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldUpdatePreferencesAnswersForUserOnTask(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var userId = UUID.randomUUID().toString();
+    final var taskId = UUID.randomUUID().toString();
+    final var userAnswers = new ArrayList<UserAnswer>();
+    testContext
+        .assertComplete(
+            this.createComponentProxy(vertx).postSocialPreferencesAnswersForUserOnTask(userId, taskId, userAnswers))
+        .onSuccess(updated -> testContext.verify(() -> {
+
+          assertThat(updated).isNotNull();
           testContext.completeNow();
 
         }));

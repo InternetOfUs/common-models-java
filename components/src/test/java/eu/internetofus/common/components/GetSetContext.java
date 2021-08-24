@@ -20,8 +20,6 @@
 
 package eu.internetofus.common.components;
 
-import java.util.HashMap;
-import java.util.Map;
 import eu.internetofus.common.model.ErrorMessage;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -30,6 +28,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.impl.ClusterSerializable;
 import io.vertx.ext.web.RoutingContext;
+import java.util.HashMap;
+import java.util.Map;
 import javax.ws.rs.core.Response.Status;
 
 /**
@@ -60,7 +60,7 @@ public class GetSetContext {
    *
    * @return the buffer that contains the value.
    */
-  protected Buffer toBuffer(ClusterSerializable value) {
+  protected Buffer toBuffer(final ClusterSerializable value) {
 
     if (value instanceof JsonObject) {
 
@@ -82,11 +82,11 @@ public class GetSetContext {
    *
    * @return the identifier of the component.
    */
-  protected String getIdFrom(RoutingContext ctx, String prefix, String... params) {
+  protected String getIdFrom(final RoutingContext ctx, final String prefix, final String... params) {
 
-    var id = new StringBuilder();
+    final var id = new StringBuilder();
     id.append(prefix);
-    for (var key : params) {
+    for (final var key : params) {
 
       id.append("_");
       id.append(ctx.pathParam(key));
@@ -106,13 +106,14 @@ public class GetSetContext {
    *
    * @return the handler to get a value.
    */
-  public Handler<RoutingContext> createGetHandler(String prefix, ClusterSerializable defaultValue, String... params) {
+  public Handler<RoutingContext> createGetHandler(final String prefix, final ClusterSerializable defaultValue,
+      final String... params) {
 
     return ctx -> {
 
-      var id = this.getIdFrom(ctx, prefix, params);
+      final var id = this.getIdFrom(ctx, prefix, params);
       final var response = ctx.response();
-      var value = this.values.get(id);
+      final var value = this.values.get(id);
       if (value != null) {
 
         response.setStatusCode(Status.OK.getStatusCode());
@@ -139,16 +140,16 @@ public class GetSetContext {
    *
    * @return the handler to set a value.
    */
-  public Handler<RoutingContext> createSetHandler(String prefix, String... params) {
+  public Handler<RoutingContext> createSetHandler(final String prefix, final String... params) {
 
     return ctx -> {
 
-      var id = this.getIdFrom(ctx, prefix, params);
+      final var id = this.getIdFrom(ctx, prefix, params);
       final var response = ctx.response();
-      var body = Json.decodeValue(ctx.getBody());
+      final var body = Json.decodeValue(ctx.getBody());
       if (body instanceof ClusterSerializable) {
 
-        var value = (ClusterSerializable) body;
+        final var value = (ClusterSerializable) body;
         this.values.put(id, value);
         response.setStatusCode(Status.CREATED.getStatusCode());
         response.end(this.toBuffer(value));
