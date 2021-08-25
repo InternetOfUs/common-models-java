@@ -6,7 +6,7 @@ deployTag:
   stage: deploy
   image: maven:3.6-jdk-11
   script:
-    - 'mvn -P ci --batch-mode -Dmaven.repo.local=maven.repository -fn -s ci_settings.xml deploy'
+    - 'mvn -P ci --batch-mode -Dmaven.repo.local=maven.repository -fn -DskipTests -s ci_settings.xml deploy'
   allow_failure: true
   only:
     - tags
