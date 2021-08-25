@@ -78,7 +78,7 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
   protected Task createTaskForProtocol() {
 
     final var taskToCreate = super.createTaskForProtocol();
-    taskToCreate.attributes = new JsonObject().put("kindOfAnswerer", "anyone");
+    taskToCreate.attributes = new JsonObject().put("kindOfAnswerer", "ask_to_anyone").put("answeredDetails", "None");
     return taskToCreate;
 
   }
@@ -354,10 +354,15 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
     transaction.label = "rankAnswers";
 
     final var ranking = new JsonArray();
-    for (var i = 1; i < 4; i++) {
+    for (final var done : this.task.transactions) {
 
-      final var userId = this.users.get(i).id;
-      ranking.add(userId);
+      if (done.label.equals("answerTransaction")) {
+
+        final var userId = done.actioneerId;
+        final var answer = done.attributes.getString("answer", "");
+        ranking.add(new JsonObject().put("userId", userId).put("answer", answer));
+
+      }
 
     }
 

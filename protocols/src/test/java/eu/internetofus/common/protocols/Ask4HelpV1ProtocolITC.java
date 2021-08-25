@@ -77,7 +77,7 @@ public class Ask4HelpV1ProtocolITC extends AbstractProtocolITC {
   protected Task createTaskForProtocol() {
 
     final var taskToCreate = super.createTaskForProtocol();
-    taskToCreate.attributes = new JsonObject().put("kindOfAnswerer", "anyone");
+    taskToCreate.attributes = new JsonObject().put("kindOfAnswerer", "ask_to_anyone").put("answeredDetails", "None");
     return taskToCreate;
 
   }
