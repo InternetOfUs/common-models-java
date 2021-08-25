@@ -2,7 +2,7 @@
 
 All notable changes to `wenet-common` will be documented in this file
 
-## Version 0.11.0 (2021--)
+## Version 0.11.0 (2021-08-25)
 
  * Add new social context builder ranking API call.
 
