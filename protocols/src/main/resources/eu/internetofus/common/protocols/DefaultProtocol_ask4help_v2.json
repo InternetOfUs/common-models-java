@@ -215,9 +215,9 @@
 			"thenceforth": "add_message_transaction()"
 		},
 		{
-			"whenever": "is_received_do_transaction('rankAnswers',_) and not(is_task_closed()) and filter_transactions(UserAnswers,is_answer_transaction,answer_transaction_to_user_answer) and get_profile_id(Me)",
+			"whenever": "is_received_do_transaction('rankAnswers',_) and not(is_task_closed()) and get_profile_id(Me) and get_task_requester_id(Me) and filter_transactions(UserAnswers,is_answer_transaction,answer_transaction_to_user_answer)",
 			"thenceforth": "add_message_transaction() and answers_ranking(Ranking,UserAnswers) and send_message(Me,'answersRanking',json([ranking=Ranking]))",
-			"ontology": ":- dynamic is_answer_transaction/1, answer_transaction_to_user_answer/2. is_answer_transaction(T):- wenet_label_of_transaction('answerTransaction',T). answer_transaction_to_user_answer(UserAnswer,Transaction):- wenet_actioneer_id_of_transaction(UserId,Transaction), wenet_attributes_of_transaction(json(Attributes),Transaction), member(answer=answer,Attributes), wenet_new_user_answer(UserAnswer,UserId,Answer)."
+			"ontology": ":- dynamic is_answer_transaction/1, answer_transaction_to_user_answer/2. is_answer_transaction(T):- wenet_label_of_transaction('answerTransaction',T). answer_transaction_to_user_answer(UserAnswer,Transaction):- wenet_actioneer_id_of_transaction(UserId,Transaction), wenet_attributes_of_transaction(json(Attributes),Transaction), member(answer=Answer,Attributes), wenet_new_user_answer(UserAnswer,UserId,Answer)."
 		},
 		{
 			"whenever": "is_received(_,'answersRanking',json([ranking=Ranking])) and get_task_id(TaskId)",

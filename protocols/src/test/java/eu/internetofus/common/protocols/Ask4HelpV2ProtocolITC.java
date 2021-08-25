@@ -360,14 +360,15 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
       ranking.add(userId);
 
     }
+
     final var checkMessages = new ArrayList<Predicate<Message>>();
     final var checkMessage = this.createMessagePredicate().and(MessagePredicates.labelIs("AnswersRanking"))
         .and(MessagePredicates.receiverIs(this.task.requesterId)).and(MessagePredicates
             .attributesSimilarTo(new JsonObject().put("taskId", this.task.id).put("ranking", ranking)));
     checkMessages.add(checkMessage);
 
-    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(8)).and(TaskPredicates
-        .transactionAt(7, this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
+    final var checkTask = this.createTaskPredicate().and(TaskPredicates.lastTransactionIs(
+        this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
     final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
         .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
@@ -410,11 +411,9 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
     checkMessages.add(checkMessage);
 
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.isClosed())
-        .and(TaskPredicates.transactionSizeIs(9))
-        .and(TaskPredicates.transactionAt(8,
-            this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))
-                .and(TaskTransactionPredicates.messagesSizeIs(1))
-                .and(TaskTransactionPredicates.messageAt(0, checkMessage))
+        .and(TaskPredicates.lastTransactionIs(this.createTaskTransactionPredicate()
+            .and(TaskTransactionPredicates.similarTo(transaction)).and(TaskTransactionPredicates.messagesSizeIs(1))
+            .and(TaskTransactionPredicates.messageAt(0, checkMessage))
 
         ));
 

@@ -90,6 +90,23 @@ public interface TaskPredicates {
   }
 
   /**
+   * Return a predicate the check that the last transaction satisfy the predicate.
+   *
+   * @param checkTransaction predicate to satisfy by the last transaction.
+   *
+   * @return the predicate to check the last transaction.
+   */
+  static Predicate<Task> lastTransactionIs(final Predicate<TaskTransaction> checkTransaction) {
+
+    return target -> {
+
+      return target.transactions != null && target.transactions.size() > 0
+          && checkTransaction.test(target.transactions.get(target.transactions.size() - 1));
+
+    };
+  }
+
+  /**
    * Return a predicate the check that the task has the specified number of
    * transactions.
    *
