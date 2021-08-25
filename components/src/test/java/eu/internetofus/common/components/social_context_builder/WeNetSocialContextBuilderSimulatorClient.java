@@ -128,13 +128,10 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
    * {@inheritDoc}
    */
   @Override
-  public Future<List<String>> postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId,
-      @NotNull final String taskId, @NotNull final List<UserAnswer> userAnswers) {
+  public void getPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull final Handler<AsyncResult<JsonArray>> handler) {
 
-    final Promise<JsonArray> promise = Promise.promise();
-    final var array = Model.toJsonArray(userAnswers);
-    this.postSocialPreferencesAnswersForUserOnTask(userId, taskId, array, promise);
-    return Model.fromFutureJsonArray(promise.future(), String.class);
+    this.getJsonArray("/social/preferences/answers", userId, taskId, "/").onComplete(handler);
 
   }
 
@@ -142,10 +139,25 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
    * {@inheritDoc}
    */
   @Override
-  public void getPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
-      @NotNull final Handler<AsyncResult<JsonArray>> handler) {
+  public Future<List<UserAnswer>> postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, @NotNull final AnswersData userAnswers) {
 
-    this.getJsonArray("/social/preferences/answers", userId, taskId, "/").onComplete(handler);
+    final Promise<JsonArray> promise = Promise.promise();
+    final var data = userAnswers.toJsonObject();
+    this.postSocialPreferencesAnswersForUserOnTask(userId, taskId, data, promise);
+    return Model.fromFutureJsonArray(promise.future(), UserAnswer.class);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull final JsonObject userAnswers, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
+
+    this.post(userAnswers, this.createArrayExtractor(), "/social/preferences/answers", userId, taskId, "/")
+        .onComplete(handler);
 
   }
 }

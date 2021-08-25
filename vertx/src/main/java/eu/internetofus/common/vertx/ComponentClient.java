@@ -200,6 +200,22 @@ public class ComponentClient {
   /**
    * Post an object to a component.
    *
+   * @param content   object to post.
+   * @param paths     to the component to post.
+   * @param extractor to obtain the result form a buffer.
+   *
+   * @return the future with the response object.
+   */
+  protected <T> Future<T> post(@NotNull final JsonObject content,
+      @NotNull final Function<HttpResponse<Buffer>, T> extractor, @NotNull final Object... paths) {
+
+    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), content.toBuffer(), extractor);
+
+  }
+
+  /**
+   * Post an object to a component.
+   *
    * @param content object to post.
    * @param paths   to the component to post.
    *

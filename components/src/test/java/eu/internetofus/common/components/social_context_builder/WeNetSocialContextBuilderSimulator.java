@@ -267,7 +267,7 @@ public interface WeNetSocialContextBuilderSimulator {
    *
    */
   void postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
-      @NotNull JsonArray userAnswers, @NotNull Handler<AsyncResult<JsonArray>> handler);
+      @NotNull JsonObject userAnswers, @NotNull Handler<AsyncResult<JsonArray>> handler);
 
   /**
    * Post the preferences of an user. This calculate the social user ranking. In
@@ -280,13 +280,13 @@ public interface WeNetSocialContextBuilderSimulator {
    * @return the future with the ranking of the users.
    */
   @GenIgnore
-  default Future<List<String>> postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId,
-      @NotNull final String taskId, @NotNull final List<UserAnswer> userAnswers) {
+  default Future<List<UserAnswer>> postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, @NotNull final AnswersData userAnswers) {
 
     final Promise<JsonArray> promise = Promise.promise();
-    final var array = Model.toJsonArray(userAnswers);
-    this.postSocialPreferencesAnswersForUserOnTask(userId, taskId, array, promise);
-    return Model.fromFutureJsonArray(promise.future(), String.class);
+    final var data = userAnswers.toJsonObject();
+    this.postSocialPreferencesAnswersForUserOnTask(userId, taskId, data, promise);
+    return Model.fromFutureJsonArray(promise.future(), UserAnswer.class);
 
   }
 

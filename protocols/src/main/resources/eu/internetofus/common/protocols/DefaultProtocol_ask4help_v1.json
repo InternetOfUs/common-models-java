@@ -12,14 +12,22 @@
 		"properties": {
 			"kindOfAnswerer": {
 				"type": "string",
-				"description": "The type of user shoud answer the question",
+				"description": "The type of user taht should answer the question",
 				"enum": [
-					"different than me",
-					"similar to me",
-					"anyone"
-				]
+					"ask_to_different",
+					"ask_to_similar",
+					"ask_to_anyone"
+				],
+				"default": "\"ask_to_anyone\""
+			},
+			"answeredDetails": {
+				"type": "string",
+				"nullable": true
 			}
-		}
+		},
+		"required": [
+			"kindOfAnswerer"
+		]
 	},
 	"transactions": {
 		"answerTransaction": {
@@ -34,8 +42,8 @@
 		},
 		"notAnswerTransaction": {
 			"description": "Ignore a question",
-			"type":"object",
-			"nullable":true
+			"type": "object",
+			"nullable": true
 		},
 		"bestAnswerTransaction": {
 			"type": "object",
@@ -54,8 +62,8 @@
 		},
 		"moreAnswerTransaction": {
 			"description": "Ask some more users",
-			"type":"object",
-			"nullable":true
+			"type": "object",
+			"nullable": true
 		},
 		"reportQuestionTransaction": {
 			"type": "object",
@@ -97,7 +105,7 @@
 	"callbacks": {
 		"QuestionToAnswerMessage": {
 			"description": "Question to answer",
-			"type":"object",
+			"type": "object",
 			"properties": {
 				"taskId": {
 					"type": "string",
@@ -115,7 +123,7 @@
 		},
 		"AnsweredQuestionMessage": {
 			"description": "Answer to question",
-			"type":"object",
+			"type": "object",
 			"properties": {
 				"taskId": {
 					"type": "string",
@@ -137,7 +145,7 @@
 		},
 		"AnsweredPickedMessage": {
 			"description": "Answer picked",
-			"type":"object",
+			"type": "object",
 			"properties": {
 				"taskId": {
 					"type": "string",

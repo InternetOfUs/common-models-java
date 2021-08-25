@@ -95,9 +95,10 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
    */
   @Override
   public void postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
-      @NotNull final JsonArray userAnswers, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
+      @NotNull final JsonObject userAnswers, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.post(userAnswers, "/social/preferences/answers", userId, taskId, "/").onComplete(handler);
+    this.post(userAnswers, this.createArrayExtractor(), "/social/preferences/answers", userId, taskId, "/")
+        .onComplete(handler);
 
   }
 

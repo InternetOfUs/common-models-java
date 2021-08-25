@@ -124,7 +124,7 @@ public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<We
 
     final var userId = UUID.randomUUID().toString();
     final var taskId = UUID.randomUUID().toString();
-    final var userAnswers = new ArrayList<UserAnswer>();
+    final var userAnswers = new AnswersDataTest().createModelExample(1);
     testContext
         .assertComplete(
             this.createComponentProxy(vertx).postSocialPreferencesAnswersForUserOnTask(userId, taskId, userAnswers))

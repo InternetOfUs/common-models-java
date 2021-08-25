@@ -208,21 +208,21 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
 
     final var userId = UUID.randomUUID().toString();
     final var taskId = UUID.randomUUID().toString();
-    final var preferences = new ArrayList<UserAnswer>();
-    final var userIds = new ArrayList<String>();
+    final var preferences = new AnswersData();
+    preferences.data = new ArrayList<UserAnswer>();
     testContext
         .assertComplete(
             WeNetSocialContextBuilderSimulator.createProxy(vertx).getPreferencesAnswersForUserOnTask(userId, taskId))
         .onSuccess(ranking -> testContext.verify(() -> {
 
-          assertThat(ranking).isEqualTo(userIds);
+          assertThat(ranking).isEqualTo(preferences.data);
+
           for (var i = 0; i < 5; i++) {
 
             final var userAnswer = new UserAnswer();
             userAnswer.userId = "UserId_" + i;
             userAnswer.answer = "Answer_" + i;
-            userIds.add(userAnswer.userId);
-            preferences.add(userAnswer);
+            preferences.data.add(userAnswer);
 
           }
 
@@ -231,13 +231,13 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
                   .postSocialPreferencesAnswersForUserOnTask(userId, taskId, preferences))
               .onSuccess(storedPreferences -> testContext.verify(() -> {
 
-                assertThat(storedPreferences).isEqualTo(userIds);
+                assertThat(storedPreferences).isEqualTo(preferences.data);
                 testContext
                     .assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx)
                         .getPreferencesAnswersForUserOnTask(userId, taskId))
                     .onSuccess(retrievePreferences2 -> testContext.verify(() -> {
 
-                      assertThat(retrievePreferences2).isEqualTo(preferences);
+                      assertThat(retrievePreferences2).isEqualTo(preferences.data);
                       testContext.completeNow();
                     }));
               }));

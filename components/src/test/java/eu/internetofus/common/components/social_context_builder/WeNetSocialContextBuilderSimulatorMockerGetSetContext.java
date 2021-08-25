@@ -23,8 +23,6 @@ import eu.internetofus.common.components.GetSetContext;
 import eu.internetofus.common.model.ErrorMessage;
 import eu.internetofus.common.model.Model;
 import io.vertx.core.Handler;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
 import javax.ws.rs.core.Response.Status;
 
@@ -47,19 +45,13 @@ public class WeNetSocialContextBuilderSimulatorMockerGetSetContext extends GetSe
 
       final var id = this.getIdFrom(ctx, "SOCIAL_PREFERENCES_ANSWERS", "userId", "taskId");
       final var response = ctx.response();
-      final var body = Json.decodeValue(ctx.getBody());
-      if (body instanceof JsonArray) {
+      final var preferences = Model.fromBuffer(ctx.getBody(), AnswersData.class);
+      if (preferences != null && preferences.data != null) {
 
-        final var array = (JsonArray) body;
-        final var answers = Model.fromJsonArray(array, UserAnswer.class);
-        this.values.put(id, array);
+        final var answers = Model.toJsonArray(preferences.data);
+        this.values.put(id, answers);
         response.setStatusCode(Status.OK.getStatusCode());
-        final var users = new JsonArray();
-        for (final var answer : answers) {
-
-          users.add(answer.userId);
-        }
-        response.end(this.toBuffer(users));
+        response.end(answers.toBuffer());
 
       } else {
 
