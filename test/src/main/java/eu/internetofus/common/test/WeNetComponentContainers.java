@@ -57,6 +57,13 @@ public interface WeNetComponentContainers {
   public String getProfileManagerApi();
 
   /**
+   * Return the URL to the profile manager extension word net sim API.
+   *
+   * @return the profile manager extension word net sim API URL.
+   */
+  public String getProfileManagerExtWordNetSimApi();
+
+  /**
    * The URL to the API to interact with the task manager.
    *
    * @return the URL to the task manager API.

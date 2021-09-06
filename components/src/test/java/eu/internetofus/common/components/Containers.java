@@ -56,7 +56,7 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   /**
    * The name of the WeNet profile manager docker container to use.
    */
-  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:0.20.0";
+  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:0.21.0";
 
   /**
    * The name of the WeNet task manager docker container to use.
@@ -67,6 +67,12 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
    * The name of the WeNet interaction manager docker container to use.
    */
   public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:0.22.0";
+
+  /**
+   * The name of the WeNet profile manager extension wordnetsim docker container
+   * to use.
+   */
+  public static final String WENET_PROFILE_MANAGER_EXT_WORDNETSIM_DOCKER_NAME = "internetofus/profile-manager-ext-wordnetsim:0.1.0";
 
   /**
    * The current implementation of the containers.
@@ -99,6 +105,11 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   public int profileManagerApiPort;
 
   /**
+   * The port where the profile manager extension for the word net sim is exposed.
+   */
+  public int profileManagerExtWordNetSimApiPort;
+
+  /**
    * The port where the task manager is exposed.
    */
   public int taskManagerApiPort;
@@ -112,6 +123,11 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
    * The container with a profile manager component.
    */
   public WeNetComponentContainer<?> profileManagerContainer;
+
+  /**
+   * The container with a profile manager extension word net similarity component.
+   */
+  public WeNetComponentContainer<?> profileManagerExtWordNetSimContainer;
 
   /**
    * The container with a task manager component.
@@ -211,10 +227,11 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
     if (this.profileManagerApiPort == 0) {
 
       this.profileManagerApiPort = WeNetComponentContainers.nextFreePort();
+      this.profileManagerExtWordNetSimApiPort = WeNetComponentContainers.nextFreePort();
       this.taskManagerApiPort = WeNetComponentContainers.nextFreePort();
       this.interactionProtocolEngineApiPort = WeNetComponentContainers.nextFreePort();
-      Testcontainers.exposeHostPorts(this.profileManagerApiPort, this.taskManagerApiPort,
-          this.interactionProtocolEngineApiPort);
+      Testcontainers.exposeHostPorts(this.profileManagerApiPort, this.profileManagerExtWordNetSimApiPort,
+          this.taskManagerApiPort, this.interactionProtocolEngineApiPort);
     }
 
     return this;
@@ -247,9 +264,10 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   }
 
   /**
-   * Return the URL to the profile manager API.
+   * {@inheritDoc}
    *
-   * @return the profile manager API URL.
+   * @see #profileManagerApiPort
+   * @see #profileManagerContainer
    */
   @Override
   public String getProfileManagerApi() {
@@ -259,9 +277,23 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   }
 
   /**
-   * Return the URL to the task manager API.
+   * {@inheritDoc}
    *
-   * @return the task manager API URL.
+   * @see #profileManagerExtWordNetSimApiPort
+   * @see #profileManagerExtWordNetSimContainer
+   */
+  @Override
+  public String getProfileManagerExtWordNetSimApi() {
+
+    return this.createApiFor(this.profileManagerExtWordNetSimContainer, this.profileManagerExtWordNetSimApiPort);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see #taskManagerApiPort
+   * @see #taskManagerContainer
    */
   @Override
   public String getTaskManagerApi() {
@@ -271,9 +303,10 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   }
 
   /**
-   * Return the URL to the interaction protocol engine API.
+   * {@inheritDoc}
    *
-   * @return the interaction protocol engine API URL.
+   * @see #interactionProtocolEngineApiPort
+   * @see #interactionProtocolEngineContainer
    */
   @Override
   public String getInteractionProtocolEngineApi() {
@@ -287,17 +320,19 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
    *
    * @return this containers instance.
    */
+  @SuppressWarnings("resource")
   public Containers startProfileManagerContainer() {
 
     if (this.profileManagerContainer == null) {
 
       Logger.trace("Starting Profile Manager");
-      this.profileManagerContainer = this
-          .createContainerFor(WENET_PROFILE_MANAGER_DOCKER_NAME, this.profileManagerApiPort)
-          .withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi())
-          .withEnv("WENET_SERVICE_API", this.service.getApiUrl())
-          .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl())
-          .withEnv("COMP_AUTH_KEY", DEFAULT_WENET_COMPONENT_APIKEY).waitingFor(Wait.forListeningPort());
+      this.profileManagerContainer = new WeNetComponentContainer<>(WENET_PROFILE_MANAGER_DOCKER_NAME,
+          this.profileManagerApiPort).with(this)
+              .withEnv("WENET_PROFILE_MANAGER_EXT_WORDNETSIM_API", this.getProfileManagerExtWordNetSimApi())
+              .withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi())
+              .withEnv("WENET_SERVICE_API", this.service.getApiUrl())
+              .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl())
+              .withEnv("COMP_AUTH_KEY", DEFAULT_WENET_COMPONENT_APIKEY).waitingFor(Wait.forListeningPort());
       this.profileManagerContainer.start();
       Logger.trace("Started Profile Manager");
     }
@@ -306,17 +341,25 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   }
 
   /**
-   * Create the container for the specified component with the specified port.
+   * Start the profile manager extension word net sim container if it is not
+   * started yet.
    *
-   * @param name of the container.
-   * @param port to export the API.
-   *
-   * @return the container for the component.
+   * @return this containers instance.
    */
   @SuppressWarnings("resource")
-  private WeNetComponentContainer<?> createContainerFor(final String name, final int port) {
+  public Containers startProfileManagerExtWordNetSimContainer() {
 
-    return new WeNetComponentContainer<>(name, port).with(this);
+    if (this.profileManagerExtWordNetSimContainer == null) {
+
+      Logger.trace("Starting Profile Manager Ext WordNetSim");
+      this.profileManagerExtWordNetSimContainer = new WeNetComponentContainer<>(
+          WENET_PROFILE_MANAGER_EXT_WORDNETSIM_DOCKER_NAME, this.profileManagerExtWordNetSimApiPort)
+              .withEnv("PORT", "8080").waitingFor(Wait.forListeningPort());
+      this.profileManagerExtWordNetSimContainer.start();
+      Logger.trace("Started Profile Manager Ext WordNetSim");
+    }
+
+    return this;
   }
 
   /**
@@ -324,13 +367,14 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
    *
    * @return this containers instance.
    */
+  @SuppressWarnings("resource")
   public Containers startTaskManagerContainer() {
 
     if (this.taskManagerContainer == null) {
 
       Logger.trace("Starting Task Manager");
-      this.taskManagerContainer = this.createContainerFor(WENET_TASK_MANAGER_DOCKER_NAME, this.taskManagerApiPort)
-          .withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
+      this.taskManagerContainer = new WeNetComponentContainer<>(WENET_TASK_MANAGER_DOCKER_NAME, this.taskManagerApiPort)
+          .with(this).withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
           .withEnv("WENET_INTERACTION_PROTOCOL_ENGINE_API", this.getInteractionProtocolEngineApi())
           .withEnv("WENET_SERVICE_API", this.service.getApiUrl())
           .withEnv("COMP_AUTH_KEY", DEFAULT_WENET_COMPONENT_APIKEY).waitingFor(Wait.forListeningPort());
@@ -346,20 +390,21 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
    *
    * @return this containers instance.
    */
+  @SuppressWarnings("resource")
   public Containers startInteractionProtocolEngineContainer() {
 
     if (this.interactionProtocolEngineContainer == null) {
 
       Logger.trace("Starting Interaction Protocol Engine");
-      this.interactionProtocolEngineContainer = this
-          .createContainerFor(WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME, this.interactionProtocolEngineApiPort)
-          .withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
-          .withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi())
-          .withEnv("WENET_SERVICE_API", this.service.getApiUrl())
-          .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl())
-          .withEnv("WENET_INCENTIVE_SERVER_API", this.incentiveServer.getApiUrl())
-          .withEnv("WENET_PERSONAL_CONTEXT_BUILDER_API", this.personalContextBuilder.getApiUrl())
-          .withEnv("COMP_AUTH_KEY", DEFAULT_WENET_COMPONENT_APIKEY).waitingFor(Wait.forListeningPort());
+      this.interactionProtocolEngineContainer = new WeNetComponentContainer<>(
+          WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME, this.interactionProtocolEngineApiPort).with(this)
+              .withEnv("WENET_PROFILE_MANAGER_API", this.getProfileManagerApi())
+              .withEnv("WENET_TASK_MANAGER_API", this.getTaskManagerApi())
+              .withEnv("WENET_SERVICE_API", this.service.getApiUrl())
+              .withEnv("WENET_SOCIAL_CONTEXT_BUILDER_API", this.socialContextBuilder.getApiUrl())
+              .withEnv("WENET_INCENTIVE_SERVER_API", this.incentiveServer.getApiUrl())
+              .withEnv("WENET_PERSONAL_CONTEXT_BUILDER_API", this.personalContextBuilder.getApiUrl())
+              .withEnv("COMP_AUTH_KEY", DEFAULT_WENET_COMPONENT_APIKEY).waitingFor(Wait.forListeningPort());
       this.interactionProtocolEngineContainer.start();
       Logger.trace("Started Interaction Protocol Engine");
     }
@@ -429,6 +474,7 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
    *
    * @see #startBasic()
    * @see #startProfileManagerContainer()
+   * @see #startProfileManagerExtWordNetSimContainer()
    * @see #startTaskManagerContainer()
    * @see #startInteractionProtocolEngineContainer()
    */
@@ -436,6 +482,7 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
 
     this.startBasic();
     this.startProfileManagerContainer();
+    this.startProfileManagerExtWordNetSimContainer();
     this.startTaskManagerContainer();
     this.startInteractionProtocolEngineContainer();
     return this;

@@ -21,6 +21,7 @@
 package eu.internetofus.common.components.social_context_builder;
 
 import eu.internetofus.common.components.WeNetComponent;
+import eu.internetofus.common.components.models.WeNetUserProfile;
 import eu.internetofus.common.model.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -204,6 +205,30 @@ public interface WeNetSocialContextBuilder extends WeNetComponent {
     final var data = userAnswers.toJsonObject();
     this.postSocialPreferencesAnswersForUserOnTask(userId, taskId, data, promise);
     return Model.fromFutureJsonArray(promise.future(), UserAnswer.class);
+
+  }
+
+  /**
+   * Initialize the social relations of an user.
+   *
+   * @param userId  the identifier of the created user.
+   * @param handler for the social relations.
+   */
+  void initializeSocialRelations(@NotNull String userId, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Initialize the social relations of an user.
+   *
+   * @param profile of the created user.
+   *
+   * @return the user relations.
+   */
+  @GenIgnore
+  default Future<Void> initializeSocialRelations(@NotNull final WeNetUserProfile profile) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.initializeSocialRelations(profile.id, promise);
+    return promise.future();
 
   }
 

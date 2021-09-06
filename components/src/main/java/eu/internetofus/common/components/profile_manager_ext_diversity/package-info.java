@@ -1,0 +1,1 @@
+package eu.internetofus.common.components.profile_manager_ext_diversity;
