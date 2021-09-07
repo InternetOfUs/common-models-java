@@ -17,30 +17,32 @@
  *
  * -----------------------------------------------------------------------------
  */
-package eu.internetofus.common.components.profile_manager_ext_wordnetsim;
 
-import eu.internetofus.common.model.ModelTestCase;
+package eu.internetofus.common.components.profile_diversity_manager;
+
+import eu.internetofus.common.components.WeNetComponentTestCase;
+import io.vertx.core.Vertx;
 
 /**
- * Test the {@link StringsSimilarityData}.
+ * Generic test over the {@link WeNetProfileDiversityManager}.
  *
- * @see StringsSimilarityData
+ * @see WeNetProfileDiversityManager
+ *
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class StringsSimilarityDataTest extends ModelTestCase<StringsSimilarityData> {
+public abstract class WeNetProfileDiversityManagerTestCase
+    extends WeNetComponentTestCase<WeNetProfileDiversityManager> {
 
   /**
    * {@inheritDoc}
+   *
+   * @see WeNetProfileDiversityManager#createProxy(Vertx)
    */
   @Override
-  public StringsSimilarityData createModelExample(final int index) {
+  protected WeNetProfileDiversityManager createComponentProxy(final Vertx vertx) {
 
-    final var model = new StringsSimilarityData();
-    model.source = "Source of " + index;
-    model.target = "Target of " + index;
-    model.aggregation = Aggregation.values()[index % Aggregation.values().length];
-    return model;
+    return WeNetProfileDiversityManager.createProxy(vertx);
   }
 
 }

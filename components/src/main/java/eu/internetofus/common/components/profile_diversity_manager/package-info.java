@@ -17,24 +17,8 @@
  *
  * -----------------------------------------------------------------------------
  */
-package eu.internetofus.common.components.profile_manager_ext_wordnetsim;
-
-import eu.internetofus.common.model.Model;
-import eu.internetofus.common.model.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * The model with the similarity result.
- *
- * @author UDT-IA, IIIA-CSIC
+ * The components to interact with the profile diversity manager.
  */
-@Schema(name = "SimilarityResult", description = "The calculated similarity.")
-public class SimilarityResult extends ReflectionModel implements Model {
-
-  /**
-   * The calculated similarity.
-   */
-  @Schema(description = "The calculated similarity", example = "0.5")
-  public double similarity;
-
-}
+package eu.internetofus.common.components.profile_diversity_manager;

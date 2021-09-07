@@ -18,7 +18,7 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.profile_manager_ext_wordnetsim;
+package eu.internetofus.common.components.profile_diversity_manager;
 
 import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 
@@ -31,14 +31,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * Generic test over the {@link WeNetProfileManagerExtWordNetSim}.
+ * Generic test over the {@link WeNetProfileDiversityManager}.
  *
- * @see WeNetProfileManagerExtWordNetSim
+ * @see WeNetProfileDiversityManager
  *
  * @author UDT-IA, IIIA-CSIC
  */
 @ExtendWith(VertxExtension.class)
-public class WeNetProfileManagerExtWordNetSimTest extends WeNetProfileManagerExtWordNetSimTestCase {
+public class WeNetProfileDiversityManagerTest extends WeNetProfileDiversityManagerTestCase {
 
   /**
    * Start the mocker server.
@@ -46,7 +46,7 @@ public class WeNetProfileManagerExtWordNetSimTest extends WeNetProfileManagerExt
   @BeforeAll
   public static void startContainer() {
 
-    Containers.status().startProfileManagerExtWordNetSimContainer();
+    Containers.status().startProfileDiversityManagerContainer();
   }
 
   /**
@@ -59,8 +59,8 @@ public class WeNetProfileManagerExtWordNetSimTest extends WeNetProfileManagerExt
 
     final var client = createClientWithDefaultSession(vertx);
     final var profileManagerConf = new JsonObject().put(
-        WeNetProfileManagerExtWordNetSimClient.PROFILE_MANAGER_EXT_WORDNETSIM_CONF_KEY,
-        Containers.status().getProfileManagerExtWordNetSimApi());
-    WeNetProfileManagerExtWordNetSim.register(vertx, client, profileManagerConf);
+        WeNetProfileDiversityManagerClient.PROFILE_DIVERSITY_MANAGER_CONF_KEY,
+        Containers.status().getProfileDiversityManagerApi());
+    WeNetProfileDiversityManager.register(vertx, client, profileManagerConf);
   }
 }

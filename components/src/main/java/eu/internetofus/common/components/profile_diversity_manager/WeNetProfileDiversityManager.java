@@ -17,46 +17,40 @@
  *
  * -----------------------------------------------------------------------------
  */
-package eu.internetofus.common.components.profile_manager_ext_wordnetsim;
+package eu.internetofus.common.components.profile_diversity_manager;
 
 import eu.internetofus.common.components.WeNetComponent;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.model.Model;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
-import javax.validation.constraints.NotNull;
 
 /**
- * The component used by the profile manager to calculate the similarity.
+ * The component used by the profile diversity manager.
  *
  * @author UDT-IA, IIIA-CSIC
  */
 @ProxyGen
-public interface WeNetProfileManagerExtWordNetSim extends WeNetComponent {
+public interface WeNetProfileDiversityManager extends WeNetComponent {
 
   /**
    * The address of this service.
    */
-  String ADDRESS = "wenet_component.profileManagerExtWordNetSim";
+  String ADDRESS = "wenet_component.profileDiversityManager";
 
   /**
-   * Create a proxy of the {@link WeNetProfileManager}.
+   * Create a proxy of the {@link WeNetProfileDiversityManager}.
    *
    * @param vertx where the service has to be used.
    *
    * @return the task.
    */
-  static WeNetProfileManagerExtWordNetSim createProxy(final Vertx vertx) {
+  static WeNetProfileDiversityManager createProxy(final Vertx vertx) {
 
-    return new WeNetProfileManagerExtWordNetSimVertxEBProxy(vertx, WeNetProfileManagerExtWordNetSim.ADDRESS);
+    return new WeNetProfileDiversityManagerVertxEBProxy(vertx, WeNetProfileDiversityManager.ADDRESS);
   }
 
   /**
@@ -68,8 +62,8 @@ public interface WeNetProfileManagerExtWordNetSim extends WeNetComponent {
    */
   static void register(final Vertx vertx, final WebClient client, final JsonObject conf) {
 
-    new ServiceBinder(vertx).setAddress(WeNetProfileManagerExtWordNetSim.ADDRESS)
-        .register(WeNetProfileManagerExtWordNetSim.class, new WeNetProfileManagerExtWordNetSimClient(client, conf));
+    new ServiceBinder(vertx).setAddress(WeNetProfileDiversityManager.ADDRESS)
+        .register(WeNetProfileDiversityManager.class, new WeNetProfileDiversityManagerClient(client, conf));
 
   }
 
@@ -81,29 +75,5 @@ public interface WeNetProfileManagerExtWordNetSim extends WeNetComponent {
    */
   @Override
   void obtainApiUrl(final Handler<AsyncResult<String>> handler);
-
-  /**
-   * Calculate the similarity between two strings.
-   *
-   * @param data    with the string to calculate the similarity.
-   * @param handler for the similarity result.
-   */
-  void similarityBetweenStrings(@NotNull JsonObject data, @NotNull Handler<AsyncResult<JsonObject>> handler);
-
-  /**
-   * Calculate the similarity between two strings.
-   *
-   * @param data with the string to calculate the similarity.
-   *
-   * @return the future with the similarity of the strings.
-   */
-  @GenIgnore
-  default Future<SimilarityResult> similarityBetweenStrings(@NotNull final StringsSimilarityData data) {
-
-    final Promise<JsonObject> promise = Promise.promise();
-    this.similarityBetweenStrings(data.toJsonObject(), promise);
-    return Model.fromFutureJsonObject(promise.future(), SimilarityResult.class);
-
-  }
 
 }

@@ -17,36 +17,32 @@
  *
  * -----------------------------------------------------------------------------
  */
-package eu.internetofus.common.components.profile_manager_ext_wordnetsim;
+package eu.internetofus.common.components.profile_diversity_manager;
 
 import eu.internetofus.common.vertx.ComponentClient;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
-import javax.validation.constraints.NotNull;
 
 /**
- * The client to interact with the {@link WeNetProfileManagerExtWordNetSim}.
+ * The client to interact with the {@link WeNetProfileDiversityManager}.
  *
- * @see WeNetProfileManagerExtWordNetSim#register(io.vertx.core.Vertx,
- *      WebClient, io.vertx.core.json.JsonObject)
+ * @see WeNetProfileDiversityManager#register(io.vertx.core.Vertx, WebClient,
+ *      io.vertx.core.json.JsonObject)
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetProfileManagerExtWordNetSimClient extends ComponentClient
-    implements WeNetProfileManagerExtWordNetSim {
+public class WeNetProfileDiversityManagerClient extends ComponentClient implements WeNetProfileDiversityManager {
 
   /**
    * The default URL to bind the client.
    */
-  public static final String DEFAULT_PROFILE_MANAGER_EXT_WORDNETSIM_API_URL = "https://wenet.u-hopper.com/prod/profile_manager_ext_wordnetsim";
+  public static final String DEFAULT_PROFILE_DIVERSITY_MANAGER_API_URL = "https://wenet.u-hopper.com/prod/profile_diversity_manager";
 
   /**
    * The name of the configuration property that contains the URL to the profile
    * manager API.
    */
-  public static final String PROFILE_MANAGER_EXT_WORDNETSIM_CONF_KEY = "profileManagerExtWordNetSim";
+  public static final String PROFILE_DIVERSITY_MANAGER_CONF_KEY = "profileDiversityManager";
 
   /**
    * Create a new service to interact with the WeNet profile manager.
@@ -54,21 +50,10 @@ public class WeNetProfileManagerExtWordNetSimClient extends ComponentClient
    * @param client to interact with the other modules.
    * @param conf   configuration.
    */
-  public WeNetProfileManagerExtWordNetSimClient(final WebClient client, final JsonObject conf) {
+  public WeNetProfileDiversityManagerClient(final WebClient client, final JsonObject conf) {
 
-    super(client,
-        conf.getString(PROFILE_MANAGER_EXT_WORDNETSIM_CONF_KEY, DEFAULT_PROFILE_MANAGER_EXT_WORDNETSIM_API_URL));
+    super(client, conf.getString(PROFILE_DIVERSITY_MANAGER_CONF_KEY, DEFAULT_PROFILE_DIVERSITY_MANAGER_API_URL));
 
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void similarityBetweenStrings(@NotNull final JsonObject data,
-      @NotNull final Handler<AsyncResult<JsonObject>> handler) {
-
-    this.post(data, "/similarityBetweenStrings").onComplete(handler);
   }
 
 }
