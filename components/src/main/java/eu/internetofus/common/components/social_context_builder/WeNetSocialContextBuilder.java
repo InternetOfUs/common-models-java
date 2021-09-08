@@ -232,4 +232,28 @@ public interface WeNetSocialContextBuilder extends WeNetComponent {
 
   }
 
+  /**
+   * Notify about a message that is interchanged in a task.
+   *
+   * @param message that has been interchanged.
+   * @param handler for the social relations.
+   */
+  void socialNotification(@NotNull JsonObject message, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Notify about a message that is interchanged in a task.
+   *
+   * @param message that has been interchanged.
+   *
+   * @return the user relations.
+   */
+  @GenIgnore
+  default Future<Void> socialNotification(@NotNull final UserMessage message) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.socialNotification(message.toJsonObject(), promise);
+    return promise.future();
+
+  }
+
 }

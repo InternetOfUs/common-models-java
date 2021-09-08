@@ -550,6 +550,38 @@ public class ComponentClient {
   }
 
   /**
+   * Create a handler that accept any body from a success {@link HttpResponse}.
+   *
+   * @param promise  to inform of the model.
+   * @param actionId identifier of the HTTP requests.
+   *
+   * @return the handler for the response object.
+   */
+  protected Handler<HttpResponse<Buffer>> createHandlerWithAnyBodyAndSuccessResponse(final Promise<?> promise,
+      final String actionId) {
+
+    return response -> {
+
+      final var code = response.statusCode();
+      if (Status.Family.familyOf(code) == Status.Family.SUCCESSFUL) {
+
+        Logger.trace("{} SUCCESS with code {}", actionId, code);
+        promise.complete();
+
+      } else {
+
+        Logger.trace("{} FAILED with code {} and content {}", () -> actionId, () -> code,
+            () -> response.bodyAsString());
+        final var cause = this.toServiceException(response);
+        promise.fail(cause);
+
+      }
+
+    };
+
+  }
+
+  /**
    * Get a {@link JsonObject}.
    *
    * @param paths to the resource to get.

@@ -29,7 +29,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.Response.Status;
 import org.tinylog.Logger;
 
 /**
@@ -116,24 +115,9 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
     Logger.trace("{} with STARTED", actionId);
     try {
 
-      this.client.requestAbs(HttpMethod.POST, url).send().onSuccess(response -> {
-
-        final var code = response.statusCode();
-        if (Status.Family.familyOf(code) == Status.Family.SUCCESSFUL) {
-
-          Logger.trace("{} SUCCESS with code {}", actionId, code);
-          promise.complete();
-
-        } else {
-
-          Logger.trace("{} FAILED with code {} and content {}", () -> actionId, () -> code,
-              () -> response.bodyAsString());
-          final var cause = this.toServiceException(response);
-          promise.fail(cause);
-
-        }
-
-      }).onFailure(this.createRequestFailureHandler(promise, actionId));
+      this.client.requestAbs(HttpMethod.POST, url).send()
+          .onSuccess(this.createHandlerWithAnyBodyAndSuccessResponse(promise, actionId))
+          .onFailure(this.createRequestFailureHandler(promise, actionId));
 
     } catch (final Throwable throwable) {
 
@@ -142,6 +126,12 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
     }
 
     handler.handle(promise.future());
+  }
+
+  @Override
+  public void socialNotification(@NotNull final JsonObject message, @NotNull final Handler<AsyncResult<Void>> handler) {
+
+    this.post(message, response -> null, "/social/notification");
   }
 
 }
