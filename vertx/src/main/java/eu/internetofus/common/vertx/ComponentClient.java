@@ -204,6 +204,8 @@ public class ComponentClient {
    * @param paths     to the component to post.
    * @param extractor to obtain the result form a buffer.
    *
+   * @param <T>       type of the response content.
+   *
    * @return the future with the response object.
    */
   protected <T> Future<T> post(@NotNull final JsonObject content,
