@@ -10,236 +10,374 @@
 	"attributes": {
 		"type": "object",
 		"properties": {
-			"kindOfAnswerer": {
+			"domain": {
+				"description": "The chosen domain of the question",
 				"type": "string",
-				"description": "The type of user taht should answer the question",
+				"nullable": false,
 				"enum": [
-					"ask_to_different",
-					"ask_to_similar",
-					"ask_to_anyone"
-				],
-				"default": "\"ask_to_anyone\""
+					"studying_career",
+					"local_university",
+					"local_things",
+					"physical_activity",
+					"cultural_interests",
+					"food_and_cooking",
+					"cinema_theatre",
+					"music",
+					"arts_and_crafts",
+					"life_ponders",
+					"varia_misc"
+				]
 			},
-			"answeredDetails": {
+			"domainInterest": {
+				"description": "The kind of interest in the domain the user should have to receive the question",
 				"type": "string",
-				"nullable": true
+				"nullable": false,
+				"enum": [
+					"similar",
+					"indifferent",
+					"different"
+				]
+			},
+			"beliefsAndValues": {
+				"description": "The kind of similarity in beliefs and values the user should have to receive the question",
+				"type": "string",
+				"nullable": false,
+				"enum": [
+					"similar",
+					"indifferent",
+					"different"
+				]
+			},
+			"sensitive": {
+				"description": "Whether the question is sensitive or not, if it is sensitive the bot will let other people know to take extra care in answering the question",
+				"type": "boolean",
+				"default": "false",
+				"nullable": false
+			},
+			"anonymous": {
+				"description": "Whether to ask the question anonymously or not, if anonymous is chosen then the name of the user will not be shown",
+				"type": "boolean",
+				"default": "false",
+				"nullable": false
+			},
+			"socialCloseness": {
+				"description": "The kind of social closeness the user should have to receive the question",
+				"type": "string",
+				"nullable": false,
+				"enum": [
+					"similar",
+					"indifferent",
+					"different"
+				]
+			},
+			"positionOfAnswerer": {
+				"description": "How close the users should be to receive the question, if nearby is chosen the question has not the possibility to be postponed because the question requires a fast answer",
+				"type": "string",
+				"nullable": false,
+				"enum": [
+					"nearby",
+					"anywhere"
+				]
+			},
+			"maxUsers": {
+				"description": "Maximum number of user to ask when the task is created or ask for more answers",
+				"type": "integer",
+				"nullable": false,
+				"minimum": 1,
+				"default": "5"
 			}
 		},
 		"required": [
-			"kindOfAnswerer"
+			"domain",
+			"domainInterest",
+			"beliefsAndValues",
+			"sensitive",
+			"anonymous",
+			"socialCloseness",
+			"positionOfAnswerer",
+			"maxUsers"
 		]
 	},
 	"transactions": {
 		"answerTransaction": {
+			"title": "Answer to a question",
 			"type": "object",
-			"description": "Answer to a question",
 			"properties": {
 				"answer": {
 					"type": "string",
-					"description": "The answer to the question"
+					"description": "The answer given by the user to the question"
+				},
+				"anonymous": {
+					"description": "Whether to answer the question anonymously or not, if anonymous is chosen then the name of the user will not be shown",
+					"type": "boolean",
+					"default": "false",
+					"nullable": false
 				}
-			}
+			},
+			"required": [
+				"answer"
+			]
 		},
 		"notAnswerTransaction": {
-			"description": "Ignore a question",
-			"type": "object",
-			"nullable": true
-		},
-		"bestAnswerTransaction": {
-			"type": "object",
-			"description": "Pick the best answer",
-			"properties": {
-				"transactionId": {
-					"type": "string",
-					"description": "The id of the picked answer transaction"
-				},
-				"reason": {
-					"type": "string",
-					"nullable": true,
-					"description": "The reason why the specific answer was picked"
-				}
-			}
-		},
-		"moreAnswerTransaction": {
-			"description": "Ask some more users",
+			"title": "Ignore a question",
 			"type": "object",
 			"nullable": true
 		},
 		"reportQuestionTransaction": {
+			"title": "Report a question",
 			"type": "object",
-			"description": "Report question",
 			"properties": {
 				"reason": {
+					"description": "The reason why the question was reported",
 					"type": "string",
-					"nullable": true,
-					"description": "The reason why the specific answer was picked"
-				},
-				"comment": {
-					"type": "string",
-					"nullable": true,
-					"description": "A specific comment by the reporting user"
+					"nullable": false,
+					"enum": [
+						"abusive",
+						"spam"
+					]
 				}
-			}
+			},
+			"required": [
+				"reason"
+			]
 		},
-		"reportAnswerTransaction": {
+		"bestAnswerTransaction": {
+			"title": "Pick the best answer",
 			"type": "object",
-			"description": "Report answer",
 			"properties": {
 				"transactionId": {
+					"description": "The id of the picked answer transaction",
 					"type": "string",
-					"description": "The id of the picked answer transaction"
+					"nullable": false
 				},
 				"reason": {
+					"description": "The reason why the specific answer was picked",
 					"type": "string",
-					"nullable": true,
-					"description": "The reason why the specific answer was picked"
+					"nullable": false
 				},
-				"comment": {
+				"helpful": {
+					"description": "How well the bot is good in connecting with users following intentions",
 					"type": "string",
-					"nullable": true,
-					"description": "A specific comment by the reporting user"
+					"nullable": false,
+					"enum": [
+						"not_helpful",
+						"slightly_helpful",
+						"somewhat_helpful",
+						"very_helpful",
+						"extremely_helpful"
+					]
 				}
-			}
+			},
+			"required": [
+				"transactionId",
+				"reason",
+				"helpful"
+			]
 		},
-		"rankAnswers": {
+		"moreAnswerTransaction": {
+			"title": "Ask some more users",
 			"type": "object",
-			"nullable": true,
-			"description": "Calculate the ranking of the received answers"
+			"nullable": true
+		},
+		"reportAnswerTransaction": {
+			"title": "Report an answer",
+			"type": "object",
+			"properties": {
+				"transactionId": {
+					"description": "The id of the answer transaction that was reported",
+					"type": "string",
+					"nullable": false
+				},
+				"reason": {
+					"description": "The reason why the specific answer was reported",
+					"type": "string",
+					"nullable": false,
+					"enum": [
+						"abusive",
+						"spam"
+					]
+				}
+			},
+			"required": [
+				"transactionId",
+				"reason"
+			]
 		}
 	},
 	"callbacks": {
 		"QuestionToAnswerMessage": {
-			"description": "Question to answer",
+			"title": "Question to answer",
 			"type": "object",
 			"properties": {
 				"taskId": {
+					"description": "The id of the task associated with the question",
 					"type": "string",
-					"description": "The id of the task assiciated with the question"
+					"nullable": false
 				},
 				"question": {
+					"description": "The question to answer to",
 					"type": "string",
-					"description": "The question to answer to"
+					"nullable": false
 				},
 				"userId": {
+					"description": "The id of the user who proposed the question",
 					"type": "string",
-					"description": "The id of the user who proposed the question"
+					"nullable": false
+				},
+				"sensitive": {
+					"description": "Whether the question is sensitive or not, if it is sensitive the bot will let other people know to take extra care in answering the question",
+					"type": "boolean",
+					"default": "false",
+					"nullable": false
+				},
+				"anonymous": {
+					"description": "Whether to ask the question anonymously or not, if anonymous is chosen then the name of the user will not be shown",
+					"type": "boolean",
+					"default": "false",
+					"nullable": false
+				},
+				"positionOfAnswerer": {
+					"description": "How close the users should be to receive the question, if nearby is chosen the question has not the possibility to be postponed because the question requires a fast answer",
+					"type": "string",
+					"nullable": false,
+					"enum": [
+						"nearby",
+						"anywhere"
+					]
 				}
-			}
+			},
+			"required": [
+				"taskId",
+				"question",
+				"userId",
+				"sensitive",
+				"anonymous",
+				"positionOfAnswerer"
+			]
 		},
 		"AnsweredQuestionMessage": {
-			"description": "Answer to question",
+			"title": "Answer to question",
 			"type": "object",
 			"properties": {
 				"taskId": {
+					"description": "The id of the task associated with the question",
 					"type": "string",
-					"description": "The id of the task assiciated with the question"
+					"nullable": false
+				},
+				"question": {
+					"description": "The question to answer to",
+					"type": "string",
+					"nullable": false
+				},
+				"transactionId": {
+					"description": "The id of the transaction associated to the answer",
+					"type": "string",
+					"nullable": false
 				},
 				"answer": {
+					"description": "The answer to the question",
 					"type": "string",
-					"description": "The answer to the question"
-				},
-				"transactionId": {
-					"type": "string",
-					"description": "The id of the transaction associated to the answer"
+					"nullable": false
 				},
 				"userId": {
+					"description": "The id of the user who answered the question",
 					"type": "string",
-					"description": "The id of the user who answered the question"
+					"nullable": false
+				},
+				"anonymous": {
+					"description": "Whether the user prefers to answer the question anonymously or not, if anonymous is chosen then the name of the user will not be shown",
+					"type": "boolean",
+					"default": "false",
+					"nullable": false
 				}
-			}
+			},
+			"required": [
+				"taskId",
+				"question",
+				"transactionId",
+				"answer",
+				"userId",
+				"anonymous"
+			]
 		},
 		"AnsweredPickedMessage": {
-			"description": "Answer picked",
+			"title": "Answer picked",
 			"type": "object",
 			"properties": {
 				"taskId": {
+					"description": "The id of the task associated with the question",
 					"type": "string",
-					"description": "The id of the task associated with the question"
+					"nullable": false
+				},
+				"question": {
+					"description": "The question for which was picked the answer",
+					"type": "string",
+					"nullable": false
 				},
 				"transactionId": {
+					"description": "The id of the transaction associated to the answer",
 					"type": "string",
-					"description": "The id of the transaction associated to the answer"
+					"nullable": false
 				}
-			}
-		},
-		"AnswersRanking": {
-			"description": "The ranking of the answers",
-			"type": "object",
-			"properties": {
-				"taskId": {
-					"type": "string",
-					"description": "The id of the task associated with the question"
-				},
-				"ranking": {
-					"type": "array",
-					"description": "The ranking of the users by its answer",
-					"items": {
-						"type": "object",
-						"description": "The user answer.",
-						"properties": {
-							"userId": {
-								"type": "string",
-								"description": "User identifier"
-							},
-							"answer": {
-								"type": "string",
-								"description": "User answer"
-							}
-						}
-					}
-				}
-			}
+			},
+			"required": [
+				"taskId",
+				"question",
+				"transactionId"
+			]
 		}
 	},
 	"norms": [
 		{
-			"whenever": "is_received_created_task() and get_app_users_except_me(Unanswered)",
-			"thenceforth": "add_created_transaction() and send_messages(Unanswered,'notifyNewQuestionAndAnswer',json([]))"
+			"description": "When the task is created filter the posible users to ask about and ask them",
+			"whenever": "is_received_created_task() and who_to_ask(Users)",
+			"thenceforth": "add_created_transaction() and send_messages(Users,'notifyNewQuestionAndAnswer',json([]))",
+			"ontology":":- use_module(library(random)). :- dynamic who_to_ask/1. who_to_ask(Users) :- get_task_attribute_value(MaxUsers,'maxUsers'), get_app_users_except_me(Unanswered), random_permutation(Permutted,Unanswered),findall(E, (between(1, MaxUsers, I), nth1(I, Permutted, E)), Users)."
 		},
 		{
-			"whenever": "is_received(_,'notifyNewQuestionAndAnswer',_) and get_task_id(TaskId) and get_task_goal_name(Question) and get_task_requester_id(RequesterId)",
-			"thenceforth": "send_user_message('QuestionToAnswerMessage',json([taskId=TaskId,question=Question,userId=RequesterId]))"
+			"description": "Notify user if it can help with a question",
+			"whenever": "is_received(_,'notifyNewQuestionAndAnswer',_) and get_task_id(TaskId) and get_task_goal_name(Question) and get_task_requester_id(RequesterId) and get_task_attribute_value(Sensitive,'sensitive') and get_task_attribute_value(Sensitive,'sensitive') and get_task_attribute_value(Anonymous,'anonymous') and get_task_attribute_value(PositionOfAnswerer,'positionOfAnswerer')",
+			"thenceforth": "send_user_message('QuestionToAnswerMessage',json([taskId=TaskId,question=Question,userId=RequesterId,sensitive=Sensitive,anonymous=Anonymous,positionOfAnswerer=PositionOfAnswerer]))"
 		},
 		{
-			"whenever": "is_received_do_transaction('answerTransaction',Attributes) and not(is_task_closed()) and get_attribute(Answer,answer,Attributes) and get_task_requester_id(RequesterId)",
-			"thenceforth": "add_message_transaction() and send_message(RequesterId,'answerTransaction',json([answer=Answer]))"
+			"description": "Provide an answer to a question",
+			"whenever": "is_received_do_transaction('answerTransaction',Attributes) and not(is_task_closed()) and get_attribute(Answer,answer,Attributes) and get_attribute(Anonymous,anonymous,Attributes) and get_task_requester_id(RequesterId)",
+			"thenceforth": "add_message_transaction() and send_message(RequesterId,'answerTransaction',json([answer=Answer,anonymous=Anonymous]))"
 		},
 		{
-			"whenever": "is_received(SenderId,'answerTransaction',Attributes) and get_attribute(Answer,answer,Attributes) and get_task_id(TaskId) and get_transaction_id(TransactionId)",
-			"thenceforth": "send_user_message('AnsweredQuestionMessage',json([taskId=TaskId,answer=Answer,transactionId=TransactionId,userId=SenderId]))"
+			"description": "Notify the questioneer about the answer",
+			"whenever": "is_received(SenderId,'answerTransaction',Attributes) and get_attribute(Answer,answer,Attributes) and get_attribute(Anonymous,anonymous,Attributes) and get_task_goal_name(Question) and get_task_id(TaskId) and get_transaction_id(TransactionId)",
+			"thenceforth": "send_user_message('AnsweredQuestionMessage',json([taskId=TaskId,question=Question,transactionId=TransactionId,answer=Answer,userId=SenderId,anonymous=Anonymous]))"
 		},
 		{
-			"whenever": "is_received_do_transaction('bestAnswerTransaction',Attributes) and not(is_task_closed()) and get_attribute(TransactionId,transactionId,Attributes) and get_transaction(Transaction,TransactionId) and wenet_actioneer_id_of_transaction(ActioneerId,Transaction)",
-			"thenceforth": "add_message_transaction() and close_task() and send_message(ActioneerId,'bestAnswerTransaction',json([transactionId=TransactionId]))"
-		},
-		{
-			"whenever": "is_received(_,'bestAnswerTransaction',Attributes) and get_attribute(TransactionId,transactionId,Attributes) and get_task_id(TaskId)",
-			"thenceforth": "send_user_message('AnsweredPickedMessage',json([taskId=TaskId,transactionId=TransactionId]))"
-		},
-		{
+			"description": "Nothing to do with this transaction only store it",
 			"whenever": "is_received_do_transaction('notAnswerTransaction',_) and not(is_task_closed())",
 			"thenceforth": "add_message_transaction()"
 		},
 		{
-			"whenever": "is_received_do_transaction('moreAnswerTransaction',_) and not(is_task_closed())",
-			"thenceforth": "add_message_transaction()"
-		},
-		{
+			"description": "Nothing to do with this transaction only store it",
 			"whenever": "is_received_do_transaction('reportQuestionTransaction',_) and not(is_task_closed())",
 			"thenceforth": "add_message_transaction()"
 		},
 		{
-			"whenever": "is_received_do_transaction('reportAnswerTransaction',Attributes) and not(is_task_closed()) and get_attribute(TransactionId,transactionId,Attributes) and get_transaction(_,TransactionId)",
+			"description": "Notify to the users about best answer",
+			"whenever": "is_received_do_transaction('bestAnswerTransaction',Attributes) and not(is_task_closed()) and get_attribute(TransactionId,transactionId,Attributes) and get_transaction(Transaction,TransactionId) and wenet_actioneer_id_of_transaction(ActioneerId,Transaction)",
+			"thenceforth": "add_message_transaction() and close_task() and send_message(ActioneerId,'bestAnswerTransaction',json([transactionId=TransactionId]))"
+		},
+		{
+			"description": "Notify the user that its answer is picked",
+			"whenever": "is_received(_,'bestAnswerTransaction',Attributes) and get_attribute(TransactionId,transactionId,Attributes) and get_task_goal_name(Question) and get_task_id(TaskId)",
+			"thenceforth": "send_user_message('AnsweredPickedMessage',json([taskId=TaskId,question=Question,transactionId=TransactionId]))"
+		},
+		{
+			"description": "Ask more users",
+			"whenever": "is_received_do_transaction('moreAnswerTransaction',_) and not(is_task_closed()) and who_to_ask(Users)",
+			"thenceforth": "add_message_transaction() and send_messages(Users,'notifyNewQuestionAndAnswer',json([]))"
+		},
+		{
+			"description": "Nothing to do with this transaction only store it",
+			"whenever": "is_received_do_transaction('reportAnswerTransaction',_) and not(is_task_closed())",
 			"thenceforth": "add_message_transaction()"
-		},
-		{
-			"whenever": "is_received_do_transaction('rankAnswers',_) and not(is_task_closed()) and get_profile_id(Me) and get_task_requester_id(Me) and filter_transactions(UserAnswers,is_answer_transaction,answer_transaction_to_user_answer)",
-			"thenceforth": "add_message_transaction() and answers_ranking(Ranking,UserAnswers) and send_message(Me,'answersRanking',json([ranking=Ranking]))",
-			"ontology": ":- dynamic is_answer_transaction/1, answer_transaction_to_user_answer/2. is_answer_transaction(T):- wenet_label_of_transaction('answerTransaction',T). answer_transaction_to_user_answer(UserAnswer,Transaction):- wenet_actioneer_id_of_transaction(UserId,Transaction), wenet_attributes_of_transaction(json(Attributes),Transaction), member(answer=Answer,Attributes), wenet_new_user_answer(UserAnswer,UserId,Answer)."
-		},
-		{
-			"whenever": "is_received(_,'answersRanking',json([ranking=Ranking])) and get_task_id(TaskId)",
-			"thenceforth": "send_user_message('AnswersRanking',json([taskId=TaskId,ranking=Ranking]))"
 		}
 	]
 } 
