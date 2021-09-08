@@ -46,7 +46,7 @@ public class WeNetProfileDiversityManagerTest extends WeNetProfileDiversityManag
   @BeforeAll
   public static void startContainer() {
 
-    Containers.status().startProfileDiversityManagerContainer();
+    Containers.status().exposeModulePortsContainers().startProfileDiversityManagerContainer();
   }
 
   /**

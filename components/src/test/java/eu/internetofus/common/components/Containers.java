@@ -66,7 +66,7 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   /**
    * The name of the WeNet interaction manager docker container to use.
    */
-  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:0.22.0";
+  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:0.23.0";
 
   /**
    * The name of the WeNet profile manager extension wordnetsim docker container
@@ -352,8 +352,7 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
 
       Logger.trace("Starting Profile Diversity Manager");
       this.profileDiversityManagerContainer = new WeNetComponentContainer<>(WENET_PROFILE_DIVERSITY_MANAGER_DOCKER_NAME,
-          this.profileDiversityManagerApiPort).withEnv("PORT", String.valueOf(EXPORT_API_PORT))
-              .waitingFor(Wait.forListeningPort());
+          this.profileDiversityManagerApiPort, 80).withNetwork(this).waitingFor(Wait.forListeningPort());
       this.profileDiversityManagerContainer.start();
       Logger.trace("Started Profile Diversity Manager");
     }
