@@ -748,4 +748,94 @@ public class ComponentClientTest {
 
   }
 
+  /**
+   * Check that create a handler that can manage success without content response.
+   *
+   * @param response    to process.
+   * @param testContext context that manage the test.
+   *
+   * @see ComponentClient#createHandlerWithAnyBodyAndSuccessResponse(io.vertx.core.Promise,
+   *      String)
+   */
+  @Test
+  public void shouldHhandleWithoutBodyAndSuccessReponse(@Mock final HttpResponse<Buffer> response,
+      final VertxTestContext testContext) {
+
+    final var service = new ComponentClient(null, null);
+    doReturn(Status.NO_CONTENT.getStatusCode()).when(response).statusCode();
+    final Promise<Model> promise = Promise.promise();
+    service.createHandlerWithAnyBodyAndSuccessResponse(promise, "actionId").handle(response);
+    promise.future().onComplete(testContext.succeeding(content -> testContext.verify(() -> {
+
+      assertThat(content).isNull();
+      testContext.completeNow();
+
+    })));
+
+  }
+
+  /**
+   * Check that create a handler that can manage success any content response.
+   *
+   * @param response    to process.
+   * @param testContext context that manage the test.
+   *
+   * @see ComponentClient#createHandlerWithAnyBodyAndSuccessResponse(io.vertx.core.Promise,
+   *      String)
+   */
+  @Test
+  public void shouldHhandleWithBodyAndSuccessReponse(@Mock final HttpResponse<Buffer> response,
+      final VertxTestContext testContext) {
+
+    final var service = new ComponentClient(null, null);
+    doReturn(Status.OK.getStatusCode()).when(response).statusCode();
+    final Promise<Model> promise = Promise.promise();
+    service.createHandlerWithAnyBodyAndSuccessResponse(promise, "actionId").handle(response);
+    promise.future().onComplete(testContext.succeeding(content -> testContext.verify(() -> {
+
+      assertThat(content).isNull();
+      testContext.completeNow();
+
+    })));
+
+  }
+
+  /**
+   * Check that create a handler that can manage any content with a response with
+   * an error.
+   *
+   * @param response    to process.
+   * @param testContext context that manage the test.
+   *
+   * @see ComponentClient#createHandlerWithAnyBodyAndSuccessResponse(io.vertx.core.Promise,
+   *      String)
+   */
+  @Test
+  public void shouldHhandleWithBodyAndErrorReponse(@Mock final HttpResponse<Buffer> response,
+      final VertxTestContext testContext) {
+
+    final var service = new ComponentClient(null, null);
+    final var code = Status.BAD_REQUEST.getStatusCode();
+    doReturn(code).when(response).statusCode();
+    final var error = new ErrorMessageTest().createModelExample(2);
+    doReturn(error.toBuffer()).when(response).bodyAsBuffer();
+    final var message = UUID.randomUUID().toString();
+    doReturn(message).when(response).statusMessage();
+
+    final Promise<Model> promise = Promise.promise();
+    service.createHandlerWithAnyBodyAndSuccessResponse(promise, "actionId").handle(response);
+    promise.future().onComplete(testContext.failing(cause -> testContext.verify(() -> {
+
+      assertThat(cause).isNotNull().isInstanceOf(ServiceException.class);
+      final var exception = (ServiceException) cause;
+      assertThat(exception.failureCode()).isEqualTo(code);
+      assertThat(exception.getMessage()).isEqualTo(message);
+      assertThat(exception.getDebugInfo()).isEqualTo(error.toJsonObject());
+
+      testContext.completeNow();
+
+    })));
+
+  }
+
 }
