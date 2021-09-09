@@ -2,10 +2,12 @@
 
 All notable changes to `wenet-common` will be documented in this file
 
-## Version 0.12.0 (2021-09-02)
+## Version 0.12.0 (2021-09-09)
 
  * Upgrade vertx versions.
- * Add new start profile manager extension component for WeNetSim.
+ * Add new component profile diversity manager.
+ * Add to the social context builder new API calls for notify interaction
+   and initialize social relation.
 
 
 ## Version 0.11.1 (2021-08-25)

@@ -20,6 +20,7 @@
 
 package eu.internetofus.common.components.social_context_builder;
 
+import eu.internetofus.common.components.models.WeNetUserProfile;
 import eu.internetofus.common.model.Model;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -160,4 +161,50 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
         .onComplete(handler);
 
   }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> initializeSocialRelations(@NotNull final WeNetUserProfile profile) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.initializeSocialRelations(profile.id, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void getInitializeSocialRelations(@NotNull final String userId,
+      @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.getJsonObject("/social/relations/initialize/", userId).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> socialNotification(@NotNull final UserMessage message) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.socialNotification(message.toJsonObject(), promise);
+    return promise.future();
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void getSocialNotification(@NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.getJsonObject("/social/notification/").onComplete(handler);
+
+  }
+
 }

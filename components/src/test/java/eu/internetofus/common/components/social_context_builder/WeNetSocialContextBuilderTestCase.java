@@ -23,6 +23,7 @@ package eu.internetofus.common.components.social_context_builder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.WeNetComponentTestCase;
+import eu.internetofus.common.components.models.WeNetUserProfileTest;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
@@ -134,6 +135,37 @@ public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<We
           testContext.completeNow();
 
         }));
+
+  }
+
+  /**
+   * Should initialize social relations.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldInitializeSocialRelations(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var profile = new WeNetUserProfileTest().createBasicExample(1);
+    profile.id = "Id of 1";
+    this.createComponentProxy(vertx).initializeSocialRelations(profile)
+        .onComplete(testContext.succeeding(any -> testContext.completeNow()));
+
+  }
+
+  /**
+   * Should social notification.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldSocialNotification(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var message = new UserMessageTest().createModelExample(1);
+    this.createComponentProxy(vertx).socialNotification(message)
+        .onComplete(testContext.succeeding(any -> testContext.completeNow()));
 
   }
 

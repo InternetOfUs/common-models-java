@@ -80,7 +80,7 @@
 				]
 			},
 			"maxUsers": {
-				"description": "Maximum number of user to ask when the task is created or ask for more answers",
+				"description": "The maximum number of users to which propose the question and also in the case the user requests to ask to more users",
 				"type": "integer",
 				"nullable": false,
 				"minimum": 1,
@@ -160,11 +160,11 @@
 					"type": "string",
 					"nullable": false,
 					"enum": [
-						"not_helpful",
-						"slightly_helpful",
-						"somewhat_helpful",
-						"very_helpful",
-						"extremely_helpful"
+						"notAtAllHelpful",
+						"slightlyHelpful",
+						"somewhatHelpful",
+						"veryHelpful",
+						"extremelyHelpful"
 					]
 				}
 			},

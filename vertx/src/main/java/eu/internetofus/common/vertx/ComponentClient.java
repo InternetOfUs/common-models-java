@@ -460,6 +460,16 @@ public class ComponentClient {
   }
 
   /**
+   * Create the component to no extract from a response.
+   *
+   * @return the extractor to not obtain from the extractor.
+   */
+  protected Function<HttpResponse<Buffer>, Void> createVoidExtractor() {
+
+    return response -> null;
+  }
+
+  /**
    * Create the component to extract a {@link JsonObject} from a response.
    *
    * @return the extractor to obtain the object from the response.

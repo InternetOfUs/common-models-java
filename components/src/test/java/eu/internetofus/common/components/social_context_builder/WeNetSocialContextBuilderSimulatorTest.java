@@ -244,4 +244,25 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
         }));
   }
 
+  /**
+   * Should set and get the social notification.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldSetGetSocialNotification(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var message = new UserMessageTest().createModelExample(1);
+    WeNetSocialContextBuilderSimulator.createProxy(vertx).socialNotification(message)
+        .compose(any -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotification()).onComplete(
+
+            testContext.succeeding(getted -> testContext.verify(() -> {
+
+              assertThat(getted).isEqualTo(message);
+              testContext.completeNow();
+
+            })));
+  }
+
 }

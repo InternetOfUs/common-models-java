@@ -20,6 +20,7 @@
 
 package eu.internetofus.common.components.social_context_builder;
 
+import eu.internetofus.common.components.models.WeNetUserProfile;
 import eu.internetofus.common.model.Model;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -315,6 +316,99 @@ public interface WeNetSocialContextBuilderSimulator {
     final Promise<JsonArray> promise = Promise.promise();
     this.getPreferencesAnswersForUserOnTask(userId, taskId, promise);
     return Model.fromFutureJsonArray(promise.future(), UserAnswer.class);
+
+  }
+
+  /**
+   * Initialize the social relations of an user.
+   *
+   * @param userId  the identifier of the created user.
+   * @param handler for the social relations.
+   */
+  void initializeSocialRelations(@NotNull String userId, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Initialize the social relations of an user.
+   *
+   * @param profile of the created user.
+   *
+   * @return the user relations.
+   */
+  @GenIgnore
+  default Future<Void> initializeSocialRelations(@NotNull final WeNetUserProfile profile) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.initializeSocialRelations(profile.id, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Get the last initialize the social relations of an user.
+   *
+   * @param userId  the identifier of the created user.
+   * @param handler for the social relations.
+   */
+  void getInitializeSocialRelations(@NotNull String userId, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Get the last initialize the social relations of an user.
+   *
+   * @param userId identifier of the user to get the initialization.
+   *
+   * @return the initialized data.
+   */
+  @GenIgnore
+  default Future<JsonObject> getInitializeSocialRelations(@NotNull final String userId) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.getInitializeSocialRelations(userId, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Notify about a message that is interchanged in a task.
+   *
+   * @param message that has been interchanged.
+   * @param handler for the social relations.
+   */
+  void socialNotification(@NotNull JsonObject message, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Notify about a message that is interchanged in a task.
+   *
+   * @param message that has been interchanged.
+   *
+   * @return the notification result.
+   */
+  @GenIgnore
+  default Future<Void> socialNotification(@NotNull final UserMessage message) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.socialNotification(message.toJsonObject(), promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Get the last social notification.
+   *
+   * @param handler for the social notification.
+   */
+  void getSocialNotification(@NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Get the last social notification.
+   *
+   * @return the last social notification.
+   */
+  @GenIgnore
+  default Future<UserMessage> getSocialNotification() {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.getSocialNotification(promise);
+    return Model.fromFutureJsonObject(promise.future(), UserMessage.class);
 
   }
 

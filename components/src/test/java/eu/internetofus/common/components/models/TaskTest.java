@@ -682,6 +682,34 @@ public class TaskTest extends ModelTestCase<Task> {
   }
 
   /**
+   * Check that merge when only is modified the {@link Task#goal}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   */
+  @Test
+  public void shouldOnlyMergeGoalWithNullFields(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
+
+        final var source = new Task();
+        source.goal = new HumanDescription();
+        assertCanMerge(target, source, vertx, testContext, merged -> {
+
+          assertThat(merged).isEqualTo(target).isNotEqualTo(source);
+        });
+
+      });
+
+    });
+
+  }
+
+  /**
    * Check that can not merge when the {@link Task#taskTypeId} has a bas value.
    *
    * @param vertx       event bus to use.

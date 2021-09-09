@@ -100,6 +100,14 @@ public class WeNetSocialContextBuilderSimulatorMocker extends AbstractComponentM
     router.post("/social/preferences/answers/:userId/:taskId/")
         .handler(this.context.createSocialPreferencesAnswersPostHandler());
 
+    router.get("/social/relations/initialize/:userId/")
+        .handler(this.context.createGetHandler("SOCIAL_RELATIONS_INITIALIZE", new JsonObject(), "userId"));
+    router.post("/social/relations/initialize/:userId/")
+        .handler(this.context.createSetHandler("SOCIAL_RELATIONS_INITIALIZE", "userId"));
+
+    router.get("/social/notification/").handler(this.context.createGetHandler("SOCIAL_NOTIFICATION", new JsonObject()));
+    router.post("/social/notification/").handler(this.context.createSetHandler("SOCIAL_NOTIFICATION"));
+
   }
 
 }
