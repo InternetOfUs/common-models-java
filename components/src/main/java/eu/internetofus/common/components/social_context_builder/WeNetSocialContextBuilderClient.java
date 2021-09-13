@@ -78,7 +78,7 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   public void postSocialPreferencesForUserOnTask(final String userId, final String taskId, final JsonArray volunteers,
       final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.post(volunteers, "/social/preferences", userId, taskId, "/").onComplete(handler);
+    this.post(volunteers, "/social/preferences", userId, taskId).onComplete(handler);
 
   }
 
@@ -89,7 +89,7 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   public void retrieveSocialExplanation(final String userId, final String taskId,
       final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.getJsonObject("/social/explanations", userId, taskId, "/").onComplete(handler);
+    this.getJsonObject("/social/explanations", userId, taskId).onComplete(handler);
 
   }
 
@@ -100,7 +100,7 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   public void postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
       @NotNull final JsonObject userAnswers, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.post(userAnswers, this.createArrayExtractor(), "/social/preferences/answers", userId, taskId, "/")
+    this.post(userAnswers, this.createArrayExtractor(), "/social/preferences/answers", userId, taskId)
         .onComplete(handler);
 
   }

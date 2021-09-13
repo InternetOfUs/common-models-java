@@ -396,7 +396,7 @@ public interface WeNetSocialContextBuilderSimulator {
    *
    * @param handler for the social notification.
    */
-  void getSocialNotification(@NotNull Handler<AsyncResult<JsonObject>> handler);
+  void getSocialNotification(@NotNull Handler<AsyncResult<JsonArray>> handler);
 
   /**
    * Get the last social notification.
@@ -404,11 +404,32 @@ public interface WeNetSocialContextBuilderSimulator {
    * @return the last social notification.
    */
   @GenIgnore
-  default Future<UserMessage> getSocialNotification() {
+  default Future<List<UserMessage>> getSocialNotification() {
 
-    final Promise<JsonObject> promise = Promise.promise();
+    final Promise<JsonArray> promise = Promise.promise();
     this.getSocialNotification(promise);
-    return Model.fromFutureJsonObject(promise.future(), UserMessage.class);
+    return Model.fromFutureJsonArray(promise.future(), UserMessage.class);
+
+  }
+
+  /**
+   * Delete the last social notification.
+   *
+   * @param handler for the social notification.
+   */
+  void deleteSocialNotification(@NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Delete the last social notification.
+   *
+   * @return the last social notification.
+   */
+  @GenIgnore
+  default Future<Void> deleteSocialNotification() {
+
+    final Promise<Void> promise = Promise.promise();
+    this.deleteSocialNotification(promise);
+    return promise.future();
 
   }
 

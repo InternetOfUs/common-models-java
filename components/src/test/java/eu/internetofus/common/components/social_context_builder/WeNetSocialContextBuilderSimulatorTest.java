@@ -41,7 +41,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * @see WeNetSocialContextBuilderSimulatorClient
  * @see WeNetSocialContextBuilderSimulatorMocker
  *
- *
  * @author UDT-IA, IIIA-CSIC
  */
 @ExtendWith(VertxExtension.class)
@@ -245,13 +244,13 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
   }
 
   /**
-   * Should set and get the social notification.
+   * Should manage the social notification.
    *
    * @param vertx       that contains the event bus to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldSetGetSocialNotification(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldSetGetDeleteSocialNotification(final Vertx vertx, final VertxTestContext testContext) {
 
     final var message = new UserMessageTest().createModelExample(1);
     WeNetSocialContextBuilderSimulator.createProxy(vertx).socialNotification(message)
@@ -259,10 +258,20 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
 
             testContext.succeeding(getted -> testContext.verify(() -> {
 
-              assertThat(getted).isEqualTo(message);
-              testContext.completeNow();
+              assertThat(getted).isNotEmpty().hasSizeGreaterThanOrEqualTo(1);
+              assertThat(getted.get(getted.size() - 1)).isEqualTo(message);
+              WeNetSocialContextBuilderSimulator.createProxy(vertx).deleteSocialNotification()
+                  .compose(any -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotification())
+                  .onComplete(
 
+                      testContext.succeeding(empty -> testContext.verify(() -> {
+
+                        assertThat(empty).isEmpty();
+                        testContext.completeNow();
+
+                      })));
             })));
+
   }
 
 }

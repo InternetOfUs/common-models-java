@@ -21,9 +21,12 @@
 package eu.internetofus.common.components.social_context_builder;
 
 import eu.internetofus.common.components.AbstractComponentMocker;
+import eu.internetofus.common.model.ErrorMessage;
+import eu.internetofus.common.model.Model;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * The mocked server for the {@link WeNetSocialContextBuilder} and
@@ -40,6 +43,11 @@ public class WeNetSocialContextBuilderSimulatorMocker extends AbstractComponentM
    * The context with the values stored on the mocker.
    */
   protected WeNetSocialContextBuilderSimulatorMockerGetSetContext context = new WeNetSocialContextBuilderSimulatorMockerGetSetContext();
+
+  /**
+   * The posted notifications.
+   */
+  protected JsonArray notifications = new JsonArray();
 
   /**
    * Start a mocker builder into a random port.
@@ -81,32 +89,63 @@ public class WeNetSocialContextBuilderSimulatorMocker extends AbstractComponentM
   @Override
   protected void fillInRouterHandler(final Router router) {
 
-    router.get("/social/relations/:userId/")
+    router.get("/social/relations/:userId")
         .handler(this.context.createGetHandler("SOCIAL_RELATION", new JsonArray(), "userId"));
-    router.post("/social/relations/:userId/").handler(this.context.createSetHandler("SOCIAL_RELATION", "userId"));
+    router.post("/social/relations/:userId").handler(this.context.createSetHandler("SOCIAL_RELATION", "userId"));
 
-    router.get("/social/explanations/:userId/:taskId/")
+    router.get("/social/explanations/:userId/:taskId")
         .handler(this.context.createGetHandler("SOCIAL_EXPLANATIONS", new JsonObject(), "userId", "taskId"));
-    router.post("/social/explanations/:userId/:taskId/")
+    router.post("/social/explanations/:userId/:taskId")
         .handler(this.context.createSetHandler("SOCIAL_EXPLANATIONS", "userId", "taskId"));
 
-    router.get("/social/preferences/:userId/:taskId/")
+    router.get("/social/preferences/:userId/:taskId")
         .handler(this.context.createGetHandler("SOCIAL_PREFERENCES", new JsonArray(), "userId", "taskId"));
-    router.post("/social/preferences/:userId/:taskId/")
+    router.post("/social/preferences/:userId/:taskId")
         .handler(this.context.createSetHandler("SOCIAL_PREFERENCES", "userId", "taskId"));
 
-    router.get("/social/preferences/answers/:userId/:taskId/")
+    router.get("/social/preferences/answers/:userId/:taskId")
         .handler(this.context.createGetHandler("SOCIAL_PREFERENCES_ANSWERS", new JsonArray(), "userId", "taskId"));
     router.post("/social/preferences/answers/:userId/:taskId/")
         .handler(this.context.createSocialPreferencesAnswersPostHandler());
 
-    router.get("/social/relations/initialize/:userId/")
+    router.get("/social/relations/initialize/:userId")
         .handler(this.context.createGetHandler("SOCIAL_RELATIONS_INITIALIZE", new JsonObject(), "userId"));
-    router.post("/social/relations/initialize/:userId/")
+    router.post("/social/relations/initialize/:userId")
         .handler(this.context.createSetHandler("SOCIAL_RELATIONS_INITIALIZE", "userId"));
 
-    router.get("/social/notification/").handler(this.context.createGetHandler("SOCIAL_NOTIFICATION", new JsonObject()));
-    router.post("/social/notification/").handler(this.context.createSetHandler("SOCIAL_NOTIFICATION"));
+    router.post("/social/notification/").handler(ctx -> {
+
+      final var value = ctx.getBodyAsJson();
+      final var state = Model.fromJsonObject(value, UserMessage.class);
+      if (state == null) {
+
+        final var response = ctx.response();
+        response.setStatusCode(Status.BAD_REQUEST.getStatusCode());
+        response.end(new ErrorMessage("bad_status", "The body is not a valid user message").toBuffer());
+
+      } else {
+
+        this.notifications.add(value);
+        final var response = ctx.response();
+        response.setStatusCode(Status.CREATED.getStatusCode());
+        response.end(value.toBuffer());
+      }
+
+    });
+    router.get("/social/notification/").handler(ctx -> {
+
+      final var response = ctx.response();
+      response.setStatusCode(Status.OK.getStatusCode());
+      response.end(this.notifications.toBuffer());
+
+    });
+    router.delete("/social/notification/").handler(ctx -> {
+
+      this.notifications.clear();
+      final var response = ctx.response();
+      response.setStatusCode(Status.NO_CONTENT.getStatusCode());
+      response.end();
+    });
 
   }
 
