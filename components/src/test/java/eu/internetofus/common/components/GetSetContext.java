@@ -144,17 +144,17 @@ public class GetSetContext {
 
     return ctx -> {
 
-      final var id = this.getIdFrom(ctx, prefix, params);
       final var response = ctx.response();
-      final var body = Json.decodeValue(ctx.getBody());
-      if (body instanceof ClusterSerializable) {
+      try {
 
-        final var value = (ClusterSerializable) body;
+        final var id = this.getIdFrom(ctx, prefix, params);
+        final var body = ctx.getBody();
+        final var value = (ClusterSerializable) Json.decodeValue(body);
         this.values.put(id, value);
         response.setStatusCode(Status.CREATED.getStatusCode());
         response.end(this.toBuffer(value));
 
-      } else {
+      } catch (final Throwable t) {
 
         response.setStatusCode(Status.BAD_REQUEST.getStatusCode());
         response.end(new ErrorMessage("bad_value", "Does not exist a valid value on the body.").toBuffer());
