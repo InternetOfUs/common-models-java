@@ -418,9 +418,7 @@ public class Ask4HelpV1_2ProtocolITC extends AbstractProtocolITC {
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.isClosed())
         .and(TaskPredicates.lastTransactionIs(this.createTaskTransactionPredicate()
             .and(TaskTransactionPredicates.similarTo(transaction)).and(TaskTransactionPredicates.messagesSizeIs(1))
-            .and(TaskTransactionPredicates.messageAt(0, checkMessage))
-
-        ));
+            .and(TaskTransactionPredicates.messageAt(0, checkMessage))));
 
     final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()

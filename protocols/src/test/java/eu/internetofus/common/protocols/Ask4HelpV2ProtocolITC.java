@@ -19,6 +19,8 @@
  */
 package eu.internetofus.common.protocols;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBody;
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBodyPredicates;
 import eu.internetofus.common.components.incentive_server.TaskTypeStatusBody;
@@ -27,15 +29,19 @@ import eu.internetofus.common.components.models.Message;
 import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTransaction;
 import eu.internetofus.common.components.service.MessagePredicates;
+import eu.internetofus.common.components.social_context_builder.UserMessage;
+import eu.internetofus.common.components.social_context_builder.UserMessagePredicates;
 import eu.internetofus.common.components.task_manager.TaskPredicates;
 import eu.internetofus.common.components.task_manager.TaskTransactionPredicates;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -50,6 +56,16 @@ import org.junit.jupiter.api.Test;
 public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
 
   /**
+   * The identifier of the users that has notify the question.
+   */
+  protected Set<String> participants = new HashSet<>();
+
+  /**
+   * The identifier of the users that obtained the second time.
+   */
+  protected List<String> expectedNewParticipants = new ArrayList<String>();
+
+  /**
    * {@inheritDoc}
    *
    * @return {@code 6} in any case.
@@ -57,7 +73,7 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
   @Override
   protected int numberOfUsersToCreate() {
 
-    return 6;
+    return 9;
   }
 
   /**
@@ -78,7 +94,9 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
   protected Task createTaskForProtocol() {
 
     final var taskToCreate = super.createTaskForProtocol();
-    taskToCreate.attributes = new JsonObject().put("kindOfAnswerer", "ask_to_anyone").put("answeredDetails", "None");
+    taskToCreate.attributes = new JsonObject().put("domain", "varia_misc").put("domainInterest", "indifferent")
+        .put("beliefsAndValues", "indifferent").put("sensitive", false).put("anonymous", false)
+        .put("socialCloseness", "indifferent").put("positionOfAnswerer", "anywhere").put("maxUsers", 5);
     return taskToCreate;
 
   }
@@ -99,33 +117,57 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
     final var checkMessages = new ArrayList<Predicate<Message>>();
     final var checkIncentiveTypeStatus = new ArrayList<Predicate<TaskTypeStatusBody>>();
     final var checkIncentiveTransactionStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
+    final var checkSocialNotification = new ArrayList<Predicate<UserMessage>>();
 
-    for (final var user : this.users) {
+    checkIncentiveTypeStatus.add(this.createIncentiveServerTaskTypeStatusPredicate()
+        .and(TaskTypeStatusBodyPredicates.userIs(source.requesterId)).and(TaskTypeStatusBodyPredicates.countIs(1)));
 
-      if (!user.id.equals(source.requesterId)) {
+    final var maxUsers = source.attributes.getInteger("maxUsers");
+    for (var i = 0; i < maxUsers; i++) {
 
-        checkMessages.add(this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionToAnswerMessage"))
-            .and(MessagePredicates.receiverIs(user.id))
-            .and(MessagePredicates.attributesSimilarTo(
-                new JsonObject().put("question", source.goal.name).put("userId", source.requesterId)))
-            .and(MessagePredicates.attributesAre(target -> {
+      checkMessages
+          .add(this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionToAnswerMessage")).and(msg -> {
 
-              return this.task.id.equals(target.getString("taskId"));
+            if (this.getUserbyId(msg.receiverId) == null) {
+              // Undefined user
+              return false;
+            }
+            this.participants.add(msg.receiverId);
+            return true;
 
-            })));
+          }).and(MessagePredicates
+              .attributesSimilarTo(new JsonObject().put("question", source.goal.name).put("userId", source.requesterId)
+                  .put("sensitive", false).put("anonymous", false).put("positionOfAnswerer", "anywhere")))
+              .and(MessagePredicates.attributesAre(target -> {
+                return this.task.id.equals(target.getString("taskId"));
+              })));
 
-        checkIncentiveTransactionStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
-            .and(TaskTransactionStatusBodyPredicates.labelIs("QuestionToAnswerMessage"))
-            .and(TaskTransactionStatusBodyPredicates.userIs(user.id))
-            .and(TaskTransactionStatusBodyPredicates.countIs(1)));
+      checkIncentiveTransactionStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+          .and(TaskTransactionStatusBodyPredicates.labelIs("QuestionToAnswerMessage"))
+          .and(transaction -> this.participants.contains(transaction.user_id))
+          .and(TaskTransactionStatusBodyPredicates.countIs(1)));
+      checkSocialNotification.add(this.createSocialNotificationPredicate().and(msg -> {
 
-      } else {
+        if (this.task == null) {
 
-        checkIncentiveTypeStatus.add(this.createIncentiveServerTaskTypeStatusPredicate()
-            .and(TaskTypeStatusBodyPredicates.userIs(user.id)).and(TaskTypeStatusBodyPredicates.countIs(1)));
+          return false;
+        }
+        return UserMessagePredicates.senderId(this.task.requesterId).test(msg);
 
-      }
+      }).and(UserMessagePredicates.transactionId("0"))
+          .and(
+              UserMessagePredicates
+                  .message(
+                      this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionToAnswerMessage"))
+                          .and(msg -> this.participants.contains(msg.receiverId))
+                          .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("question", source.goal.name)
+                              .put("userId", source.requesterId).put("sensitive", false).put("anonymous", false)
+                              .put("positionOfAnswerer", "anywhere")))
+                          .and(MessagePredicates.attributesAre(target -> {
+                            return this.task.id.equals(target.getString("taskId"));
+                          })))));
     }
+
     final var createTransaction = new TaskTransaction();
     createTransaction.label = TaskTransaction.CREATE_TASK_LABEL;
     createTransaction.actioneerId = source.requesterId;
@@ -133,7 +175,7 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
         .and(TaskPredicates.transactionSizeIs(1))
         .and(TaskPredicates.transactionAt(0,
             this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(createTransaction))
-                .and(TaskTransactionPredicates.messagesSizeIs(this.users.size() - 1))
+                .and(TaskTransactionPredicates.messagesSizeIs(maxUsers))
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))));
 
     final Future<?> future = this.waitUntilTaskCreated(source, vertx, testContext, checkTask)
@@ -141,13 +183,19 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
         .compose(
             ignored -> this.waitUntilIncentiveServerHasTaskTypeStatus(vertx, testContext, checkIncentiveTypeStatus))
         .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext,
-            checkIncentiveTransactionStatus));
-    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
+            checkIncentiveTransactionStatus))
+        .compose(ignored -> this.waitUntilSocialNotification(vertx, testContext, checkSocialNotification));
+    future.onComplete(testContext.succeeding(ignored -> testContext.verify(() -> {
+
+      assertThat(this.participants).hasSize(5);
+      this.assertSuccessfulCompleted(testContext);
+
+    })));
 
   }
 
   /**
-   * Check that an user answer.
+   * Check that all the user answer the question.
    *
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
@@ -159,334 +207,285 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
     this.assertLastSuccessfulTestWas(5, testContext);
 
     final var checkMessages = new ArrayList<Predicate<Message>>();
-    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
+    final var checkIncentiveTransactionStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
+    final var checkSocialNotification = new ArrayList<Predicate<UserMessage>>();
     Future<?> future = Future.succeededFuture();
-    for (var i = 1; i < 4; i++) {
+    var count = 1;
+    for (final var user : this.participants) {
 
-      final var index = i;
+      final var transactionId = count;
       final var transaction = new TaskTransaction();
-      transaction.actioneerId = this.users.get(i).id;
+      transaction.actioneerId = user;
       transaction.taskId = this.task.id;
       transaction.label = "answerTransaction";
-      final var answer = "Response question " + i;
-      transaction.attributes = new JsonObject().put("answer", answer);
+      final var answer = "Response question with " + transactionId;
+      transaction.attributes = new JsonObject().put("answer", answer).put("anonymous", transactionId % 2 == 0);
 
       final var checkMessage = this.createMessagePredicate().and(MessagePredicates.labelIs("AnsweredQuestionMessage"))
           .and(MessagePredicates.receiverIs(this.task.requesterId))
           .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("answer", answer).put("taskId", this.task.id)
-              .put("userId", transaction.actioneerId)));
+              .put("question", this.task.goal.name).put("transactionId", String.valueOf(transactionId))
+              .put("answer", answer).put("userId", transaction.actioneerId).put("anonymous", transactionId % 2 == 0)));
       checkMessages.add(checkMessage);
 
-      final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(i + 1))
-          .and(TaskPredicates.transactionAt(i,
+      final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(transactionId + 1))
+          .and(TaskPredicates.transactionAt(transactionId,
               this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))
                   .and(TaskTransactionPredicates.messagesSizeIs(1))
-                  .and(TaskTransactionPredicates.messageAt(0, checkMessage))
-                  .and(source -> source.id.equals(source.messages.get(0).attributes.getString("transactionId")))));
+                  .and(TaskTransactionPredicates.messageAt(0, checkMessage))));
 
-      checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+      checkIncentiveTransactionStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
           .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId))
           .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
           .and(TaskTransactionStatusBodyPredicates.countIs(1)));
-      checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+      checkIncentiveTransactionStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
           .and(TaskTransactionStatusBodyPredicates.userIs(this.task.requesterId))
           .and(TaskTransactionStatusBodyPredicates.labelIs("AnsweredQuestionMessage"))
-          .and(TaskTransactionStatusBodyPredicates.countIs(index)));
+          .and(TaskTransactionStatusBodyPredicates.countIs(transactionId)));
+      checkSocialNotification.add(this.createSocialNotificationPredicate().and(UserMessagePredicates.senderId(user))
+          .and(UserMessagePredicates.transactionId(String.valueOf(transactionId)))
+          .and(UserMessagePredicates.message(checkMessage)));
 
       future = future.compose(ignored -> WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction))
           .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
 
+      count++;
     }
 
     future = future.compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext,
+            checkIncentiveTransactionStatus))
+        .compose(ignored -> this.waitUntilSocialNotification(vertx, testContext, checkSocialNotification));
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
   /**
-   * Check that an user decline to answer.
+   * Check that can report answer.
    *
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
    */
   @Test
   @Order(7)
-  public void shouldNoAnswer(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldReportAnswerTransaction(final Vertx vertx, final VertxTestContext testContext) {
 
     this.assertLastSuccessfulTestWas(6, testContext);
 
-    final var transaction = new TaskTransaction();
-    transaction.actioneerId = this.users.get(this.users.size() - 1).id;
-    transaction.taskId = this.task.id;
-    transaction.label = "notAnswerTransaction";
-    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
-    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
-        .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
-        .and(TaskTransactionStatusBodyPredicates.countIs(1))
-        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId)));
+    final var reportAnswerTransaction = new TaskTransaction();
+    reportAnswerTransaction.taskId = this.task.id;
+    reportAnswerTransaction.actioneerId = this.task.requesterId;
+    reportAnswerTransaction.label = "reportAnswerTransaction";
+    reportAnswerTransaction.attributes = new JsonObject()
+        .put("transactionId", this.task.transactions.get(this.task.transactions.size() - 1).id)
+        .put("reason", "abusive");
 
-    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(5)).and(TaskPredicates
-        .transactionAt(4, this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
+    final var checkTask = this.createTaskPredicate().and(TaskPredicates.lastTransactionIs(
+        this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(reportAnswerTransaction))));
 
-    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
-        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+    final Future<?> future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(reportAnswerTransaction)
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
+
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
   /**
-   * Check that ask some more users.
+   * Check that the requester can ask for more answers.
    *
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
    */
   @Test
   @Order(8)
-  public void shouldAskSomeMoreUsers(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldAskForMoreAnswers(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.assertLastSuccessfulTestWas(7, testContext);
+    this.assertLastSuccessfulTestWas(6, testContext);
+    this.lastSuccessfulTest = 7;
 
-    final var transaction = new TaskTransaction();
-    transaction.actioneerId = this.task.requesterId;
-    transaction.taskId = this.task.id;
-    transaction.label = "moreAnswerTransaction";
+    for (final var user : this.users) {
 
-    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(6)).and(TaskPredicates
-        .transactionAt(5, this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
-    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
-    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
-        .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
-        .and(TaskTransactionStatusBodyPredicates.countIs(1))
-        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId)));
+      final var userId = user.id;
+      if (!this.task.requesterId.equals(userId) && !this.participants.contains(userId)) {
 
-    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
+        this.expectedNewParticipants.add(userId);
+      }
+    }
+
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    final var checkIncentiveTransactionStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
+    final var checkSocialNotification = new ArrayList<Predicate<UserMessage>>();
+
+    final var transactionId = String.valueOf(this.task.transactions.size());
+    final var maxUsers = this.expectedNewParticipants.size();
+    for (var i = 0; i < maxUsers; i++) {
+
+      checkMessages
+          .add(this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionToAnswerMessage")).and(msg -> {
+
+            if (!this.expectedNewParticipants.contains(msg.receiverId)) {
+              // Undefined user
+              return false;
+            }
+            this.participants.add(msg.receiverId);
+            return true;
+
+          }).and(MessagePredicates.attributesSimilarTo(new JsonObject().put("question", this.task.goal.name)
+              .put("taskId", this.task.id).put("userId", this.task.requesterId).put("sensitive", false)
+              .put("anonymous", false).put("positionOfAnswerer", "anywhere"))));
+
+      checkIncentiveTransactionStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
+          .and(TaskTransactionStatusBodyPredicates.labelIs("QuestionToAnswerMessage"))
+          .and(transaction -> this.participants.contains(transaction.user_id))
+          .and(TaskTransactionStatusBodyPredicates.countIs(1)));
+      checkSocialNotification
+          .add(
+              this.createSocialNotificationPredicate().and(UserMessagePredicates.senderId(this.task.requesterId))
+                  .and(UserMessagePredicates.transactionId(transactionId))
+                  .and(UserMessagePredicates.message(this.createMessagePredicate()
+                      .and(MessagePredicates.labelIs("QuestionToAnswerMessage"))
+                      .and(msg -> this.participants.contains(msg.receiverId))
+                      .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("taskId", this.task.id)
+                          .put("question", this.task.goal.name).put("userId", this.task.requesterId)
+                          .put("sensitive", false).put("anonymous", false).put("positionOfAnswerer", "anywhere"))))));
+    }
+
+    final var moreAnswerTransaction = new TaskTransaction();
+    moreAnswerTransaction.taskId = this.task.id;
+    moreAnswerTransaction.actioneerId = this.task.requesterId;
+    moreAnswerTransaction.label = "moreAnswerTransaction";
+    final var checkTask = this.createTaskPredicate()
+        .and(TaskPredicates.lastTransactionIs(
+            this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(moreAnswerTransaction))
+                .and(TaskTransactionPredicates.messagesSizeIs(maxUsers))
+                .and(TaskTransactionPredicates.containsMessages(checkMessages))));
+
+    final Future<?> future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(moreAnswerTransaction)
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
-    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
+        .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext,
+            checkIncentiveTransactionStatus))
+        .compose(ignored -> this.waitUntilSocialNotification(vertx, testContext, checkSocialNotification));
+    future.onComplete(testContext.succeeding(ignored -> testContext.verify(() -> {
+
+      assertThat(this.participants).hasSize(8);
+      this.assertSuccessfulCompleted(testContext);
+
+    })));
 
   }
 
   /**
-   * Check that report question.
+   * Check that the requester can ask for more answers.
    *
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
    */
   @Test
   @Order(9)
-  public void shouldReportQuestion(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotAnswer(final Vertx vertx, final VertxTestContext testContext) {
 
     this.assertLastSuccessfulTestWas(8, testContext);
 
-    final var transaction = new TaskTransaction();
-    transaction.actioneerId = this.users.get(4).id;
-    transaction.taskId = this.task.id;
-    transaction.label = "reportQuestionTransaction";
-    transaction.attributes = new JsonObject().put("reason", "Reason msg").put("comment", "Comment msg");
+    final var notAnswerTransaction = new TaskTransaction();
+    notAnswerTransaction.taskId = this.task.id;
+    notAnswerTransaction.actioneerId = this.expectedNewParticipants.get(0);
+    notAnswerTransaction.label = "notAnswerTransaction";
 
-    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(7)).and(TaskPredicates
-        .transactionAt(6, this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
-    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
-    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
-        .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
-        .and(TaskTransactionStatusBodyPredicates.countIs(1))
-        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId)));
+    final var checkTask = this.createTaskPredicate().and(TaskPredicates.lastTransactionIs(
+        this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(notAnswerTransaction))));
 
-    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
-        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+    final Future<?> future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(notAnswerTransaction)
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
+
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
   /**
-   * Check that report answer.
+   * Check that can report the question.
    *
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
    */
   @Test
   @Order(10)
-  public void shouldReportAnswer(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldReportQuestionTransaction(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.assertLastSuccessfulTestWas(9, testContext);
+    this.assertLastSuccessfulTestWas(8, testContext);
+    this.lastSuccessfulTest = 9;
 
-    final var transaction = new TaskTransaction();
-    transaction.actioneerId = this.task.requesterId;
-    transaction.taskId = this.task.id;
-    transaction.label = "reportAnswerTransaction";
-    transaction.attributes = new JsonObject().put("transactionId", this.task.transactions.get(2).id)
-        .put("reason", "Reason msg").put("comment", "Comment msg");
+    final var reportQuestionTransaction = new TaskTransaction();
+    reportQuestionTransaction.taskId = this.task.id;
+    reportQuestionTransaction.actioneerId = this.expectedNewParticipants.get(1);
+    reportQuestionTransaction.label = "reportQuestionTransaction";
+    reportQuestionTransaction.attributes = new JsonObject().put("reason", "abusive");
 
-    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(8)).and(TaskPredicates
-        .transactionAt(7, this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
-    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
-    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
-        .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
-        .and(TaskTransactionStatusBodyPredicates.countIs(1))
-        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId)));
+    final var checkTask = this.createTaskPredicate().and(TaskPredicates.lastTransactionIs(
+        this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(reportQuestionTransaction))));
 
-    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
-        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+    final Future<?> future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(reportQuestionTransaction)
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
+
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
   /**
-   * Check that can rank the answers.
+   * Check that pick best answer.
    *
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
    */
   @Test
   @Order(11)
-  public void shouldRankAnswers(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldBestAnswerTransaction(final Vertx vertx, final VertxTestContext testContext) {
 
     this.assertLastSuccessfulTestWas(6, testContext);
     this.lastSuccessfulTest = 10;
 
-    final var transaction = new TaskTransaction();
-    transaction.actioneerId = this.task.requesterId;
-    transaction.taskId = this.task.id;
-    transaction.label = "rankAnswers";
-
-    final var ranking = new JsonArray();
-    for (final var done : this.task.transactions) {
-
-      if (done.label.equals("answerTransaction")) {
-
-        final var userId = done.actioneerId;
-        final var answer = done.attributes.getString("answer", "");
-        ranking.add(new JsonObject().put("userId", userId).put("answer", answer));
-
-      }
-
-    }
-
-    final var checkMessages = new ArrayList<Predicate<Message>>();
-    final var checkMessage = this.createMessagePredicate().and(MessagePredicates.labelIs("AnswersRanking"))
-        .and(MessagePredicates.receiverIs(this.task.requesterId)).and(MessagePredicates
-            .attributesSimilarTo(new JsonObject().put("taskId", this.task.id).put("ranking", ranking)));
-    checkMessages.add(checkMessage);
-
-    final var checkTask = this.createTaskPredicate().and(TaskPredicates.lastTransactionIs(
-        this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))));
-    final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
-    checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
-        .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
-        .and(TaskTransactionStatusBodyPredicates.countIs(1))
-        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId)));
-
-    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
-        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus))
-        .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
-    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
-
-  }
-
-  /**
-   * Check that pick the best answer.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to do the test.
-   */
-  @Test
-  @Order(12)
-  public void shouldBestAnswer(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.assertLastSuccessfulTestWas(6, testContext);
-    this.lastSuccessfulTest = 11;
-
-    final var transaction = new TaskTransaction();
-    transaction.actioneerId = this.task.requesterId;
-    transaction.taskId = this.task.id;
-    transaction.label = "bestAnswerTransaction";
-    transaction.attributes = new JsonObject().put("transactionId", this.task.transactions.get(3).id).put("reason",
-        "Reason msg");
+    final var bestAnswerTransaction = new TaskTransaction();
+    bestAnswerTransaction.taskId = this.task.id;
+    bestAnswerTransaction.actioneerId = this.task.requesterId;
+    bestAnswerTransaction.label = "bestAnswerTransaction";
+    final var selectedTransaction = this.task.transactions.get(2);
+    bestAnswerTransaction.attributes = new JsonObject().put("transactionId", selectedTransaction.id)
+        .put("reason", "I love it").put("helpful", "extremelyHelpful");
 
     final var checkMessages = new ArrayList<Predicate<Message>>();
     final var checkMessage = this.createMessagePredicate().and(MessagePredicates.labelIs("AnsweredPickedMessage"))
-        .and(MessagePredicates.receiverIs(this.task.transactions.get(3).actioneerId))
-        .and(MessagePredicates.attributesSimilarTo(
-            new JsonObject().put("taskId", this.task.id).put("transactionId", this.task.transactions.get(3).id)));
+        .and(MessagePredicates.receiverIs(selectedTransaction.actioneerId))
+        .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("taskId", this.task.id)
+            .put("question", this.task.goal.name).put("transactionId", selectedTransaction.id)));
     checkMessages.add(checkMessage);
 
-    final var checkTask = this.createTaskPredicate().and(TaskPredicates.isClosed())
-        .and(TaskPredicates.lastTransactionIs(this.createTaskTransactionPredicate()
-            .and(TaskTransactionPredicates.similarTo(transaction)).and(TaskTransactionPredicates.messagesSizeIs(1))
-            .and(TaskTransactionPredicates.messageAt(0, checkMessage))
-
-        ));
+    final var checkTask = this.createTaskPredicate().and(TaskPredicates.lastTransactionIs(this
+        .createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(bestAnswerTransaction))
+        .and(TaskTransactionPredicates.messagesSizeIs(1)).and(TaskTransactionPredicates.messageAt(0, checkMessage))))
+        .and(TaskPredicates.isClosed());
 
     final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
-        .and(TaskTransactionStatusBodyPredicates.userIs(transaction.actioneerId))
-        .and(TaskTransactionStatusBodyPredicates.labelIs(transaction.label))
+        .and(TaskTransactionStatusBodyPredicates.userIs(bestAnswerTransaction.actioneerId))
+        .and(TaskTransactionStatusBodyPredicates.labelIs(bestAnswerTransaction.label))
         .and(TaskTransactionStatusBodyPredicates.countIs(1)));
     checkStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
-        .and(TaskTransactionStatusBodyPredicates.userIs(this.task.transactions.get(3).actioneerId))
+        .and(TaskTransactionStatusBodyPredicates.userIs(selectedTransaction.actioneerId))
         .and(TaskTransactionStatusBodyPredicates.labelIs("AnsweredPickedMessage"))
         .and(TaskTransactionStatusBodyPredicates.countIs(1)));
 
-    final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
+    final var checkSocialNotification = new ArrayList<Predicate<UserMessage>>();
+    checkSocialNotification
+        .add(this.createSocialNotificationPredicate().and(UserMessagePredicates.senderId(this.task.requesterId))
+            .and(UserMessagePredicates.transactionId(String.valueOf(this.task.transactions.size())))
+            .and(UserMessagePredicates.message(checkMessage)));
+
+    final Future<?> future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(bestAnswerTransaction)
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
-    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus))
+        .compose(ignored -> this.waitUntilSocialNotification(vertx, testContext, checkSocialNotification));
 
-  }
-
-  /**
-   * Check that create a second task.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to do the test.
-   */
-  @Test
-  @Order(13)
-  public void shouldCreateSecondTask(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.assertLastSuccessfulTestWas(5, testContext);
-    this.lastSuccessfulTest = 12;
-
-    final var source = this.createTaskForProtocol();
-    final var checkMessages = new ArrayList<Predicate<Message>>();
-    for (final var user : this.users) {
-
-      if (!user.id.equals(source.requesterId)) {
-
-        checkMessages.add(this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionToAnswerMessage"))
-            .and(MessagePredicates.receiverIs(user.id))
-            .and(MessagePredicates.attributesSimilarTo(
-                new JsonObject().put("question", source.goal.name).put("userId", source.requesterId)))
-            .and(MessagePredicates.attributesAre(target -> {
-
-              return this.task.id.equals(target.getString("taskId"));
-
-            })));
-      }
-    }
-    final var createTransaction = new TaskTransaction();
-    createTransaction.label = TaskTransaction.CREATE_TASK_LABEL;
-    createTransaction.actioneerId = source.requesterId;
-    final var checkTask = this.createTaskPredicate().and(TaskPredicates.similarTo(source))
-        .and(TaskPredicates.transactionSizeIs(1))
-        .and(TaskPredicates.transactionAt(0,
-            this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(createTransaction))
-                .and(TaskTransactionPredicates.messagesSizeIs(this.users.size() - 1))
-                .and(TaskTransactionPredicates.containsMessages(checkMessages))));
-
-    final var checkStatus = new ArrayList<Predicate<TaskTypeStatusBody>>();
-    checkStatus.add(this.createIncentiveServerTaskTypeStatusPredicate().and(TaskTypeStatusBodyPredicates.countIs(2))
-        .and(TaskTypeStatusBodyPredicates.userIs(source.requesterId)));
-
-    final var future = this.waitUntilTaskCreated(source, vertx, testContext, checkTask)
-        .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTypeStatus(vertx, testContext, checkStatus));
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }

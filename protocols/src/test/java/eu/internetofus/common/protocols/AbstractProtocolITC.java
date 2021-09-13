@@ -37,6 +37,8 @@ import eu.internetofus.common.components.models.TaskType;
 import eu.internetofus.common.components.models.WeNetUserProfile;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.components.service.WeNetServiceSimulator;
+import eu.internetofus.common.components.social_context_builder.UserMessage;
+import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderSimulator;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.model.Model;
 import io.vertx.core.Future;
@@ -785,4 +787,96 @@ public abstract class AbstractProtocolITC {
 
   }
 
+  /**
+   * Check that is send the specified social notifications.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   * @param checkStatus this predicate is true when the social notification has
+   *                    the expected values.
+   *
+   * @return the future notified social notification.
+   *
+   * @see #waitUntil(Vertx, VertxTestContext, Supplier, Predicate)
+   */
+  protected Future<List<UserMessage>> waitUntilSocialNotification(@NotNull final Vertx vertx,
+      @NotNull final VertxTestContext testContext, @NotNull final List<Predicate<UserMessage>> checkStatus) {
+
+    return this.waitUntil(vertx, testContext,
+        () -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotification(), status -> {
+
+          final List<Predicate<UserMessage>> copy = new ArrayList<>(checkStatus);
+          final var statusIter = status.iterator();
+          while (statusIter.hasNext()) {
+
+            var state = statusIter.next();
+            final var iter = copy.iterator();
+            while (iter.hasNext()) {
+
+              final var check = iter.next();
+              if (check.test(state)) {
+
+                iter.remove();
+                state = null;
+                break;
+              }
+            }
+
+            if (state != null) {
+
+              statusIter.remove();
+            }
+
+          }
+
+          return copy.isEmpty();
+        }).compose(status -> WeNetSocialContextBuilderSimulator.createProxy(vertx).deleteSocialNotification()
+            .map(ignored -> status));
+
+  }
+
+  /**
+   * Create the predicate over a user message with the data from the test.
+   *
+   * @return the predicate for the social task user state.
+   *
+   * @see #app
+   * @see #task
+   * @see #community
+   */
+  protected Predicate<UserMessage> createSocialNotificationPredicate() {
+
+    return msg -> {
+
+      if (this.task != null && !this.task.id.equals(msg.taskId)) {
+
+        return false;
+      }
+
+      return true;
+    };
+
+  }
+
+  /**
+   * Get the user associated by an identifier.
+   *
+   * @param userId identifier of the user to return.
+   *
+   * @return the user associated to the identifier of {@code null} if it is not
+   *         defined.
+   */
+  protected WeNetUserProfile getUserbyId(final String userId) {
+
+    for (final var user : this.users) {
+
+      if (user.id.equals(userId)) {
+
+        return user;
+
+      }
+    }
+
+    return null;
+  }
 }

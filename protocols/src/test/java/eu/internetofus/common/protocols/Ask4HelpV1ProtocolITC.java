@@ -67,7 +67,7 @@ public class Ask4HelpV1ProtocolITC extends AbstractProtocolITC {
   @Override
   protected DefaultProtocols getDefaultProtocolsToUse() {
 
-    return DefaultProtocols.ASK_4_HELP_V2;
+    return DefaultProtocols.ASK_4_HELP_V1;
   }
 
   /**

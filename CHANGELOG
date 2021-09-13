@@ -2,6 +2,12 @@
 
 All notable changes to `wenet-common` will be documented in this file
 
+## Version 0.12.1 (2021-09-13)
+
+ * Fix ask4help v2 protocol.
+ * Fix social context builder interaction URL.
+ 
+
 ## Version 0.12.0 (2021-09-09)
 
  * Upgrade vertx versions.

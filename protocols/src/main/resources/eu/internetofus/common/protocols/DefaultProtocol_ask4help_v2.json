@@ -332,7 +332,7 @@
 			"description": "When the task is created filter the posible users to ask about and ask them",
 			"whenever": "is_received_created_task() and who_to_ask(Users)",
 			"thenceforth": "add_created_transaction() and send_messages(Users,'notifyNewQuestionAndAnswer',json([]))",
-			"ontology":":- use_module(library(random)). :- dynamic who_to_ask/1. who_to_ask(Users) :- get_task_attribute_value(MaxUsers,'maxUsers'), get_app_users_except_me(Unanswered), random_permutation(Permutted,Unanswered),findall(E, (between(1, MaxUsers, I), nth1(I, Permutted, E)), Users)."
+			"ontology":":- use_module(library(random)). :- use_module(library(lists)). :- dynamic who_to_ask/1. who_to_ask(Users) :- get_task_attribute_value(MaxUsers,'maxUsers'), get_app_users_except_me(Unanswered), get_task_state_attribute(Asked,'asked',[]), subtract(Unanswered,Asked,NewUnanswered), random_permutation(Permutted,NewUnanswered),findall(E, (between(1, MaxUsers, I), nth1(I, Permutted, E)), Users), append(Asked,Users,NewAsked), put_task_state_attribute('asked',NewAsked)."
 		},
 		{
 			"description": "Notify user if it can help with a question",
