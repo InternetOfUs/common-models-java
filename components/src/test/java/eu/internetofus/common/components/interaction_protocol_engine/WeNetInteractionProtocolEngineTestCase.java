@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetComponentTestCase;
-import eu.internetofus.common.components.incentive_server.WeNetIncentiveServer;
 import eu.internetofus.common.components.models.IncentiveTest;
 import eu.internetofus.common.components.models.TaskTest;
 import eu.internetofus.common.components.models.TaskTransactionTest;
@@ -45,7 +44,7 @@ public class WeNetInteractionProtocolEngineTestCase extends WeNetComponentTestCa
   /**
    * {@inheritDoc}
    *
-   * @see WeNetIncentiveServer#createProxy(Vertx)
+   * @see WeNetInteractionProtocolEngine#createProxy(Vertx)
    */
   @Override
   protected WeNetInteractionProtocolEngine createComponentProxy(final Vertx vertx) {
