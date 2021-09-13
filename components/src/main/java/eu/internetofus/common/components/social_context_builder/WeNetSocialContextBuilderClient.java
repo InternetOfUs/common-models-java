@@ -67,7 +67,7 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   @Override
   public void retrieveSocialRelations(final String userId, final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.getJsonArray("/social/relations", userId, "/").onComplete(handler);
+    this.getJsonArray("/social/relations", userId).onComplete(handler);
 
   }
 
@@ -109,7 +109,7 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   public void initializeSocialRelations(@NotNull final String userId,
       @NotNull final Handler<AsyncResult<Void>> handler) {
 
-    final var url = this.createAbsoluteUrlWith("/social/relations/initialize/", userId);
+    final var url = this.createAbsoluteUrlWith("/social/relations/initialize", userId);
     final Promise<Void> promise = Promise.promise();
     final var actionId = this.createActionId(HttpMethod.POST, url);
     Logger.trace("{} with STARTED", actionId);
