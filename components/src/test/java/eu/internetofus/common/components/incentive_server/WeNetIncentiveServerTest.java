@@ -21,16 +21,12 @@
 package eu.internetofus.common.components.incentive_server;
 
 import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
-import static org.assertj.core.api.Assertions.assertThat;
 
-import eu.internetofus.common.components.WeNetComponentTestCase;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
@@ -43,18 +39,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * @author UDT-IA, IIIA-CSIC
  */
 @ExtendWith(VertxExtension.class)
-public class WeNetIncentiveServerTest extends WeNetComponentTestCase<WeNetIncentiveServer> {
-
-  /**
-   * {@inheritDoc}
-   *
-   * @see WeNetIncentiveServer#createProxy(Vertx)
-   */
-  @Override
-  protected WeNetIncentiveServer createComponentProxy(final Vertx vertx) {
-
-    return WeNetIncentiveServer.createProxy(vertx);
-  }
+public class WeNetIncentiveServerTest extends WeNetIncentiveServerTestCase {
 
   /**
    * The profile manager mocked server.
@@ -91,56 +76,6 @@ public class WeNetIncentiveServerTest extends WeNetComponentTestCase<WeNetIncent
     final var conf = mocker.getComponentConfiguration();
     WeNetIncentiveServer.register(vertx, client, conf);
     WeNetIncentiveServerSimulator.register(vertx, client, conf);
-  }
-
-  /**
-   * Should update the task transaction status.
-   *
-   * @param vertx       that contains the event bus to use.
-   * @param testContext context over the tests.
-   */
-  @Test
-  public void shouldUpdateTaskTransactionStatus(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var transactionStatus = new TaskTransactionStatusBodyTest().createModelExample(1);
-    this.createComponentProxy(vertx).updateTaskTransactionStatus(transactionStatus)
-        .compose(result -> WeNetIncentiveServerSimulator.createProxy(vertx).getTaskTransactionStatus())
-        .onComplete(testContext.succeeding(status -> testContext.verify(() -> {
-
-          assertThat(status).isNotEmpty().contains(transactionStatus);
-          WeNetIncentiveServerSimulator.createProxy(vertx).deleteTaskTransactionStatus()
-              .compose(empty -> WeNetIncentiveServerSimulator.createProxy(vertx).getTaskTransactionStatus())
-              .onComplete(testContext.succeeding(status2 -> testContext.verify(() -> {
-                assertThat(status2).isEmpty();
-                testContext.completeNow();
-              })));
-        })));
-
-  }
-
-  /**
-   * Should update the task type status.
-   *
-   * @param vertx       that contains the event bus to use.
-   * @param testContext context over the tests.
-   */
-  @Test
-  public void shouldUpdateTaskTypeStatus(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var typeStatus = new TaskTypeStatusBodyTest().createModelExample(1);
-    this.createComponentProxy(vertx).updateTaskTypeStatus(typeStatus)
-        .compose(result -> WeNetIncentiveServerSimulator.createProxy(vertx).getTaskTypeStatus())
-        .onComplete(testContext.succeeding(status -> testContext.verify(() -> {
-
-          assertThat(status).isNotEmpty().contains(typeStatus);
-          WeNetIncentiveServerSimulator.createProxy(vertx).deleteTaskTypeStatus()
-              .compose(empty -> WeNetIncentiveServerSimulator.createProxy(vertx).getTaskTypeStatus())
-              .onComplete(testContext.succeeding(status2 -> testContext.verify(() -> {
-                assertThat(status2).isEmpty();
-                testContext.completeNow();
-              })));
-        })));
-
   }
 
 }
