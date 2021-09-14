@@ -2,6 +2,12 @@
 
 All notable changes to `wenet-common` will be documented in this file
 
+
+## Version 0.12.2 (2021-09-14)
+
+ * Fix social context builder path that ends with '/'.
+ 
+ 
 ## Version 0.12.1 (2021-09-13)
 
  * Fix ask4help v2 protocol.

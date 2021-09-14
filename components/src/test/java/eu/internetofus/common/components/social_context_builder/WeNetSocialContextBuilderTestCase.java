@@ -51,26 +51,6 @@ public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<We
   }
 
   /**
-   * Should retrieve social relations.
-   *
-   * @param vertx       that contains the event bus to use.
-   * @param testContext context over the tests.
-   */
-  @Test
-  public void shouldRetrieveSocialRelations(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var userId = UUID.randomUUID().toString();
-    testContext.assertComplete(this.createComponentProxy(vertx).retrieveSocialRelations(userId))
-        .onSuccess(relations -> testContext.verify(() -> {
-
-          assertThat(relations).isNotNull();
-          testContext.completeNow();
-
-        }));
-
-  }
-
-  /**
    * Should update preferences for user on task.
    *
    * @param vertx       that contains the event bus to use.
@@ -100,7 +80,7 @@ public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<We
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldRetrievSocialRelations(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldRetrieveSocialExplanation(final Vertx vertx, final VertxTestContext testContext) {
 
     final var userId = UUID.randomUUID().toString();
     final var taskId = UUID.randomUUID().toString();

@@ -89,23 +89,19 @@ public class WeNetSocialContextBuilderSimulatorMocker extends AbstractComponentM
   @Override
   protected void fillInRouterHandler(final Router router) {
 
-    router.get("/social/relations/:userId")
-        .handler(this.context.createGetHandler("SOCIAL_RELATION", new JsonArray(), "userId"));
-    router.post("/social/relations/:userId").handler(this.context.createSetHandler("SOCIAL_RELATION", "userId"));
-
-    router.get("/social/explanations/:userId/:taskId")
+    router.get("/social/explanations/:userId/:taskId/")
         .handler(this.context.createGetHandler("SOCIAL_EXPLANATIONS", new JsonObject(), "userId", "taskId"));
-    router.post("/social/explanations/:userId/:taskId")
+    router.post("/social/explanations/:userId/:taskId/")
         .handler(this.context.createSetHandler("SOCIAL_EXPLANATIONS", "userId", "taskId"));
 
-    router.get("/social/preferences/:userId/:taskId")
+    router.get("/social/preferences/:userId/:taskId/")
         .handler(this.context.createGetHandler("SOCIAL_PREFERENCES", new JsonArray(), "userId", "taskId"));
-    router.post("/social/preferences/:userId/:taskId")
+    router.post("/social/preferences/:userId/:taskId/")
         .handler(this.context.createSetHandler("SOCIAL_PREFERENCES", "userId", "taskId"));
 
-    router.get("/social/preferences/answers/:userId/:taskId")
+    router.get("/social/preferences/answers/:userId/:taskId/")
         .handler(this.context.createGetHandler("SOCIAL_PREFERENCES_ANSWERS", new JsonArray(), "userId", "taskId"));
-    router.post("/social/preferences/answers/:userId/:taskId")
+    router.post("/social/preferences/answers/:userId/:taskId/")
         .handler(this.context.createSocialPreferencesAnswersPostHandler());
 
     router.get("/social/relations/initialize/:userId")

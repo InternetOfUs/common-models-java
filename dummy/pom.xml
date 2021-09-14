@@ -6,7 +6,7 @@
   <groupId>eu.internetofus</groupId>
   <artifactId>common-parent</artifactId>
   <relativePath>../pom.xml</relativePath>
-  <version>0.12.1</version>
+  <version>0.12.2</version>
  </parent>
  <organization>
   <name>UDT-IA, IIIA-CSIC</name>

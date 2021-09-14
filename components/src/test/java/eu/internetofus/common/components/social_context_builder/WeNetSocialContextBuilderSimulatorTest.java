@@ -85,43 +85,6 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
   }
 
   /**
-   * Should set and get the social relations.
-   *
-   * @param vertx       that contains the event bus to use.
-   * @param testContext context over the tests.
-   */
-  @Test
-  public void shouldSetGetSocialRelations(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var userId = UUID.randomUUID().toString();
-    final var relations = new ArrayList<UserRelation>();
-    testContext.assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx).retrieveSocialRelations(userId))
-        .onSuccess(retrieveRelations -> testContext.verify(() -> {
-
-          assertThat(retrieveRelations).isEqualTo(relations);
-          relations.add(new UserRelationTest().createModelExample(1));
-          relations.add(new UserRelationTest().createModelExample(2));
-          relations.add(new UserRelationTest().createModelExample(3));
-
-          testContext
-              .assertComplete(
-                  WeNetSocialContextBuilderSimulator.createProxy(vertx).setSocialRelations(userId, relations))
-              .onSuccess(storedRelations -> testContext.verify(() -> {
-
-                assertThat(storedRelations).isEqualTo(relations);
-                testContext
-                    .assertComplete(
-                        WeNetSocialContextBuilderSimulator.createProxy(vertx).retrieveSocialRelations(userId))
-                    .onSuccess(retrieveRelations2 -> testContext.verify(() -> {
-
-                      assertThat(retrieveRelations2).isEqualTo(relations);
-                      testContext.completeNow();
-                    }));
-              }));
-        }));
-  }
-
-  /**
    * Should set and get the social preferences.
    *
    * @param vertx       that contains the event bus to use.

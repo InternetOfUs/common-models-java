@@ -86,30 +86,6 @@ public interface WeNetSocialContextBuilder extends WeNetComponent {
   }
 
   /**
-   * Return the relations of an user.
-   *
-   * @param userId  identifier of the user.
-   * @param handler for the social relations.
-   */
-  void retrieveSocialRelations(@NotNull String userId, @NotNull Handler<AsyncResult<JsonArray>> handler);
-
-  /**
-   * Return the relations of an user.
-   *
-   * @param userId identifier of the user.
-   *
-   * @return the user relations.
-   */
-  @GenIgnore
-  default Future<List<UserRelation>> retrieveSocialRelations(@NotNull final String userId) {
-
-    final Promise<JsonArray> promise = Promise.promise();
-    this.retrieveSocialRelations(userId, promise);
-    return Model.fromFutureJsonArray(promise.future(), UserRelation.class);
-
-  }
-
-  /**
    * Post the preferences of an user. This calculate the social user ranking. In
    * other words, from a set of volunteers it order form the best to the worst.
    *
