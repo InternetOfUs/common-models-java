@@ -651,34 +651,41 @@ public class Repository {
     return this.countAggregation(collectionName, splitted, query).compose(total -> {
 
       final Promise<JsonObject> promise = Promise.promise();
-      final var retrievePipeline = new AggregationBuilder().unwindPath(splitted).match(query).sort(order, offset, limit)
-          .build();
-      final var elements = new JsonArray();
-      final var resultKey = splitted[splitted.length - 1];
-      final var page = new JsonObject().put("offset", offset).put("total", total).put(resultKey, elements);
-      this.pool.aggregate(collectionName, retrievePipeline).handler(value -> {
+      if (total == 0 || total < offset) {
 
-        var element = value.getJsonObject(splitted[0]);
-        for (var i = 1; i < splitted.length; i++) {
-
-          element = element.getJsonObject(splitted[i]);
-        }
-        elements.add(element);
-
-      }).exceptionHandler(cause -> {
-
-        promise.fail(cause);
-
-      }).endHandler(finishedRetrieve -> {
-
-        if (elements.isEmpty()) {
-
-          page.remove(resultKey);
-        }
+        final var page = new JsonObject().put("offset", offset).put("total", total);
         promise.complete(page);
 
-      });
+      } else {
 
+        final var retrievePipeline = new AggregationBuilder().unwindPath(splitted).match(query)
+            .sort(order, offset, limit).build();
+        final var elements = new JsonArray();
+        final var resultKey = splitted[splitted.length - 1];
+        final var page = new JsonObject().put("offset", offset).put("total", total).put(resultKey, elements);
+        this.pool.aggregate(collectionName, retrievePipeline).handler(value -> {
+
+          var element = value.getJsonObject(splitted[0]);
+          for (var i = 1; i < splitted.length; i++) {
+
+            element = element.getJsonObject(splitted[i]);
+          }
+          elements.add(element);
+
+        }).exceptionHandler(cause -> {
+
+          promise.fail(cause);
+
+        }).endHandler(finishedRetrieve -> {
+
+          if (elements.isEmpty()) {
+
+            page.remove(resultKey);
+          }
+          promise.complete(page);
+
+        });
+      }
       return promise.future();
 
     });
