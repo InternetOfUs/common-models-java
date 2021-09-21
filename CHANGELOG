@@ -3,6 +3,11 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
+## Version 0.13.0 (2021-09-)
+
+ * Upgrade vertx.
+
+
 ## Version 0.12.2 (2021-09-14)
 
  * Fix social context builder path that ends with '/'.
