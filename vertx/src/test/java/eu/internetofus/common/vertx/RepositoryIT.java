@@ -70,7 +70,7 @@ public class RepositoryIT {
   /**
    * Name of the collection with 10 complex models used to test the aggregate.
    */
-  private static final String TEN_AGGREGATIOMN_COLLECTION = "TEN_AGGREGATION_COLLECTION";
+  private static final String TEN_AGGREGATION_COLLECTION = "TEN_AGGREGATION_COLLECTION";
 
   /**
    * The pool to use on the test.
@@ -106,7 +106,7 @@ public class RepositoryIT {
 
               }
               return future;
-            }).compose(test -> pool.createCollection(TEN_AGGREGATIOMN_COLLECTION)).compose(tem -> {
+            }).compose(test -> pool.createCollection(TEN_AGGREGATION_COLLECTION)).compose(tem -> {
               Future<String> future = Future.succeededFuture();
               for (var i = 0; i < 10; i++) {
 
@@ -132,7 +132,7 @@ public class RepositoryIT {
 
                 }
                 final var model = new JsonObject().put("index", i).put("children", children);
-                future = future.compose(stored -> pool.insert(TEN_AGGREGATIOMN_COLLECTION, model));
+                future = future.compose(stored -> pool.insert(TEN_AGGREGATION_COLLECTION, model));
 
               }
               return future;
@@ -1162,9 +1162,9 @@ public class RepositoryIT {
       final VertxTestContext testContext) {
 
     final var repository = new Repository(vertx, pool, "schemaVersion");
-    final var query = new JsonObject();
-    final var order = new JsonObject().put("$undefinedAction", new JsonObject().put("field", -1));
-    repository.aggregatePageObject(TEN_AGGREGATIOMN_COLLECTION, query, order, 0, 10, "models")
+    final var query = new JsonObject().put("index", new JsonObject().put("$mod", new JsonArray().add(2).add(0)));
+    final var order = new JsonObject().put("$undefinedAction", new JsonObject().put("field", new JsonObject()));
+    repository.aggregatePageObject(TEN_AGGREGATION_COLLECTION, query, order, 0, 10, "children.grandChildren.elders")
         .onComplete(testContext.failing(error -> testContext.completeNow()));
 
   }
@@ -1208,7 +1208,7 @@ public class RepositoryIT {
     final var query = new JsonObject();
     final var order = new JsonObject();
     testContext
-        .assertComplete(repository.aggregatePageObject(TEN_AGGREGATIOMN_COLLECTION, query, order, 200, 100, "children"))
+        .assertComplete(repository.aggregatePageObject(TEN_AGGREGATION_COLLECTION, query, order, 200, 100, "children"))
         .onSuccess(page -> testContext.verify(() -> {
 
           assertThat(page).isNotNull();
@@ -1234,7 +1234,7 @@ public class RepositoryIT {
     final var query = new JsonObject().put("index", new JsonObject().put("$mod", new JsonArray().add(2).add(0)));
     final var order = new JsonObject().put("index", -1).put("children.j", 1).put("children.grandChildren.k", -1)
         .put("children.grandChildren.elders.l", 1);
-    testContext.assertComplete(repository.aggregatePageObject(TEN_AGGREGATIOMN_COLLECTION, query, order, 10, 5,
+    testContext.assertComplete(repository.aggregatePageObject(TEN_AGGREGATION_COLLECTION, query, order, 10, 5,
         "children.grandChildren.elders")).onSuccess(page -> testContext.verify(() -> {
 
           assertThat(page).isNotNull();
