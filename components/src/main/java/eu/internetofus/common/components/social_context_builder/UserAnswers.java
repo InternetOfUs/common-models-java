@@ -17,33 +17,26 @@
  *
  * -----------------------------------------------------------------------------
  */
-
 package eu.internetofus.common.components.social_context_builder;
 
-import eu.internetofus.common.model.ModelTestCase;
-import java.util.ArrayList;
+import eu.internetofus.common.model.Model;
+import eu.internetofus.common.model.ReflectionModel;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 
 /**
- * Test the {@link AnswersData}.
+ * The model that contains the answer of an user.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class AnswersDataTest extends ModelTestCase<AnswersData> {
+@Schema(name = "user_answers", description = "Some user answers.")
+public class UserAnswers extends ReflectionModel implements Model {
 
   /**
-   * {@inheritDoc}
+   * The dta of the user answers.
    */
-  @Override
-  public AnswersData createModelExample(final int index) {
-
-    final var model = new AnswersData();
-    model.data = new ArrayList<>();
-    final var element = new UserAnswerTest();
-    model.data.add(element.createModelExample(index - 1));
-    model.data.add(element.createModelExample(index));
-    model.data.add(element.createModelExample(index + 1));
-    return model;
-
-  }
+  @ArraySchema(schema = @Schema(implementation = UserAnswer.class, description = "The user answers."))
+  public List<UserAnswer> data;
 
 }

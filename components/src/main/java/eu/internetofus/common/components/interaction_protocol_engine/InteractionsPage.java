@@ -17,26 +17,40 @@
  *
  * -----------------------------------------------------------------------------
  */
-package eu.internetofus.common.components.social_context_builder;
+
+package eu.internetofus.common.components.interaction_protocol_engine;
+
+import java.util.List;
 
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.List;
 
 /**
- * The data to call the answers ranking.
+ * Contains the interactions between two users.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "user_answer", description = "A User to User answer.")
-public class AnswersData extends ReflectionModel implements Model {
+@Schema(description = "Contains a set of interactions between users")
+public class InteractionsPage extends ReflectionModel implements Model {
 
   /**
-   * The first user identifier.
+   * The index of the first interaction returned.
    */
-  @ArraySchema(schema = @Schema(implementation = UserAnswer.class, description = "The user answers."))
-  public List<UserAnswer> data;
+  @Schema(description = "The index of the first interaction returned.", example = "0")
+  public int offset;
+
+  /**
+   * The number total of interactions that satisfies the search.
+   */
+  @Schema(description = "The number total of interactions that satisfies the search.", example = "100")
+  public long total;
+
+  /**
+   * The found interactions.
+   */
+  @ArraySchema(schema = @Schema(implementation = Interaction.class), arraySchema = @Schema(description = "The set of interactions found"))
+  public List<Interaction> interactions;
 
 }

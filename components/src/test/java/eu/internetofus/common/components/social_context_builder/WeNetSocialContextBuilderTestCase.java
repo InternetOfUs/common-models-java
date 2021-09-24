@@ -105,7 +105,7 @@ public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<We
 
     final var userId = UUID.randomUUID().toString();
     final var taskId = UUID.randomUUID().toString();
-    final var userAnswers = new AnswersDataTest().createModelExample(1);
+    final var userAnswers = new UserAnswersTest().createModelExample(0);
     testContext
         .assertComplete(
             this.createComponentProxy(vertx).postSocialPreferencesAnswersForUserOnTask(userId, taskId, userAnswers))
@@ -145,6 +145,24 @@ public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<We
 
     final var message = new UserMessageTest().createModelExample(1);
     this.createComponentProxy(vertx).socialNotification(message)
+        .onComplete(testContext.succeeding(any -> testContext.completeNow()));
+
+  }
+
+  /**
+   * Should social notification.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldPutSocialPreferencesSelectedAnswerForUserOnTask(final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    final var userId = UUID.randomUUID().toString();
+    final var taskId = UUID.randomUUID().toString();
+    final var userAnswers = new UserAnswersTest().createModelExample(0);
+    this.createComponentProxy(vertx).putSocialPreferencesSelectedAnswerForUserOnTask(userId, taskId, 0, userAnswers)
         .onComplete(testContext.succeeding(any -> testContext.completeNow()));
 
   }

@@ -106,10 +106,10 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
    * {@inheritDoc}
    */
   @Override
-  public void getPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
-      @NotNull final Handler<AsyncResult<JsonArray>> handler) {
+  public void getSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.getJsonArray("/social/preferences/answers", userId, taskId, "/").onComplete(handler);
+    this.getJsonObject("/social/preferences/answers", userId, taskId).onComplete(handler);
 
   }
 
@@ -118,24 +118,12 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
    */
   @Override
   public Future<List<UserAnswer>> postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId,
-      @NotNull final String taskId, @NotNull final AnswersData userAnswers) {
+      @NotNull final String taskId, @NotNull final UserAnswers userAnswers) {
 
     final Promise<JsonArray> promise = Promise.promise();
     final var data = userAnswers.toJsonObject();
     this.postSocialPreferencesAnswersForUserOnTask(userId, taskId, data, promise);
     return Model.fromFutureJsonArray(promise.future(), UserAnswer.class);
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
-      @NotNull final JsonObject userAnswers, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
-
-    this.post(userAnswers, this.createArrayExtractor(), "/social/preferences/answers", userId, taskId, "/")
-        .onComplete(handler);
 
   }
 
@@ -191,6 +179,31 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
   public void deleteSocialNotification(@NotNull final Handler<AsyncResult<Void>> handler) {
 
     this.delete("/social/notification/").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> putSocialPreferencesSelectedAnswerForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, final int selection, @NotNull final UserAnswers userAnswers) {
+
+    final Promise<Void> promise = Promise.promise();
+    final var data = userAnswers.toJsonObject();
+    this.putSocialPreferencesSelectedAnswerForUserOnTask(userId, taskId, selection, data, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void getSocialPreferencesSelectedAnswerForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, final int selection, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.getJsonObject("/social/preferences/answers", userId, taskId, selection, "/update").onComplete(handler);
 
   }
 

@@ -6,6 +6,7 @@ All notable changes to `wenet-common` will be documented in this file
 ## Version 0.13.0 (2021-09-)
 
  * Upgrade vertx.
+ * Update the social context builder to notify about the selected value.
 
 
 ## Version 0.12.2 (2021-09-14)

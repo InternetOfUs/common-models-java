@@ -25,6 +25,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -138,6 +140,158 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
 
     this.delete("/events", id).onComplete(handler);
 
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void addInteraction(@NotNull final JsonObject interaction, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(interaction, "/interactions").onComplete(handler);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void getInteractionsPage(final String appId, final String communityId, final String taskTypeId,
+      final String taskId, final String senderId, final String receiverId, final Boolean hasTransaction,
+      final String transactionLabel, final Long transactionFrom, final Long transactionTo, final Boolean hasMessage,
+      final String messageLabel, final Long messageFrom, final Long messageTo, final String order, final int offset,
+      final int limit, final Handler<AsyncResult<JsonObject>> handler) {
+
+    final var params = this.createQueryParamsFor(appId, communityId, taskTypeId, taskId, senderId, receiverId,
+        hasTransaction, transactionLabel, transactionFrom, transactionTo, hasMessage, messageLabel, messageFrom,
+        messageTo);
+    if (order != null) {
+
+      params.put("order", order);
+    }
+    params.put("offset", String.valueOf(offset));
+    params.put("limit", String.valueOf(limit));
+
+    this.getJsonObject(params, "/interactions").onComplete(handler);
+
+  }
+
+  /**
+   * Create the query parameters.
+   *
+   * @param appId            identifier of the application where the interaction
+   *                         is done.
+   * @param communityId      identifier of the community where the interaction is
+   *                         done.
+   * @param taskTypeId       identifier of the task type where the interaction is
+   *                         done.
+   * @param taskId           identifier of the task where the interaction is done.
+   * @param senderId         identifier of the user that has started the
+   *                         interaction.
+   * @param receiverId       identifier of the user that has end the interaction.
+   * @param hasTransaction   this is {@code true} if the interaction requires a
+   *                         transaction, {@code false} if no transaction has to
+   *                         be defined or {@code null} if does not matter.
+   * @param transactionLabel the label of the transaction that has started the
+   *                         interaction.
+   * @param transactionFrom  the minimum time stamp, inclusive, where the
+   *                         interaction has to be started, or {@code null} to
+   *                         start at midnight, January 1, 1970 UTC.
+   * @param transactionTo    the maximum time stamp, inclusive, where the
+   *                         interaction has to be started or {@code null} to be
+   *                         the current time.
+   * @param hasMessage       this is {@code true} if the interaction requires a
+   *                         message, {@code false} if no message has to be
+   *                         defined or {@code null} if does not matter.
+   * @param messageLabel     the label of the message that has end the
+   *                         interaction.
+   * @param messageFrom      the minimum time stamp, inclusive, where the
+   *                         interaction has end, or {@code null} to start at
+   *                         midnight, January 1, 1970 UTC.
+   * @param messageTo        the maximum time stamp, inclusive, where the
+   *                         interaction has end or {@code null} to be the current
+   *                         time.
+   *
+   * @return the query parameters.
+   */
+  private Map<String, String> createQueryParamsFor(final String appId, final String communityId,
+      final String taskTypeId, final String taskId, final String senderId, final String receiverId,
+      final Boolean hasTransaction, final String transactionLabel, final Long transactionFrom, final Long transactionTo,
+      final Boolean hasMessage, final String messageLabel, final Long messageFrom, final Long messageTo) {
+
+    final var params = new LinkedHashMap<String, String>();
+    if (appId != null) {
+
+      params.put("appId", appId);
+    }
+    if (communityId != null) {
+
+      params.put("communityId", communityId);
+    }
+    if (taskTypeId != null) {
+
+      params.put("taskTypeId", taskTypeId);
+    }
+    if (taskId != null) {
+
+      params.put("taskId", taskId);
+    }
+    if (senderId != null) {
+
+      params.put("senderId", senderId);
+    }
+    if (receiverId != null) {
+
+      params.put("receiverId", receiverId);
+    }
+    if (hasTransaction != null) {
+
+      params.put("hasTransaction", String.valueOf(hasTransaction));
+    }
+    if (transactionLabel != null) {
+
+      params.put("transactionLabel", transactionLabel);
+    }
+    if (transactionFrom != null) {
+
+      params.put("transactionFrom", String.valueOf(transactionFrom));
+    }
+    if (transactionTo != null) {
+
+      params.put("transactionTo", String.valueOf(transactionTo));
+    }
+    if (hasMessage != null) {
+
+      params.put("hasMessage", String.valueOf(hasMessage));
+    }
+    if (messageLabel != null) {
+
+      params.put("messageLabel", messageLabel);
+    }
+    if (messageFrom != null) {
+
+      params.put("messageFrom", String.valueOf(messageFrom));
+    }
+    if (messageTo != null) {
+
+      params.put("messageTo", String.valueOf(messageTo));
+    }
+    return params;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteInteractions(final String appId, final String communityId, final String taskTypeId,
+      final String taskId, final String senderId, final String receiverId, final Boolean hasTransaction,
+      final String transactionLabel, final Long transactionFrom, final Long transactionTo, final Boolean hasMessage,
+      final String messageLabel, final Long messageFrom, final Long messageTo,
+      final Handler<AsyncResult<Void>> handler) {
+
+    final var params = this.createQueryParamsFor(appId, communityId, taskTypeId, taskId, senderId, receiverId,
+        hasTransaction, transactionLabel, transactionFrom, transactionTo, hasMessage, messageLabel, messageFrom,
+        messageTo);
+    this.delete(params, "/interactions").onComplete(handler);
   }
 
 }

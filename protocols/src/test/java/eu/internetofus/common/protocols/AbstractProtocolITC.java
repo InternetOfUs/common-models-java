@@ -26,6 +26,8 @@ import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBody;
 import eu.internetofus.common.components.incentive_server.TaskTypeStatusBody;
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulator;
+import eu.internetofus.common.components.interaction_protocol_engine.Interaction;
+import eu.internetofus.common.components.interaction_protocol_engine.InteractionsPage;
 import eu.internetofus.common.components.interaction_protocol_engine.State;
 import eu.internetofus.common.components.interaction_protocol_engine.WeNetInteractionProtocolEngine;
 import eu.internetofus.common.components.models.CommunityProfile;
@@ -879,4 +881,95 @@ public abstract class AbstractProtocolITC {
 
     return null;
   }
+
+  /**
+   * Create the predicate over a user interaction.
+   *
+   * @return the predicate for the interaction.
+   *
+   * @see #app
+   * @see #task
+   * @see #taskType
+   * @see #community
+   */
+  protected Predicate<Interaction> createInteractionPredicate() {
+
+    return interaction -> {
+
+      if (this.app != null && !this.app.appId.equals(interaction.appId)) {
+
+        return false;
+      }
+      if (this.community != null && !this.community.id.equals(interaction.communityId)) {
+
+        return false;
+      }
+      if (this.taskType != null && !this.taskType.id.equals(interaction.taskTypeId)) {
+
+        return false;
+      }
+      if (this.task != null && !this.task.id.equals(interaction.taskId)) {
+
+        return false;
+      }
+
+      return true;
+    };
+
+  }
+
+  /**
+   * Wait until has received the specified interactions.
+   *
+   * @param vertx             event bus to use.
+   * @param testContext       context to do the test.
+   * @param checkInteractions the functions that has all to be {@code true} to
+   *                          stop waiting.
+   *
+   * @return the interactions that satisfy the predicates.
+   */
+  protected Future<InteractionsPage> waitUntilInteractions(@NotNull final Vertx vertx,
+      @NotNull final VertxTestContext testContext, @NotNull final List<Predicate<Interaction>> checkInteractions) {
+
+    return this
+        .waitUntil(vertx, testContext, () -> WeNetInteractionProtocolEngine.createProxy(vertx).getInteractionsPage(null,
+            null, null, null, null, null, null, null, null, null, null, null, null, null, null, 0, 100), page -> {
+
+              if (page.interactions == null || page.interactions.isEmpty()) {
+
+                return false;
+
+              } else {
+
+                final List<Predicate<Interaction>> copy = new ArrayList<>(checkInteractions);
+                final var interactionsIter = page.interactions.iterator();
+                while (interactionsIter.hasNext()) {
+
+                  final var interaction = interactionsIter.next();
+                  if (interaction != null) {
+
+                    final var iter = copy.iterator();
+                    while (iter.hasNext()) {
+                      final var checkInteraction = iter.next();
+                      if (checkInteraction.test(interaction)) {
+
+                        iter.remove();
+                        break;
+                      }
+                    }
+                  }
+                  interactionsIter.remove();
+                }
+
+                return copy.isEmpty();
+              }
+
+            })
+        .compose(page -> WeNetInteractionProtocolEngine.createProxy(vertx)
+            .deleteInteractions(this.app.appId, this.community.id, this.taskType.id, this.task.id, null, null, null,
+                null, null, null, null, null, null, null)
+            .map(empty -> page));
+
+  }
+
 }

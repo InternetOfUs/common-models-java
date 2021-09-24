@@ -18,17 +18,33 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.components.interaction_protocol_engine;
+package eu.internetofus.common.components.social_context_builder;
 
-import eu.internetofus.common.components.WeNetIntegrationExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
+import eu.internetofus.common.model.ModelTestCase;
+import java.util.ArrayList;
 
 /**
- * Test the {@link WeNetInteractionProtocolEngine}.
+ * Test the {@link UserAnswers}.
+ *
+ * @see UserAnswers
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(WeNetIntegrationExtension.class)
-public class WeNetInteractionProtocolEngineTest extends WeNetInteractionProtocolEngineTestCase {
+public class UserAnswersTest extends ModelTestCase<UserAnswers> {
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public UserAnswers createModelExample(final int index) {
+
+    final var model = new UserAnswers();
+    model.data = new ArrayList<>();
+    model.data.add(new UserAnswerTest().createModelExample(index));
+    model.data.add(new UserAnswerTest().createModelExample(index + 1));
+    model.data.add(new UserAnswerTest().createModelExample(index + 2));
+    return model;
+
+  }
 
 }

@@ -149,42 +149,6 @@ public interface WeNetSocialContextBuilder extends WeNetComponent {
       @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * Post the preferences answers of an user. This calculate the ranking of that
-   * answers that an user has received. In other words, from a set of answers an
-   * user has received it order form the best to the worst.
-   *
-   * @param userId      identifier of the user.
-   * @param taskId      identifier of the task
-   * @param userAnswers the array of {@link UserAnswer}'s that the user has
-   *                    received.
-   * @param handler     to notify the ranking of the users.
-   *
-   */
-  void postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
-      @NotNull JsonObject userAnswers, @NotNull Handler<AsyncResult<JsonArray>> handler);
-
-  /**
-   * Post the preferences of an user. This calculate the social user ranking. In
-   * other words, from a set of volunteers it order form the best to the worst.
-   *
-   * @param userId      identifier of the user.
-   * @param taskId      identifier of the task.
-   * @param userAnswers the answers of the users.
-   *
-   * @return the future with the ranking of the users.
-   */
-  @GenIgnore
-  default Future<List<UserAnswer>> postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId,
-      @NotNull final String taskId, @NotNull final AnswersData userAnswers) {
-
-    final Promise<JsonArray> promise = Promise.promise();
-    final var data = userAnswers.toJsonObject();
-    this.postSocialPreferencesAnswersForUserOnTask(userId, taskId, data, promise);
-    return Model.fromFutureJsonArray(promise.future(), UserAnswer.class);
-
-  }
-
-  /**
    * Initialize the social relations of an user.
    *
    * @param userId  the identifier of the created user.
@@ -232,4 +196,76 @@ public interface WeNetSocialContextBuilder extends WeNetComponent {
 
   }
 
+  /**
+   * Post the preferences answers of an user. This calculate the ranking of that
+   * answers that an user has received. In other words, from a set of answers an
+   * user has received it order form the best to the worst.
+   *
+   * @param userId      identifier of the user.
+   * @param taskId      identifier of the task
+   * @param userAnswers the array of {@link UserAnswer}'s that the user has
+   *                    received.
+   * @param handler     to notify the ranking of the users.
+   *
+   */
+  void postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull JsonObject userAnswers, @NotNull Handler<AsyncResult<JsonArray>> handler);
+
+  /**
+   * Post the preferences of an user. This calculate the social user ranking. In
+   * other words, from a set of volunteers it order form the best to the worst.
+   *
+   * @param userId      identifier of the user.
+   * @param taskId      identifier of the task.
+   * @param userAnswers the answers of the users.
+   *
+   * @return the future with the ranking of the users.
+   */
+  @GenIgnore
+  default Future<List<UserAnswer>> postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, @NotNull final UserAnswers userAnswers) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    final var data = userAnswers.toJsonObject();
+    this.postSocialPreferencesAnswersForUserOnTask(userId, taskId, data, promise);
+    return Model.fromFutureJsonArray(promise.future(), UserAnswer.class);
+
+  }
+
+  /**
+   * Put the preferred answers for an user. This notify witch answer of the
+   * ranking is selected by an user.
+   *
+   * @param userId      identifier of the user.
+   * @param taskId      identifier of the task
+   * @param selection   the selected answer of the question.
+   * @param userAnswers the array of {@link UserAnswer}'s that the user has
+   *                    received.
+   * @param handler     to notify the updated result.
+   *
+   */
+  void putSocialPreferencesSelectedAnswerForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      final int selection, @NotNull JsonObject userAnswers, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Put the preferred answers for an user. This notify witch answer of the
+   * ranking is selected by an user.
+   *
+   * @param userId      identifier of the user.
+   * @param taskId      identifier of the task.
+   * @param selection   the selected answer of the question.
+   * @param userAnswers the answers of the users.
+   *
+   * @return the future with the updated data.
+   */
+  @GenIgnore
+  default Future<Void> putSocialPreferencesSelectedAnswerForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, final int selection, @NotNull final UserAnswers userAnswers) {
+
+    final Promise<Void> promise = Promise.promise();
+    final var data = userAnswers.toJsonObject();
+    this.putSocialPreferencesSelectedAnswerForUserOnTask(userId, taskId, selection, data, promise);
+    return promise.future();
+
+  }
 }

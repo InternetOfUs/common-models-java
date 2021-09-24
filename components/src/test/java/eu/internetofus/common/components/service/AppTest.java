@@ -20,22 +20,17 @@
 
 package eu.internetofus.common.components.service;
 
-import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
+import eu.internetofus.common.components.WeNetIntegrationExtension;
 import eu.internetofus.common.model.ModelTestCase;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -46,56 +41,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
+@ExtendWith(WeNetIntegrationExtension.class)
 public class AppTest extends ModelTestCase<App> {
-
-  /**
-   * The profile manager mocked server.
-   */
-  protected static WeNetProfileManagerMocker profileManagerMocker;
-
-  /**
-   * The service mocked server.
-   */
-  protected static WeNetServiceSimulatorMocker serviceMocker;
-
-  /**
-   * Start the mocker server.
-   */
-  @BeforeAll
-  public static void startMockers() {
-
-    profileManagerMocker = WeNetProfileManagerMocker.start();
-    serviceMocker = WeNetServiceSimulatorMocker.start();
-  }
-
-  /**
-   * Stop the mocker server.
-   */
-  @AfterAll
-  public static void stopMockers() {
-
-    profileManagerMocker.stopServer();
-    serviceMocker.stopServer();
-  }
-
-  /**
-   * Register the necessary services before to test.
-   *
-   * @param vertx event bus to register the necessary services.
-   */
-  @BeforeEach
-  public void registerServices(final Vertx vertx) {
-
-    final var client = createClientWithDefaultSession(vertx);
-    final var profileConf = profileManagerMocker.getComponentConfiguration();
-    WeNetProfileManager.register(vertx, client, profileConf);
-
-    final var conf = serviceMocker.getComponentConfiguration();
-    WeNetService.register(vertx, client, conf);
-    WeNetServiceSimulator.register(vertx, client, conf);
-
-  }
 
   /**
    * {@inheritDoc}
@@ -145,6 +92,32 @@ public class AppTest extends ModelTestCase<App> {
   }
 
   /**
+   * Add some users into an application.
+   *
+   * @param appId       identifier of the application to add the users.
+   * @param max         the number of users to add to the application.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the future application.
+   */
+  public static Future<JsonArray> addUsersToApp(final String appId, final int max, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    Future<JsonArray> future = Future.succeededFuture(new JsonArray());
+    for (var i = 0; i < max; i++) {
+
+      future = future.compose(users -> StoreServices.storeProfileExample(1, vertx, testContext).map(profile -> {
+        users.add(profile.id);
+        return users;
+      }));
+    }
+
+    return testContext
+        .assertComplete(future.compose(users -> WeNetServiceSimulator.createProxy(vertx).addUsers(appId, users)));
+  }
+
+  /**
    * Check that should create a community for an application.
    *
    * @param vertx       event bus to use.
@@ -155,31 +128,32 @@ public class AppTest extends ModelTestCase<App> {
   @Test
   public void shouldCreateCommunityWithMembers(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var users = new JsonArray().add("1").add("2").add("3").add("4");
-    testContext.assertComplete(StoreServices.storeApp(new App(), vertx, testContext))
-        .onSuccess(app -> testContext
-            .assertComplete(testContext.assertComplete(WeNetServiceSimulator.createProxy(vertx)
-                .addUsers(app.appId, users).compose(empty -> App.getOrCreateDefaultCommunityFor(app.appId, vertx))))
-            .onSuccess(createdCommunity -> testContext.verify(() -> {
+    StoreServices.storeApp(new App(), vertx, testContext).onSuccess(app -> {
 
-              assertThat(createdCommunity.members).isNotEmpty();
-              for (final var member : createdCommunity.members) {
+      addUsersToApp(app.appId, 5, vertx, testContext)
+          .onSuccess(users -> testContext.assertComplete(App.getOrCreateDefaultCommunityFor(app.appId, vertx))
+              .onSuccess(createdCommunity -> testContext.verify(() -> {
 
-                assertThat(users.remove(member.userId)).isTrue();
-              }
-              assertThat(users).isEmpty();
-              assertThat(createdCommunity.name).contains(app.appId);
-              assertThat(createdCommunity.appId).isEqualTo(app.appId);
+                assertThat(createdCommunity.members).isNotEmpty();
+                for (final var member : createdCommunity.members) {
 
-              testContext.assertComplete(App.getOrCreateDefaultCommunityFor(app.appId, vertx))
-                  .onSuccess(getCommunity -> testContext.verify(() -> {
+                  assertThat(users.remove(member.userId)).isTrue();
+                }
+                assertThat(users).isEmpty();
+                assertThat(createdCommunity.name).contains(app.appId);
+                assertThat(createdCommunity.appId).isEqualTo(app.appId);
 
-                    assertThat(createdCommunity).isEqualTo(getCommunity);
-                    testContext.completeNow();
+                testContext.assertComplete(App.getOrCreateDefaultCommunityFor(app.appId, vertx))
+                    .onSuccess(getCommunity -> testContext.verify(() -> {
 
-                  }));
+                      assertThat(createdCommunity).isEqualTo(getCommunity);
+                      testContext.completeNow();
 
-            })));
+                    }));
+
+              })));
+
+    });
 
   }
 
@@ -194,11 +168,10 @@ public class AppTest extends ModelTestCase<App> {
   @Test
   public void shouldGetDefaultCommunityForApp(final Vertx vertx, final VertxTestContext testContext) {
 
-    final var users = new JsonArray().add("10").add("20").add("30").add("40");
-    testContext.assertComplete(StoreServices.storeCommunityExample(1, vertx, testContext))
-        .onSuccess(defaultCommunity -> testContext
-            .assertComplete(WeNetServiceSimulator.createProxy(vertx).addUsers(defaultCommunity.appId, users)
-                .compose(empty -> App.getOrCreateDefaultCommunityFor(defaultCommunity.appId, vertx)))
+    StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(defaultCommunity -> {
+
+      addUsersToApp(defaultCommunity.appId, 5, vertx, testContext).onSuccess(users -> {
+        testContext.assertComplete(App.getOrCreateDefaultCommunityFor(defaultCommunity.appId, vertx))
             .onSuccess(getCommunity -> testContext.verify(() -> {
 
               assertThat(getCommunity).isNotEqualTo(defaultCommunity);
@@ -224,7 +197,9 @@ public class AppTest extends ModelTestCase<App> {
               assertThat(getCommunity).isEqualTo(defaultCommunity);
               testContext.completeNow();
 
-            })));
+            }));
+      });
+    });
 
   }
 

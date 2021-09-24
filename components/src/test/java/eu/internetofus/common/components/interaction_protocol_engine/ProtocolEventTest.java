@@ -24,11 +24,11 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
+import eu.internetofus.common.components.WeNetIntegrationExtension;
 import eu.internetofus.common.components.interaction_protocol_engine.ProtocolAddress.Component;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +40,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
+@ExtendWith(WeNetIntegrationExtension.class)
 public class ProtocolEventTest extends AbstractProtocolActionTestCase<ProtocolEvent> {
 
   /**

@@ -29,6 +29,7 @@ import eu.internetofus.common.components.models.TaskTest;
 import eu.internetofus.common.components.models.TaskTransactionTest;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -53,48 +54,32 @@ public class WeNetInteractionProtocolEngineTestCase extends WeNetComponentTestCa
   }
 
   /**
-   * Should send message.
+   * Should fail send invalid message.
    *
    * @param vertx       that contains the event bus to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldSendMessage(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldFailSendMessage(final Vertx vertx, final VertxTestContext testContext) {
 
-    new ProtocolMessageTest().createModelExample(1, vertx, testContext).onSuccess(message -> {
-
-      testContext.assertComplete(this.createComponentProxy(vertx).sendMessage(message))
-          .onSuccess(sent -> testContext.verify(() -> {
-
-            assertThat(message).isEqualTo(sent);
-            testContext.completeNow();
-
-          }));
-
-    });
+    final var message = new ProtocolMessageTest().createModelExample(1);
+    this.createComponentProxy(vertx).sendMessage(message)
+        .onComplete(testContext.failing(any -> testContext.completeNow()));
 
   }
 
   /**
-   * Should send incentive.
+   * Should fail send invalid incentive.
    *
    * @param vertx       that contains the event bus to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldSendIncentive(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldFailSendIncentive(final Vertx vertx, final VertxTestContext testContext) {
 
-    new IncentiveTest().createModelExample(1, vertx, testContext).onSuccess(incentive -> {
-
-      testContext.assertComplete(this.createComponentProxy(vertx).sendIncentive(incentive))
-          .onSuccess(sent -> testContext.verify(() -> {
-
-            assertThat(incentive).isEqualTo(sent);
-            testContext.completeNow();
-
-          }));
-
-    });
+    final var incentive = new IncentiveTest().createModelExample(1);
+    this.createComponentProxy(vertx).sendIncentive(incentive)
+        .onComplete(testContext.failing(any -> testContext.completeNow()));
 
   }
 
@@ -183,7 +168,7 @@ public class WeNetInteractionProtocolEngineTestCase extends WeNetComponentTestCa
   public void shouldMergeCommunityUserState(final Vertx vertx, final VertxTestContext testContext) {
 
     StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
-      final var state = new StateTest().createModelExample(1);
+      final var state = new StateTest().createModelExample(2);
       state.communityId = community.id;
       state.taskId = null;
       state.userId = community.members.get(0).userId;
@@ -241,6 +226,86 @@ public class WeNetInteractionProtocolEngineTestCase extends WeNetComponentTestCa
 
     });
 
+  }
+
+  /**
+   * Should be empty undefined interaction.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldInteractionsPegeBeEmptyForUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createComponentProxy(vertx).getInteractionsPage(UUID.randomUUID().toString(), null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, 0, 100)
+        .onComplete(testContext.succeeding(page -> testContext.verify(() -> {
+
+          assertThat(page).isNotNull();
+          assertThat(page.total).isEqualTo(0L);
+          assertThat(page.interactions).isNullOrEmpty();
+          testContext.completeNow();
+
+        })));
+
+  }
+
+  /**
+   * Should delete interaction fail.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldDeleteInteractionsFailBecauseAnyNotMatch(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createComponentProxy(vertx).deleteInteractions(UUID.randomUUID().toString(), null, null, null, null, null,
+        null, null, null, null, null, null, null, null)
+        .onComplete(testContext.failing(any -> testContext.completeNow()));
+  }
+
+  /**
+   * Should add get and delete an interaction.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldAddGetAndDeleteInteraction(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var interaction = new InteractionTest().createModelExample(43);
+    interaction.appId = UUID.randomUUID().toString();
+    this.createComponentProxy(vertx).addInteraction(interaction)
+        .onComplete(testContext.succeeding(stored -> testContext.verify(() -> {
+
+          assertThat(stored).isEqualTo(interaction);
+          this.createComponentProxy(vertx).getInteractionsPage(interaction.appId, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, 0, 10)
+              .onComplete(testContext.succeeding(page -> testContext.verify(() -> {
+
+                assertThat(page).isNotNull();
+                assertThat(page.total).isEqualTo(0L);
+                assertThat(page.interactions).isNotNull().hasSize(1).contains(interaction);
+                this.createComponentProxy(vertx)
+                    .deleteInteractions(interaction.appId, null, null, null, null, null, null, null, null, null, null,
+                        null, null, null)
+                    .compose(empty -> this.createComponentProxy(vertx).getInteractionsPage(interaction.appId, null,
+                        null, null, null, null, null, null, null, null, null, null, null, null, null, 0, 10))
+                    .onComplete(testContext.succeeding(page2 -> {
+
+                      assertThat(page2).isNotNull();
+                      assertThat(page2.total).isEqualTo(0L);
+                      assertThat(page2.interactions).isNullOrEmpty();
+
+                      this.createComponentProxy(vertx).deleteInteractions(interaction.appId, null, null, null, null,
+                          null, null, null, null, null, null, null, null, null)
+                          .onComplete(testContext.failing(any -> testContext.completeNow()));
+
+                    }));
+
+              })));
+
+        })));
   }
 
 }

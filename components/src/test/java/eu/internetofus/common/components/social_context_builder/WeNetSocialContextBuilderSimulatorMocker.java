@@ -21,12 +21,9 @@
 package eu.internetofus.common.components.social_context_builder;
 
 import eu.internetofus.common.components.AbstractComponentMocker;
-import eu.internetofus.common.model.ErrorMessage;
-import eu.internetofus.common.model.Model;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import javax.ws.rs.core.Response.Status;
 
 /**
  * The mocked server for the {@link WeNetSocialContextBuilder} and
@@ -42,7 +39,7 @@ public class WeNetSocialContextBuilderSimulatorMocker extends AbstractComponentM
   /**
    * The context with the values stored on the mocker.
    */
-  protected WeNetSocialContextBuilderSimulatorMockerGetSetContext context = new WeNetSocialContextBuilderSimulatorMockerGetSetContext();
+  protected WeNetSocialContextBuilderSimulatorGetSetContext context = new WeNetSocialContextBuilderSimulatorGetSetContext();
 
   /**
    * The posted notifications.
@@ -99,49 +96,24 @@ public class WeNetSocialContextBuilderSimulatorMocker extends AbstractComponentM
     router.post("/social/preferences/:userId/:taskId/")
         .handler(this.context.createSetHandler("SOCIAL_PREFERENCES", "userId", "taskId"));
 
-    router.get("/social/preferences/answers/:userId/:taskId/")
-        .handler(this.context.createGetHandler("SOCIAL_PREFERENCES_ANSWERS", new JsonArray(), "userId", "taskId"));
-    router.post("/social/preferences/answers/:userId/:taskId/")
-        .handler(this.context.createSocialPreferencesAnswersPostHandler());
-
     router.get("/social/relations/initialize/:userId")
         .handler(this.context.createGetHandler("SOCIAL_RELATIONS_INITIALIZE", new JsonObject(), "userId"));
     router.post("/social/relations/initialize/:userId")
         .handler(this.context.createSetHandler("SOCIAL_RELATIONS_INITIALIZE", "userId"));
 
-    router.post("/social/notification/").handler(ctx -> {
+    router.post("/social/notification/").handler(this.context.createAddSocialNotificationHandler());
+    router.get("/social/notification/").handler(this.context.createGetHandler("SOCIAL_NOTIFICATION", new JsonArray()));
+    router.delete("/social/notification/").handler(this.context.createDeleteSocialNotificationHandler());
 
-      final var value = ctx.getBodyAsJson();
-      final var state = Model.fromJsonObject(value, UserMessage.class);
-      if (state == null) {
+    router.get("/social/preferences/answers/:userId/:taskId")
+        .handler(this.context.createGetHandler("SOCIAL_PREFERENCES_ANSWERS", new JsonObject(), "userId", "taskId"));
+    router.post("/social/preferences/answers/:userId/:taskId")
+        .handler(this.context.createSetSocialPreferencesAnswersHandler());
 
-        final var response = ctx.response();
-        response.setStatusCode(Status.BAD_REQUEST.getStatusCode());
-        response.end(new ErrorMessage("bad_status", "The body is not a valid user message").toBuffer());
-
-      } else {
-
-        this.notifications.add(value);
-        final var response = ctx.response();
-        response.setStatusCode(Status.CREATED.getStatusCode());
-        response.end(value.toBuffer());
-      }
-
-    });
-    router.get("/social/notification/").handler(ctx -> {
-
-      final var response = ctx.response();
-      response.setStatusCode(Status.OK.getStatusCode());
-      response.end(this.notifications.toBuffer());
-
-    });
-    router.delete("/social/notification/").handler(ctx -> {
-
-      this.notifications.clear();
-      final var response = ctx.response();
-      response.setStatusCode(Status.NO_CONTENT.getStatusCode());
-      response.end();
-    });
+    router.get("/social/preferences/answers/:userId/:taskId/:selection/update").handler(this.context.createGetHandler(
+        "SOCIAL_PREFERENCES_ANSWERS_SELECTION_UPDATE", new JsonArray(), "userId", "taskId", "selection"));
+    router.put("/social/preferences/answers/:userId/:taskId/:selection/update").handler(
+        this.context.createSetHandler("SOCIAL_PREFERENCES_ANSWERS_SELECTION_UPDATE", "userId", "taskId", "selection"));
 
   }
 

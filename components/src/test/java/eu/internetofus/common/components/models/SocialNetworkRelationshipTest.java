@@ -20,7 +20,6 @@
 
 package eu.internetofus.common.components.models;
 
-import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static eu.internetofus.common.model.MergeAsserts.assertCanMerge;
 import static eu.internetofus.common.model.MergeAsserts.assertCannotMerge;
 import static eu.internetofus.common.model.UpdateAsserts.assertCanUpdate;
@@ -30,18 +29,13 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
+import eu.internetofus.common.components.WeNetIntegrationExtension;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.UUID;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -55,45 +49,8 @@ import org.junit.jupiter.params.provider.ValueSource;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
+@ExtendWith(WeNetIntegrationExtension.class)
 public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRelationship> {
-
-  /**
-   * The profile manager mocked server.
-   */
-  protected static WeNetProfileManagerMocker profileManagerMocker;
-
-  /**
-   * Start the mocker server.
-   */
-  @BeforeAll
-  public static void startMocker() {
-
-    profileManagerMocker = WeNetProfileManagerMocker.start();
-  }
-
-  /**
-   * Stop the mocker server.
-   */
-  @AfterAll
-  public static void stopMockers() {
-
-    profileManagerMocker.stopServer();
-  }
-
-  /**
-   * Register the necessary services before to test.
-   *
-   * @param vertx event bus to register the necessary services.
-   */
-  @BeforeEach
-  public void registerServices(final Vertx vertx) {
-
-    final var client = createClientWithDefaultSession(vertx);
-    final var conf = profileManagerMocker.getComponentConfiguration();
-    WeNetProfileManager.register(vertx, client, conf);
-
-  }
 
   /**
    * Test constructor.

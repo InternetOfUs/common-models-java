@@ -20,22 +20,16 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
-import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 
 import eu.internetofus.common.components.StoreServices;
+import eu.internetofus.common.components.WeNetIntegrationExtension;
 import eu.internetofus.common.components.models.WeNetUserProfile;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -48,45 +42,8 @@ import org.junit.jupiter.params.provider.ValueSource;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
+@ExtendWith(WeNetIntegrationExtension.class)
 public class ProtocolAddressTest extends ModelTestCase<ProtocolAddress> {
-
-  /**
-   * The profile manager mocked server.
-   */
-  protected static WeNetProfileManagerMocker profileManagerMocker;
-
-  /**
-   * Start the mocker server.
-   */
-  @BeforeAll
-  public static void startMockers() {
-
-    profileManagerMocker = WeNetProfileManagerMocker.start();
-  }
-
-  /**
-   * Stop the mocker server.
-   */
-  @AfterAll
-  public static void stopMockers() {
-
-    profileManagerMocker.stopServer();
-  }
-
-  /**
-   * Register the necessary services before to test.
-   *
-   * @param vertx event bus to register the necessary services.
-   */
-  @BeforeEach
-  public void registerServices(final Vertx vertx) {
-
-    final var client = createClientWithDefaultSession(vertx);
-    final var profileConf = profileManagerMocker.getComponentConfiguration();
-    WeNetProfileManager.register(vertx, client, profileConf);
-
-  }
 
   /**
    * {@inheritDoc}
@@ -114,14 +71,13 @@ public class ProtocolAddressTest extends ModelTestCase<ProtocolAddress> {
   public Future<ProtocolAddress> createModelExample(final int index, final Vertx vertx,
       final VertxTestContext testContext) {
 
-    return testContext
-        .assertComplete(StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(profile -> {
+    return StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(profile -> {
 
-          final var model = this.createModelExample(index);
-          model.userId = profile.id;
-          return Future.succeededFuture(model);
+      final var model = this.createModelExample(index);
+      model.userId = profile.id;
+      return Future.succeededFuture(model);
 
-        }));
+    });
 
   }
 

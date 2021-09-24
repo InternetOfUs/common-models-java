@@ -20,15 +20,32 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
-import eu.internetofus.common.components.WeNetIntegrationExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
+import eu.internetofus.common.model.ModelTestCase;
+import java.util.ArrayList;
 
 /**
- * Test the {@link WeNetInteractionProtocolEngine}.
+ * Test the {@link InteractionsPage}.
+ *
+ * @see InteractionsPage
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(WeNetIntegrationExtension.class)
-public class WeNetInteractionProtocolEngineTest extends WeNetInteractionProtocolEngineTestCase {
+public class InteractionsPageTest extends ModelTestCase<InteractionsPage> {
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public InteractionsPage createModelExample(final int index) {
+
+    final var model = new InteractionsPage();
+    model.offset = index;
+    model.total = 100 + index;
+    model.interactions = new ArrayList<>();
+    model.interactions.add(new InteractionTest().createModelExample(index - 1));
+    model.interactions.add(new InteractionTest().createModelExample(index));
+    model.interactions.add(new InteractionTest().createModelExample(index + 1));
+    return model;
+  }
 
 }

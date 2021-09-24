@@ -20,29 +20,19 @@
 
 package eu.internetofus.common.components.models;
 
-import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 
 import eu.internetofus.common.components.StoreServices;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManagerMocker;
-import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.service.WeNetServiceSimulator;
-import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
+import eu.internetofus.common.components.WeNetIntegrationExtension;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
-import eu.internetofus.common.components.task_manager.WeNetTaskManagerMocker;
 import eu.internetofus.common.model.ModelTestCase;
 import eu.internetofus.common.model.TimeManager;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -55,66 +45,8 @@ import org.junit.jupiter.params.provider.ValueSource;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
+@ExtendWith(WeNetIntegrationExtension.class)
 public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
-
-  /**
-   * The profile manager mocked server.
-   */
-  protected static WeNetProfileManagerMocker profileManagerMocker;
-
-  /**
-   * The task manager mocked server.
-   */
-  protected static WeNetTaskManagerMocker taskManagerMocker;
-
-  /**
-   * The service mocked server.
-   */
-  protected static WeNetServiceSimulatorMocker serviceMocker;
-
-  /**
-   * Start the mocker server.
-   */
-  @BeforeAll
-  public static void startMockers() {
-
-    profileManagerMocker = WeNetProfileManagerMocker.start();
-    taskManagerMocker = WeNetTaskManagerMocker.start();
-    serviceMocker = WeNetServiceSimulatorMocker.start();
-  }
-
-  /**
-   * Stop the mocker server.
-   */
-  @AfterAll
-  public static void stopMockers() {
-
-    profileManagerMocker.stopServer();
-    taskManagerMocker.stopServer();
-    serviceMocker.stopServer();
-  }
-
-  /**
-   * Register the necessary services before to test.
-   *
-   * @param vertx event bus to register the necessary services.
-   */
-  @BeforeEach
-  public void registerServices(final Vertx vertx) {
-
-    final var client = createClientWithDefaultSession(vertx);
-    final var profileConf = profileManagerMocker.getComponentConfiguration();
-    WeNetProfileManager.register(vertx, client, profileConf);
-
-    final var taskConf = taskManagerMocker.getComponentConfiguration();
-    WeNetTaskManager.register(vertx, client, taskConf);
-
-    final var conf = serviceMocker.getComponentConfiguration();
-    WeNetService.register(vertx, client, conf);
-    WeNetServiceSimulator.register(vertx, client, conf);
-
-  }
 
   /**
    * {@inheritDoc}
@@ -386,19 +318,19 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   public void shouldTaskTransactionBeValidWithTaskTypeWithLabelButMissingNullableAttributes(final Vertx vertx,
       final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext)
-        .onComplete(testContext.succeeding(model -> WeNetTaskManager.createProxy(vertx).retrieveTask(model.taskId)
-            .compose(task -> WeNetTaskManager.createProxy(vertx).deleteTaskType(task.taskTypeId).compose(empty -> {
+    this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> {
+      WeNetTaskManager.createProxy(vertx).retrieveTask(model.taskId).compose(task -> {
 
-              final var newType = new TaskType();
-              newType.id = task.taskTypeId;
-              newType.transactions = new JsonObject().put(model.label,
-                  new JsonObject().put("properties",
-                      model.attributes.copy().put("arg1", new JsonObject().put("nullable", true)).put("arg2",
-                          new JsonObject().put("nullable", true))));
-              return WeNetTaskManager.createProxy(vertx).createTaskType(newType);
+        final var newType = new TaskType();
+        newType.id = task.taskTypeId;
+        newType.transactions = new JsonObject().put(model.label,
+            new JsonObject().put("type", "object").put("properties",
+                new JsonObject().put("arg1", new JsonObject().put("type", "string").put("nullable", true)).put("arg2",
+                    new JsonObject().put("type", "string").put("nullable", true))));
+        return WeNetTaskManager.createProxy(vertx).mergeTaskType(task.taskTypeId, newType);
 
-            })).onComplete(testContext.succeeding(empty -> assertIsValid(model, vertx, testContext)))));
+      }).onComplete(testContext.succeeding(empty -> assertIsValid(model, vertx, testContext)));
+    }));
 
   }
 

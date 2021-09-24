@@ -28,17 +28,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, name = "user_answer", description = "A User to User answer.")
+@Schema(name = "user_answer", description = "A User to User answer.")
 public class UserAnswer extends ReflectionModel implements Model {
 
   /**
-   * The first user identifier.
+   * The identifier of the user.
    */
   @Schema(description = "User ID 1 a unique identifier.", example = "bf274393-1e7b-4d40-a897-88cb96277edd")
   public String userId;
 
   /**
-   * The first user identifier.
+   * The answer of the user.
    */
   @Schema(description = "Answer for this task.", example = "the best pizza is in Napoli!")
   public String answer;

@@ -90,11 +90,14 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   public void postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
       @NotNull final JsonObject userAnswers, @NotNull final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.post(userAnswers, this.createArrayExtractor(), "/social/preferences/answers", userId, taskId, "/")
+    this.post(userAnswers, this.createArrayExtractor(), "/social/preferences/answers", userId, taskId)
         .onComplete(handler);
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void initializeSocialRelations(@NotNull final String userId,
       @NotNull final Handler<AsyncResult<Void>> handler) {
@@ -118,10 +121,26 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
     handler.handle(promise.future());
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void socialNotification(@NotNull final JsonObject message, @NotNull final Handler<AsyncResult<Void>> handler) {
 
     this.post(message, this.createVoidExtractor(), "/social/notification/").onComplete(handler);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void putSocialPreferencesSelectedAnswerForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, final int selection, @NotNull final JsonObject userAnswers,
+      @NotNull final Handler<AsyncResult<Void>> handler) {
+
+    this.put(this.createAbsoluteUrlWith("/social/preferences/answers", userId, taskId, selection, "/update"),
+        userAnswers, this.createVoidExtractor()).onComplete(handler);
+
   }
 
 }

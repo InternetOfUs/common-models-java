@@ -30,6 +30,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.serviceproxy.ServiceException;
+import java.util.UUID;
 import javax.ws.rs.core.Response.Status;
 import org.junit.jupiter.api.Test;
 
@@ -241,6 +242,35 @@ public abstract class WeNetProfileManagerTestCase extends WeNetComponentTestCase
         });
       });
     });
+
+  }
+
+  /**
+   * Should return an empty profiles page.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldReturnEmptyCommunityProfilesPage(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var appId = UUID.randomUUID().toString();
+    testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(appId, null, null,
+        null, null, null, 0, 100)).onSuccess(page -> testContext.verify(() -> {
+
+          assertThat(page).isNotNull();
+          assertThat(page.offset).isEqualTo(0);
+          assertThat(page.total).isEqualTo(0);
+          assertThat(page.communities).isNull();
+
+          testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveCommunityProfilesPage(appId, "name",
+              "description", "keywords", "members", "name", 0, 100)).onSuccess(page2 -> testContext.verify(() -> {
+
+                assertThat(page).isEqualTo(page2);
+                testContext.completeNow();
+
+              }));
+        }));
 
   }
 

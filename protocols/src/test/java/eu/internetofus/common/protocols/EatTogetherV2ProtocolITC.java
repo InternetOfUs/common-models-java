@@ -24,6 +24,7 @@ import eu.internetofus.common.components.incentive_server.TaskTransactionStatusB
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBodyPredicates;
 import eu.internetofus.common.components.incentive_server.TaskTypeStatusBody;
 import eu.internetofus.common.components.incentive_server.TaskTypeStatusBodyPredicates;
+import eu.internetofus.common.components.interaction_protocol_engine.Interaction;
 import eu.internetofus.common.components.models.Message;
 import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTransaction;
@@ -258,6 +259,7 @@ public class EatTogetherV2ProtocolITC extends AbstractProtocolITC {
     this.assertLastSuccessfulTestWas(7, testContext);
 
     final var checkMessages = new ArrayList<Predicate<Message>>();
+    final var checkInteractions = new ArrayList<Predicate<Interaction>>();
     final var checkStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
 
     final var unanswered = this.task.attributes.getJsonArray("unanswered").copy();
@@ -298,7 +300,8 @@ public class EatTogetherV2ProtocolITC extends AbstractProtocolITC {
     }
 
     future = future.compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus))
+        .compose(ignored -> this.waitUntilInteractions(vertx, testContext, checkInteractions));
 
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 

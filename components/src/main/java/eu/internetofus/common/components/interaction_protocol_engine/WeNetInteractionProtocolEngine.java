@@ -264,7 +264,7 @@ public interface WeNetInteractionProtocolEngine extends WeNetComponent {
    * Delete a event to be processed.
    *
    * @param id      identifier of the event to delete.
-   * @param handler to inform id teh vent is deleted.
+   * @param handler to inform id the event is deleted.
    */
   void deleteEvent(long id, Handler<AsyncResult<Void>> handler);
 
@@ -281,6 +281,223 @@ public interface WeNetInteractionProtocolEngine extends WeNetComponent {
     final Promise<Void> promise = Promise.promise();
     this.deleteEvent(id, promise);
     return promise.future();
+  }
+
+  /**
+   * Add an interaction into the protocol engine.
+   *
+   * @param interaction to add.
+   * @param handler     for the added interaction.
+   */
+  void addInteraction(@NotNull JsonObject interaction, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Add an interaction into the protocol engine.
+   *
+   * @param interaction to add.
+   *
+   * @return the future with the added interaction.
+   */
+  @GenIgnore
+  default Future<Interaction> addInteraction(@NotNull final Interaction interaction) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.sendEvent(interaction.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), Interaction.class);
+
+  }
+
+  /**
+   * Called when want to obtain some interactions.
+   *
+   * @param appId            identifier of the application where the interaction
+   *                         is done.
+   * @param communityId      identifier of the community where the interaction is
+   *                         done.
+   * @param taskTypeId       identifier of the task type where the interaction is
+   *                         done.
+   * @param taskId           identifier of the task where the interaction is done.
+   * @param senderId         identifier of the user that has started the
+   *                         interaction.
+   * @param receiverId       identifier of the user that has end the interaction.
+   * @param hasTransaction   this is {@code true} if the interaction requires a
+   *                         transaction, {@code false} if no transaction has to
+   *                         be defined or {@code null} if does not matter.
+   * @param transactionLabel the label of the transaction that has started the
+   *                         interaction.
+   * @param transactionFrom  the minimum time stamp, inclusive, where the
+   *                         interaction has to be started, or {@code null} to
+   *                         start at midnight, January 1, 1970 UTC.
+   * @param transactionTo    the maximum time stamp, inclusive, where the
+   *                         interaction has to be started or {@code null} to be
+   *                         the current time.
+   * @param hasMessage       this is {@code true} if the interaction requires a
+   *                         message, {@code false} if no message has to be
+   *                         defined or {@code null} if does not matter.
+   * @param messageLabel     the label of the message that has end the
+   *                         interaction.
+   * @param messageFrom      the minimum time stamp, inclusive, where the
+   *                         interaction has end, or {@code null} to start at
+   *                         midnight, January 1, 1970 UTC.
+   * @param messageTo        the maximum time stamp, inclusive, where the
+   *                         interaction has end or {@code null} to be the current
+   *                         time.
+   * @param order            to return the found interactions.
+   * @param offset           index of the first interaction to return.
+   * @param limit            number maximum of interactions to return.
+   * @param handler          to notify the page.
+   */
+  void getInteractionsPage(String appId, String communityId, String taskTypeId, String taskId, String senderId,
+      String receiverId, Boolean hasTransaction, String transactionLabel, Long transactionFrom, Long transactionTo,
+      Boolean hasMessage, String messageLabel, Long messageFrom, Long messageTo, String order, int offset, int limit,
+      Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Called when want to obtain some interactions.
+   *
+   * @param appId            identifier of the application where the interaction
+   *                         is done.
+   * @param communityId      identifier of the community where the interaction is
+   *                         done.
+   * @param taskTypeId       identifier of the task type where the interaction is
+   *                         done.
+   * @param taskId           identifier of the task where the interaction is done.
+   * @param senderId         identifier of the user that has started the
+   *                         interaction.
+   * @param receiverId       identifier of the user that has end the interaction.
+   * @param hasTransaction   this is {@code true} if the interaction requires a
+   *                         transaction, {@code false} if no transaction has to
+   *                         be defined or {@code null} if does not matter.
+   * @param transactionLabel the label of the transaction that has started the
+   *                         interaction.
+   * @param transactionFrom  the minimum time stamp, inclusive, where the
+   *                         interaction has to be started, or {@code null} to
+   *                         start at midnight, January 1, 1970 UTC.
+   * @param transactionTo    the maximum time stamp, inclusive, where the
+   *                         interaction has to be started or {@code null} to be
+   *                         the current time.
+   * @param hasMessage       this is {@code true} if the interaction requires a
+   *                         message, {@code false} if no message has to be
+   *                         defined or {@code null} if does not matter.
+   * @param messageLabel     the label of the message that has end the
+   *                         interaction.
+   * @param messageFrom      the minimum time stamp, inclusive, where the
+   *                         interaction has end, or {@code null} to start at
+   *                         midnight, January 1, 1970 UTC.
+   * @param messageTo        the maximum time stamp, inclusive, where the
+   *                         interaction has end or {@code null} to be the current
+   *                         time.
+   * @param order            to return the found interactions.
+   * @param offset           index of the first interaction to return.
+   * @param limit            number maximum of interactions to return.
+   *
+   * @return the future with the found page.
+   */
+  @GenIgnore
+  default Future<InteractionsPage> getInteractionsPage(final String appId, final String communityId,
+      final String taskTypeId, final String taskId, final String senderId, final String receiverId,
+      final Boolean hasTransaction, final String transactionLabel, final Long transactionFrom, final Long transactionTo,
+      final Boolean hasMessage, final String messageLabel, final Long messageFrom, final Long messageTo,
+      final String order, final int offset, final int limit) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.getInteractionsPage(appId, communityId, taskTypeId, taskId, senderId, receiverId, hasTransaction,
+        transactionLabel, transactionFrom, transactionTo, hasMessage, messageLabel, messageFrom, messageTo, order,
+        offset, limit, promise);
+    return Model.fromFutureJsonObject(promise.future(), InteractionsPage.class);
+
+  }
+
+  /**
+   * Delete some interactions.
+   *
+   * @param appId            identifier of the application where the interaction
+   *                         is done.
+   * @param communityId      identifier of the community where the interaction is
+   *                         done.
+   * @param taskTypeId       identifier of the task type where the interaction is
+   *                         done.
+   * @param taskId           identifier of the task where the interaction is done.
+   * @param senderId         identifier of the user that has started the
+   *                         interaction.
+   * @param receiverId       identifier of the user that has end the interaction.
+   * @param hasTransaction   this is {@code true} if the interaction requires a
+   *                         transaction, {@code false} if no transaction has to
+   *                         be defined or {@code null} if does not matter.
+   * @param transactionLabel the label of the transaction that has started the
+   *                         interaction.
+   * @param transactionFrom  the minimum time stamp, inclusive, where the
+   *                         interaction has to be started, or {@code null} to
+   *                         start at midnight, January 1, 1970 UTC.
+   * @param transactionTo    the maximum time stamp, inclusive, where the
+   *                         interaction has to be started or {@code null} to be
+   *                         the current time.
+   * @param hasMessage       this is {@code true} if the interaction requires a
+   *                         message, {@code false} if no message has to be
+   *                         defined or {@code null} if does not matter.
+   * @param messageLabel     the label of the message that has end the
+   *                         interaction.
+   * @param messageFrom      the minimum time stamp, inclusive, where the
+   *                         interaction has end, or {@code null} to start at
+   *                         midnight, January 1, 1970 UTC.
+   * @param messageTo        the maximum time stamp, inclusive, where the
+   *                         interaction has end or {@code null} to be the current
+   *                         time.
+   * @param handler          to notify the page.
+   */
+  void deleteInteractions(String appId, String communityId, String taskTypeId, String taskId, String senderId,
+      String receiverId, Boolean hasTransaction, String transactionLabel, Long transactionFrom, Long transactionTo,
+      Boolean hasMessage, String messageLabel, Long messageFrom, Long messageTo, Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Delete some interactions.
+   *
+   * @param appId            identifier of the application where the interaction
+   *                         is done.
+   * @param communityId      identifier of the community where the interaction is
+   *                         done.
+   * @param taskTypeId       identifier of the task type where the interaction is
+   *                         done.
+   * @param taskId           identifier of the task where the interaction is done.
+   * @param senderId         identifier of the user that has started the
+   *                         interaction.
+   * @param receiverId       identifier of the user that has end the interaction.
+   * @param hasTransaction   this is {@code true} if the interaction requires a
+   *                         transaction, {@code false} if no transaction has to
+   *                         be defined or {@code null} if does not matter.
+   * @param transactionLabel the label of the transaction that has started the
+   *                         interaction.
+   * @param transactionFrom  the minimum time stamp, inclusive, where the
+   *                         interaction has to be started, or {@code null} to
+   *                         start at midnight, January 1, 1970 UTC.
+   * @param transactionTo    the maximum time stamp, inclusive, where the
+   *                         interaction has to be started or {@code null} to be
+   *                         the current time.
+   * @param hasMessage       this is {@code true} if the interaction requires a
+   *                         message, {@code false} if no message has to be
+   *                         defined or {@code null} if does not matter.
+   * @param messageLabel     the label of the message that has end the
+   *                         interaction.
+   * @param messageFrom      the minimum time stamp, inclusive, where the
+   *                         interaction has end, or {@code null} to start at
+   *                         midnight, January 1, 1970 UTC.
+   * @param messageTo        the maximum time stamp, inclusive, where the
+   *                         interaction has end or {@code null} to be the current
+   *                         time.
+   *
+   * @return the future with the delete result.
+   */
+  @GenIgnore
+  default Future<Void> deleteInteractions(final String appId, final String communityId, final String taskTypeId,
+      final String taskId, final String senderId, final String receiverId, final Boolean hasTransaction,
+      final String transactionLabel, final Long transactionFrom, final Long transactionTo, final Boolean hasMessage,
+      final String messageLabel, final Long messageFrom, final Long messageTo) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.deleteInteractions(appId, communityId, taskTypeId, taskId, senderId, receiverId, hasTransaction,
+        transactionLabel, transactionFrom, transactionTo, hasMessage, messageLabel, messageFrom, messageTo, promise);
+    return promise.future();
+
   }
 
 }

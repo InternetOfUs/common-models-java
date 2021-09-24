@@ -20,14 +20,7 @@
 
 package eu.internetofus.common.components.profile_diversity_manager;
 
-import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
-
-import eu.internetofus.common.components.Containers;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import eu.internetofus.common.components.WeNetIntegrationExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
@@ -37,30 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
+@ExtendWith(WeNetIntegrationExtension.class)
 public class WeNetProfileDiversityManagerTest extends WeNetProfileDiversityManagerTestCase {
 
-  /**
-   * Start the mocker server.
-   */
-  @BeforeAll
-  public static void startContainer() {
-
-    Containers.status().exposeModulePortsContainers().startProfileDiversityManagerContainer();
-  }
-
-  /**
-   * Register the client.
-   *
-   * @param vertx event bus to use.
-   */
-  @BeforeEach
-  public void registerClient(final Vertx vertx) {
-
-    final var client = createClientWithDefaultSession(vertx);
-    final var profileManagerConf = new JsonObject().put(
-        WeNetProfileDiversityManagerClient.PROFILE_DIVERSITY_MANAGER_CONF_KEY,
-        Containers.status().getProfileDiversityManagerApi());
-    WeNetProfileDiversityManager.register(vertx, client, profileManagerConf);
-  }
 }

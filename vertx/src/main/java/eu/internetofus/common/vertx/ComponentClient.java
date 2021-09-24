@@ -28,8 +28,10 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.impl.ClusterSerializable;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
@@ -255,8 +257,7 @@ public class ComponentClient {
    */
   protected Future<JsonObject> put(@NotNull final JsonObject content, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.PUT, this.createAbsoluteUrlWith(paths), content.toBuffer(),
-        this.createObjectExtractor());
+    return this.put(this.createAbsoluteUrlWith(paths), content, this.createObjectExtractor());
 
   }
 
@@ -270,8 +271,26 @@ public class ComponentClient {
    */
   protected Future<JsonArray> put(@NotNull final JsonArray content, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.PUT, this.createAbsoluteUrlWith(paths), content.toBuffer(),
-        this.createArrayExtractor());
+    return this.put(this.createAbsoluteUrlWith(paths), content, this.createArrayExtractor());
+
+  }
+
+  /**
+   * Put an object to a component.
+   *
+   * @param path      to the component to put.
+   * @param content   object to put.
+   * @param extractor to obtain the result form a buffer.
+   *
+   * @param <T>       type of the response content.
+   *
+   * @return the future with the response object.
+   */
+  protected <T> Future<T> put(@NotNull final String path, @NotNull final ClusterSerializable content,
+      @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
+
+    final var buffer = Json.CODEC.toBuffer(content, false);
+    return this.request(HttpMethod.PUT, path, buffer, extractor);
 
   }
 
@@ -655,6 +674,20 @@ public class ComponentClient {
   protected Future<Void> delete(final Object... paths) {
 
     return this.request(HttpMethod.DELETE, this.createAbsoluteUrlWith(paths), null);
+
+  }
+
+  /**
+   * Delete a resource with some parameters.
+   *
+   * @param queryParams the query parameters.
+   * @param paths       to the resource to delete.
+   *
+   * @return the future that explain if the component is deleted or not.
+   */
+  protected Future<Void> delete(final Map<String, String> queryParams, final Object... paths) {
+
+    return this.request(HttpMethod.DELETE, this.createAbsoluteUrlWith(paths), queryParams, null);
 
   }
 

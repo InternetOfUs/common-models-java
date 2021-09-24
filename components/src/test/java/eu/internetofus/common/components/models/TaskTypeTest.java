@@ -20,7 +20,6 @@
 
 package eu.internetofus.common.components.models;
 
-import static eu.internetofus.common.components.AbstractComponentMocker.createClientWithDefaultSession;
 import static eu.internetofus.common.model.MergeAsserts.assertCanMerge;
 import static eu.internetofus.common.model.MergeAsserts.assertCannotMerge;
 import static eu.internetofus.common.model.UpdateAsserts.assertCanUpdate;
@@ -31,8 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.atIndex;
 
 import eu.internetofus.common.components.StoreServices;
-import eu.internetofus.common.components.task_manager.WeNetTaskManager;
-import eu.internetofus.common.components.task_manager.WeNetTaskManagerMocker;
+import eu.internetofus.common.components.WeNetIntegrationExtension;
 import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
@@ -40,13 +38,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
 import java.util.UUID;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -59,45 +53,8 @@ import org.junit.jupiter.params.provider.ValueSource;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@ExtendWith(VertxExtension.class)
+@ExtendWith(WeNetIntegrationExtension.class)
 public class TaskTypeTest extends ModelTestCase<TaskType> {
-
-  /**
-   * The task manager mocked server.
-   */
-  protected static WeNetTaskManagerMocker taskManagerMocker;
-
-  /**
-   * Start the mocker server.
-   */
-  @BeforeAll
-  public static void startMockers() {
-
-    taskManagerMocker = WeNetTaskManagerMocker.start();
-  }
-
-  /**
-   * Stop the mocker server.
-   */
-  @AfterAll
-  public static void stopMockers() {
-
-    taskManagerMocker.stopServer();
-  }
-
-  /**
-   * Register the necessary services before to test.
-   *
-   * @param vertx event bus to register the necessary services.
-   */
-  @BeforeEach
-  public void registerServices(final Vertx vertx) {
-
-    final var client = createClientWithDefaultSession(vertx);
-    final var taskConf = taskManagerMocker.getComponentConfiguration();
-    WeNetTaskManager.register(vertx, client, taskConf);
-
-  }
 
   /**
    * {@inheritDoc}

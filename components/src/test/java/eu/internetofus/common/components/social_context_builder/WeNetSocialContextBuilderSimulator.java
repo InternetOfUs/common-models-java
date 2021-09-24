@@ -229,39 +229,11 @@ public interface WeNetSocialContextBuilderSimulator {
    */
   @GenIgnore
   default Future<List<UserAnswer>> postSocialPreferencesAnswersForUserOnTask(@NotNull final String userId,
-      @NotNull final String taskId, @NotNull final AnswersData userAnswers) {
+      @NotNull final String taskId, @NotNull final UserAnswers userAnswers) {
 
     final Promise<JsonArray> promise = Promise.promise();
     final var data = userAnswers.toJsonObject();
     this.postSocialPreferencesAnswersForUserOnTask(userId, taskId, data, promise);
-    return Model.fromFutureJsonArray(promise.future(), UserAnswer.class);
-
-  }
-
-  /**
-   * Get the preferences answers of an user.
-   *
-   * @param userId  identifier of the user.
-   * @param taskId  identifier of the task
-   * @param handler for the user preferences answers on task.
-   */
-  void getPreferencesAnswersForUserOnTask(@NotNull String userId, @NotNull String taskId,
-      @NotNull Handler<AsyncResult<JsonArray>> handler);
-
-  /**
-   * Get the preferences answers of an user.
-   *
-   * @param userId identifier of the user.
-   * @param taskId identifier of the task
-   *
-   * @return the future with user preferences answers on task.
-   */
-  @GenIgnore
-  default Future<List<UserAnswer>> getPreferencesAnswersForUserOnTask(@NotNull final String userId,
-      @NotNull final String taskId) {
-
-    final Promise<JsonArray> promise = Promise.promise();
-    this.getPreferencesAnswersForUserOnTask(userId, taskId, promise);
     return Model.fromFutureJsonArray(promise.future(), UserAnswer.class);
 
   }
@@ -377,6 +349,103 @@ public interface WeNetSocialContextBuilderSimulator {
     final Promise<Void> promise = Promise.promise();
     this.deleteSocialNotification(promise);
     return promise.future();
+
+  }
+
+  /**
+   * Put the preferred answers for an user. This notify witch answer of the
+   * ranking is selected by an user.
+   *
+   * @param userId      identifier of the user.
+   * @param taskId      identifier of the task
+   * @param selection   the selected answer of the question.
+   * @param userAnswers the array of {@link UserAnswer}'s that the user has
+   *                    received.
+   * @param handler     to notify the updated result.
+   *
+   */
+  void putSocialPreferencesSelectedAnswerForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      final int selection, @NotNull JsonObject userAnswers, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Put the preferred answers for an user. This notify witch answer of the
+   * ranking is selected by an user.
+   *
+   * @param userId      identifier of the user.
+   * @param taskId      identifier of the task.
+   * @param selection   the selected answer of the question.
+   * @param userAnswers the answers of the users.
+   *
+   * @return the future with the updated data.
+   */
+  @GenIgnore
+  default Future<Void> putSocialPreferencesSelectedAnswerForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, final int selection, @NotNull final UserAnswers userAnswers) {
+
+    final Promise<Void> promise = Promise.promise();
+    final var data = userAnswers.toJsonObject();
+    this.putSocialPreferencesSelectedAnswerForUserOnTask(userId, taskId, selection, data, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Get the preferences answers by a user.
+   *
+   * @param userId    identifier of the user.
+   * @param taskId    identifier of the task
+   * @param selection the selected answer of the question.
+   * @param handler   to notify the updated result.
+   *
+   */
+  void getSocialPreferencesSelectedAnswerForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      final int selection, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Get the preferences answers by a user.
+   *
+   * @param userId    identifier of the user.
+   * @param taskId    identifier of the task.
+   * @param selection the selected answer of the question.
+   *
+   * @return the future with the selected user answers.
+   */
+  @GenIgnore
+  default Future<UserAnswers> getSocialPreferencesSelectedAnswerForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId, final int selection) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.getSocialPreferencesSelectedAnswerForUserOnTask(userId, taskId, selection, promise);
+    return Model.fromFutureJsonObject(promise.future(), UserAnswers.class);
+
+  }
+
+  /**
+   * Get the preferences answers by a user on a task.
+   *
+   * @param userId  identifier of the user.
+   * @param taskId  identifier of the task
+   * @param handler to notify the updated result.
+   *
+   */
+  void getSocialPreferencesAnswersForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+      @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Get the preferences answers by a user on a task.
+   *
+   * @param userId identifier of the user.
+   * @param taskId identifier of the task.
+   *
+   * @return the future with the selected user answers.
+   */
+  @GenIgnore
+  default Future<UserAnswers> getSocialPreferencesAnswersForUserOnTask(@NotNull final String userId,
+      @NotNull final String taskId) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.getSocialPreferencesAnswersForUserOnTask(userId, taskId, promise);
+    return Model.fromFutureJsonObject(promise.future(), UserAnswers.class);
 
   }
 

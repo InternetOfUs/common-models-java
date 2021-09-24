@@ -21,9 +21,14 @@
 package eu.internetofus.common.components;
 
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulatorMocker;
+import eu.internetofus.common.components.interaction_protocol_engine.WeNetInteractionProtocolEngineClient;
 import eu.internetofus.common.components.personal_context_builder.WeNetPersonalContextBuilderSimulatorMocker;
+import eu.internetofus.common.components.profile_diversity_manager.WeNetProfileDiversityManagerClient;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManagerClient;
+import eu.internetofus.common.components.service.WeNetServiceClient;
 import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
 import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderSimulatorMocker;
+import eu.internetofus.common.components.task_manager.WeNetTaskManagerClient;
 import eu.internetofus.common.test.MongoContainer;
 import eu.internetofus.common.test.WeNetComponentContainers;
 import eu.internetofus.common.vertx.AbstractMain;
@@ -36,7 +41,12 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.commons.io.IOUtils;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.tinylog.Logger;
@@ -277,6 +287,19 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   }
 
   /**
+   * Get the configuration to can create a client to the profile manager client.
+   *
+   * @return the configuration to connect with the profile manager.
+   *
+   * @see WeNetProfileManagerClient
+   */
+  public JsonObject getProfileManagerClientConf() {
+
+    return new JsonObject().put(WeNetProfileManagerClient.PROFILE_MANAGER_CONF_KEY, this.getProfileManagerApi());
+
+  }
+
+  /**
    * {@inheritDoc}
    *
    * @see #profileDiversityManagerApiPort
@@ -286,6 +309,20 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   public String getProfileDiversityManagerApi() {
 
     return this.createApiFor(this.profileDiversityManagerContainer, this.profileDiversityManagerApiPort);
+
+  }
+
+  /**
+   * Get the configuration to can create a client to the profile manager client.
+   *
+   * @return the configuration to connect with the profile manager.
+   *
+   * @see WeNetProfileManagerClient
+   */
+  public JsonObject getProfileDiversityManagerClientConf() {
+
+    return new JsonObject().put(WeNetProfileDiversityManagerClient.PROFILE_DIVERSITY_MANAGER_CONF_KEY,
+        this.getProfileDiversityManagerApi());
 
   }
 
@@ -303,6 +340,19 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   }
 
   /**
+   * Get the configuration to can create a client to the task manager client.
+   *
+   * @return the configuration to connect with the task manager.
+   *
+   * @see WeNetTaskManagerClient
+   */
+  public JsonObject getTaskManagerClientConf() {
+
+    return new JsonObject().put(WeNetTaskManagerClient.TASK_MANAGER_CONF_KEY, this.getTaskManagerApi());
+
+  }
+
+  /**
    * {@inheritDoc}
    *
    * @see #interactionProtocolEngineApiPort
@@ -312,6 +362,21 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   public String getInteractionProtocolEngineApi() {
 
     return this.createApiFor(this.interactionProtocolEngineContainer, this.interactionProtocolEngineApiPort);
+
+  }
+
+  /**
+   * Get the configuration to can create a client to the interaction protocol
+   * engine.
+   *
+   * @return the configuration to connect with the interaction protocol engine.
+   *
+   * @see WeNetTaskManagerClient
+   */
+  public JsonObject getInteractionProtocolEngineClientConf() {
+
+    return new JsonObject().put(WeNetInteractionProtocolEngineClient.INTERACTION_PROTOCOL_ENGINE_CONF_KEY,
+        this.getInteractionProtocolEngineApi());
 
   }
 
@@ -466,7 +531,7 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   }
 
   /**
-   * Start the basic containers.
+   * Start the basic containers and wait until they are ready.
    *
    * @return this containers instance.
    *
@@ -483,6 +548,45 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
     this.startProfileDiversityManagerContainer();
     this.startTaskManagerContainer();
     this.startInteractionProtocolEngineContainer();
+
+    // Wait until they has been started
+    final List<String> started = new ArrayList<>();
+    started.add(this.getProfileManagerApi() + "/help/info");
+    started.add(this.getTaskManagerApi() + "/help/info");
+    started.add(this.getInteractionProtocolEngineApi() + "/help/info");
+    do {
+
+      final var iter = started.iterator();
+      while (iter.hasNext()) {
+
+        var active = false;
+        try {
+
+          final var url = iter.next();
+          final var json = IOUtils.toString(new URL(url), Charset.defaultCharset());
+          final var info = new JsonObject(json);
+          if (info.getString("name", null) != null) {
+
+            iter.remove();
+            active = true;
+
+          }
+
+        } catch (final Throwable ignored) {
+
+        }
+
+        if (active) {
+
+          try {
+            Thread.sleep(1000);
+          } catch (final InterruptedException ignored) {
+          }
+        }
+      }
+
+    } while (!started.isEmpty());
+
     return this;
   }
 
@@ -502,6 +606,19 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   public String getServiceApi() {
 
     return this.service.getApiUrl();
+  }
+
+  /**
+   * Get the configuration to can create a client to the service client.
+   *
+   * @return the configuration to connect with the service.
+   *
+   * @see WeNetServiceClient
+   */
+  public JsonObject getServiceClientConf() {
+
+    return new JsonObject().put(WeNetServiceClient.SERVICE_CONF_KEY, this.getServiceApi());
+
   }
 
   /**

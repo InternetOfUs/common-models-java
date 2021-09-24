@@ -166,28 +166,17 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldSetGetSocialPreferencesAnswers(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldSetGetSocialPreferencesAnswersForUserOnTask(final Vertx vertx, final VertxTestContext testContext) {
 
     final var userId = UUID.randomUUID().toString();
     final var taskId = UUID.randomUUID().toString();
-    final var preferences = new AnswersData();
-    preferences.data = new ArrayList<UserAnswer>();
-    testContext
-        .assertComplete(
-            WeNetSocialContextBuilderSimulator.createProxy(vertx).getPreferencesAnswersForUserOnTask(userId, taskId))
+    testContext.assertComplete(
+        WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialPreferencesAnswersForUserOnTask(userId, taskId))
         .onSuccess(ranking -> testContext.verify(() -> {
 
-          assertThat(ranking).isEqualTo(preferences.data);
+          assertThat(ranking).isNotNull();
 
-          for (var i = 0; i < 5; i++) {
-
-            final var userAnswer = new UserAnswer();
-            userAnswer.userId = "UserId_" + i;
-            userAnswer.answer = "Answer_" + i;
-            preferences.data.add(userAnswer);
-
-          }
-
+          final var preferences = new UserAnswersTest().createModelExample(0);
           testContext
               .assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx)
                   .postSocialPreferencesAnswersForUserOnTask(userId, taskId, preferences))
@@ -196,10 +185,10 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
                 assertThat(storedPreferences).isEqualTo(preferences.data);
                 testContext
                     .assertComplete(WeNetSocialContextBuilderSimulator.createProxy(vertx)
-                        .getPreferencesAnswersForUserOnTask(userId, taskId))
+                        .getSocialPreferencesAnswersForUserOnTask(userId, taskId))
                     .onSuccess(retrievePreferences2 -> testContext.verify(() -> {
 
-                      assertThat(retrievePreferences2).isEqualTo(preferences.data);
+                      assertThat(retrievePreferences2).isEqualTo(preferences);
                       testContext.completeNow();
                     }));
               }));
@@ -233,6 +222,34 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
                         testContext.completeNow();
 
                       })));
+            })));
+
+  }
+
+  /**
+   * Should manage the social preferences answer update.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldSetGetSocialPreferencesSelectedAnswerForUserOnTask(final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    final var userId = "1";
+    final var taskId = "2";
+    final var userAnswers = new UserAnswersTest().createModelExample(0);
+    WeNetSocialContextBuilderSimulator.createProxy(vertx)
+        .putSocialPreferencesSelectedAnswerForUserOnTask(userId, taskId, 0, userAnswers)
+        .compose(any -> WeNetSocialContextBuilderSimulator.createProxy(vertx)
+            .getSocialPreferencesSelectedAnswerForUserOnTask(userId, taskId, 0))
+        .onComplete(
+
+            testContext.succeeding(getted -> testContext.verify(() -> {
+
+              assertThat(getted).isEqualTo(userAnswers);
+              testContext.completeNow();
+
             })));
 
   }
