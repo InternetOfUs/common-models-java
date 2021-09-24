@@ -302,7 +302,7 @@ public interface WeNetInteractionProtocolEngine extends WeNetComponent {
   default Future<Interaction> addInteraction(@NotNull final Interaction interaction) {
 
     final Promise<JsonObject> promise = Promise.promise();
-    this.sendEvent(interaction.toJsonObject(), promise);
+    this.addInteraction(interaction.toJsonObject(), promise);
     return Model.fromFutureJsonObject(promise.future(), Interaction.class);
 
   }
