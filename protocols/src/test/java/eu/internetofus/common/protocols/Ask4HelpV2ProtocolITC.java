@@ -25,6 +25,8 @@ import eu.internetofus.common.components.incentive_server.TaskTransactionStatusB
 import eu.internetofus.common.components.incentive_server.TaskTransactionStatusBodyPredicates;
 import eu.internetofus.common.components.incentive_server.TaskTypeStatusBody;
 import eu.internetofus.common.components.incentive_server.TaskTypeStatusBodyPredicates;
+import eu.internetofus.common.components.interaction_protocol_engine.Interaction;
+import eu.internetofus.common.components.interaction_protocol_engine.InteractionPredicates;
 import eu.internetofus.common.components.models.Message;
 import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTransaction;
@@ -118,6 +120,7 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
     final var checkIncentiveTypeStatus = new ArrayList<Predicate<TaskTypeStatusBody>>();
     final var checkIncentiveTransactionStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     final var checkSocialNotification = new ArrayList<Predicate<UserMessage>>();
+    final var checkInteractions = new ArrayList<Predicate<Interaction>>();
 
     checkIncentiveTypeStatus.add(this.createIncentiveServerTaskTypeStatusPredicate()
         .and(TaskTypeStatusBodyPredicates.userIs(source.requesterId)).and(TaskTypeStatusBodyPredicates.countIs(1)));
@@ -166,6 +169,11 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
                           .and(MessagePredicates.attributesAre(target -> {
                             return this.task.id.equals(target.getString("taskId"));
                           })))));
+
+      checkInteractions.add(this.createInteractionPredicate().and(InteractionPredicates.senderIs(source.requesterId))
+          .and(InteractionPredicates.transactionLabelIs(TaskTransaction.CREATE_TASK_LABEL))
+          .and(interaction -> this.participants.contains(interaction.receiverId))
+          .and(InteractionPredicates.messageLabelIs("QuestionToAnswerMessage")));
     }
 
     final var createTransaction = new TaskTransaction();
@@ -184,7 +192,8 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
             ignored -> this.waitUntilIncentiveServerHasTaskTypeStatus(vertx, testContext, checkIncentiveTypeStatus))
         .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext,
             checkIncentiveTransactionStatus))
-        .compose(ignored -> this.waitUntilSocialNotification(vertx, testContext, checkSocialNotification));
+        .compose(ignored -> this.waitUntilSocialNotification(vertx, testContext, checkSocialNotification))
+        .compose(ignored -> this.waitUntilInteractions(vertx, testContext, checkInteractions));
     future.onComplete(testContext.succeeding(ignored -> testContext.verify(() -> {
 
       assertThat(this.participants).hasSize(5);
@@ -209,6 +218,7 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
     final var checkMessages = new ArrayList<Predicate<Message>>();
     final var checkIncentiveTransactionStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     final var checkSocialNotification = new ArrayList<Predicate<UserMessage>>();
+    final var checkInteractions = new ArrayList<Predicate<Interaction>>();
     Future<?> future = Future.succeededFuture();
     var count = 1;
     for (final var user : this.participants) {
@@ -246,6 +256,13 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
           .and(UserMessagePredicates.transactionId(String.valueOf(transactionId)))
           .and(UserMessagePredicates.message(checkMessage)));
 
+      checkInteractions
+          .add(this.createInteractionPredicate().and(InteractionPredicates.senderIs(transaction.actioneerId))
+              .and(InteractionPredicates.transactionLabelIs(transaction.label))
+              .and(InteractionPredicates.transactionAttributesAre(transaction.attributes))
+              .and(InteractionPredicates.receiverIs(this.task.requesterId))
+              .and(InteractionPredicates.messageLabelIs("AnsweredQuestionMessage")));
+
       future = future.compose(ignored -> WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction))
           .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
 
@@ -255,7 +272,8 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
     future = future.compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
         .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext,
             checkIncentiveTransactionStatus))
-        .compose(ignored -> this.waitUntilSocialNotification(vertx, testContext, checkSocialNotification));
+        .compose(ignored -> this.waitUntilSocialNotification(vertx, testContext, checkSocialNotification))
+        .compose(ignored -> this.waitUntilInteractions(vertx, testContext, checkInteractions));
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
@@ -315,6 +333,7 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
     final var checkMessages = new ArrayList<Predicate<Message>>();
     final var checkIncentiveTransactionStatus = new ArrayList<Predicate<TaskTransactionStatusBody>>();
     final var checkSocialNotification = new ArrayList<Predicate<UserMessage>>();
+    final var checkInteractions = new ArrayList<Predicate<Interaction>>();
 
     final var transactionId = String.valueOf(this.task.transactions.size());
     final var maxUsers = this.expectedNewParticipants.size();
@@ -348,6 +367,12 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
                       .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("taskId", this.task.id)
                           .put("question", this.task.goal.name).put("userId", this.task.requesterId)
                           .put("sensitive", false).put("anonymous", false).put("positionOfAnswerer", "anywhere"))))));
+
+      checkInteractions.add(this.createInteractionPredicate().and(InteractionPredicates.senderIs(this.task.requesterId))
+          .and(InteractionPredicates.transactionLabelIs("moreAnswerTransaction"))
+          .and(interaction -> this.participants.contains(interaction.receiverId))
+          .and(InteractionPredicates.messageLabelIs("QuestionToAnswerMessage")));
+
     }
 
     final var moreAnswerTransaction = new TaskTransaction();
@@ -365,7 +390,8 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
         .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext,
             checkIncentiveTransactionStatus))
-        .compose(ignored -> this.waitUntilSocialNotification(vertx, testContext, checkSocialNotification));
+        .compose(ignored -> this.waitUntilSocialNotification(vertx, testContext, checkSocialNotification))
+        .compose(ignored -> this.waitUntilInteractions(vertx, testContext, checkInteractions));
     future.onComplete(testContext.succeeding(ignored -> testContext.verify(() -> {
 
       assertThat(this.participants).hasSize(8);
@@ -480,11 +506,22 @@ public class Ask4HelpV2ProtocolITC extends AbstractProtocolITC {
             .and(UserMessagePredicates.transactionId(String.valueOf(this.task.transactions.size())))
             .and(UserMessagePredicates.message(checkMessage)));
 
+    final var checkInteractions = new ArrayList<Predicate<Interaction>>();
+    checkInteractions
+        .add(this.createInteractionPredicate().and(InteractionPredicates.senderIs(bestAnswerTransaction.actioneerId))
+            .and(InteractionPredicates.transactionLabelIs(bestAnswerTransaction.label))
+            .and(InteractionPredicates.transactionAttributesAre(bestAnswerTransaction.attributes))
+            .and(InteractionPredicates.receiverIs(selectedTransaction.actioneerId))
+            .and(InteractionPredicates.messageLabelIs("AnsweredPickedMessage"))
+            .and(InteractionPredicates.messageAttributesSimilarTo(new JsonObject().put("taskId", this.task.id)
+                .put("question", this.task.goal.name).put("transactionId", selectedTransaction.id))));
+
     final Future<?> future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(bestAnswerTransaction)
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
         .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus))
-        .compose(ignored -> this.waitUntilSocialNotification(vertx, testContext, checkSocialNotification));
+        .compose(ignored -> this.waitUntilSocialNotification(vertx, testContext, checkSocialNotification))
+        .compose(ignored -> this.waitUntilInteractions(vertx, testContext, checkInteractions));
 
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
