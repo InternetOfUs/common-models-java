@@ -284,7 +284,7 @@ public class WeNetInteractionProtocolEngineTestCase extends WeNetComponentTestCa
               .onComplete(testContext.succeeding(page -> testContext.verify(() -> {
 
                 assertThat(page).isNotNull();
-                assertThat(page.total).isEqualTo(0L);
+                assertThat(page.total).isEqualTo(1L);
                 assertThat(page.interactions).isNotNull().hasSize(1).contains(interaction);
                 this.createComponentProxy(vertx)
                     .deleteInteractions(interaction.appId, null, null, null, null, null, null, null, null, null, null,
