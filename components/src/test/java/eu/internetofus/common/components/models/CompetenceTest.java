@@ -195,9 +195,24 @@ public class CompetenceTest extends ModelTestCase<Competence> {
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> {
-      assertThat(merged).isSameAs(target);
-    });
+    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+
+  }
+
+  /**
+   * Should merge with empty competence.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   */
+  @Test
+  public void shouldMergeWithEmpty(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    assertCanMerge(target, new Competence(), vertx, testContext,
+        merged -> assertThat(merged).isNotSameAs(target).isEqualTo(target));
 
   }
 

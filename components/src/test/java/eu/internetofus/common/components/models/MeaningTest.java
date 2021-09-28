@@ -161,7 +161,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   }
 
   /**
-   * Check that can merge will {@code null}.
+   * Check that can merge with {@code null}.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -170,10 +170,22 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   public void shouldMergeNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> {
+    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
 
-      assertThat(merged).isSameAs(target);
-    });
+  }
+
+  /**
+   * Check that can merge with empty meaning.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @Test
+  public void shouldMergeEmpty(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    assertCanMerge(target, new Meaning(), vertx, testContext,
+        merged -> assertThat(merged).isNotSameAs(target).isEqualTo(target));
 
   }
 
