@@ -27,6 +27,7 @@ import eu.internetofus.common.components.models.Message;
 import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTransaction;
 import eu.internetofus.common.components.service.MessagePredicates;
+import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderSimulator;
 import eu.internetofus.common.components.task_manager.TaskPredicates;
 import eu.internetofus.common.components.task_manager.TaskTransactionPredicates;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
@@ -433,7 +434,11 @@ public class Ask4HelpV1_2ProtocolITC extends AbstractProtocolITC {
     final var future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus));
+        .compose(ignored -> this.waitUntilIncentiveServerHasTaskTransactionStatus(vertx, testContext, checkStatus))
+        .compose(ignored -> this.waitUntil(vertx, testContext,
+            () -> WeNetSocialContextBuilderSimulator.createProxy(vertx)
+                .getSocialPreferencesSelectedAnswerForUserOnTask(transaction.actioneerId, this.task.id, 2),
+            any -> true));
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
