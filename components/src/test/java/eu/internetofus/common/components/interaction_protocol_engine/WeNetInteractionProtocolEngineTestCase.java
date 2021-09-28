@@ -27,6 +27,7 @@ import eu.internetofus.common.components.WeNetComponentTestCase;
 import eu.internetofus.common.components.models.IncentiveTest;
 import eu.internetofus.common.components.models.TaskTest;
 import eu.internetofus.common.components.models.TaskTransactionTest;
+import eu.internetofus.common.model.TimeManager;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import java.util.UUID;
@@ -257,11 +258,47 @@ public class WeNetInteractionProtocolEngineTestCase extends WeNetComponentTestCa
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldDeleteInteractionsFailBecauseAnyNotMatch(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldDeleteInteractionsFailBecauseAnyMatch(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createComponentProxy(vertx).deleteInteractions(UUID.randomUUID().toString(), null, null, null, null, null,
-        null, null, null, null, null, null, null, null)
+    final var now = TimeManager.now();
+    this.createComponentProxy(vertx)
+        .deleteInteractions(UUID.randomUUID().toString(), "communityId", "TaskTypeId", "TaskId", "senderId",
+            "receiverId", true, "transactionLabel", 0l, now, true, "messageLabel", 0l, now)
         .onComplete(testContext.failing(any -> testContext.completeNow()));
+  }
+
+  /**
+   * Should get empty interaction page because any match.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldGetInteractionsEmptyPageBecauseAnyMatch(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createComponentProxy(vertx).getInteractionsPage(null, UUID.randomUUID().toString(), null, null, null, null,
+        null, null, null, null, null, null, null, null, "transactionLabel", 0, 100)
+        .onComplete(testContext.succeeding(page -> {
+
+          assertThat(page).isNotNull();
+          assertThat(page.total).isEqualTo(0L);
+          assertThat(page.interactions).isNullOrEmpty();
+          testContext.completeNow();
+
+        }));
+  }
+
+  /**
+   * Should delete interaction fail.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldGetInteractionsFailBecauseBadOrder(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createComponentProxy(vertx).getInteractionsPage(null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, "undefined", 0, 100).onComplete(testContext.failing(any -> testContext.completeNow()));
   }
 
   /**

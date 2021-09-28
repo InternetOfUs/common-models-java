@@ -165,6 +165,23 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
   }
 
   /**
+   * Check that merge with empty norm.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see TaskType#merge(TaskType, String, Vertx)
+   */
+  @Test
+  public void shouldMergeWithEmptyNorm(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createModelExample(1);
+    assertCanMerge(target, new ProtocolNorm(), vertx, testContext,
+        merged -> assertThat(merged).isNotSameAs(target).isEqualTo(target));
+
+  }
+
+  /**
    * Check that update two models.
    *
    * @param vertx       event bus to use.
