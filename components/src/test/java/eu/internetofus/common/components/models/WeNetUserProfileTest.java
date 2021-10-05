@@ -2287,4 +2287,28 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
                     })))));
 
   }
+
+  /**
+   * Check that not allow two social relationships with the same used and type.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(String, Vertx)
+   */
+  @Test
+  public void shouldNotBeValidWithRelationWithTheSameUserAndType(final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> {
+
+      final var copy = Model.fromJsonObject(model.relationships.get(0).toJsonObject(), SocialNetworkRelationship.class);
+      copy.weight += 0.1d;
+      model.relationships.add(copy);
+      assertIsNotValid(model, "relationships[2]", vertx, testContext);
+
+    }));
+
+  }
+
 }

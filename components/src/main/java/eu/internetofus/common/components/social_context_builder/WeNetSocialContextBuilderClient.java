@@ -127,7 +127,7 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   @Override
   public void socialNotification(@NotNull final JsonObject message, @NotNull final Handler<AsyncResult<Void>> handler) {
 
-    this.post(message, this.createVoidExtractor(), "/social/notification/").onComplete(handler);
+    this.post(message, this.createVoidExtractor(), "/social/notification/interaction").onComplete(handler);
   }
 
   /**

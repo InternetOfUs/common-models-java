@@ -168,7 +168,7 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
   @Override
   public void getSocialNotification(@NotNull final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.getJsonArray("/social/notification/").onComplete(handler);
+    this.getJsonArray("/social/notification/interaction").onComplete(handler);
 
   }
 
@@ -178,7 +178,7 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
   @Override
   public void deleteSocialNotification(@NotNull final Handler<AsyncResult<Void>> handler) {
 
-    this.delete("/social/notification/").onComplete(handler);
+    this.delete("/social/notification/interaction").onComplete(handler);
 
   }
 

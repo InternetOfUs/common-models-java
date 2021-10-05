@@ -32,6 +32,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import java.util.Objects;
 
 /**
  * A relationship with another user.
@@ -105,6 +106,20 @@ public class SocialNetworkRelationship extends ReflectionModel
     }
 
     return future;
+
+  }
+
+  /**
+   * Check equals by user and type.
+   *
+   * @param relationship to compare.
+   *
+   * @return {@code true} if the relations has the same user and type.
+   */
+  public boolean equalsByUserAndType(final SocialNetworkRelationship relationship) {
+
+    return relationship != null && Objects.equals(this.type, relationship.type)
+        && Objects.equals(this.userId, relationship.userId);
 
   }
 
