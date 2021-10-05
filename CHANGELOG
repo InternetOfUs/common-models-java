@@ -5,7 +5,7 @@ All notable changes to `wenet-common` will be documented in this file
 
 ## Version 0.13.2 (2021-10-05)
 
- * Check social context builder is notify of the selected answer.
+ * Update social context builder when notify of a new interaction.
 
 
 ## Version 0.13.1 (2021-09-28)
