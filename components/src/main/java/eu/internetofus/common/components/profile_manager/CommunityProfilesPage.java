@@ -50,7 +50,7 @@ public class CommunityProfilesPage extends ReflectionModel implements Model {
   /**
    * The found communities.
    */
-  @ArraySchema(schema = @Schema(ref = "https://bitbucket.org/wenet/wenet-components-documentation/raw/7af902b41c0d088f33ba35efd095624aa8aa6a6a/sources/wenet-models-openapi.yaml#/components/schemas/CommunityProfile"), arraySchema = @Schema(description = "The set of communities found"))
+  @ArraySchema(schema = @Schema(ref = "https://bitbucket.org/wenet/wenet-components-documentation/raw/349a7827e0bc0380c2269d7372b1671aa3a670f9/sources/wenet-models-openapi.yaml#/components/schemas/CommunityProfile"), arraySchema = @Schema(description = "The set of communities found"))
   public List<CommunityProfile> communities;
 
 }
