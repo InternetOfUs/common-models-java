@@ -3,6 +3,11 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
+## Version 0.14.0 (2021-10-06)
+
+ * Add appId to the social network relationship.
+
+
 ## Version 0.13.2 (2021-10-05)
 
  * Update social context builder when notify of a new interaction.
