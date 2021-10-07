@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
@@ -139,7 +140,12 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
           profile.personalBehaviors = new ArrayList<>();
           profile.personalBehaviors.add(new RoutineTest().createModelExample(index));
           profile.personalBehaviors.get(0).user_id = stored2.id;
-          return Future.succeededFuture(profile);
+          return StoreServices.storeApp(new App(), vertx, testContext).map(app -> {
+
+            profile.relationships.get(0).appId = app.appId;
+            profile.relationships.get(1).appId = app.appId;
+            return profile;
+          });
 
         })));
 

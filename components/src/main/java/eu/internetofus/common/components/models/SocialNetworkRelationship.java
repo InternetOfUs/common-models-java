@@ -21,6 +21,7 @@
 package eu.internetofus.common.components.models;
 
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
+import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
@@ -44,6 +45,12 @@ public class SocialNetworkRelationship extends ReflectionModel
     implements Model, Validable, Mergeable<SocialNetworkRelationship>, Updateable<SocialNetworkRelationship> {
 
   /**
+   * The identifier of the application where the relation happens.
+   */
+  @Schema(description = "The identifier of the application where the relation happens", example = "4c51ee0b-b7ec-4577-9b21-ae6832656e33", nullable = true)
+  public String appId;
+
+  /**
    * The identifier of the WeNet user the relationship is related to.
    */
   @Schema(description = "The identifier of the WeNet user the relationship is related to", example = "4c51ee0b-b7ec-4577-9b21-ae6832656e33", nullable = true)
@@ -62,27 +69,6 @@ public class SocialNetworkRelationship extends ReflectionModel
   public Double weight;
 
   /**
-   * Create a new empty relationship.
-   */
-  public SocialNetworkRelationship() {
-
-  }
-
-  /**
-   * Create a new relationship.
-   *
-   * @param type   of relationship.
-   * @param userId identifier of the WeNet user the relationship is related to.
-   */
-  public SocialNetworkRelationship(final SocialNetworkRelationshipType type, final String userId) {
-
-    this.type = type;
-    this.userId = userId;
-    this.weight = 1.0d;
-
-  }
-
-  /**
    * {@inheritDoc}
    */
   @Override
@@ -98,6 +84,8 @@ public class SocialNetworkRelationship extends ReflectionModel
 
     } else {
 
+      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
+          WeNetService.createProxy(vertx)::retrieveApp);
       future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
           WeNetProfileManager.createProxy(vertx)::retrieveProfile);
       future = future
@@ -135,6 +123,12 @@ public class SocialNetworkRelationship extends ReflectionModel
     if (source != null) {
 
       final var merged = new SocialNetworkRelationship();
+      merged.appId = source.appId;
+      if (merged.appId == null) {
+
+        merged.appId = this.appId;
+      }
+
       merged.userId = source.userId;
       if (merged.userId == null) {
 
@@ -178,6 +172,7 @@ public class SocialNetworkRelationship extends ReflectionModel
     if (source != null) {
 
       final var updated = new SocialNetworkRelationship();
+      updated.appId = source.appId;
       updated.userId = source.userId;
       updated.type = source.type;
       updated.weight = source.weight;

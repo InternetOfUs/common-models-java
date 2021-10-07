@@ -177,7 +177,7 @@ public interface ModelResources {
       if (valid.failed()) {
 
         final var cause = valid.cause();
-        Logger.trace(cause, "The {} is not a valid.\n{}", model, context);
+        Logger.trace(cause, "The {} is not valid.\n{}", model, context);
         ServiceResponseHandlers.responseFailedWith(context.resultHandler, Status.BAD_REQUEST, cause);
 
       } else {

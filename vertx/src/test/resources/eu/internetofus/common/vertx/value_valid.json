@@ -1451,7 +1451,7 @@
 	},
 	"85": {
 		"specification": {
-			"$ref":"https://bitbucket.org/wenet/wenet-components-documentation/raw/e98ade66fca42ce46a8738cece1595d6058410d8/sources/wenet-models-openapi.yaml#/components/schemas/Task"
+			"$ref":"https://bitbucket.org/wenet/wenet-components-documentation/raw/349a7827e0bc0380c2269d7372b1671aa3a670f9/sources/wenet-models-openapi.yaml#/components/schemas/Task"
 		},
 		"value": {
 		},
