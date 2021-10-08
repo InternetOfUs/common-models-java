@@ -169,12 +169,12 @@ public class WeNetTaskManagerTestCase extends WeNetComponentTestCase<WeNetTaskMa
 
                   final var taskToMerge = new Task();
                   final var newAttributeValue = UUID.randomUUID().toString();
-                  taskToMerge.attributes = new JsonObject().put("a_str", newAttributeValue);
+                  taskToMerge.attributes = new JsonObject().put("newStringAttribute", newAttributeValue);
                   testContext.assertComplete(service.mergeTask(id, taskToMerge))
                       .onSuccess(mergedTask -> testContext.verify(() -> {
 
                         taskToUpdate._lastUpdateTs = mergedTask._lastUpdateTs;
-                        taskToUpdate.attributes.put("a_str", newAttributeValue);
+                        taskToUpdate.attributes.put("newStringAttribute", newAttributeValue);
                         assertThat(mergedTask).isEqualTo(taskToUpdate);
                         testContext.assertComplete(service.deleteTask(id)).onSuccess(empty -> {
 
@@ -418,12 +418,14 @@ public class WeNetTaskManagerTestCase extends WeNetComponentTestCase<WeNetTaskMa
                   assertThat(updatedTaskType).isEqualTo(taskTypeToUpdate);
 
                   final var taskTypeToMerge = new TaskType();
-                  taskTypeToMerge.attributes = new JsonObject().put("a_str", new JsonObject().put("type", "string"));
+                  taskTypeToMerge.attributes = new JsonObject().put("type", "object").put("properties",
+                      new JsonObject().put("newStringAttribute", new JsonObject().put("type", "string")));
                   testContext.assertComplete(service.mergeTaskType(id, taskTypeToMerge))
                       .onSuccess(mergedTaskType -> testContext.verify(() -> {
 
                         taskTypeToUpdate._lastUpdateTs = mergedTaskType._lastUpdateTs;
-                        taskTypeToUpdate.attributes.put("a_str", new JsonObject().put("type", "string"));
+                        taskTypeToUpdate.attributes.getJsonObject("properties").put("newStringAttribute",
+                            new JsonObject().put("type", "string"));
                         assertThat(mergedTaskType).isEqualTo(taskTypeToUpdate);
                         testContext.assertComplete(service.deleteTaskType(id)).onSuccess(empty -> {
 
