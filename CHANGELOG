@@ -7,6 +7,7 @@ All notable changes to `wenet-common` will be documented in this file
 
  * Add appId to the social network relationship.
  * Update common models API references.
+ * Fix task type update/merge problem with time.
 
 
 ## Version 0.13.2 (2021-10-05)
