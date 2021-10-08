@@ -463,15 +463,16 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
     StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(stored -> {
 
-      final var model = new WeNetUserProfile();
-      model.relationships = new ArrayList<>();
-      model.relationships.add(new SocialNetworkRelationship());
-      model.relationships.add(new SocialNetworkRelationship());
-      model.relationships.get(0).userId = stored.id;
-      model.relationships.get(0).type = SocialNetworkRelationshipType.friend;
-      model.relationships.get(1).userId = stored.id;
-      model.relationships.get(1).type = SocialNetworkRelationshipType.friend;
-      assertIsNotValid(model, "relationships[1]", vertx, testContext);
+      new SocialNetworkRelationshipTest().createModelExample(0, vertx, testContext)
+          .onComplete(testContext.succeeding(relation -> {
+
+            final var model = new WeNetUserProfile();
+            model.relationships = new ArrayList<>();
+            model.relationships.add(relation);
+            model.relationships.add(Model.fromJsonObject(relation.toJsonObject(), SocialNetworkRelationship.class));
+            assertIsNotValid(model, "relationships[1]", vertx, testContext);
+
+          }));
 
     });
 
@@ -490,15 +491,17 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
     StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(stored -> {
 
-      final var model = new WeNetUserProfile();
-      model.relationships = new ArrayList<>();
-      model.relationships.add(new SocialNetworkRelationship());
-      model.relationships.add(new SocialNetworkRelationship());
-      model.relationships.get(0).userId = stored.id;
-      model.relationships.get(0).type = SocialNetworkRelationshipType.family;
-      model.relationships.get(1).userId = stored.id;
-      model.relationships.get(1).type = SocialNetworkRelationshipType.friend;
-      assertIsValid(model, vertx, testContext);
+      new SocialNetworkRelationshipTest().createModelExample(0, vertx, testContext)
+          .onComplete(testContext.succeeding(relation -> {
+
+            final var model = new WeNetUserProfile();
+            model.relationships = new ArrayList<>();
+            model.relationships.add(relation);
+            model.relationships.add(
+                Model.fromJsonObject(relation.toJsonObject().put("type", "family"), SocialNetworkRelationship.class));
+            assertIsValid(model, vertx, testContext);
+
+          }));
 
     });
 
@@ -985,15 +988,16 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
     StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(stored -> {
 
-      final var source = new WeNetUserProfile();
-      source.relationships = new ArrayList<>();
-      source.relationships.add(new SocialNetworkRelationship());
-      source.relationships.add(new SocialNetworkRelationship());
-      source.relationships.get(0).userId = stored.id;
-      source.relationships.get(0).type = SocialNetworkRelationshipType.friend;
-      source.relationships.get(1).userId = stored.id;
-      source.relationships.get(1).type = SocialNetworkRelationshipType.friend;
-      assertCannotMerge(new WeNetUserProfile(), source, "relationships[1]", vertx, testContext);
+      new SocialNetworkRelationshipTest().createModelExample(0, vertx, testContext)
+          .onComplete(testContext.succeeding(relation -> {
+            final var source = new WeNetUserProfile();
+
+            source.relationships = new ArrayList<>();
+            source.relationships.add(relation);
+            source.relationships.add(Model.fromJsonObject(relation.toJsonObject(), SocialNetworkRelationship.class));
+            assertCannotMerge(new WeNetUserProfile(), source, "relationships[1]", vertx, testContext);
+
+          }));
 
     });
 
@@ -1012,26 +1016,31 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
     StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(stored -> {
 
-      final var target = new WeNetUserProfile();
-      target.relationships = new ArrayList<>();
-      target.relationships.add(new SocialNetworkRelationship());
-      target.relationships.get(0).userId = stored.id;
-      target.relationships.get(0).type = SocialNetworkRelationshipType.friend;
+      new SocialNetworkRelationshipTest().createModelExample(0, vertx, testContext)
+          .onComplete(testContext.succeeding(relation -> {
 
-      final var source = new WeNetUserProfile();
-      source.relationships = new ArrayList<>();
-      source.relationships.add(new SocialNetworkRelationship());
-      source.relationships.add(new SocialNetworkRelationship());
-      source.relationships.get(0).userId = stored.id;
-      source.relationships.get(0).type = SocialNetworkRelationshipType.family;
-      source.relationships.get(1).userId = stored.id;
-      source.relationships.get(1).type = SocialNetworkRelationshipType.friend;
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+            final var target = new WeNetUserProfile();
+            target.relationships = new ArrayList<>();
+            target.relationships.add(new SocialNetworkRelationship());
+            target.relationships.get(0).appId = relation.appId;
+            target.relationships.get(0).userId = stored.id;
+            target.relationships.get(0).type = SocialNetworkRelationshipType.friend;
+            target.relationships.get(0).weight = 0.5;
 
-        assertThat(merged.relationships).isNotEqualTo(target.relationships).isEqualTo(source.relationships);
+            final var source = new WeNetUserProfile();
+            source.relationships = new ArrayList<>();
+            source.relationships.add(new SocialNetworkRelationship());
+            source.relationships.add(relation);
+            source.relationships.get(0).appId = relation.appId;
+            source.relationships.get(0).userId = stored.id;
+            source.relationships.get(0).type = SocialNetworkRelationshipType.family;
+            assertCanMerge(target, source, vertx, testContext, merged -> {
 
-      });
+              assertThat(merged.relationships).isNotEqualTo(target.relationships).isEqualTo(source.relationships);
 
+            });
+
+          }));
     });
 
   }

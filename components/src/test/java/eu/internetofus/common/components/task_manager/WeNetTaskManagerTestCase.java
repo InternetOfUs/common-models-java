@@ -418,13 +418,12 @@ public class WeNetTaskManagerTestCase extends WeNetComponentTestCase<WeNetTaskMa
                   assertThat(updatedTaskType).isEqualTo(taskTypeToUpdate);
 
                   final var taskTypeToMerge = new TaskType();
-                  taskTypeToMerge.attributes = new JsonObject().put("properties",
-                      new JsonObject().put("newKey", new JsonObject()));
+                  taskTypeToMerge.attributes = new JsonObject().put("a_str", new JsonObject().put("type", "string"));
                   testContext.assertComplete(service.mergeTaskType(id, taskTypeToMerge))
                       .onSuccess(mergedTaskType -> testContext.verify(() -> {
 
                         taskTypeToUpdate._lastUpdateTs = mergedTaskType._lastUpdateTs;
-                        taskTypeToUpdate.attributes.getJsonObject("properties").put("newKey", new JsonObject());
+                        taskTypeToUpdate.attributes.put("a_str", new JsonObject().put("type", "string"));
                         assertThat(mergedTaskType).isEqualTo(taskTypeToUpdate);
                         testContext.assertComplete(service.deleteTaskType(id)).onSuccess(empty -> {
 
