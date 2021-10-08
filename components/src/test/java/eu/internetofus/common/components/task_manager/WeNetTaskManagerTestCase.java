@@ -169,12 +169,12 @@ public class WeNetTaskManagerTestCase extends WeNetComponentTestCase<WeNetTaskMa
 
                   final var taskToMerge = new Task();
                   final var newAttributeValue = UUID.randomUUID().toString();
-                  taskToMerge.attributes = new JsonObject().put("newStringAttribute", newAttributeValue);
+                  taskToMerge.attributes = new JsonObject().put("a_str", newAttributeValue);
                   testContext.assertComplete(service.mergeTask(id, taskToMerge))
                       .onSuccess(mergedTask -> testContext.verify(() -> {
 
                         taskToUpdate._lastUpdateTs = mergedTask._lastUpdateTs;
-                        taskToUpdate.attributes.put("newStringAttribute", newAttributeValue);
+                        taskToUpdate.attributes.put("a_str", newAttributeValue);
                         assertThat(mergedTask).isEqualTo(taskToUpdate);
                         testContext.assertComplete(service.deleteTask(id)).onSuccess(empty -> {
 
