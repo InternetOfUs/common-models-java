@@ -244,11 +244,14 @@ public abstract class AbstractProtocolITC {
   }
 
   /**
-   * The default protocol to test.
+   * Create the task type of the protocol to test.
    *
-   * @return the default protocol to test.
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   *
+   * @return the future with the task type to use.
    */
-  protected abstract DefaultProtocols getDefaultProtocolsToUse();
+  protected abstract Future<TaskType> createTaskTypeForProtocol(final Vertx vertx, final VertxTestContext testContext);
 
   /**
    * Create a new instance of the task type to test.
@@ -261,15 +264,7 @@ public abstract class AbstractProtocolITC {
   public void shouldCreateTaskType(final Vertx vertx, final VertxTestContext testContext) {
 
     this.assertLastSuccessfulTestWas(3, testContext);
-
-    final var protocol = this.getDefaultProtocolsToUse();
-
-    var future = protocol.load(vertx).map(foundTaskType -> {
-
-      foundTaskType.id = null;
-      return foundTaskType;
-
-    });
+    var future = this.createTaskTypeForProtocol(vertx, testContext);
     future = future.compose(foundTaskType -> WeNetTaskManager.createProxy(vertx).createTaskType(foundTaskType));
     future.onComplete(testContext.succeeding(createdTaskType -> {
       this.taskType = createdTaskType;

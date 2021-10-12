@@ -2,6 +2,10 @@
 
 All notable changes to `wenet-common` will be documented in this file
 
+## Version 0.. (2021--)
+
+ * Update vertx version.
+
 
 ## Version 0.14.0 (2021-10-08)
 

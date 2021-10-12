@@ -52,7 +52,7 @@ import org.junit.jupiter.params.provider.CsvSource;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class EatTogetherV2ProtocolITC extends AbstractProtocolITC {
+public class EatTogetherV2ProtocolITC extends AbstractDefaultProtocolITC {
 
   /**
    * {@inheritDoc}

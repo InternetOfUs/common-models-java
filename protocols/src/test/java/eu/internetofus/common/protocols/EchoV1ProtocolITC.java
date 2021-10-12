@@ -46,7 +46,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class EchoV1ProtocolITC extends AbstractProtocolITC {
+public class EchoV1ProtocolITC extends AbstractDefaultProtocolITC {
 
   /**
    * {@inheritDoc}

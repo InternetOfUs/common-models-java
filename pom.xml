@@ -3,7 +3,7 @@
  <modelVersion>4.0.0</modelVersion>
  <groupId>eu.internetofus</groupId>
  <artifactId>common-parent</artifactId>
- <version>0.14.0</version>
+ <version>0.14.1</version>
  <packaging>pom</packaging>
  <description>This project will be used to provide the common classes for the UDT-IA IIIA-CSIC WeNet components.</description>
  <organization>
@@ -47,7 +47,7 @@
   <maven-site-plugin-version>3.9.1</maven-site-plugin-version>
   <build-helper-maven-plugin-version>3.2.0</build-helper-maven-plugin-version>
   <!-- Library versions -->
-  <io.vertx-version>4.1.4</io.vertx-version>
+  <io.vertx-version>4.1.5</io.vertx-version>
   <io.swagger-version>2.1.10</io.swagger-version>
   <commons-validator-version>1.7</commons-validator-version>
   <com.googlecode.libphonenumber-version>8.12.27</com.googlecode.libphonenumber-version>
