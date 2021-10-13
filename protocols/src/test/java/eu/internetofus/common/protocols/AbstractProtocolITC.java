@@ -617,11 +617,15 @@ public abstract class AbstractProtocolITC {
 
         return false;
       }
+      if (this.community != null && !this.community.id.equals(state.community_id)) {
+
+        return false;
+      }
       if (this.taskType != null && !this.taskType.id.equals(state.taskTypeId)) {
 
         return false;
       }
-      if (this.community != null && !this.community.id.equals(state.community_id)) {
+      if (this.task != null && !this.task.id.equals(state.taskId)) {
 
         return false;
       }
@@ -648,11 +652,15 @@ public abstract class AbstractProtocolITC {
 
         return false;
       }
+      if (this.community != null && !this.community.id.equals(state.community_id)) {
+
+        return false;
+      }
       if (this.taskType != null && !this.taskType.id.equals(state.taskTypeId)) {
 
         return false;
       }
-      if (this.community != null && !this.community.id.equals(state.community_id)) {
+      if (this.task != null && !this.task.id.equals(state.taskId)) {
 
         return false;
       }

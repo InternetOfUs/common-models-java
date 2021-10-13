@@ -57,6 +57,12 @@ public class TaskTransactionStatusBody extends ReflectionModel implements Model 
   public String taskTypeId;
 
   /**
+   * Identifier of the task.
+   */
+  @Schema(example = "12ear56skp")
+  public String taskId;
+
+  /**
    * The action that update the task.
    */
   @Schema(example = "answerTransaction")
