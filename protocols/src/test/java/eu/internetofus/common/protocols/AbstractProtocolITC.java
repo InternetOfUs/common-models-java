@@ -808,7 +808,7 @@ public abstract class AbstractProtocolITC {
       @NotNull final VertxTestContext testContext, @NotNull final List<Predicate<UserMessage>> checkStatus) {
 
     return this.waitUntil(vertx, testContext,
-        () -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotification(), status -> {
+        () -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotificationInteraction(), status -> {
 
           final List<Predicate<UserMessage>> copy = new ArrayList<>(checkStatus);
           final var statusIter = status.iterator();
@@ -835,7 +835,7 @@ public abstract class AbstractProtocolITC {
           }
 
           return copy.isEmpty();
-        }).compose(status -> WeNetSocialContextBuilderSimulator.createProxy(vertx).deleteSocialNotification()
+        }).compose(status -> WeNetSocialContextBuilderSimulator.createProxy(vertx).deleteSocialNotificationInteraction()
             .map(ignored -> status));
 
   }
