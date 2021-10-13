@@ -486,11 +486,11 @@ public interface WeNetSocialContextBuilderSimulator {
    * @return the last social notification.
    */
   @GenIgnore
-  default Future<List<UserMessage>> getSocialNotificationProfileUpdate() {
+  default Future<List<String>> getSocialNotificationProfileUpdate() {
 
     final Promise<JsonArray> promise = Promise.promise();
     this.getSocialNotificationProfileUpdate(promise);
-    return Model.fromFutureJsonArray(promise.future(), UserMessage.class);
+    return Model.fromFutureJsonArray(promise.future(), String.class);
 
   }
 
