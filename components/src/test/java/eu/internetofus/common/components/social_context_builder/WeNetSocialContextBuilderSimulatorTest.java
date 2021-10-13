@@ -196,24 +196,26 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
   }
 
   /**
-   * Should manage the social notification.
+   * Should manage the social notification interaction.
    *
    * @param vertx       that contains the event bus to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldSetGetDeleteSocialNotification(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldSetGetDeleteSocialNotificationInteraction(final Vertx vertx, final VertxTestContext testContext) {
 
     final var message = new UserMessageTest().createModelExample(1);
-    WeNetSocialContextBuilderSimulator.createProxy(vertx).socialNotification(message)
-        .compose(any -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotification()).onComplete(
+    WeNetSocialContextBuilderSimulator.createProxy(vertx).socialNotificationInteraction(message)
+        .compose(any -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotificationInteraction())
+        .onComplete(
 
             testContext.succeeding(getted -> testContext.verify(() -> {
 
               assertThat(getted).isNotEmpty().hasSizeGreaterThanOrEqualTo(1);
               assertThat(getted.get(getted.size() - 1)).isEqualTo(message);
-              WeNetSocialContextBuilderSimulator.createProxy(vertx).deleteSocialNotification()
-                  .compose(any -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotification())
+              WeNetSocialContextBuilderSimulator.createProxy(vertx).deleteSocialNotificationInteraction()
+                  .compose(
+                      any -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotificationInteraction())
                   .onComplete(
 
                       testContext.succeeding(empty -> testContext.verify(() -> {
@@ -250,6 +252,39 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
               assertThat(getted).isEqualTo(userAnswers);
               testContext.completeNow();
 
+            })));
+
+  }
+
+  /**
+   * Should manage the social notification profile update.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldSetGetDeleteSocialNotificationProfileUpdate(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var userId = UUID.randomUUID().toString();
+    WeNetSocialContextBuilderSimulator.createProxy(vertx).socialNotificationProfileUpdate(userId)
+        .compose(any -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotificationProfileUpdate())
+        .onComplete(
+
+            testContext.succeeding(getted -> testContext.verify(() -> {
+
+              assertThat(getted).isNotEmpty().hasSizeGreaterThanOrEqualTo(1);
+              assertThat(getted.get(getted.size() - 1)).isEqualTo(userId);
+              WeNetSocialContextBuilderSimulator.createProxy(vertx).deleteSocialNotificationProfileUpdate()
+                  .compose(
+                      any -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotificationProfileUpdate())
+                  .onComplete(
+
+                      testContext.succeeding(empty -> testContext.verify(() -> {
+
+                        assertThat(empty).isEmpty();
+                        testContext.completeNow();
+
+                      })));
             })));
 
   }

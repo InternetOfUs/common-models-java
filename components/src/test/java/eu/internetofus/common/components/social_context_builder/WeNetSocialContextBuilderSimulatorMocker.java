@@ -101,10 +101,12 @@ public class WeNetSocialContextBuilderSimulatorMocker extends AbstractComponentM
     router.post("/social/relations/initialize/:userId")
         .handler(this.context.createSetHandler("SOCIAL_RELATIONS_INITIALIZE", "userId"));
 
-    router.post("/social/notification/interaction").handler(this.context.createAddSocialNotificationHandler());
+    router.post("/social/notification/interaction")
+        .handler(this.context.createAddSocialNotificationInteractionHandler());
     router.get("/social/notification/interaction")
-        .handler(this.context.createGetHandler("SOCIAL_NOTIFICATION", new JsonArray()));
-    router.delete("/social/notification/interaction").handler(this.context.createDeleteSocialNotificationHandler());
+        .handler(this.context.createGetHandler("SOCIAL_NOTIFICATION_INTERACTION", new JsonArray()));
+    router.delete("/social/notification/interaction")
+        .handler(this.context.createDeleteSocialNotificationInteractionHandler());
 
     router.get("/social/preferences/answers/:userId/:taskId")
         .handler(this.context.createGetHandler("SOCIAL_PREFERENCES_ANSWERS", new JsonObject(), "userId", "taskId"));
@@ -115,6 +117,13 @@ public class WeNetSocialContextBuilderSimulatorMocker extends AbstractComponentM
         "SOCIAL_PREFERENCES_ANSWERS_SELECTION_UPDATE", new JsonArray(), "userId", "taskId", "selection"));
     router.put("/social/preferences/answers/:userId/:taskId/:selection/update").handler(
         this.context.createSetHandler("SOCIAL_PREFERENCES_ANSWERS_SELECTION_UPDATE", "userId", "taskId", "selection"));
+
+    router.post("/social/notification/profileUpdate/:userId")
+        .handler(this.context.createAddSocialNotificationProfileUpdateHandler());
+    router.get("/social/notification/profileUpdate")
+        .handler(this.context.createGetHandler("SOCIAL_NOTIFICATION_PROFILE_UPDATE", new JsonArray()));
+    router.delete("/social/notification/profileUpdate")
+        .handler(this.context.createDeleteSocialNotificationProfileUpdateHandler());
 
   }
 

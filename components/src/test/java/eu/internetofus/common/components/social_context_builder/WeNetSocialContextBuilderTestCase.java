@@ -135,16 +135,16 @@ public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<We
   }
 
   /**
-   * Should social notification.
+   * Should social notification interaction.
    *
    * @param vertx       that contains the event bus to use.
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldSocialNotification(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldSocialNotificationInteraction(final Vertx vertx, final VertxTestContext testContext) {
 
     final var message = new UserMessageTest().createModelExample(1);
-    this.createComponentProxy(vertx).socialNotification(message)
+    this.createComponentProxy(vertx).socialNotificationInteraction(message)
         .onComplete(testContext.succeeding(any -> testContext.completeNow()));
 
   }
@@ -163,6 +163,21 @@ public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<We
     final var taskId = UUID.randomUUID().toString();
     final var userAnswers = new UserAnswersTest().createModelExample(0);
     this.createComponentProxy(vertx).putSocialPreferencesSelectedAnswerForUserOnTask(userId, taskId, 0, userAnswers)
+        .onComplete(testContext.succeeding(any -> testContext.completeNow()));
+
+  }
+
+  /**
+   * Should social notification profile update.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldSocialNotificationProfileUpdate(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var userId = UUID.randomUUID().toString();
+    this.createComponentProxy(vertx).socialNotificationProfileUpdate(userId)
         .onComplete(testContext.succeeding(any -> testContext.completeNow()));
 
   }

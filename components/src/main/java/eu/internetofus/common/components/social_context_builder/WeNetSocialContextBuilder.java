@@ -178,7 +178,7 @@ public interface WeNetSocialContextBuilder extends WeNetComponent {
    * @param message that has been interchanged.
    * @param handler for the social relations.
    */
-  void socialNotification(@NotNull JsonObject message, @NotNull Handler<AsyncResult<Void>> handler);
+  void socialNotificationInteraction(@NotNull JsonObject message, @NotNull Handler<AsyncResult<Void>> handler);
 
   /**
    * Notify about a message that is interchanged in a task.
@@ -188,10 +188,10 @@ public interface WeNetSocialContextBuilder extends WeNetComponent {
    * @return the user relations.
    */
   @GenIgnore
-  default Future<Void> socialNotification(@NotNull final UserMessage message) {
+  default Future<Void> socialNotificationInteraction(@NotNull final UserMessage message) {
 
     final Promise<Void> promise = Promise.promise();
-    this.socialNotification(message.toJsonObject(), promise);
+    this.socialNotificationInteraction(message.toJsonObject(), promise);
     return promise.future();
 
   }
@@ -268,4 +268,29 @@ public interface WeNetSocialContextBuilder extends WeNetComponent {
     return promise.future();
 
   }
+
+  /**
+   * Notify about an update over a user profile.
+   *
+   * @param userId  identifier of the updated profile.
+   * @param handler for the social relations.
+   */
+  void socialNotificationProfileUpdate(@NotNull String userId, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Notify about an update over a user profile.
+   *
+   * @param userId identifier of the updated profile.
+   *
+   * @return the user relations.
+   */
+  @GenIgnore
+  default Future<Void> socialNotificationProfileUpdate(@NotNull final String userId) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.socialNotificationProfileUpdate(userId, promise);
+    return promise.future();
+
+  }
+
 }

@@ -72,13 +72,13 @@ public class WeNetSocialContextBuilderSimulatorGetSetContext extends GetSetConte
    *
    * @return the social notifications.
    */
-  protected JsonArray getSocialNotifications() {
+  protected JsonArray getSocialNotificationInteractions() {
 
-    var notifications = (JsonArray) this.values.get("SOCIAL_NOTIFICATION");
+    var notifications = (JsonArray) this.values.get("SOCIAL_NOTIFICATION_INTERACTION");
     if (notifications == null) {
 
       notifications = new JsonArray();
-      this.values.put("SOCIAL_NOTIFICATION", notifications);
+      this.values.put("SOCIAL_NOTIFICATION_INTERACTION", notifications);
     }
     return notifications;
 
@@ -89,7 +89,7 @@ public class WeNetSocialContextBuilderSimulatorGetSetContext extends GetSetConte
    *
    * @return the handler to set a value.
    */
-  public Handler<RoutingContext> createAddSocialNotificationHandler() {
+  public Handler<RoutingContext> createAddSocialNotificationInteractionHandler() {
 
     return ctx -> {
 
@@ -105,7 +105,7 @@ public class WeNetSocialContextBuilderSimulatorGetSetContext extends GetSetConte
 
         } else {
 
-          final var notifications = this.getSocialNotifications();
+          final var notifications = this.getSocialNotificationInteractions();
           notifications.add(value);
           response.setStatusCode(Status.CREATED.getStatusCode());
           response.end(value.toBuffer());
@@ -126,11 +126,75 @@ public class WeNetSocialContextBuilderSimulatorGetSetContext extends GetSetConte
    *
    * @return the handler to set a value.
    */
-  public Handler<RoutingContext> createDeleteSocialNotificationHandler() {
+  public Handler<RoutingContext> createDeleteSocialNotificationInteractionHandler() {
 
     return ctx -> {
 
-      final var notifications = this.getSocialNotifications();
+      final var notifications = this.getSocialNotificationInteractions();
+      notifications.clear();
+      final var response = ctx.response();
+      response.setStatusCode(Status.NO_CONTENT.getStatusCode());
+      response.end();
+
+    };
+
+  }
+
+  /**
+   * Return the defined social notifications.
+   *
+   * @return the social notifications.
+   */
+  protected JsonArray getSocialNotificationProfileUpdates() {
+
+    var notifications = (JsonArray) this.values.get("SOCIAL_NOTIFICATION_PROFILE_UPDATE");
+    if (notifications == null) {
+
+      notifications = new JsonArray();
+      this.values.put("SOCIAL_NOTIFICATION_PROFILE_UPDATE", notifications);
+    }
+    return notifications;
+
+  }
+
+  /**
+   * Create a handler to store the social preferences answers.
+   *
+   * @return the handler to set a value.
+   */
+  public Handler<RoutingContext> createAddSocialNotificationProfileUpdateHandler() {
+
+    return ctx -> {
+
+      final var response = ctx.response();
+      try {
+
+        final var userId = ctx.pathParam("userId");
+        final var notifications = this.getSocialNotificationProfileUpdates();
+        notifications.add(userId);
+        response.setStatusCode(Status.OK.getStatusCode());
+        response.end();
+
+      } catch (final Throwable t) {
+
+        response.setStatusCode(Status.BAD_REQUEST.getStatusCode());
+        response.end(new ErrorMessage("bad_value", "Does not exist a valid user identifier.").toBuffer());
+      }
+
+    };
+
+  }
+
+  /**
+   * Create a handler to delete the social preferences answers.
+   *
+   * @return the handler to set a value.
+   */
+  public Handler<RoutingContext> createDeleteSocialNotificationProfileUpdateHandler() {
+
+    return ctx -> {
+
+      final var notifications = this.getSocialNotificationProfileUpdates();
       notifications.clear();
       final var response = ctx.response();
       response.setStatusCode(Status.NO_CONTENT.getStatusCode());

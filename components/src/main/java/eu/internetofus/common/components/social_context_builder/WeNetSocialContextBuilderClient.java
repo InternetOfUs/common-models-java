@@ -125,7 +125,8 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
    * {@inheritDoc}
    */
   @Override
-  public void socialNotification(@NotNull final JsonObject message, @NotNull final Handler<AsyncResult<Void>> handler) {
+  public void socialNotificationInteraction(@NotNull final JsonObject message,
+      @NotNull final Handler<AsyncResult<Void>> handler) {
 
     this.post(message, this.createVoidExtractor(), "/social/notification/interaction").onComplete(handler);
   }
@@ -140,6 +141,18 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
 
     this.put(this.createAbsoluteUrlWith("/social/preferences/answers", userId, taskId, selection, "/update"),
         userAnswers, this.createVoidExtractor()).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void socialNotificationProfileUpdate(@NotNull final String userId,
+      @NotNull final Handler<AsyncResult<Void>> handler) {
+
+    final var url = this.createAbsoluteUrlWith("/social/notification/profileUpdate", userId);
+    this.request(HttpMethod.POST, url, this.createVoidExtractor()).onComplete(handler);
 
   }
 

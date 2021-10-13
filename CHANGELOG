@@ -2,9 +2,11 @@
 
 All notable changes to `wenet-common` will be documented in this file
 
-## Version 0.. (2021--)
+## Version 0.15.0 (2021--)
 
  * Update vertx version.
+ * Update incentive server notifications adding task identifier.
+ * Add new notification for the incentive server when the profile is changed. 
 
 
 ## Version 0.14.0 (2021-10-08)

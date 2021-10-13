@@ -154,10 +154,10 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> socialNotification(@NotNull final UserMessage message) {
+  public Future<Void> socialNotificationInteraction(@NotNull final UserMessage message) {
 
     final Promise<Void> promise = Promise.promise();
-    this.socialNotification(message.toJsonObject(), promise);
+    this.socialNotificationInteraction(message.toJsonObject(), promise);
     return promise.future();
 
   }
@@ -166,7 +166,7 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
    * {@inheritDoc}
    */
   @Override
-  public void getSocialNotification(@NotNull final Handler<AsyncResult<JsonArray>> handler) {
+  public void getSocialNotificationInteraction(@NotNull final Handler<AsyncResult<JsonArray>> handler) {
 
     this.getJsonArray("/social/notification/interaction").onComplete(handler);
 
@@ -176,7 +176,7 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
    * {@inheritDoc}
    */
   @Override
-  public void deleteSocialNotification(@NotNull final Handler<AsyncResult<Void>> handler) {
+  public void deleteSocialNotificationInteraction(@NotNull final Handler<AsyncResult<Void>> handler) {
 
     this.delete("/social/notification/interaction").onComplete(handler);
 
@@ -204,6 +204,38 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
       @NotNull final String taskId, final int selection, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
 
     this.getJsonObject("/social/preferences/answers", userId, taskId, selection, "/update").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<Void> socialNotificationProfileUpdate(@NotNull final String userId) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.socialNotificationProfileUpdate(userId, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void getSocialNotificationProfileUpdate(@NotNull final Handler<AsyncResult<JsonArray>> handler) {
+
+    this.getJsonArray("/social/notification/profileUpdate").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteSocialNotificationProfileUpdate(@NotNull final Handler<AsyncResult<Void>> handler) {
+
+    this.delete("/social/notification/profileUpdate").onComplete(handler);
 
   }
 

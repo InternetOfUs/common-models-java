@@ -292,7 +292,7 @@ public interface WeNetSocialContextBuilderSimulator {
    * @param message that has been interchanged.
    * @param handler for the social relations.
    */
-  void socialNotification(@NotNull JsonObject message, @NotNull Handler<AsyncResult<Void>> handler);
+  void socialNotificationInteraction(@NotNull JsonObject message, @NotNull Handler<AsyncResult<Void>> handler);
 
   /**
    * Notify about a message that is interchanged in a task.
@@ -302,10 +302,10 @@ public interface WeNetSocialContextBuilderSimulator {
    * @return the notification result.
    */
   @GenIgnore
-  default Future<Void> socialNotification(@NotNull final UserMessage message) {
+  default Future<Void> socialNotificationInteraction(@NotNull final UserMessage message) {
 
     final Promise<Void> promise = Promise.promise();
-    this.socialNotification(message.toJsonObject(), promise);
+    this.socialNotificationInteraction(message.toJsonObject(), promise);
     return promise.future();
 
   }
@@ -315,7 +315,7 @@ public interface WeNetSocialContextBuilderSimulator {
    *
    * @param handler for the social notification.
    */
-  void getSocialNotification(@NotNull Handler<AsyncResult<JsonArray>> handler);
+  void getSocialNotificationInteraction(@NotNull Handler<AsyncResult<JsonArray>> handler);
 
   /**
    * Get the last social notification.
@@ -323,10 +323,10 @@ public interface WeNetSocialContextBuilderSimulator {
    * @return the last social notification.
    */
   @GenIgnore
-  default Future<List<UserMessage>> getSocialNotification() {
+  default Future<List<UserMessage>> getSocialNotificationInteraction() {
 
     final Promise<JsonArray> promise = Promise.promise();
-    this.getSocialNotification(promise);
+    this.getSocialNotificationInteraction(promise);
     return Model.fromFutureJsonArray(promise.future(), UserMessage.class);
 
   }
@@ -336,7 +336,7 @@ public interface WeNetSocialContextBuilderSimulator {
    *
    * @param handler for the social notification.
    */
-  void deleteSocialNotification(@NotNull Handler<AsyncResult<Void>> handler);
+  void deleteSocialNotificationInteraction(@NotNull Handler<AsyncResult<Void>> handler);
 
   /**
    * Delete the last social notification.
@@ -344,10 +344,10 @@ public interface WeNetSocialContextBuilderSimulator {
    * @return the last social notification.
    */
   @GenIgnore
-  default Future<Void> deleteSocialNotification() {
+  default Future<Void> deleteSocialNotificationInteraction() {
 
     final Promise<Void> promise = Promise.promise();
-    this.deleteSocialNotification(promise);
+    this.deleteSocialNotificationInteraction(promise);
     return promise.future();
 
   }
@@ -449,4 +449,69 @@ public interface WeNetSocialContextBuilderSimulator {
 
   }
 
+  /**
+   * Notify about an update over a user profile.
+   *
+   * @param userId  identifier of the updated profile.
+   * @param handler for the social relations.
+   */
+  void socialNotificationProfileUpdate(@NotNull String userId, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Notify about an update over a user profile.
+   *
+   * @param userId identifier of the updated profile.
+   *
+   * @return the user relations.
+   */
+  @GenIgnore
+  default Future<Void> socialNotificationProfileUpdate(@NotNull final String userId) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.socialNotificationProfileUpdate(userId, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Get the last social notification.
+   *
+   * @param handler for the social notification.
+   */
+  void getSocialNotificationProfileUpdate(@NotNull Handler<AsyncResult<JsonArray>> handler);
+
+  /**
+   * Get the last social notification.
+   *
+   * @return the last social notification.
+   */
+  @GenIgnore
+  default Future<List<UserMessage>> getSocialNotificationProfileUpdate() {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    this.getSocialNotificationProfileUpdate(promise);
+    return Model.fromFutureJsonArray(promise.future(), UserMessage.class);
+
+  }
+
+  /**
+   * Delete the last social notification.
+   *
+   * @param handler for the social notification.
+   */
+  void deleteSocialNotificationProfileUpdate(@NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Delete the last social notification.
+   *
+   * @return the last social notification.
+   */
+  @GenIgnore
+  default Future<Void> deleteSocialNotificationProfileUpdate() {
+
+    final Promise<Void> promise = Promise.promise();
+    this.deleteSocialNotificationProfileUpdate(promise);
+    return promise.future();
+
+  }
 }
