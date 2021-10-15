@@ -500,4 +500,61 @@ public interface WeNetInteractionProtocolEngine extends WeNetComponent {
 
   }
 
+  /**
+   * Obtain the status of an user in a task.
+   *
+   * @param taskId identifier of the task where is the user.
+   * @param userId identifier of the user to get the state.
+   *
+   * @return the future task user state.
+   */
+  @GenIgnore
+  default Future<State> retrieveTaskUserState(@NotNull final String taskId, @NotNull final String userId) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.retrieveTaskUserState(taskId, userId, promise);
+    return Model.fromFutureJsonObject(promise.future(), State.class);
+
+  }
+
+  /**
+   * Obtain the status of an user in a task.
+   *
+   * @param taskId  identifier of the task where is the user.
+   * @param userId  identifier of the user to get the state.
+   * @param handler for the obtained task user state.
+   */
+  void retrieveTaskUserState(@NotNull final String taskId, @NotNull final String userId,
+      Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Merge the state of the user on a task.
+   *
+   * @param taskId   identifier of the task where is the user.
+   * @param userId   identifier of the user to get the state.
+   * @param newState for the user in the task.
+   *
+   * @return the future task user state.
+   */
+  @GenIgnore
+  default Future<State> mergeTaskUserState(@NotNull final String taskId, @NotNull final String userId,
+      @NotNull final State newState) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.mergeTaskUserState(taskId, userId, newState.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), State.class);
+
+  }
+
+  /**
+   * Merge the state of the user on a task.
+   *
+   * @param taskId   identifier of the task where is the user.
+   * @param userId   identifier of the user to get the state.
+   * @param newState for the user in the task.
+   * @param handler  for the merged task user state.
+   */
+  void mergeTaskUserState(@NotNull final String taskId, @NotNull final String userId,
+      @NotNull final JsonObject newState, Handler<AsyncResult<JsonObject>> handler);
+
 }

@@ -345,4 +345,69 @@ public class WeNetInteractionProtocolEngineTestCase extends WeNetComponentTestCa
         })));
   }
 
+  /**
+   * Should retrieve task user state.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldRetrieveTaskUserState(final Vertx vertx, final VertxTestContext testContext) {
+
+    StoreServices.storeTaskExample(1, vertx, testContext).onSuccess(task -> {
+
+      final var userId = task.requesterId;
+      testContext.assertComplete(this.createComponentProxy(vertx).retrieveTaskUserState(task.id, userId))
+          .onSuccess(done -> testContext.verify(() -> {
+
+            final var state = new State();
+            state.taskId = task.id;
+            state.userId = userId;
+            state._creationTs = done._creationTs;
+            state._lastUpdateTs = done._lastUpdateTs;
+            assertThat(done).isEqualTo(state);
+            assertThat(done._creationTs).isEqualTo(done._lastUpdateTs);
+            testContext.completeNow();
+
+          }));
+    });
+  }
+
+  /**
+   * Should merge task user state.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldMergeTaskUserState(final Vertx vertx, final VertxTestContext testContext) {
+
+    StoreServices.storeTaskExample(1, vertx, testContext).onSuccess(task -> {
+      final var state = new StateTest().createModelExample(2);
+      state.taskId = task.id;
+      state.communityId = null;
+      state.userId = task.requesterId;
+      testContext.assertComplete(this.createComponentProxy(vertx).mergeTaskUserState(state.taskId, state.userId, state))
+          .onSuccess(done -> testContext.verify(() -> {
+
+            state._creationTs = done._creationTs;
+            state._lastUpdateTs = done._lastUpdateTs;
+            assertThat(done).isEqualTo(state);
+
+            state.attributes.put("newKey", "testContext");
+            testContext
+                .assertComplete(this.createComponentProxy(vertx).mergeTaskUserState(state.taskId, state.userId, state))
+                .onSuccess(done2 -> testContext.verify(() -> {
+
+                  state._lastUpdateTs = done2._lastUpdateTs;
+                  assertThat(done2).isEqualTo(state);
+                  testContext.completeNow();
+
+                }));
+
+          }));
+    });
+
+  }
+
 }

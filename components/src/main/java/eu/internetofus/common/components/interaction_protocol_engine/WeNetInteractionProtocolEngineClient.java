@@ -294,4 +294,26 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
     this.delete(params, "/interactions").onComplete(handler);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveTaskUserState(@NotNull final String taskId, @NotNull final String userId,
+      final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.getJsonObject("/states/tasks", taskId, "/users", userId).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void mergeTaskUserState(@NotNull final String taskId, @NotNull final String userId,
+      @NotNull final JsonObject newState, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.patch(newState, "/states/tasks", taskId, "/users", userId).onComplete(handler);
+
+  }
+
 }
