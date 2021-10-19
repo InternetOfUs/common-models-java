@@ -28,7 +28,6 @@ import eu.internetofus.common.components.incentive_server.TaskTypeStatusBodyPred
 import eu.internetofus.common.components.interaction_protocol_engine.Interaction;
 import eu.internetofus.common.components.interaction_protocol_engine.InteractionPredicates;
 import eu.internetofus.common.components.models.Message;
-import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTransaction;
 import eu.internetofus.common.components.service.MessagePredicates;
 import eu.internetofus.common.components.social_context_builder.UserMessage;
@@ -55,7 +54,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class Ask4HelpV2ProtocolITC extends AbstractDefaultProtocolITC {
+public class Ask4HelpV2ProtocolITC extends AbstractAsk4HelpV2ProtocolITC {
 
   /**
    * The identifier of the users that has notify the question.
@@ -70,37 +69,12 @@ public class Ask4HelpV2ProtocolITC extends AbstractDefaultProtocolITC {
   /**
    * {@inheritDoc}
    *
-   * @return {@code 6} in any case.
+   * @return {@code 9} in any case.
    */
   @Override
   protected int numberOfUsersToCreate() {
 
     return 9;
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * @return {@link DefaultProtocols#ASK_4_HELP_V2}
-   */
-  @Override
-  protected DefaultProtocols getDefaultProtocolsToUse() {
-
-    return DefaultProtocols.ASK_4_HELP_V2;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected Task createTaskForProtocol() {
-
-    final var taskToCreate = super.createTaskForProtocol();
-    taskToCreate.attributes = new JsonObject().put("domain", "varia_misc").put("domainInterest", "indifferent")
-        .put("beliefsAndValues", "indifferent").put("sensitive", false).put("anonymous", false)
-        .put("socialCloseness", "indifferent").put("positionOfAnswerer", "anywhere").put("maxUsers", 5);
-    return taskToCreate;
-
   }
 
   /**

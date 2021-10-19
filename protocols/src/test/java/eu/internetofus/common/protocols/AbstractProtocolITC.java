@@ -975,4 +975,23 @@ public abstract class AbstractProtocolITC {
 
   }
 
+  /**
+   * Wait until has task user state satisfy the predicate.
+   *
+   * @param userId      the user to check the state.
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   * @param checkState  the functions that check if the state is the expected one.
+   *
+   * @return the interactions that satisfy the predicates.
+   */
+  protected Future<State> waitUntilUserTaskState(@NotNull final String userId, @NotNull final Vertx vertx,
+      @NotNull final VertxTestContext testContext, @NotNull final Predicate<State> checkState) {
+
+    return this.waitUntil(vertx, testContext,
+        () -> WeNetInteractionProtocolEngine.createProxy(vertx).retrieveTaskUserState(this.task.id, userId),
+        checkState::test);
+
+  }
+
 }
