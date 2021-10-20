@@ -25,17 +25,23 @@ import eu.internetofus.common.model.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * The calculated diversity of a set of users.
+ * The information of the similarity of an attribute.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "Diversity", description = "The diversity of some users.")
-public class Diversity extends ReflectionModel implements Model {
+@Schema(name = "AattributeSimilarity", description = "The information of the similarity of an attribute.")
+public class AttributeSimilarity extends ReflectionModel implements Model {
 
   /**
-   * The agents diversity.
+   * The agent identifier.
    */
-  @Schema(description = "How the set of agents are diverse. This value is in the range [0,1] where 1 is totally diverse and 0 mean no diversity.", example = "0.524")
-  public double value;
+  @Schema(description = "The name of the attribute.", example = "\"gender\"")
+  public String attribute;
+
+  /**
+   * The agent identifier.
+   */
+  @Schema(description = "The similarity of the attribute.", example = "0.56")
+  public double similarity;
 
 }

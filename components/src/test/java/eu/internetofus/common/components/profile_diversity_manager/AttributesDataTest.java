@@ -20,22 +20,33 @@
 
 package eu.internetofus.common.components.profile_diversity_manager;
 
-import eu.internetofus.common.model.Model;
-import eu.internetofus.common.model.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
+import eu.internetofus.common.model.ModelTestCase;
+import java.util.HashSet;
 
 /**
- * The calculated diversity of a set of users.
+ * Test the {@link AttributesData}.
+ *
+ * @see AgentData
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "Diversity", description = "The diversity of some users.")
-public class Diversity extends ReflectionModel implements Model {
+public class AttributesDataTest extends ModelTestCase<AttributesData> {
 
   /**
-   * The agents diversity.
+   * {@inheritDoc}
    */
-  @Schema(description = "How the set of agents are diverse. This value is in the range [0,1] where 1 is totally diverse and 0 mean no diversity.", example = "0.524")
-  public double value;
+  @Override
+  public AttributesData createModelExample(final int index) {
+
+    final var model = new AttributesData();
+    model.source = "Source of " + index;
+    model.attributes = new HashSet<>();
+    model.attributes.add("index_" + index);
+    model.attributes.add("next_" + (index + 1));
+    model.attributes.add("previous" + (index - 1));
+    model.aggregation = Aggregation.values()[index % Aggregation.values().length];
+
+    return model;
+  }
 
 }

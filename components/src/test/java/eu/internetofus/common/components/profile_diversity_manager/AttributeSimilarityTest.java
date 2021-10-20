@@ -20,22 +20,28 @@
 
 package eu.internetofus.common.components.profile_diversity_manager;
 
-import eu.internetofus.common.model.Model;
-import eu.internetofus.common.model.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
+import eu.internetofus.common.model.ModelTestCase;
 
 /**
- * The calculated diversity of a set of users.
+ * Test the {@link AttributeSimilarity}.
+ *
+ * @see AttributeSimilarity
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "Diversity", description = "The diversity of some users.")
-public class Diversity extends ReflectionModel implements Model {
+public class AttributeSimilarityTest extends ModelTestCase<AttributeSimilarity> {
 
   /**
-   * The agents diversity.
+   * {@inheritDoc}
    */
-  @Schema(description = "How the set of agents are diverse. This value is in the range [0,1] where 1 is totally diverse and 0 mean no diversity.", example = "0.524")
-  public double value;
+  @Override
+  public AttributeSimilarity createModelExample(final int index) {
+
+    final var model = new AttributeSimilarity();
+    model.attribute = "Attribute of " + index;
+    model.similarity = index / 1000.0d;
+
+    return model;
+  }
 
 }

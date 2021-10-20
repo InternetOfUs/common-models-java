@@ -104,4 +104,29 @@ public interface WeNetProfileDiversityManager extends WeNetComponent {
    * @param handler to notify of the agents diversity.
    */
   void calculateDiversityOf(JsonObject agents, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Calculate the similarity of a set of attributes.
+   *
+   * @param attributes to calculate the similarity.
+   *
+   * @return the future with the attributes similarity calculus.
+   */
+  @GenIgnore
+  default Future<Similarities> calculateSimilarityOf(@NotNull final AttributesData attributes) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.calculateSimilarityOf(attributes.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), Similarities.class);
+
+  }
+
+  /**
+   * Calculate the similarity of a some of attributes.
+   *
+   * @param attributes to calculate the similarity.
+   * @param handler    to notify of the attributes similarity.
+   */
+  void calculateSimilarityOf(JsonObject attributes, Handler<AsyncResult<JsonObject>> handler);
+
 }

@@ -24,34 +24,32 @@ import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
- * The information of some agents to calculate the diversity.
+ * The information of some attributes to calculate the similarity.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "AgentsData", description = "The information of some agents to calculate the diversity.")
-public class AgentsData extends ReflectionModel implements Model {
+@Schema(name = "AttributesData", description = "The information of some attributes to calculate the similarity.")
+public class AttributesData extends ReflectionModel implements Model {
 
   /**
-   * The agents to calculate the diversity.
+   * The agents to calculate the diveristy.
    */
-  @ArraySchema(schema = @Schema(implementation = AgentData.class), arraySchema = @Schema(description = "The agents to calculate the diversity"))
-  public List<AgentData> agents;
+  @Schema(description = "Source string to obtain the similarity.", example = "\"Do you have a bike?\"")
+  public String source;
 
   /**
    * The name of the quantitative attributes.
    */
-  @ArraySchema(schema = @Schema(implementation = String.class), arraySchema = @Schema(description = "The name of the quantitative attributes to calculate the diversity.", example = "[\"extrovert\",\"naturalist\",\"introvert\"]"))
-  public Set<String> quantitativeAttributes;
+  @ArraySchema(schema = @Schema(implementation = String.class), arraySchema = @Schema(description = "The name of the attributes to calculate the similarity.", example = "[\"extrovert\",\"naturalist\",\"introvert\"]"))
+  public Set<String> attributes;
 
   /**
    * The name and possible values of the qualitative attributes.
    */
-  @ArraySchema(schema = @Schema(implementation = String.class), arraySchema = @Schema(description = "The qualitative attribute values.", example = "{\"gender\":[\"F\",\"M\",\"O\"],\"civilStatus\":[\"single\",\"married\",\"divorced\",\"widow\"]}"))
-  public Map<String, Set<String>> qualitativeAttributes;
+  @Schema(description = "The aggregation function to use on the similarity.", example = "\"max\"")
+  public Aggregation aggregation;
 
 }

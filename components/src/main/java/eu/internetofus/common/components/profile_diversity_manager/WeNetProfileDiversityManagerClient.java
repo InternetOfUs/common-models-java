@@ -67,4 +67,13 @@ public class WeNetProfileDiversityManagerClient extends ComponentClient implemen
     this.post(agents, "/calculateDiversityOf").onComplete(handler);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void calculateSimilarityOf(final JsonObject attributes, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(attributes, "/calculateSimilarityOf").onComplete(handler);
+  }
+
 }

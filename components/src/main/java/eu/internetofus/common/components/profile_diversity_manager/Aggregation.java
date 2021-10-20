@@ -17,25 +17,29 @@
  *
  * -----------------------------------------------------------------------------
  */
-
 package eu.internetofus.common.components.profile_diversity_manager;
 
-import eu.internetofus.common.model.Model;
-import eu.internetofus.common.model.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.Schema;
-
 /**
- * The calculated diversity of a set of users.
+ * The possible aggregation functions for the similarity.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "Diversity", description = "The diversity of some users.")
-public class Diversity extends ReflectionModel implements Model {
-
+public enum Aggregation {
   /**
-   * The agents diversity.
+   * Use the maximum.
    */
-  @Schema(description = "How the set of agents are diverse. This value is in the range [0,1] where 1 is totally diverse and 0 mean no diversity.", example = "0.524")
-  public double value;
+  max,
+  /**
+   * Use the mean.
+   */
+  mean,
+  /**
+   * Use the quadratic at 75%.
+   */
+  q75,
+  /**
+   * Use the quadratic at 90%.
+   */
+  q90;
 
 }
