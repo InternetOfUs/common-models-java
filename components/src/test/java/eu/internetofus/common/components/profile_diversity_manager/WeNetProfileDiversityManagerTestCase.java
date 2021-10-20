@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.TreeSet;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -128,6 +129,71 @@ public abstract class WeNetProfileDiversityManagerTestCase
         .onComplete(testContext.succeeding(diversity -> testContext.verify(() -> {
 
           assertThat(diversity.value).isCloseTo(0.5261859507142914d, offset(0.000001));
+          testContext.completeNow();
+        })));
+
+  }
+
+  /**
+   * Should not calculate the similarity with a bad attributes data.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotCalculateSimilarityWithBadAttributesData(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createComponentProxy(vertx).calculateSimilarityOf(new JsonObject().put("undefinedField", "value"),
+        testContext.failing(error -> testContext.completeNow()));
+
+  }
+
+  /**
+   * An empty data will be an empty similarity.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldSimilarityBeEmptyEmptyData(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createComponentProxy(vertx).calculateSimilarityOf(new AttributesData())
+        .onComplete(testContext.succeeding(similarity -> testContext.verify(() -> {
+
+          assertThat(similarity.similarities).isEmpty();
+          testContext.completeNow();
+        })));
+
+  }
+
+  /**
+   * Should calculate the similarity of some attributes.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldCalculateSimilarity(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var data = new AttributesData();
+    data.source = "Do you have a bike?";
+    data.attributes = new TreeSet<>();
+    data.attributes.add("car");
+    data.attributes.add("plane");
+    data.attributes.add("vehicle");
+    this.createComponentProxy(vertx).calculateSimilarityOf(data)
+        .onComplete(testContext.succeeding(similarity -> testContext.verify(() -> {
+
+          final var carSim = new AttributeSimilarity();
+          carSim.attribute = "car";
+          carSim.similarity = 0.6239031848677311d;
+          final var planeSim = new AttributeSimilarity();
+          planeSim.attribute = "plane";
+          planeSim.similarity = 0.0d;
+          final var vehicleSim = new AttributeSimilarity();
+          vehicleSim.attribute = "vehicle";
+          vehicleSim.similarity = 0.6239031848677311d;
+          assertThat(similarity.similarities).hasSize(3).contains(carSim, planeSim, vehicleSim);
           testContext.completeNow();
         })));
 
