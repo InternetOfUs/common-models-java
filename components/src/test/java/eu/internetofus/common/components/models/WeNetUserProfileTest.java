@@ -55,6 +55,21 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
   /**
+   * The locales that can be used to fill in a profile.
+   */
+  public static final String[] LOCALES = { "ca", "es", "en", "it", "zh", "mn" };
+
+  /**
+   * The nationalities that can be used to fill in a profile.
+   */
+  private static final String[] NATIONALITIES = { "Italian", "Mexican", "Denmark", "Mongol", "Chinese", "Chilen" };
+
+  /**
+   * The occupations that can be used to fill in a profile.
+   */
+  private static final String[] OCCUPATIONS = { "Scientific", "Student", "Waiter", "Cooker", "Teacher", "Unemployed" };
+
+  /**
    * Create an basic model that has the specified index.
    *
    * @param index to use in the example.
@@ -67,15 +82,15 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.id = null;
     model.name = new UserNameTest().createModelExample(index);
     model.dateOfBirth = new AliveBirthDateTest().createModelExample(index);
-    model.gender = WeNetUserProfile.FEMALE;
+    model.gender = WeNetUserProfile.GENDERS[index % WeNetUserProfile.GENDERS.length];
     model.email = "user" + index + "@internetofus.eu";
     model.phoneNumber = "+34 987 65 43 " + (10 + index % 90);
-    model.locale = "ca_AD";
+    model.locale = LOCALES[index % LOCALES.length];
     model.avatar = "https://internetofus.eu/wp-content/uploads/sites/38/2019/" + index + "/WeNet_logo.png";
-    model.nationality = "nationality_" + index;
+    model.nationality = NATIONALITIES[index % NATIONALITIES.length];
     model.norms = new ArrayList<>();
     model.norms.add(new ProtocolNormTest().createModelExample(index));
-    model.occupation = "occupation " + index;
+    model.occupation = OCCUPATIONS[index % OCCUPATIONS.length];
     model._creationTs = 1234567891 + index;
     model._lastUpdateTs = 1234567991 + index * 2;
     return model;
@@ -1289,11 +1304,11 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     assertIsValid(target, vertx, testContext, () -> {
 
       final var source = new WeNetUserProfile();
-      source.gender = WeNetUserProfile.MALE;
+      source.gender = WeNetUserProfile.GENDERS[0];
       assertCanMerge(target, source, vertx, testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
-        target.gender = WeNetUserProfile.MALE;
+        target.gender = WeNetUserProfile.GENDERS[0];
         assertThat(merged).isEqualTo(target);
 
       });
