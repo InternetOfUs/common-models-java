@@ -20,8 +20,18 @@
 
 package eu.internetofus.common.components.profile_diversity_manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
+
 import eu.internetofus.common.components.WeNetComponentTestCase;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.VertxTestContext;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import org.junit.jupiter.api.Test;
 
 /**
  * Generic test over the {@link WeNetProfileDiversityManager}.
@@ -43,6 +53,84 @@ public abstract class WeNetProfileDiversityManagerTestCase
   protected WeNetProfileDiversityManager createComponentProxy(final Vertx vertx) {
 
     return WeNetProfileDiversityManager.createProxy(vertx);
+  }
+
+  /**
+   * Should not calculate the diversity with a bad agents data.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotCalculateDiversityWithBadAgentsData(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createComponentProxy(vertx).calculateDiversityOf(new JsonObject().put("undefinedField", "value"),
+        testContext.failing(error -> testContext.completeNow()));
+
+  }
+
+  /**
+   * An empty data will be a {@code 0} diversity.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldDiversityBeZeroIfEmptyData(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createComponentProxy(vertx).calculateDiversityOf(new AgentsData())
+        .onComplete(testContext.succeeding(diversity -> testContext.verify(() -> {
+
+          assertThat(diversity.value).isEqualTo(0.0d);
+          testContext.completeNow();
+        })));
+
+  }
+
+  /**
+   * Should calculate the diversity of some agents.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldCalculateDiversity(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var data = new AgentsData();
+    data.agents = new ArrayList<>();
+    final var agent1 = new AgentData();
+    agent1.id = "1";
+    agent1.quantitativeAttributes = new HashMap<>();
+    agent1.quantitativeAttributes.put("introvert", 1.0);
+    agent1.quantitativeAttributes.put("extrovert", 1.0);
+    agent1.quantitativeAttributes.put("naturalist", 1.0);
+    agent1.qualitativeAttributes = new HashMap<>();
+    agent1.qualitativeAttributes.put("gender", "M");
+    agent1.qualitativeAttributes.put("civilStatus", "married");
+    data.agents.add(agent1);
+    final var agent2 = new AgentData();
+    agent2.id = "2";
+    agent2.quantitativeAttributes = new HashMap<>();
+    agent2.quantitativeAttributes.put("introvert", 0.0);
+    agent2.quantitativeAttributes.put("extrovert", 0.0);
+    agent2.quantitativeAttributes.put("naturalist", 0.0);
+    agent2.qualitativeAttributes = new HashMap<>();
+    agent2.qualitativeAttributes.put("gender", "F");
+    agent2.qualitativeAttributes.put("civilStatus", "single");
+    data.agents.add(agent2);
+
+    data.qualitativeAttributes = new HashMap<>();
+    data.qualitativeAttributes.put("gender", new HashSet<>(Arrays.asList("M", "F", "O")));
+    data.qualitativeAttributes.put("civilStatus",
+        new HashSet<>(Arrays.asList("single", "married", "divorced", "widow")));
+    data.quantitativeAttributes = new HashSet<>(Arrays.asList("introvert", "extrovert", "naturalist"));
+    this.createComponentProxy(vertx).calculateDiversityOf(data)
+        .onComplete(testContext.succeeding(diversity -> testContext.verify(() -> {
+
+          assertThat(diversity.value).isCloseTo(0.5261859507142914d, offset(0.000001));
+          testContext.completeNow();
+        })));
+
   }
 
 }

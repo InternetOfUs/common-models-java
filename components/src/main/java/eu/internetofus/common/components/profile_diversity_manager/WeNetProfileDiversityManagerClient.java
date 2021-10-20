@@ -20,6 +20,8 @@
 package eu.internetofus.common.components.profile_diversity_manager;
 
 import eu.internetofus.common.vertx.ComponentClient;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 
@@ -54,6 +56,15 @@ public class WeNetProfileDiversityManagerClient extends ComponentClient implemen
 
     super(client, conf.getString(PROFILE_DIVERSITY_MANAGER_CONF_KEY, DEFAULT_PROFILE_DIVERSITY_MANAGER_API_URL));
 
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void calculateDiversityOf(final JsonObject agents, final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(agents, "/calculateDiversityOf").onComplete(handler);
   }
 
 }

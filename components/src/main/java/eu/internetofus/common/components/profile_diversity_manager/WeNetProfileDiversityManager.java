@@ -20,13 +20,18 @@
 package eu.internetofus.common.components.profile_diversity_manager;
 
 import eu.internetofus.common.components.WeNetComponent;
+import eu.internetofus.common.model.Model;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
+import javax.validation.constraints.NotNull;
 
 /**
  * The component used by the profile diversity manager.
@@ -76,4 +81,27 @@ public interface WeNetProfileDiversityManager extends WeNetComponent {
   @Override
   void obtainApiUrl(final Handler<AsyncResult<String>> handler);
 
+  /**
+   * Calculate the diversity of a set of agents.
+   *
+   * @param agents to calculate the diversity.
+   *
+   * @return the future with the agents diversity calculus.
+   */
+  @GenIgnore
+  default Future<Diversity> calculateDiversityOf(@NotNull final AgentsData agents) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.calculateDiversityOf(agents.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), Diversity.class);
+
+  }
+
+  /**
+   * Calculate the diversity of a some of agents.
+   *
+   * @param agents  to calculate the diversity.
+   * @param handler to notify of the agents diversity.
+   */
+  void calculateDiversityOf(JsonObject agents, Handler<AsyncResult<JsonObject>> handler);
 }
