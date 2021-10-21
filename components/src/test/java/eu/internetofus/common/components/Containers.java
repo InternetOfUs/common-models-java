@@ -544,8 +544,8 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   public Containers startAll() {
 
     this.startBasic();
-    this.startProfileManagerContainer();
     this.startProfileDiversityManagerContainer();
+    this.startProfileManagerContainer();
     this.startTaskManagerContainer();
     this.startInteractionProtocolEngineContainer();
 

@@ -168,6 +168,7 @@ public class MainArgumentBuilder {
     this.with("persistence.username", MongoContainer.MONGODB_USER);
     this.with("persistence.password", MongoContainer.MONGODB_PASSWORD);
     this.withWeNetComponent("profileManager", containers.getProfileManagerApi());
+    this.withWeNetComponent("profileDiversityManager", containers.getProfileDiversityManagerApi());
     this.withWeNetComponent("taskManager", containers.getTaskManagerApi());
     this.withWeNetComponent("interactionProtocolEngine", containers.getInteractionProtocolEngineApi());
     this.withWeNetComponent("service", containers.getServiceApi());

@@ -8,7 +8,7 @@ else
 	for component in "${ComponentArray[@]}"; do
 		echo "* $component"
 		pushd "$DIR/../$component" > /dev/null
-		./buildDockerImage.sh
+		./buildDockerImage.sh $@
 		popd >/dev/null
 	done
 	popd >/dev/null

@@ -66,7 +66,11 @@ public abstract class WeNetProfileDiversityManagerTestCase
   public void shouldNotCalculateDiversityWithBadAgentsData(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createComponentProxy(vertx).calculateDiversityOf(new JsonObject().put("undefinedField", "value"),
-        testContext.failing(error -> testContext.completeNow()));
+        testContext.succeeding(diversity -> testContext.verify(() -> {
+
+          assertThat(diversity.getDouble("value", -1d)).isEqualTo(0.0d);
+          testContext.completeNow();
+        })));
 
   }
 
@@ -155,14 +159,10 @@ public abstract class WeNetProfileDiversityManagerTestCase
    * @param testContext context over the tests.
    */
   @Test
-  public void shouldSimilarityBeEmptyEmptyData(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldSimilarityFailWithEmptyData(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createComponentProxy(vertx).calculateSimilarityOf(new AttributesData())
-        .onComplete(testContext.succeeding(similarity -> testContext.verify(() -> {
-
-          assertThat(similarity.similarities).isEmpty();
-          testContext.completeNow();
-        })));
+        .onComplete(testContext.failing(error -> testContext.completeNow()));
 
   }
 
