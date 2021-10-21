@@ -2,6 +2,11 @@
 
 All notable changes to `wenet-common` will be documented in this file
 
+## Version 0.16.0 (2021-10-)
+
+ * Upgrade containers verions.
+
+
 ## Version 0.15.0 (2021-10-21)
 
  * Update vertx version.
