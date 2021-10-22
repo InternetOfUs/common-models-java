@@ -148,11 +148,10 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
    * {@inheritDoc}
    */
   @Override
-  public void socialNotificationProfileUpdate(@NotNull final String userId,
-      @NotNull final Handler<AsyncResult<Void>> handler) {
+  public void socialNotificationProfileUpdate(@NotNull final String userId, final JsonObject notification,
+      @NotNull final Handler<AsyncResult<JsonObject>> handler) {
 
-    final var url = this.createAbsoluteUrlWith("/social/notification/profileUpdate", userId);
-    this.request(HttpMethod.POST, url, this.createVoidExtractor()).onComplete(handler);
+    this.post(notification, "/social/notification/profileUpdate", userId).onComplete(handler);
 
   }
 

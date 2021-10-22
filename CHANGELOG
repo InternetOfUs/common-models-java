@@ -5,6 +5,7 @@ All notable changes to `wenet-common` will be documented in this file
 ## Version 0.16.0 (2021-10-)
 
  * Upgrade containers verions.
+ * Change social context builder notify profile update.
 
 
 ## Version 0.15.0 (2021-10-21)

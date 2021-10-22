@@ -62,12 +62,12 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   /**
    * The nationalities that can be used to fill in a profile.
    */
-  private static final String[] NATIONALITIES = { "Italian", "Mexican", "Denmark", "Mongol", "Chinese", "Chilen" };
+  public static final String[] NATIONALITIES = { "Italian", "Mexican", "Denmark", "Mongol", "Chinese", "Chilen" };
 
   /**
    * The occupations that can be used to fill in a profile.
    */
-  private static final String[] OCCUPATIONS = { "Scientific", "Student", "Waiter", "Cooker", "Teacher", "Unemployed" };
+  public static final String[] OCCUPATIONS = { "Scientific", "Student", "Waiter", "Cooker", "Teacher", "Unemployed" };
 
   /**
    * Create an basic model that has the specified index.
@@ -142,15 +142,15 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
           final var profile = this.createModelExample(index);
 
-          final var activity = new PlannedActivityTest().createModelExample(3);
+          final var activity = new PlannedActivityTest().createModelExample(index);
           activity.attendees = new ArrayList<>();
           activity.attendees.add(stored1.id);
           activity.attendees.add(stored2.id);
           profile.plannedActivities.add(activity);
           profile.relationships = new ArrayList<>();
-          profile.relationships.add(new SocialNetworkRelationshipTest().createModelExample(5));
+          profile.relationships.add(new SocialNetworkRelationshipTest().createModelExample(index));
           profile.relationships.get(0).userId = stored1.id;
-          profile.relationships.add(new SocialNetworkRelationshipTest().createModelExample(6));
+          profile.relationships.add(new SocialNetworkRelationshipTest().createModelExample(index + 1));
           profile.relationships.get(1).userId = stored2.id;
           profile.personalBehaviors = new ArrayList<>();
           profile.personalBehaviors.add(new RoutineTest().createModelExample(index));

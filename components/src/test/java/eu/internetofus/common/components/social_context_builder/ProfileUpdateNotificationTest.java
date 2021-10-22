@@ -17,26 +17,31 @@
  *
  * -----------------------------------------------------------------------------
  */
+
 package eu.internetofus.common.components.social_context_builder;
 
-import eu.internetofus.common.model.Model;
-import eu.internetofus.common.model.ReflectionModel;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.List;
+import eu.internetofus.common.model.ModelTestCase;
+import java.util.HashSet;
 
 /**
- * The model that contains the answer of an user.
+ * Test the {@link ProfileUpdateNotification}.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "user_answers", description = "Some user answers.")
-public class UserAnswers extends ReflectionModel implements Model {
+public class ProfileUpdateNotificationTest extends ModelTestCase<ProfileUpdateNotification> {
 
   /**
-   * The data of the user answers.
+   * {@inheritDoc}
    */
-  @ArraySchema(schema = @Schema(implementation = UserAnswer.class, description = "The user answers."))
-  public List<UserAnswer> data;
+  @Override
+  public ProfileUpdateNotification createModelExample(final int index) {
+
+    final var model = new ProfileUpdateNotification();
+    model.updatedFieldNames = new HashSet<>();
+    model.updatedFieldNames.add("Attribute_" + index);
+    model.updatedFieldNames.add("Attribute_" + (index + 1));
+    return model;
+
+  }
 
 }

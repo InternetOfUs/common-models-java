@@ -272,23 +272,28 @@ public interface WeNetSocialContextBuilder extends WeNetComponent {
   /**
    * Notify about an update over a user profile.
    *
-   * @param userId  identifier of the updated profile.
-   * @param handler for the social relations.
+   * @param userId       identifier of the updated profile.
+   * @param notification with the changes on the profile.
+   * @param handler      for the social relations.
    */
-  void socialNotificationProfileUpdate(@NotNull String userId, @NotNull Handler<AsyncResult<Void>> handler);
+  void socialNotificationProfileUpdate(@NotNull String userId, JsonObject notification,
+      @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Notify about an update over a user profile.
    *
-   * @param userId identifier of the updated profile.
+   * @param userId       identifier of the updated profile.
+   * @param notification with the changes on the profile.
    *
    * @return the user relations.
    */
   @GenIgnore
-  default Future<Void> socialNotificationProfileUpdate(@NotNull final String userId) {
+  default Future<JsonObject> socialNotificationProfileUpdate(@NotNull final String userId,
+      final ProfileUpdateNotification notification) {
 
-    final Promise<Void> promise = Promise.promise();
-    this.socialNotificationProfileUpdate(userId, promise);
+    final Promise<JsonObject> promise = Promise.promise();
+    final var data = notification.toJsonObject();
+    this.socialNotificationProfileUpdate(userId, data, promise);
     return promise.future();
 
   }

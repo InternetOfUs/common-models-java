@@ -23,20 +23,20 @@ import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.List;
+import java.util.Set;
 
 /**
- * The model that contains the answer of an user.
+ * The notification with the information of the updated profile.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "user_answers", description = "Some user answers.")
-public class UserAnswers extends ReflectionModel implements Model {
+@Schema(description = "The information of the updated profile.")
+public class ProfileUpdateNotification extends ReflectionModel implements Model {
 
   /**
-   * The data of the user answers.
+   * The attributes modified on the profile.
    */
-  @ArraySchema(schema = @Schema(implementation = UserAnswer.class, description = "The user answers."))
-  public List<UserAnswer> data;
+  @ArraySchema(schema = @Schema(implementation = String.class, description = "The name of the modified attributes on the profile."))
+  public Set<String> updatedFieldNames;
 
 }

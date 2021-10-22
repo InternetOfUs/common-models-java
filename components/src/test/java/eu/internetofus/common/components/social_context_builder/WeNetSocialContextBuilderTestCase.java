@@ -27,6 +27,7 @@ import eu.internetofus.common.components.models.WeNetUserProfileTest;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -177,7 +178,12 @@ public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<We
   public void shouldSocialNotificationProfileUpdate(final Vertx vertx, final VertxTestContext testContext) {
 
     final var userId = UUID.randomUUID().toString();
-    this.createComponentProxy(vertx).socialNotificationProfileUpdate(userId)
+    final var notification = new ProfileUpdateNotification();
+    notification.updatedFieldNames = new HashSet<String>();
+    notification.updatedFieldNames.add("name");
+    notification.updatedFieldNames.add("occupation");
+    notification.updatedFieldNames.add("nationality");
+    this.createComponentProxy(vertx).socialNotificationProfileUpdate(userId, notification)
         .onComplete(testContext.succeeding(any -> testContext.completeNow()));
 
   }

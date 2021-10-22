@@ -185,7 +185,7 @@
      <url>https://gitlab.iiia.csic.es/api/v4/projects/443/packages/maven</url>
     </repository>
     <snapshotRepository>
-     <id>gitlab-maven</id>
+     <id>gitlab-maven-snapshots</id>
      <url>https://gitlab.iiia.csic.es/api/v4/projects/443/packages/maven</url>
     </snapshotRepository>
    </distributionManagement>
@@ -204,7 +204,7 @@
      <url>http://host.docker.internal:8081/repository/maven-releases/</url>
     </repository>
     <snapshotRepository>
-     <id>docker-nexus-maven</id>
+     <id>docker-nexus-maven-snapshots</id>
      <url>http://host.docker.internal:8081/nexus/content/repositories/snapshots</url>
     </snapshotRepository>
    </distributionManagement>
@@ -223,7 +223,7 @@
      <url>${CI_API_V4_URL}/projects/${env.CI_PROJECT_ID}/packages/maven</url>
     </repository>
     <snapshotRepository>
-     <id>ci-gitlab-maven</id>
+     <id>ci-gitlab-maven-snapshots</id>
      <url>${CI_API_V4_URL}/projects/${env.CI_PROJECT_ID}/packages/maven</url>
     </snapshotRepository>
    </distributionManagement>

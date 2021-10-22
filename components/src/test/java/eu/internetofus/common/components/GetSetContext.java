@@ -163,4 +163,33 @@ public class GetSetContext {
     };
   }
 
+  /**
+   * Create a handler to delete a value.
+   *
+   * @param prefix to apply to the identifier.
+   * @param params name of the path elements with the identifiers.
+   *
+   * @return the handler to delete a value.
+   */
+  public Handler<RoutingContext> createDeleteHandler(final String prefix, final String... params) {
+
+    return ctx -> {
+
+      final var id = this.getIdFrom(ctx, prefix, params);
+      final var response = ctx.response();
+      final var value = this.values.remove(id);
+      if (value != null) {
+
+        response.setStatusCode(Status.NO_CONTENT.getStatusCode());
+        response.end();
+
+      } else {
+
+        response.setStatusCode(Status.NOT_FOUND.getStatusCode());
+        response.end(new ErrorMessage("bad_id", "Does not exist any value associated to the identifier.").toBuffer());
+      }
+
+    };
+  }
+
 }

@@ -27,6 +27,7 @@ import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -266,22 +267,27 @@ public class WeNetSocialContextBuilderSimulatorTest extends WeNetSocialContextBu
   public void shouldSetGetDeleteSocialNotificationProfileUpdate(final Vertx vertx, final VertxTestContext testContext) {
 
     final var userId = UUID.randomUUID().toString();
-    WeNetSocialContextBuilderSimulator.createProxy(vertx).socialNotificationProfileUpdate(userId)
-        .compose(any -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotificationProfileUpdate())
+    final var notification = new ProfileUpdateNotification();
+    notification.updatedFieldNames = new HashSet<String>();
+    notification.updatedFieldNames.add("name");
+    notification.updatedFieldNames.add("occupation");
+    notification.updatedFieldNames.add("nationality");
+    WeNetSocialContextBuilderSimulator.createProxy(vertx).socialNotificationProfileUpdate(userId, notification)
+        .compose(
+            any -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotificationProfileUpdate(userId))
         .onComplete(
 
             testContext.succeeding(getted -> testContext.verify(() -> {
 
-              assertThat(getted).isNotEmpty().hasSizeGreaterThanOrEqualTo(1);
-              assertThat(getted.get(getted.size() - 1)).isEqualTo(userId);
-              WeNetSocialContextBuilderSimulator.createProxy(vertx).deleteSocialNotificationProfileUpdate()
-                  .compose(
-                      any -> WeNetSocialContextBuilderSimulator.createProxy(vertx).getSocialNotificationProfileUpdate())
+              assertThat(getted).isNotNull().isEqualTo(notification);
+              WeNetSocialContextBuilderSimulator.createProxy(vertx).deleteSocialNotificationProfileUpdate(userId)
+                  .compose(any -> WeNetSocialContextBuilderSimulator.createProxy(vertx)
+                      .getSocialNotificationProfileUpdate(userId))
                   .onComplete(
 
                       testContext.succeeding(empty -> testContext.verify(() -> {
 
-                        assertThat(empty).isEmpty();
+                        assertThat(empty).isEqualTo(new ProfileUpdateNotification());
                         testContext.completeNow();
 
                       })));

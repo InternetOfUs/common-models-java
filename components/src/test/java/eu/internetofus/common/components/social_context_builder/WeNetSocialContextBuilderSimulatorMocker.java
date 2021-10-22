@@ -119,11 +119,11 @@ public class WeNetSocialContextBuilderSimulatorMocker extends AbstractComponentM
         this.context.createSetHandler("SOCIAL_PREFERENCES_ANSWERS_SELECTION_UPDATE", "userId", "taskId", "selection"));
 
     router.post("/social/notification/profileUpdate/:userId")
-        .handler(this.context.createAddSocialNotificationProfileUpdateHandler());
-    router.get("/social/notification/profileUpdate")
-        .handler(this.context.createGetHandler("SOCIAL_NOTIFICATION_PROFILE_UPDATE", new JsonArray()));
-    router.delete("/social/notification/profileUpdate")
-        .handler(this.context.createDeleteSocialNotificationProfileUpdateHandler());
+        .handler(this.context.createSetHandler("SOCIAL_NOTIFICATION_PROFILE_UPDATE", "userId"));
+    router.get("/social/notification/profileUpdate/:userId")
+        .handler(this.context.createGetHandler("SOCIAL_NOTIFICATION_PROFILE_UPDATE", new JsonObject(), "userId"));
+    router.delete("/social/notification/profileUpdate/:userId")
+        .handler(this.context.createDeleteHandler("SOCIAL_NOTIFICATION_PROFILE_UPDATE", "userId"));
 
   }
 
