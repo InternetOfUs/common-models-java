@@ -356,4 +356,30 @@ public interface WeNetProfileManager extends WeNetComponent {
 
   }
 
+  /**
+   * Get some user identifiers.
+   *
+   * @param offset  index of the first identifier.
+   * @param limit   maximum number of identifiers to get.
+   * @param handler of the user identifiers.
+   */
+  void getUserIdentifiersPage(final int offset, final int limit, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Get some user identifiers.
+   *
+   * @param offset index of the first identifier.
+   * @param limit  maximum number of identifiers to get.
+   *
+   * @return the future user identifiers.
+   */
+  @GenIgnore
+  default Future<UserIdentifiersPage> getUserIdentifiersPage(final int offset, final int limit) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.getUserIdentifiersPage(offset, limit, promise);
+    return Model.fromFutureJsonObject(promise.future(), UserIdentifiersPage.class);
+
+  }
+
 }

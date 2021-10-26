@@ -445,4 +445,108 @@ public class WeNetTaskManagerTestCase extends WeNetComponentTestCase<WeNetTaskMa
     });
   }
 
+  /**
+   * Should get task types.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldGetTaskTypesPage(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(WeNetTaskManager.createProxy(vertx).getTaskTypesPage(null, null, null, null, 0, 10))
+        .onSuccess(page -> testContext.verify(() -> {
+
+          assertThat(page).isNotNull();
+          assertThat(page.offset).isEqualTo(0);
+          if (page.total == 0) {
+
+            assertThat(page.taskTypes).isNull();
+
+          } else {
+
+            assertThat(page.taskTypes).isNotNull().isNotEmpty().hasSizeGreaterThanOrEqualTo(1)
+                .hasSizeLessThanOrEqualTo(10);
+          }
+
+          testContext.completeNow();
+        }));
+
+  }
+
+  /**
+   * Should get tasks.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldGetTasksPage(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(WeNetTaskManager.createProxy(vertx).getTasksPage(null, null, null, null, null, null,
+        null, null, null, null, null, null, null, 0, 10)).onSuccess(page -> testContext.verify(() -> {
+
+          assertThat(page).isNotNull();
+          assertThat(page.offset).isEqualTo(0);
+          if (page.total == 0) {
+
+            assertThat(page.tasks).isNull();
+
+          } else {
+
+            assertThat(page.tasks).isNotNull().isNotEmpty().hasSizeGreaterThanOrEqualTo(1).hasSizeLessThanOrEqualTo(10);
+          }
+
+          testContext.completeNow();
+        }));
+
+  }
+
+  /**
+   * Should get empty tasks.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldGetEmptyTasksPage(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(WeNetTaskManager.createProxy(vertx).getTasksPage("Undefined appId",
+        "Undefined requesterId", "Undefined taskTypeId", "Undefined name", "undefined description", 0l, 1000l, 1000l,
+        2000l, true, 1500l, 2500l, "appId,-taskTypeId", 0, 10)).onSuccess(page -> testContext.verify(() -> {
+
+          assertThat(page).isNotNull();
+          assertThat(page.offset).isEqualTo(0);
+          assertThat(page.total).isEqualTo(0);
+          assertThat(page.tasks).isNull();
+          testContext.completeNow();
+
+        }));
+
+  }
+
+  /**
+   * Should get empty task types.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldGetEmptyTaskTypesPage(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext
+        .assertComplete(WeNetTaskManager.createProxy(vertx).getTaskTypesPage("Undefined name", "Undefined description",
+            "Undefined keywords," + UUID.randomUUID().toString(), "-name,description", 0, 10))
+        .onSuccess(page -> testContext.verify(() -> {
+
+          assertThat(page).isNotNull();
+          assertThat(page.offset).isEqualTo(0);
+          assertThat(page.total).isEqualTo(0);
+          assertThat(page.taskTypes).isNull();
+          testContext.completeNow();
+
+        }));
+
+  }
+
 }

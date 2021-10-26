@@ -25,6 +25,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import java.util.LinkedHashMap;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -189,6 +190,104 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
       final Handler<AsyncResult<JsonObject>> handler) {
 
     this.patch(taskType, "/taskTypes", id).onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void getTasksPage(final String appId, final String requesterId, final String taskTypeId, final String goalName,
+      final String goalDescription, final Long creationFrom, final Long creationTo, final Long updateFrom,
+      final Long updateTo, final Boolean hasCloseTs, final Long closeFrom, final Long closeTo, final String order,
+      final int offset, final int limit, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    final var params = new LinkedHashMap<String, String>();
+    if (appId != null) {
+
+      params.put("appId", appId);
+    }
+    if (requesterId != null) {
+
+      params.put("requesterId", requesterId);
+    }
+    if (taskTypeId != null) {
+
+      params.put("taskTypeId", taskTypeId);
+    }
+    if (goalName != null) {
+
+      params.put("goalName", goalName);
+    }
+    if (goalDescription != null) {
+
+      params.put("goalDescription", goalDescription);
+    }
+    if (creationFrom != null) {
+
+      params.put("creationFrom", String.valueOf(creationFrom));
+    }
+    if (creationTo != null) {
+
+      params.put("creationTo", String.valueOf(creationTo));
+    }
+    if (updateFrom != null) {
+
+      params.put("updateFrom", String.valueOf(updateFrom));
+    }
+    if (updateTo != null) {
+
+      params.put("updateTo", String.valueOf(updateTo));
+    }
+    if (hasCloseTs != null) {
+
+      params.put("hasCloseTs", String.valueOf(hasCloseTs));
+    }
+    if (closeFrom != null) {
+
+      params.put("closeFrom", String.valueOf(closeFrom));
+    }
+    if (closeTo != null) {
+
+      params.put("closeTo", String.valueOf(closeTo));
+    }
+    if (order != null) {
+
+      params.put("order", order);
+    }
+    params.put("offset", String.valueOf(offset));
+    params.put("limit", String.valueOf(limit));
+    this.getJsonObject(params, "/tasks").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void getTaskTypesPage(final String name, final String description, final String keywords, final String order,
+      final int offset, final int limit, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    final var params = new LinkedHashMap<String, String>();
+    if (name != null) {
+
+      params.put("name", name);
+    }
+    if (description != null) {
+
+      params.put("description", description);
+    }
+    if (keywords != null) {
+
+      params.put("keywords", keywords);
+    }
+    if (order != null) {
+
+      params.put("order", order);
+    }
+    params.put("offset", String.valueOf(offset));
+    params.put("limit", String.valueOf(limit));
+    this.getJsonObject(params, "/taskTypes").onComplete(handler);
 
   }
 

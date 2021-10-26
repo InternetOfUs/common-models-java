@@ -181,4 +181,17 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void getUserIdentifiersPage(final int offset, final int limit,
+      @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    final var params = new LinkedHashMap<String, String>();
+    params.put("offset", String.valueOf(offset));
+    params.put("limit", String.valueOf(limit));
+    this.getJsonObject(params, "/userIdentifiers").onComplete(handler);
+  }
+
 }

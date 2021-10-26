@@ -20,13 +20,16 @@
 
 package eu.internetofus.common.components;
 
+import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerClient;
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulatorMocker;
 import eu.internetofus.common.components.interaction_protocol_engine.WeNetInteractionProtocolEngineClient;
+import eu.internetofus.common.components.personal_context_builder.WeNetPersonalContextBuilderClient;
 import eu.internetofus.common.components.personal_context_builder.WeNetPersonalContextBuilderSimulatorMocker;
 import eu.internetofus.common.components.profile_diversity_manager.WeNetProfileDiversityManagerClient;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManagerClient;
 import eu.internetofus.common.components.service.WeNetServiceClient;
 import eu.internetofus.common.components.service.WeNetServiceSimulatorMocker;
+import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderClient;
 import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderSimulatorMocker;
 import eu.internetofus.common.components.task_manager.WeNetTaskManagerClient;
 import eu.internetofus.common.test.MongoContainer;
@@ -633,6 +636,21 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   }
 
   /**
+   * Get the configuration to can create a client to the social context builder
+   * client.
+   *
+   * @return the configuration to connect with the service.
+   *
+   * @see WeNetSocialContextBuilderClient
+   */
+  public JsonObject getSocialContextBuilderClientConf() {
+
+    return new JsonObject().put(WeNetSocialContextBuilderClient.SOCIAL_CONTEXT_BUILDER_CONF_KEY,
+        this.getSocialContextBuilderApi());
+
+  }
+
+  /**
    * {@inheritDoc}
    *
    * @see #incentiveServer
@@ -644,6 +662,19 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   }
 
   /**
+   * Get the configuration to can create a client to the incentive server client.
+   *
+   * @return the configuration to connect with the service.
+   *
+   * @see WeNetIncentiveServerClient
+   */
+  public JsonObject getIncentiveServerClientConf() {
+
+    return new JsonObject().put(WeNetIncentiveServerClient.INCENTIVE_SERVER_CONF_KEY, this.getIncentiveServerApi());
+
+  }
+
+  /**
    * {@inheritDoc}
    *
    * @see #personalContextBuilder
@@ -652,6 +683,21 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   public String getPersonalContextBuilderApi() {
 
     return this.personalContextBuilder.getApiUrl();
+  }
+
+  /**
+   * Get the configuration to can create a client to the personal context builder
+   * client.
+   *
+   * @return the configuration to connect with the service.
+   *
+   * @see WeNetPersonalContextBuilderClient
+   */
+  public JsonObject getPersonalContextBuilderClientConf() {
+
+    return new JsonObject().put(WeNetPersonalContextBuilderClient.PERSONAL_CONTEXT_BUILDER_CONF_KEY,
+        this.getPersonalContextBuilderApi());
+
   }
 
 }

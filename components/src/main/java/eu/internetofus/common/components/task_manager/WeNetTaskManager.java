@@ -420,4 +420,109 @@ public interface WeNetTaskManager extends WeNetComponent {
 
   }
 
+  /**
+   * Search for some tasks that match some parameters.
+   *
+   * @param appId           application identifier to match for the tasks to
+   *                        return.
+   * @param requesterId     requester identifier to match for the tasks to return.
+   * @param taskTypeId      task type identifier to match for the tasks to return.
+   * @param goalName        pattern to match with the goal name of the tasks to
+   *                        return.
+   * @param goalDescription pattern to match with the goal description of the
+   *                        tasks to return.
+   * @param creationFrom    minimal creation time stamp of the tasks to return.
+   * @param creationTo      maximal creation time stamp of the tasks to return.
+   * @param updateFrom      minimal update time stamp of the tasks to return.
+   * @param updateTo        maximal update time stamp of the tasks to return.
+   * @param hasCloseTs      this is {@code true} if the tasks to return need to
+   *                        have a {@link Task#closeTs}
+   * @param closeFrom       minimal close time stamp of the tasks to return.
+   * @param closeTo         maximal close time stamp of the tasks to return.
+   * @param order           of the tasks to return.
+   * @param offset          index of the first task to return.
+   * @param limit           number maximum of tasks to return.
+   * @param handler         for the tasks page.
+   */
+  void getTasksPage(final String appId, final String requesterId, final String taskTypeId, final String goalName,
+      final String goalDescription, final Long creationFrom, final Long creationTo, final Long updateFrom,
+      final Long updateTo, final Boolean hasCloseTs, final Long closeFrom, final Long closeTo, final String order,
+      final int offset, final int limit, @NotNull final Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Search for some tasks that match some parameters.
+   *
+   * @param appId           application identifier to match for the tasks to
+   *                        return.
+   * @param requesterId     requester identifier to match for the tasks to return.
+   * @param taskTypeId      task type identifier to match for the tasks to return.
+   * @param goalName        pattern to match with the goal name of the tasks to
+   *                        return.
+   * @param goalDescription pattern to match with the goal description of the
+   *                        tasks to return.
+   * @param creationFrom    minimal creation time stamp of the tasks to return.
+   * @param creationTo      maximal creation time stamp of the tasks to return.
+   * @param updateFrom      minimal update time stamp of the tasks to return.
+   * @param updateTo        maximal update time stamp of the tasks to return.
+   * @param hasCloseTs      this is {@code true} if the tasks to return need to
+   *                        have a {@link Task#closeTs}
+   * @param closeFrom       minimal close time stamp of the tasks to return.
+   * @param closeTo         maximal close time stamp of the tasks to return.
+   * @param order           of the tasks to return.
+   * @param offset          index of the first task to return.
+   * @param limit           number maximum of tasks to return.
+   *
+   * @return the future with the tasks page.
+   */
+  @GenIgnore
+  default Future<TasksPage> getTasksPage(final String appId, final String requesterId, final String taskTypeId,
+      final String goalName, final String goalDescription, final Long creationFrom, final Long creationTo,
+      final Long updateFrom, final Long updateTo, final Boolean hasCloseTs, final Long closeFrom, final Long closeTo,
+      final String order, final int offset, final int limit) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.getTasksPage(appId, requesterId, taskTypeId, goalName, goalDescription, creationFrom, creationTo, updateFrom,
+        updateTo, hasCloseTs, closeFrom, closeTo, order, offset, limit, promise);
+    return Model.fromFutureJsonObject(promise.future(), TasksPage.class);
+
+  }
+
+  /**
+   * Called when want to search for some task types.
+   *
+   * @param name        the pattern to match with the names of the task types.
+   * @param description the pattern to match with the descriptions of the task
+   *                    types.
+   * @param keywords    the patterns to match with the keywords of the task types.
+   * @param order       to return the found task types.
+   * @param offset      index of the first task type to return.
+   * @param limit       number maximum of task types to return.
+   * @param handler     for the task types page.
+   */
+  void getTaskTypesPage(final String name, final String description, final String keywords, final String order,
+      final int offset, final int limit, @NotNull final Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Called when want to search for some task types.
+   *
+   * @param name        the pattern to match with the names of the task types.
+   * @param description the pattern to match with the descriptions of the task
+   *                    types.
+   * @param keywords    the patterns to match with the keywords of the task types.
+   * @param order       to return the found task types.
+   * @param offset      index of the first task type to return.
+   * @param limit       number maximum of task types to return.
+   *
+   * @return the future with the task types page.
+   */
+  @GenIgnore
+  default Future<TaskTypesPage> getTaskTypesPage(final String name, final String description, final String keywords,
+      final String order, final int offset, final int limit) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.getTaskTypesPage(name, description, keywords, order, offset, limit, promise);
+    return Model.fromFutureJsonObject(promise.future(), TaskTypesPage.class);
+
+  }
+
 }

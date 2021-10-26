@@ -274,4 +274,33 @@ public abstract class WeNetProfileManagerTestCase extends WeNetComponentTestCase
 
   }
 
+  /**
+   * Should get user identifiers.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldGetUserIdentifiers(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(WeNetProfileManager.createProxy(vertx).getUserIdentifiersPage(0, 10))
+        .onSuccess(page -> testContext.verify(() -> {
+
+          assertThat(page).isNotNull();
+          assertThat(page.offset).isEqualTo(0);
+          if (page.total == 0) {
+
+            assertThat(page.userIds).isNull();
+
+          } else {
+
+            assertThat(page.userIds).isNotNull().isNotEmpty().hasSizeGreaterThanOrEqualTo(1)
+                .hasSizeLessThanOrEqualTo(10);
+          }
+
+          testContext.completeNow();
+        }));
+
+  }
+
 }
