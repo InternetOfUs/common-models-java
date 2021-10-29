@@ -135,6 +135,12 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
   public String occupation;
 
   /**
+   * The email of the user.
+   */
+  @Schema(description = "This is true if the platform has location information of the user", example = "true", nullable = true)
+  public Boolean hasLocations;
+
+  /**
    * The individual norms of the user
    */
   @ArraySchema(schema = @Schema(implementation = ProtocolNorm.class), arraySchema = @Schema(description = "The individual norms of the user", nullable = true))
@@ -317,6 +323,12 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
         merged.occupation = this.occupation;
       }
 
+      merged.hasLocations = source.hasLocations;
+      if (merged.hasLocations == null) {
+
+        merged.hasLocations = this.hasLocations;
+      }
+
       merged.relationships = source.relationships;
       if (merged.relationships == null) {
 
@@ -405,6 +417,7 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
       updated.avatar = source.avatar;
       updated.nationality = source.nationality;
       updated.occupation = source.occupation;
+      updated.hasLocations = source.hasLocations;
       updated.relationships = source.relationships;
       updated.name = source.name;
       updated.dateOfBirth = source.dateOfBirth;

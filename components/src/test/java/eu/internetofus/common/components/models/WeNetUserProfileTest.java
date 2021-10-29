@@ -119,6 +119,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.norms = new ArrayList<>();
     model.norms.add(new ProtocolNormTest().createModelExample(index));
     model.occupation = OCCUPATIONS[index % OCCUPATIONS.length];
+    model.hasLocations = index % 2 == 0;
     model._creationTs = 1234567891 + index;
     model._lastUpdateTs = 1234567991 + index * 2;
     return model;
