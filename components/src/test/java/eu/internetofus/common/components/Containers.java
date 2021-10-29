@@ -74,7 +74,7 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   /**
    * The name of the WeNet task manager docker container to use.
    */
-  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:0.14.0";
+  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:0.14.1";
 
   /**
    * The name of the WeNet interaction manager docker container to use.
@@ -85,7 +85,7 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
    * The name of the WeNet profile manager extension wordnetsim docker container
    * to use.
    */
-  public static final String WENET_PROFILE_DIVERSITY_MANAGER_DOCKER_NAME = "internetofus/profile-diversity-manager:0.1.0";
+  public static final String WENET_PROFILE_DIVERSITY_MANAGER_DOCKER_NAME = "internetofus/profile-diversity-manager:0.2.0";
 
   /**
    * The current implementation of the containers.

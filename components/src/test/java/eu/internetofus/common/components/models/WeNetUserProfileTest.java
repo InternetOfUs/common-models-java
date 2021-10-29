@@ -38,6 +38,7 @@ import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,6 +69,33 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * The occupations that can be used to fill in a profile.
    */
   public static final String[] OCCUPATIONS = { "Scientific", "Student", "Waiter", "Cooker", "Teacher", "Unemployed" };
+
+  /**
+   * The departments that can be used to fill in a profile.
+   */
+  public static final String[] DEPARTMENTS = { "Department of Accounting", "Department of Anthropology",
+      "Department of Economics", "Department of Economic History", "European Institute", "Department of Finance",
+      "Department of Gender Studies", "Department of Geography and Environment", "Institute of Global Affairs (IGA)",
+      "Department of Government", "Department of Health Policy", "Department of International Development",
+      "Department of International History", "International Inequalities Institute",
+      "Department of International Relations", "Language Centre", "Department of Law", "Department of Management",
+      "Marshall Institute", "Department of Mathematics", "Department of Media and Communications",
+      "Department of Methodology", "Department of Philosophy, Logic and Scientific Method",
+      "Department of Psychological and Behavioural Science",
+      "School of Public Policy (formerly Institute of Public Affairs)", "Department of Social Policy",
+      "Department of Sociology", "Department of Statistics" };
+
+  /**
+   * The degrees that can be used to fill in a profile.
+   */
+  public static final String[] DEGREES = { "01 Undergraduate year 1", "02 Undergraduate year 2",
+      "03 Undergraduate year 3", "04 Undergraduate year 4", "05 MSc/MA", "06 MPhil/MRes/PhD" };
+
+  /**
+   * The live places that can be used to fill in a profile.
+   */
+  public static final String[] LIVE_PLACES = { "01: Hall of residence", "02: Private shared accommodation",
+      "03: With family and/or relatives", "04: Other" };
 
   /**
    * Create an basic model that has the specified index.
@@ -111,16 +139,126 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.relevantLocations.add(new RelevantLocationTest().createModelExample(index));
     model.relationships = null;
     model.personalBehaviors = null;
-    model.materials = new ArrayList<>();
-    model.materials.add(new MaterialTest().createModelExample(index));
-    model.competences = new ArrayList<>();
-    model.competences.add(new CompetenceTest().createModelExample(index));
-    model.meanings = new ArrayList<>();
-    model.meanings.add(new MeaningTest().createModelExample(index));
+    model.materials = this.createAnswerMaterials(index);
+    model.competences = this.createAnswerCompetences(index);
+    model.meanings = this.createAnswerMeanings(index);
     model._creationTs = 1234567891 + index;
     model._lastUpdateTs = 1234567991 + index * 2;
     return model;
 
+  }
+
+  /**
+   * Create the materials obtained by the survey.
+   *
+   * @param index of the answers to create.
+   *
+   * @return the answers of the materials.
+   */
+  public List<Material> createAnswerMaterials(final int index) {
+
+    final List<Material> materials = new ArrayList<>();
+    // Q03
+    var material = new Material();
+    material.classification = "university_status";
+    material.name = "department";
+    material.description = DEPARTMENTS[index % DEPARTMENTS.length];
+    material.quantity = 1;
+    materials.add(material);
+
+    // Q04
+    material = new Material();
+    material.classification = "university_status";
+    material.name = "degree_programme";
+    material.description = DEGREES[index % DEGREES.length];
+    material.quantity = 1;
+    materials.add(material);
+
+    // Q05
+    material = new Material();
+    material.classification = "university_status";
+    material.name = "accommodation";
+    material.description = LIVE_PLACES[index % LIVE_PLACES.length];
+    material.quantity = 1;
+    materials.add(material);
+
+    return materials;
+  }
+
+  /**
+   * Create the competences obtained by the survey.
+   *
+   * @param index of the answers to create.
+   *
+   * @return the answers of the competences.
+   */
+  public List<Competence> createAnswerCompetences(final int index) {
+
+    final List<Competence> competences = new ArrayList<>();
+    // Q06a - Q06o
+    for (final var name : new String[] { "c_food", "c_eating", "c_lit", "c_creatlit", "c_app_mus", "c_perf_mus",
+        "c_plays", "c_perf_plays", "c_musgall", "c_perf_art", "c_watch_sp", "c_ind_sp", "c_team_sp", "c_accom",
+        "c_locfac" }) {
+
+      final var competence = new Competence();
+      competence.ontology = "interest";
+      competence.name = name;
+      competence.level = 0.2 * (index % 5);
+      competences.add(competence);
+
+    }
+
+    // Q07a-Q07h
+    for (final var name : new String[] { "u_active", "u_read", "u_essay", "u_org", "u_balance", "u_assess", "u_theory",
+        "u_pract" }) {
+
+      final var competence = new Competence();
+      competence.ontology = "university_activity";
+      competence.name = name;
+      competence.level = 0.2 * (index % 5);
+      competences.add(competence);
+
+    }
+
+    return competences;
+  }
+
+  /**
+   * Create the meanings obtained by the survey.
+   *
+   * @param index of the answers to create.
+   *
+   * @return the answers of the meanings.
+   */
+  public List<Meaning> createAnswerMeanings(final int index) {
+
+    final List<Meaning> meanings = new ArrayList<>();
+
+    // Q08a - Q08r
+    for (final var name : new String[] { "excitement", "promotion", "existence", "suprapersonal", "interactive",
+        "normative" }) {
+
+      final var meaning = new Meaning();
+      meaning.category = "guiding_principles";
+      meaning.name = name;
+      meaning.level = 0.2 * (index % 5);
+      meanings.add(meaning);
+
+    }
+
+    // Q09a - Q09t
+    for (final var name : new String[] { "extraversion", "agreeableness", "consientiousness", "neuroticism",
+        "openness" }) {
+
+      final var meaning = new Meaning();
+      meaning.category = "big_five";
+      meaning.name = name;
+      meaning.level = 0.2 * (index % 5);
+      meanings.add(meaning);
+
+    }
+
+    return meanings;
   }
 
   /**
@@ -1886,6 +2024,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   public void shouldMergeAddAndModifyMaterials(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
+    target.materials.clear();
+    target.materials.add(new MaterialTest().createModelExample(1));
     target.materials.add(new MaterialTest().createModelExample(2));
     target.materials.add(new MaterialTest().createModelExample(3));
     assertIsValid(target, vertx, testContext, () -> {
@@ -1979,8 +2119,10 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   public void shouldMergeAddAndModifyCompetences(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    target.competences.add(new CompetenceTest().createModelExample(2));
-    target.competences.add(new CompetenceTest().createModelExample(3));
+    target.competences.clear();
+    target.competences.add(0, new CompetenceTest().createModelExample(1));
+    target.competences.add(1, new CompetenceTest().createModelExample(2));
+    target.competences.add(2, new CompetenceTest().createModelExample(3));
     assertIsValid(target, vertx, testContext, () -> {
 
       final var source = new WeNetUserProfile();
@@ -2071,6 +2213,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   public void shouldMergeAddAndModifyMeanings(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
+    target.meanings.clear();
+    target.meanings.add(new MeaningTest().createModelExample(1));
     target.meanings.add(new MeaningTest().createModelExample(2));
     target.meanings.add(new MeaningTest().createModelExample(3));
     assertIsValid(target, vertx, testContext, () -> {
