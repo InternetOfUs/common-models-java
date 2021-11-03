@@ -303,4 +303,80 @@ public abstract class WeNetProfileManagerTestCase extends WeNetComponentTestCase
 
   }
 
+  /**
+   * Should not calculate diversity of bad data.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldFailDiversityWithBadData(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var data = new DiversityDataTest().createModelExample(0);
+    WeNetProfileManager.createProxy(vertx).operationDiversity(data)
+        .onComplete(testContext.failing(any -> testContext.completeNow()));
+
+  }
+
+  /**
+   * Should not calculate similarity of bad data.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldFailSimilarityWithBadData(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var data = new SimilarityDataTest().createModelExample(0);
+    WeNetProfileManager.createProxy(vertx).operationSimilarity(data)
+        .onComplete(testContext.failing(any -> testContext.completeNow()));
+
+  }
+
+  /**
+   * Should calculate diversity.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldCalculateDiversity(final Vertx vertx, final VertxTestContext testContext) {
+
+    new DiversityDataTest().createModelExample(0, vertx, testContext).compose(data -> WeNetProfileManager
+        .createProxy(vertx).operationDiversity(data).onComplete(testContext.succeeding(result -> {
+
+          testContext.verify(() -> {
+
+            assertThat(result.diversity).isGreaterThan(0d).isLessThan(1d);
+
+          });
+          testContext.completeNow();
+
+        })));
+
+  }
+
+  /**
+   * Should calculate similarity.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldCalculateSimilarity(final Vertx vertx, final VertxTestContext testContext) {
+
+    new SimilarityDataTest().createModelExample(0, vertx, testContext).compose(data -> WeNetProfileManager
+        .createProxy(vertx).operationSimilarity(data).onComplete(testContext.succeeding(result -> {
+
+          testContext.verify(() -> {
+
+            assertThat(result.attributes).isNotEmpty();
+
+          });
+          testContext.completeNow();
+
+        })));
+
+  }
+
 }

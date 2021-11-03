@@ -194,4 +194,24 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
     this.getJsonObject(params, "/userIdentifiers").onComplete(handler);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void operationDiversity(@NotNull final JsonObject data,
+      @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(data, "/operations/diversity").onComplete(handler);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void operationSimilarity(@NotNull final JsonObject data,
+      @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(data, "/operations/similarity").onComplete(handler);
+  }
+
 }

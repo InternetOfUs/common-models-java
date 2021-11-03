@@ -6,7 +6,8 @@ All notable changes to `wenet-common` will be documented in this file
 
  * Upgrade containers verions.
  * Change social context builder notify profile update.
- * Add method on the profile manager to obtain the defined identifiers.
+ * Add methods on the profile manager to obtain the defined identifiers,
+ 	to calculate the diversity and to calculate the similarity.
  * Add methods on the task manager to obtain some task or task types.
  
 

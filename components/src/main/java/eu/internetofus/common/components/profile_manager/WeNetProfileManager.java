@@ -382,4 +382,52 @@ public interface WeNetProfileManager extends WeNetComponent {
 
   }
 
+  /**
+   * Calculate the diversity of a set of profiles.
+   *
+   * @param data    with the profiles to calculate the diversity.
+   * @param handler to manage the diversity calculus result.
+   */
+  void operationDiversity(@NotNull JsonObject data, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Calculate the diversity of a set of users.
+   *
+   * @param data of users to calculate the diversity.
+   *
+   * @return the result with the diversity value.
+   */
+  @GenIgnore
+  default Future<DiversityValue> operationDiversity(final DiversityData data) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.operationDiversity(data.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), DiversityValue.class);
+
+  }
+
+  /**
+   * Calculate the similarity of a profile attributes with a text.
+   *
+   * @param data    with the profiles to calculate the similarity.
+   * @param handler to manage the similarity calculus result.
+   */
+  void operationSimilarity(@NotNull JsonObject data, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Calculate the similarity between the attributes of a profile and a text.
+   *
+   * @param data of users to calculate the similarity.
+   *
+   * @return the result with the similarity result.
+   */
+  @GenIgnore
+  default Future<SimilarityResult> operationSimilarity(final SimilarityData data) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.operationSimilarity(data.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), SimilarityResult.class);
+
+  }
+
 }
