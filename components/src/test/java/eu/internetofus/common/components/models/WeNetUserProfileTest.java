@@ -204,7 +204,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       final var competence = new Competence();
       competence.ontology = "interest";
       competence.name = name;
-      competence.level = 0.2 * (index % 5);
+      competence.level = 0.25 * (index % 5);
       competences.add(competence);
 
     }
@@ -216,7 +216,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       final var competence = new Competence();
       competence.ontology = "university_activity";
       competence.name = name;
-      competence.level = 0.2 * (index % 5);
+      competence.level = 0.25 * (index % 5);
       competences.add(competence);
 
     }
@@ -242,7 +242,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       final var meaning = new Meaning();
       meaning.category = "guiding_principles";
       meaning.name = name;
-      meaning.level = 0.2 * (index % 5);
+      meaning.level = 0.25 * (index % 5);
       meanings.add(meaning);
 
     }
@@ -254,7 +254,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       final var meaning = new Meaning();
       meaning.category = "big_five";
       meaning.name = name;
-      meaning.level = 0.2 * (index % 5);
+      meaning.level = 0.25 * (index % 5);
       meanings.add(meaning);
 
     }

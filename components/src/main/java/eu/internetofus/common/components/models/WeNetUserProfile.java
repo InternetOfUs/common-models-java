@@ -254,7 +254,7 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
         codePrefix + ".plannedActivities", vertx));
     future = future.compose(Validations.validate(this.relevantLocations, (a, b) -> a.id.equals(b.id),
         codePrefix + ".relevantLocations", vertx));
-    future = future.compose(Validations.validate(this.relationships, (a, b) -> a.equalsByUserAndType(b),
+    future = future.compose(Validations.validate(this.relationships, (a, b) -> a.equalsByAppUserAndType(b),
         codePrefix + ".relationships", vertx));
     future = future.compose(
         Validations.validate(this.personalBehaviors, (a, b) -> a.equals(b), codePrefix + ".personalBehaviors", vertx));

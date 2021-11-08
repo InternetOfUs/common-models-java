@@ -104,10 +104,10 @@ public class SocialNetworkRelationship extends ReflectionModel
    *
    * @return {@code true} if the relations has the same user and type.
    */
-  public boolean equalsByUserAndType(final SocialNetworkRelationship relationship) {
+  public boolean equalsByAppUserAndType(final SocialNetworkRelationship relationship) {
 
     return relationship != null && Objects.equals(this.type, relationship.type)
-        && Objects.equals(this.userId, relationship.userId);
+        && Objects.equals(this.appId, relationship.appId) && Objects.equals(this.userId, relationship.userId);
 
   }
 
