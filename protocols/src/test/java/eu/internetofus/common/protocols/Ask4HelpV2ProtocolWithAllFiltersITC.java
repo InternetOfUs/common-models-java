@@ -19,11 +19,13 @@
  */
 package eu.internetofus.common.protocols;
 
+import eu.internetofus.common.components.interaction_protocol_engine.State;
 import eu.internetofus.common.components.models.Message;
 import eu.internetofus.common.components.models.SocialNetworkRelationship;
 import eu.internetofus.common.components.models.SocialNetworkRelationshipType;
 import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTransaction;
+import eu.internetofus.common.components.personal_context_builder.UserDistance;
 import eu.internetofus.common.components.personal_context_builder.UserLocation;
 import eu.internetofus.common.components.personal_context_builder.WeNetPersonalContextBuilderSimulator;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
@@ -33,8 +35,11 @@ import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -47,6 +52,16 @@ import org.junit.jupiter.api.Test;
  * @author UDT-IA, IIIA-CSIC
  */
 public class Ask4HelpV2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2ProtocolITC {
+
+  /**
+   * The number maximum users to ask.
+   */
+  private static final int MAX_USERS = 7;
+
+  /**
+   * The expected state after the action is done.
+   */
+  protected JsonObject expectedState;
 
   /**
    * {@inheritDoc}
@@ -66,8 +81,8 @@ public class Ask4HelpV2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2Proto
   protected Task createTaskForProtocol() {
 
     final var task = super.createTaskForProtocol();
-    task.attributes.put("domain", "varia_misc").put("domainInterest", "similar").put("beliefsAndValues", "similar")
-        .put("socialCloseness", "similar").put("positionOfAnswerer", "nearby");
+    task.attributes.put("domain", "studying_career").put("domainInterest", "similar").put("beliefsAndValues", "similar")
+        .put("socialCloseness", "similar").put("positionOfAnswerer", "nearby").put("maxUsers", MAX_USERS);
 
     return task;
   }
@@ -91,8 +106,8 @@ public class Ask4HelpV2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2Proto
       final var userId = this.users.get(i).id;
       final var location = new UserLocation();
       location.userId = userId;
-      location.latitude = 0.5 * i;
-      location.longitude = 0.5 * i;
+      location.latitude = 0.3 * i;
+      location.longitude = 0.3 * i;
       future = future
           .compose(ignored -> WeNetPersonalContextBuilderSimulator.createProxy(vertx).addUserLocation(location));
 
@@ -123,7 +138,7 @@ public class Ask4HelpV2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2Proto
       relationship.appId = this.app.appId;
       relationship.type = SocialNetworkRelationshipType.values()[i % SocialNetworkRelationshipType.values().length];
       relationship.userId = this.users.get(i).id;
-      relationship.weight = 0.1 * (max - i);
+      relationship.weight = 0.1 * i;
       profile.relationships.add(relationship);
 
     }
@@ -137,88 +152,111 @@ public class Ask4HelpV2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2Proto
   }
 
   /**
-   * Modify the profiles of the users to have some domain values.
+   * Create the expected state.
    *
    * @param vertx       event bus to use.
    * @param testContext context to do the test.
    */
   @Test
   @Order(7)
-  public void shouldFillInDomain(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldCreateExpectedState(final Vertx vertx, final VertxTestContext testContext) {
 
     this.assertLastSuccessfulTestWas(6, testContext);
 
-    final Future<?> future = Future.succeededFuture();
-    for (var i = 0; i < this.users.size(); i++) {
-
-    }
-
-    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
-
-  }
-
-  /**
-   * Modify the profiles of the users to have some believe and values.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to do the test.
-   */
-  @Test
-  @Order(8)
-  public void shouldFillInBalieveAndValues(final Vertx vertx, final VertxTestContext testContext) {
-
-    this.assertLastSuccessfulTestWas(7, testContext);
-
-    final Future<?> future = Future.succeededFuture();
-    for (var i = 0; i < this.users.size(); i++) {
-
-    }
-
-    future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
-
-  }
-
-  /**
-   * Check if a list of users is valid.
-   *
-   * @param userValues to validate.
-   *
-   * @return {@code true} if the list of users is valid.
-   */
-  private boolean checkUserListIsValid(final JsonArray userValues) {
+    this.expectedState = new JsonObject();
+    final var whoToAskUsers = new JsonArray();
+    this.expectedState.put("whoToAskUsers", whoToAskUsers);
+    final var unaskedUserIds = new JsonArray();
+    this.expectedState.put("unaskedUserIds", unaskedUserIds);
+    final var socialClosenessUsers = new JsonArray();
+    this.expectedState.put("socialClosenessUsers", socialClosenessUsers);
+    final var closenessUsers = new JsonArray();
+    this.expectedState.put("closenessUsers", closenessUsers);
+    final var domainInterestUsers = new JsonArray();
+    this.expectedState.put("domainInterestUsers", domainInterestUsers);
+    final var beliefsAndValuesUsers = new JsonArray();
+    this.expectedState.put("beliefsAndValuesUsers", beliefsAndValuesUsers);
 
     final var max = this.users.size();
-    if (userValues == null || userValues.size() != max - 1) {
+    final var requester = this.users.get(0);
+    final List<JsonObject> totals = new ArrayList<>();
+    for (var i = 1; i < max; i++) {
+
+      final var user = this.users.get(i);
+
+      final var closeValue = 1.0 - UserDistance.calculateDistance(0, 0, 0.3 * i, 0.3 * i) / 1000000.0;
+      final var socialValue = 0.1 * i;
+      final var beliefValue = 1.0 - Math.abs(requester.meanings.get(0).level - user.meanings.get(0).level) / 2.0;
+      final var domainValue = 1.0 - Math.abs(requester.competences.get(0).level - user.competences.get(0).level) / 2.0;
+      final var total = closeValue * socialValue * beliefValue * domainValue;
+      closenessUsers.add(new JsonObject().put("userId", user.id).put("value", closeValue));
+      socialClosenessUsers.add(new JsonObject().put("userId", user.id).put("value", socialValue));
+      domainInterestUsers.add(new JsonObject().put("userId", user.id).put("value", domainValue));
+      beliefsAndValuesUsers.add(new JsonObject().put("userId", user.id).put("value", beliefValue));
+      totals.add(new JsonObject().put("userId", user.id).put("value", total));
+
+    }
+
+    Collections.sort(totals, (a, b) -> b.getDouble("value").compareTo(a.getDouble("value")));
+    for (final var whoToAskUser : totals) {
+
+      whoToAskUsers.add(whoToAskUser);
+      if (whoToAskUsers.size() > MAX_USERS) {
+
+        unaskedUserIds.add(whoToAskUser.getString("userId"));
+
+      }
+
+    }
+
+    this.assertSuccessfulCompleted(testContext);
+
+  }
+
+  /**
+   * Check that a state attribute is equals to the expected.
+   *
+   * @param state         to check.
+   * @param attributeName name of the attribute to compare.
+   * @param ordered       is {@code true} if the order is important.
+   *
+   * @return {@code true} if the expected attribute is equals.
+   */
+  private boolean assertExpectedTaskStateAttribute(final State state, final String attributeName,
+      final boolean ordered) {
+
+    final var value = state.attributes.getJsonArray(attributeName);
+    final var expected = this.expectedState.getJsonArray(attributeName);
+    if (value == null || expected.size() != value.size()) {
 
       return false;
 
+    } else if (!ordered) {
+
+      final var copy = new JsonArray(expected.toString());
+      final var max = copy.size();
+      for (var i = 0; i < max; i++) {
+
+        final var element = value.getValue(i);
+        if (!copy.remove(element)) {
+
+          return false;
+        }
+      }
+
+      return copy.isEmpty();
+
     } else {
 
-      var previousValue = 1.0d;
-      for (var i = 1; i < max; i++) {
+      final var max = expected.size();
+      for (var i = 0; i < max; i++) {
 
-        final var userId = this.users.get(i).id;
-        final var maxElements = userValues.size();
-        for (var j = 0; j < maxElements; j++) {
+        final var element = value.getValue(i);
+        final var expectedElement = expected.getValue(i);
+        if (!expectedElement.equals(element)) {
 
-          final var element = userValues.getJsonObject(j);
-          if (element == null) {
-
-            return false;
-          }
-          if (userId.equals(element.getString("userId"))) {
-
-            final var elementValue = element.getDouble("value", -1d);
-            if (elementValue < 0.0d || elementValue > previousValue) {
-
-              return false;
-            }
-            previousValue = elementValue;
-            break;
-          }
-
+          return false;
         }
-
       }
 
       return true;
@@ -233,18 +271,19 @@ public class Ask4HelpV2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2Proto
    * @param testContext context to do the test.
    */
   @Test
-  @Order(9)
+  @Order(8)
   public void shouldCreateTask(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.assertLastSuccessfulTestWas(8, testContext);
+    this.assertLastSuccessfulTestWas(7, testContext);
 
     final var source = this.createTaskForProtocol();
     final var checkMessages = new ArrayList<Predicate<Message>>();
 
     final var maxUsers = source.attributes.getInteger("maxUsers");
-    for (var i = 1; i <= maxUsers; i++) {
+    final var whoToAskUsers = this.expectedState.getJsonArray("whoToAskUsers");
+    for (var i = 0; i < maxUsers; i++) {
 
-      final var receiverId = this.users.get(i).id;
+      final var receiverId = whoToAskUsers.getJsonObject(i).getString("userId");
       checkMessages.add(this.createMessagePredicateForQuestionToAnswerMessageBy(receiverId));
 
     }
@@ -265,46 +304,18 @@ public class Ask4HelpV2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2Proto
 
           if (userTaskState.attributes != null) {
 
-            final var whoToAskUsers = userTaskState.attributes.getJsonArray("whoToAskUsers");
-            if (!this.checkUserListIsValid(whoToAskUsers)
-                || !this.checkUserListIsValid(userTaskState.attributes.getJsonArray("closenessUsers"))
-                || !this.checkUserListIsValid(userTaskState.attributes.getJsonArray("socialClosenessUsers"))
-                || !this.checkUserListIsValid(userTaskState.attributes.getJsonArray("beliefsAndValuesUsers"))
-                || !this.checkUserListIsValid(userTaskState.attributes.getJsonArray("domainInterestUsers"))) {
+            return this.assertExpectedTaskStateAttribute(userTaskState, "whoToAskUsers", true)
+                && this.assertExpectedTaskStateAttribute(userTaskState, "closenessUsers", false)
+                && this.assertExpectedTaskStateAttribute(userTaskState, "socialClosenessUsers", false)
+                && this.assertExpectedTaskStateAttribute(userTaskState, "beliefsAndValuesUsers", false)
+                && this.assertExpectedTaskStateAttribute(userTaskState, "domainInterestUsers", false)
+                && this.assertExpectedTaskStateAttribute(userTaskState, "unaskedUserIds", true);
 
-              return false;
-            }
+          } else {
 
-            final var max = whoToAskUsers.size();
-            for (var i = 0; i < max; i++) {
+            return false;
 
-              final var element = whoToAskUsers.getJsonObject(i);
-              final var userId = this.users.get(i + 1).id;
-              if (!userId.equals(element.getString("userId"))) {
-
-                return false;
-              }
-            }
-
-            final var unaskedUserIds = userTaskState.attributes.getJsonArray("unaskedUserIds");
-            if (unaskedUserIds == null || unaskedUserIds.size() != this.users.size() - 1 - maxUsers) {
-
-              return false;
-            }
-            for (var i = 0; i < unaskedUserIds.size(); i++) {
-
-              final var element = unaskedUserIds.getString(i);
-              final var userId = this.users.get(maxUsers + i + 1).id;
-              if (!userId.equals(element)) {
-
-                return false;
-              }
-            }
-
-            return true;
           }
-
-          return false;
 
         }));
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
@@ -318,16 +329,16 @@ public class Ask4HelpV2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2Proto
    * @param testContext context to do the test.
    */
   @Test
-  @Order(10)
+  @Order(9)
   public void shouldAskForMoreAnswers(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.assertLastSuccessfulTestWas(9, testContext);
+    this.assertLastSuccessfulTestWas(8, testContext);
 
     final var checkMessages = new ArrayList<Predicate<Message>>();
-    final var maxUsers = this.task.attributes.getInteger("maxUsers");
-    for (var i = maxUsers + 1; i < this.users.size(); i++) {
+    final var usersToAskIds = this.expectedState.getJsonArray("unaskedUserIds");
+    for (var i = 0; i < usersToAskIds.size(); i++) {
 
-      final var receiverId = this.users.get(i).id;
+      final var receiverId = usersToAskIds.getString(i);
       checkMessages.add(this.createMessagePredicateForQuestionToAnswerMessageBy(receiverId));
 
     }
