@@ -203,6 +203,11 @@
 				"transactionId",
 				"reason"
 			]
+		},
+		"answerTransactionLong": {
+			"title": "Transaction to mark large answers on the incentive server",
+			"type": "object",
+			"nullable": true
 		}
 	},
 	"callbacks": {

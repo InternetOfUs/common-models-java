@@ -2,6 +2,12 @@
 
 All notable changes to `wenet-common` will be documented in this file
 
+
+## Version 0.17.0 (2021-11-)
+
+ * Add cache over HTTP clients using Redis.
+
+
 ## Version 0.16.0 (2021-11-9)
 
  * Upgrade containers verions.
