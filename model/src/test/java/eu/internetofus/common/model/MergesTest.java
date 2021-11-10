@@ -198,7 +198,8 @@ public class MergesTest {
   public void shouldMergeNullSourceAndTargetField(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new DummyComplexModelTest().createModelExample(1);
-    Future.succeededFuture(model).compose(Merges.mergeField(null, null, "codePrefix.other", vertx, null))
+    final var cache = new ValidationCache();
+    Future.succeededFuture(model).compose(Merges.mergeField(null, null, "codePrefix.other", vertx, cache, null))
         .onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
 
           assertThat(merged).isSameAs(model);
@@ -220,8 +221,9 @@ public class MergesTest {
 
     final var model = new DummyComplexModelTest().createModelExample(1);
     final var target = new DummyComplexModelTest().createModelExample(2);
+    final var cache = new ValidationCache();
     Future.succeededFuture(model)
-        .compose(Merges.mergeField(target, null, "codePrefix.other", vertx,
+        .compose(Merges.mergeField(target, null, "codePrefix.other", vertx, cache,
             (mergedModel, field) -> mergedModel.other = field))
         .onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
 
@@ -245,8 +247,9 @@ public class MergesTest {
 
     final var model = new DummyComplexModelTest().createModelExample(1);
     final var source = new DummyComplexModelTest().createModelExample(2);
+    final var cache = new ValidationCache();
     Future.succeededFuture(model)
-        .compose(Merges.mergeField(null, source, "codePrefix.other", vertx,
+        .compose(Merges.mergeField(null, source, "codePrefix.other", vertx, cache,
             (mergedModel, field) -> mergedModel.other = field))
         .onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
 
@@ -281,8 +284,9 @@ public class MergesTest {
     source.add(new DummyComplexModelTest().createModelExample(30));
     source.get(1).index = 90;
     source.get(2).id = null;
+    final var cache = new ValidationCache();
     Future.succeededFuture(model)
-        .compose(Merges.mergeFieldList(source, source, "siblings", vertx, sibling -> sibling.id != null,
+        .compose(Merges.mergeFieldList(source, source, "siblings", vertx, cache, sibling -> sibling.id != null,
             (a, b) -> a.id.equals(b.id), (merged, siblings) -> merged.siblings = siblings))
         .onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
 

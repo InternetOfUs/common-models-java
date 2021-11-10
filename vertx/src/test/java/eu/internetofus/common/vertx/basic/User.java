@@ -24,6 +24,7 @@ import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
+import eu.internetofus.common.model.ValidationCache;
 import eu.internetofus.common.model.ValidationErrorException;
 import eu.internetofus.common.model.Validations;
 import io.vertx.core.Future;
@@ -50,19 +51,21 @@ public class User extends ReflectionModel implements Model, Validable, Mergeable
    * {@inheritDoc}
    */
   @Override
-  public Future<User> update(final User source, final String codePrefix, final Vertx vertx) {
+  public Future<User> update(final User source, final String codePrefix, final Vertx vertx,
+      final ValidationCache cache) {
 
     final var updated = new User();
     updated._id = this._id;
     updated.name = source.name;
-    return Future.succeededFuture(updated).compose(Validations.validateChain(codePrefix, vertx));
+    return Future.succeededFuture(updated).compose(Validations.validateChain(codePrefix, vertx, cache));
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public Future<User> merge(final User source, final String codePrefix, final Vertx vertx) {
+  public Future<User> merge(final User source, final String codePrefix, final Vertx vertx,
+      final ValidationCache cache) {
 
     final var merged = new User();
     merged._id = this._id;
@@ -71,7 +74,7 @@ public class User extends ReflectionModel implements Model, Validable, Mergeable
 
       merged.name = this.name;
     }
-    return Future.succeededFuture(merged).compose(Validations.validateChain(codePrefix, vertx));
+    return Future.succeededFuture(merged).compose(Validations.validateChain(codePrefix, vertx, cache));
 
   }
 
@@ -79,7 +82,7 @@ public class User extends ReflectionModel implements Model, Validable, Mergeable
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
 
     if (this.name == null || this.name.length() == 0) {
 

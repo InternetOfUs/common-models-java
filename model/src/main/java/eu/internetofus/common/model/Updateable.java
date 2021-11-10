@@ -24,7 +24,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 
 /**
- * This is implemented by any model that can be updated with another model to create a new model.
+ * This is implemented by any model that can be updated with another model to
+ * create a new model.
  *
  * @param <T> type of models that can be updated.
  *
@@ -38,12 +39,14 @@ public interface Updateable<T> {
    * @param source     model to update with the current one.
    * @param codePrefix the prefix of the code to use for the error message.
    * @param vertx      the event bus infrastructure to use.
+   * @param cache      with the validated models.
    *
-   * @return the future that provide the updated model that has to be valid. If it cannot update to a new model the cause
-   *         will be a {@link ValidationErrorException}.
+   * @return the future that provide the updated model that has to be valid. If it
+   *         cannot update to a new model the cause will be a
+   *         {@link ValidationErrorException}.
    *
    * @see ValidationErrorException
    */
-  Future<T> update(T source, String codePrefix, Vertx vertx);
+  Future<T> update(T source, String codePrefix, Vertx vertx, ValidationCache cache);
 
 }

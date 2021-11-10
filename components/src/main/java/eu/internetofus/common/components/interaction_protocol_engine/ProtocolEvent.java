@@ -24,6 +24,7 @@ import eu.internetofus.common.components.interaction_protocol_engine.ProtocolAdd
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.Validable;
+import eu.internetofus.common.model.ValidationCache;
 import eu.internetofus.common.model.ValidationErrorException;
 import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -62,10 +63,10 @@ public class ProtocolEvent extends AbstractProtocolAction implements Model, Vali
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
 
     final Promise<Void> promise = Promise.promise();
-    var future = super.validate(codePrefix, vertx).compose(empty -> promise.future());
+    var future = super.validate(codePrefix, vertx, cache).compose(empty -> promise.future());
     try {
 
       future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,

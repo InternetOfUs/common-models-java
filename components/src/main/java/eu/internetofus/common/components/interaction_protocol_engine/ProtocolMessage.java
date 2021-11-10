@@ -22,6 +22,7 @@ package eu.internetofus.common.components.interaction_protocol_engine;
 
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.Validable;
+import eu.internetofus.common.model.ValidationCache;
 import eu.internetofus.common.model.ValidationErrorException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
@@ -52,10 +53,10 @@ public class ProtocolMessage extends AbstractProtocolAction implements Model, Va
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
 
     final Promise<Void> promise = Promise.promise();
-    var future = super.validate(codePrefix, vertx).compose(empty -> promise.future());
+    var future = super.validate(codePrefix, vertx, cache).compose(empty -> promise.future());
     if (this.sender == null) {
 
       promise.fail(new ValidationErrorException(codePrefix + ".sender", "You must to define a sender"));
@@ -66,8 +67,8 @@ public class ProtocolMessage extends AbstractProtocolAction implements Model, Va
 
     } else {
 
-      future = future.compose(map -> this.sender.validate(codePrefix + ".sender", vertx));
-      future = future.compose(map -> this.receiver.validate(codePrefix + ".receiver", vertx));
+      future = future.compose(map -> this.sender.validate(codePrefix + ".sender", vertx, cache));
+      future = future.compose(map -> this.receiver.validate(codePrefix + ".receiver", vertx, cache));
       promise.complete();
 
     }

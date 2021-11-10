@@ -69,14 +69,15 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#validate(String, Vertx)
+   * @see DummyComplexModel#validate(String, Vertx,ValidationCache)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsValid(model, vertx, testContext);
+    final var cache = new ValidationCache();
+    assertIsValid(model, vertx, cache, testContext);
 
   }
 
@@ -90,7 +91,8 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> {
+    final var cache = new ValidationCache();
+    assertCanMerge(target, null, vertx, cache, testContext, merged -> {
       assertThat(merged).isSameAs(target);
     });
 
@@ -102,7 +104,8 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#merge(DummyComplexModel, String, Vertx)
+   * @see DummyComplexModel#merge(DummyComplexModel, String,
+   *      Vertx,ValidationCache)
    */
   @Test
   public void shouldMergeExamples(final Vertx vertx, final VertxTestContext testContext) {
@@ -111,7 +114,8 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
     target._creationTs = 10000;
     target._lastUpdateTs = 1000000;
     final var source = this.createModelExample(2);
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    final var cache = new ValidationCache();
+    assertCanMerge(target, source, vertx, cache, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       source._id = target._id;
       source.value = target.value;
@@ -128,7 +132,8 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#merge(DummyComplexModel, String, Vertx)
+   * @see DummyComplexModel#merge(DummyComplexModel, String,
+   *      Vertx,ValidationCache)
    */
   @Test
   public void shouldNotMergeWithDuplicatedDummy(final Vertx vertx, final VertxTestContext testContext) {
@@ -136,7 +141,8 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
     final var target = this.createModelExample(1);
     final var source = this.createModelExample(2);
     source.dummies.add(source.dummies.get(0));
-    assertCannotMerge(target, source, "dummies[1]", vertx, testContext);
+    final var cache = new ValidationCache();
+    assertCannotMerge(target, source, "dummies[1]", vertx, cache, testContext);
 
   }
 
@@ -150,7 +156,8 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanUpdate(target, null, vertx, testContext, updated -> {
+    final var cache = new ValidationCache();
+    assertCanUpdate(target, null, vertx, cache, testContext, updated -> {
       assertThat(updated).isSameAs(target);
     });
 
@@ -162,7 +169,8 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#update(DummyComplexModel, String, Vertx)
+   * @see DummyComplexModel#update(DummyComplexModel, String,
+   *      Vertx,ValidationCache)
    */
   @Test
   public void shouldUpdateExamples(final Vertx vertx, final VertxTestContext testContext) {
@@ -171,7 +179,8 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
     target._creationTs = 10000;
     target._lastUpdateTs = 1000000;
     final var source = this.createModelExample(2);
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    final var cache = new ValidationCache();
+    assertCanUpdate(target, source, vertx, cache, testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       source._id = target._id;
       source._creationTs = target._creationTs;
@@ -187,7 +196,8 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#update(DummyComplexModel, String, Vertx)
+   * @see DummyComplexModel#update(DummyComplexModel, String,
+   *      Vertx,ValidationCache)
    */
   @Test
   public void shouldNotUpdateWithDuplicatedDummy(final Vertx vertx, final VertxTestContext testContext) {
@@ -195,7 +205,8 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
     final var target = this.createModelExample(1);
     final var source = this.createModelExample(2);
     source.dummies.add(source.dummies.get(0));
-    assertCannotUpdate(target, source, "dummies[1]", vertx, testContext);
+    final var cache = new ValidationCache();
+    assertCannotUpdate(target, source, "dummies[1]", vertx, cache, testContext);
 
   }
 

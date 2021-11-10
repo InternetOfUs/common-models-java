@@ -35,13 +35,14 @@ public interface Validable {
    *
    * @param codePrefix the prefix of the code to use for the error message.
    * @param vertx      the event bus infrastructure to use.
+   * @param cache      of values that has already obtained.
    *
    *
-   * @return the future that inform if the value is right. If teh model is not valid the cause will be a
-   *         {@link ValidationErrorException}.
+   * @return the future that inform if the value is right. If the model is not
+   *         valid the cause will be a {@link ValidationErrorException}.
    *
    * @see ValidationErrorException
    */
-  Future<Void> validate(String codePrefix, Vertx vertx);
+  Future<Void> validate(String codePrefix, Vertx vertx, ValidationCache cache);
 
 }

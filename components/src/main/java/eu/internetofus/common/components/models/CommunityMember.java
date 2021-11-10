@@ -25,6 +25,7 @@ import eu.internetofus.common.model.CreateUpdateTsDetails;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
+import eu.internetofus.common.model.ValidationCache;
 import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -58,7 +59,7 @@ public class CommunityMember extends CreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
@@ -78,7 +79,8 @@ public class CommunityMember extends CreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<CommunityMember> merge(final CommunityMember source, final String codePrefix, final Vertx vertx) {
+  public Future<CommunityMember> merge(final CommunityMember source, final String codePrefix, final Vertx vertx,
+      final ValidationCache cache) {
 
     final Promise<CommunityMember> promise = Promise.promise();
     var future = promise.future();
@@ -94,7 +96,7 @@ public class CommunityMember extends CreateUpdateTsDetails
         merged.privileges = this.privileges;
       }
 
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx, cache));
 
       promise.complete(merged);
 
@@ -111,7 +113,8 @@ public class CommunityMember extends CreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<CommunityMember> update(final CommunityMember source, final String codePrefix, final Vertx vertx) {
+  public Future<CommunityMember> update(final CommunityMember source, final String codePrefix, final Vertx vertx,
+      final ValidationCache cache) {
 
     final Promise<CommunityMember> promise = Promise.promise();
     var future = promise.future();
@@ -123,7 +126,7 @@ public class CommunityMember extends CreateUpdateTsDetails
       updated.userId = this.userId;
       updated.privileges = source.privileges;
 
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx, cache));
 
       promise.complete(updated);
 

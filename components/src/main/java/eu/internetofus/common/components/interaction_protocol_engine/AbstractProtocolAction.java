@@ -29,6 +29,7 @@ import eu.internetofus.common.model.JsonObjectDeserializer;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Validable;
+import eu.internetofus.common.model.ValidationCache;
 import eu.internetofus.common.model.ValidationErrorException;
 import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -85,7 +86,7 @@ public class AbstractProtocolAction extends ReflectionModel implements Model, Va
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();

@@ -60,7 +60,8 @@ public class DummyComplexModel extends DummyModel
    * {@inheritDoc}
    */
   @Override
-  public Future<DummyComplexModel> merge(final DummyComplexModel source, final String codePrefix, final Vertx vertx) {
+  public Future<DummyComplexModel> merge(final DummyComplexModel source, final String codePrefix, final Vertx vertx,
+      final ValidationCache cache) {
 
     final Promise<DummyComplexModel> promise = Promise.promise();
     var future = promise.future();
@@ -70,12 +71,12 @@ public class DummyComplexModel extends DummyModel
       merged.index = source.index;
       merged.siblings = source.siblings;
       future = future.compose(Merges.mergeFieldList(this.siblings, source.siblings, codePrefix + ".siblings", vertx,
-          dummyComplexModel -> dummyComplexModel.id != null,
+          cache, dummyComplexModel -> dummyComplexModel.id != null,
           (dummyCompleModel1, dummyComplexModel2) -> dummyCompleModel1.id.equals(dummyComplexModel2.id),
           (dummyComplexModel, siblings) -> dummyComplexModel.siblings = siblings));
-      future = future.compose(Merges.mergeField(this.other, source.other, codePrefix + ".other", vertx,
+      future = future.compose(Merges.mergeField(this.other, source.other, codePrefix + ".other", vertx, cache,
           (otherMerged, other) -> otherMerged.other = other));
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx, cache));
       future = future.map(mergedAndValidated -> {
 
         mergedAndValidated.id = this.id;
@@ -96,7 +97,7 @@ public class DummyComplexModel extends DummyModel
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
@@ -108,11 +109,11 @@ public class DummyComplexModel extends DummyModel
     if (this.siblings != null) {
 
       future = future.compose(
-          Validations.validate(this.siblings, (d1, d2) -> d1.id.equals(d2.id), codePrefix + ".siblings", vertx));
+          Validations.validate(this.siblings, (d1, d2) -> d1.id.equals(d2.id), codePrefix + ".siblings", vertx, cache));
     }
     if (this.other != null) {
 
-      future = future.compose(empty -> this.other.validate(codePrefix + ".other", vertx));
+      future = future.compose(empty -> this.other.validate(codePrefix + ".other", vertx, cache));
     }
 
     promise.complete();
@@ -124,7 +125,8 @@ public class DummyComplexModel extends DummyModel
    * {@inheritDoc}
    */
   @Override
-  public Future<DummyComplexModel> update(final DummyComplexModel source, final String codePrefix, final Vertx vertx) {
+  public Future<DummyComplexModel> update(final DummyComplexModel source, final String codePrefix, final Vertx vertx,
+      final ValidationCache cache) {
 
     final Promise<DummyComplexModel> promise = Promise.promise();
     var future = promise.future();
@@ -134,7 +136,7 @@ public class DummyComplexModel extends DummyModel
       updated.index = source.index;
       updated.siblings = source.siblings;
       updated.other = source.other;
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx, cache));
       future = future.map(updatedAndValidated -> {
 
         updatedAndValidated.id = this.id;

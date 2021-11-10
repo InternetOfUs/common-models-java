@@ -29,6 +29,7 @@ import eu.internetofus.common.components.models.RelevantLocation;
 import eu.internetofus.common.components.models.Routine;
 import eu.internetofus.common.components.models.SocialPractice;
 import eu.internetofus.common.model.Merges;
+import eu.internetofus.common.model.ValidationCache;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import java.util.List;
@@ -49,6 +50,7 @@ public interface MergeFieldLists {
    * @param sourcePlannedActivitys source planned activities to merge.
    * @param codePrefix             prefix for the error code.
    * @param vertx                  the event bus infrastructure to use.
+   * @param cache                  of the validated models.
    * @param setter                 function to set the merged field list into the
    *                               merged model.
    *
@@ -58,9 +60,9 @@ public interface MergeFieldLists {
    */
   static <M> Function<M, Future<M>> mergePlannedActivities(final List<PlannedActivity> targetPlannedActivitys,
       final List<PlannedActivity> sourcePlannedActivitys, final String codePrefix, final Vertx vertx,
-      final BiConsumer<M, List<PlannedActivity>> setter) {
+      final ValidationCache cache, final BiConsumer<M, List<PlannedActivity>> setter) {
 
-    return Merges.mergeFieldList(targetPlannedActivitys, sourcePlannedActivitys, codePrefix, vertx,
+    return Merges.mergeFieldList(targetPlannedActivitys, sourcePlannedActivitys, codePrefix, vertx, cache,
         plannedactivity -> plannedactivity.id != null,
         (targetPlannedActivity, sourcePlannedActivity) -> targetPlannedActivity.id.equals(sourcePlannedActivity.id),
         setter);
@@ -74,6 +76,7 @@ public interface MergeFieldLists {
    * @param sourceRelevantLocations source relevant locations to merge.
    * @param codePrefix              prefix for the error code.
    * @param vertx                   the event bus infrastructure to use.
+   * @param cache                   of the validated models.
    * @param setter                  function to set the merged field list into the
    *                                merged model.
    *
@@ -83,9 +86,9 @@ public interface MergeFieldLists {
    */
   static <M> Function<M, Future<M>> mergeRelevantLocations(final List<RelevantLocation> targetRelevantLocations,
       final List<RelevantLocation> sourceRelevantLocations, final String codePrefix, final Vertx vertx,
-      final BiConsumer<M, List<RelevantLocation>> setter) {
+      final ValidationCache cache, final BiConsumer<M, List<RelevantLocation>> setter) {
 
-    return Merges.mergeFieldList(targetRelevantLocations, sourceRelevantLocations, codePrefix, vertx,
+    return Merges.mergeFieldList(targetRelevantLocations, sourceRelevantLocations, codePrefix, vertx, cache,
         relevantlocation -> relevantlocation.id != null,
         (targetRelevantLocation, sourceRelevantLocation) -> targetRelevantLocation.id.equals(sourceRelevantLocation.id),
         setter);
@@ -99,6 +102,7 @@ public interface MergeFieldLists {
    * @param sourceSocialPractices source social practices to merge.
    * @param codePrefix            prefix for the error code.
    * @param vertx                 the event bus infrastructure to use.
+   * @param cache                 of the validated models.
    * @param setter                function to set the merged field list into the
    *                              merged model.
    *
@@ -108,9 +112,9 @@ public interface MergeFieldLists {
    */
   static <M> Function<M, Future<M>> mergeSocialPractices(final List<SocialPractice> targetSocialPractices,
       final List<SocialPractice> sourceSocialPractices, final String codePrefix, final Vertx vertx,
-      final BiConsumer<M, List<SocialPractice>> setter) {
+      final ValidationCache cache, final BiConsumer<M, List<SocialPractice>> setter) {
 
-    return Merges.mergeFieldList(targetSocialPractices, sourceSocialPractices, codePrefix, vertx,
+    return Merges.mergeFieldList(targetSocialPractices, sourceSocialPractices, codePrefix, vertx, cache,
         socialpractice -> socialpractice.id != null,
         (targetSocialPractice, sourceSocialPractice) -> targetSocialPractice.id.equals(sourceSocialPractice.id),
         setter);
@@ -124,6 +128,7 @@ public interface MergeFieldLists {
    * @param sourceMaterials source materials to merge.
    * @param codePrefix      prefix for the error code.
    * @param vertx           the event bus infrastructure to use.
+   * @param cache           of the validated models.
    * @param setter          function to set the merged field list into the merged
    *                        model.
    *
@@ -132,10 +137,10 @@ public interface MergeFieldLists {
    * @return the future that will provide the merged list of materials.
    */
   static <M> Function<M, Future<M>> mergeMaterials(final List<Material> targetMaterials,
-      final List<Material> sourceMaterials, final String codePrefix, final Vertx vertx,
+      final List<Material> sourceMaterials, final String codePrefix, final Vertx vertx, final ValidationCache cache,
       final BiConsumer<M, List<Material>> setter) {
 
-    return Merges.mergeFieldList(targetMaterials, sourceMaterials, codePrefix, vertx,
+    return Merges.mergeFieldList(targetMaterials, sourceMaterials, codePrefix, vertx, cache,
         material -> material.name != null && material.classification != null,
         (targetMaterial, sourceMaterial) -> targetMaterial.name.equals(sourceMaterial.name)
             && targetMaterial.classification.equals(sourceMaterial.classification),
@@ -150,6 +155,7 @@ public interface MergeFieldLists {
    * @param sourceCompetences source competences to merge.
    * @param codePrefix        prefix for the error code.
    * @param vertx             the event bus infrastructure to use.
+   * @param cache             of the validated models.
    * @param setter            function to set the merged field list into the
    *                          merged model.
    *
@@ -158,10 +164,10 @@ public interface MergeFieldLists {
    * @return the future that will provide the merged list of competences.
    */
   static <M> Function<M, Future<M>> mergeCompetences(final List<Competence> targetCompetences,
-      final List<Competence> sourceCompetences, final String codePrefix, final Vertx vertx,
+      final List<Competence> sourceCompetences, final String codePrefix, final Vertx vertx, final ValidationCache cache,
       final BiConsumer<M, List<Competence>> setter) {
 
-    return Merges.mergeFieldList(targetCompetences, sourceCompetences, codePrefix, vertx,
+    return Merges.mergeFieldList(targetCompetences, sourceCompetences, codePrefix, vertx, cache,
         competence -> competence.name != null && competence.ontology != null,
         (targetCompetence, sourceCompetence) -> targetCompetence.name.equals(sourceCompetence.name)
             && targetCompetence.ontology.equals(sourceCompetence.ontology),
@@ -176,6 +182,7 @@ public interface MergeFieldLists {
    * @param sourceMeanings source meanings to merge.
    * @param codePrefix     prefix for the error code.
    * @param vertx          the event bus infrastructure to use.
+   * @param cache          of the validated models.
    * @param setter         function to set the merged field list into the merged
    *                       model.
    *
@@ -184,10 +191,10 @@ public interface MergeFieldLists {
    * @return the future that will provide the merged list of meanings.
    */
   static <M> Function<M, Future<M>> mergeMeanings(final List<Meaning> targetMeanings,
-      final List<Meaning> sourceMeanings, final String codePrefix, final Vertx vertx,
+      final List<Meaning> sourceMeanings, final String codePrefix, final Vertx vertx, final ValidationCache cache,
       final BiConsumer<M, List<Meaning>> setter) {
 
-    return Merges.mergeFieldList(targetMeanings, sourceMeanings, codePrefix, vertx,
+    return Merges.mergeFieldList(targetMeanings, sourceMeanings, codePrefix, vertx, cache,
         meaning -> meaning.name != null && meaning.category != null,
         (targetMeaning, sourceMeaning) -> targetMeaning.name.equals(sourceMeaning.name)
             && targetMeaning.category.equals(sourceMeaning.category),
@@ -202,6 +209,7 @@ public interface MergeFieldLists {
    * @param sourceRoutines source routines to merge.
    * @param codePrefix     prefix for the error code.
    * @param vertx          the event bus infrastructure to use.
+   * @param cache          of the validated models.
    * @param setter         function to set the merged field list into the merged
    *                       model.
    *
@@ -210,10 +218,10 @@ public interface MergeFieldLists {
    * @return the future that will provide the merged list of routines.
    */
   static <M> Function<M, Future<M>> mergeRoutines(final List<Routine> targetRoutines,
-      final List<Routine> sourceRoutines, final String codePrefix, final Vertx vertx,
+      final List<Routine> sourceRoutines, final String codePrefix, final Vertx vertx, final ValidationCache cache,
       final BiConsumer<M, List<Routine>> setter) {
 
-    return Merges.mergeFieldList(targetRoutines, sourceRoutines, codePrefix, vertx, routine -> false,
+    return Merges.mergeFieldList(targetRoutines, sourceRoutines, codePrefix, vertx, cache, routine -> false,
         (targetRoutine, sourceRoutine) -> false, setter);
 
   }
@@ -225,6 +233,7 @@ public interface MergeFieldLists {
    * @param sourceMembers source community members to merge.
    * @param codePrefix    prefix for the error code.
    * @param vertx         the event bus infrastructure to use.
+   * @param cache         of the validated models.
    * @param setter        function to set the merged field list into the merged
    *                      model.
    *
@@ -234,9 +243,10 @@ public interface MergeFieldLists {
    */
   static <M> Function<M, Future<M>> mergeMembers(final List<CommunityMember> targetMembers,
       final List<CommunityMember> sourceMembers, final String codePrefix, final Vertx vertx,
-      final BiConsumer<M, List<CommunityMember>> setter) {
+      final ValidationCache cache, final BiConsumer<M, List<CommunityMember>> setter) {
 
-    return Merges.mergeFieldList(targetMembers, sourceMembers, codePrefix, vertx, member -> member.userId != null,
+    return Merges.mergeFieldList(targetMembers, sourceMembers, codePrefix, vertx, cache,
+        member -> member.userId != null,
         (targetMember, sourceMember) -> targetMember.userId.equals(sourceMember.userId), setter);
 
   }

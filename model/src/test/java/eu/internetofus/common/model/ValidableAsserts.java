@@ -39,11 +39,13 @@ public class ValidableAsserts {
    *
    * @param model       to validate.
    * @param vertx       event bus to use.
+   * @param cache       with the loaded components.
    * @param testContext test context to use.
    */
-  public static void assertIsNotValid(final Validable model, final Vertx vertx, final VertxTestContext testContext) {
+  public static void assertIsNotValid(final Validable model, final Vertx vertx, final ValidationCache cache,
+      final VertxTestContext testContext) {
 
-    assertIsNotValid(model, null, vertx, testContext);
+    assertIsNotValid(model, null, vertx, cache, testContext);
 
   }
 
@@ -53,12 +55,13 @@ public class ValidableAsserts {
    * @param model       to validate.
    * @param fieldName   name of the field that is not valid.
    * @param vertx       event bus to use.
+   * @param cache       with the loaded components.
    * @param testContext test context to use.
    */
   public static void assertIsNotValid(final Validable model, final String fieldName, final Vertx vertx,
-      final VertxTestContext testContext) {
+      final ValidationCache cache, final VertxTestContext testContext) {
 
-    model.validate("codePrefix", vertx).onComplete(testContext.failing(error -> testContext.verify(() -> {
+    model.validate("codePrefix", vertx, cache).onComplete(testContext.failing(error -> testContext.verify(() -> {
 
       assertThat(error).isInstanceOf(ValidationErrorException.class);
       final var code = ((ValidationErrorException) error).getCode();
@@ -81,13 +84,14 @@ public class ValidableAsserts {
    *
    * @param model       to validate.
    * @param vertx       event bus to use.
+   * @param cache       with the loaded components.
    * @param testContext test context to use.
    * @param <T>         model to test.
    */
-  public static <T extends Validable> void assertIsValid(final T model, final Vertx vertx,
+  public static <T extends Validable> void assertIsValid(final T model, final Vertx vertx, final ValidationCache cache,
       final VertxTestContext testContext) {
 
-    assertIsValid(model, vertx, testContext, null);
+    assertIsValid(model, vertx, cache, testContext, null);
 
   }
 
@@ -96,14 +100,15 @@ public class ValidableAsserts {
    *
    * @param model       to validate.
    * @param vertx       event bus to use.
+   * @param cache       with the loaded components.
    * @param testContext test context to use.
    * @param expected    function to check the validation result.
    * @param <T>         model to test.
    */
-  public static <T extends Validable> void assertIsValid(final T model, final Vertx vertx,
+  public static <T extends Validable> void assertIsValid(final T model, final Vertx vertx, final ValidationCache cache,
       final VertxTestContext testContext, final Runnable expected) {
 
-    model.validate("codePrefix", vertx).onComplete(validation -> testContext.verify(() -> {
+    model.validate("codePrefix", vertx, cache).onComplete(validation -> testContext.verify(() -> {
 
       if (validation.failed()) {
 

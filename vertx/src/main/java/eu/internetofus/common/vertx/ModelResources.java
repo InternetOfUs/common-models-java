@@ -172,7 +172,7 @@ public interface ModelResources {
       @NotNull final ModelContext<T, I> model, @NotNull final ServiceContext context, @NotNull final Runnable success) {
 
     final var codePrefix = "bad_" + model.name;
-    model.source.validate(codePrefix, vertx).onComplete(valid -> {
+    model.source.validate(codePrefix, vertx, model.cache).onComplete(valid -> {
 
       if (valid.failed()) {
 
@@ -339,7 +339,7 @@ public interface ModelResources {
       @NotNull final ModelContext<T, I> model, @NotNull final ServiceContext context, final boolean nonEquals,
       @NotNull final Runnable success) {
 
-    model.target.merge(model.source, "bad_" + model.name, vertx).onComplete(merge -> {
+    model.target.merge(model.source, "bad_" + model.name, vertx, model.cache).onComplete(merge -> {
 
       if (merge.failed()) {
 
@@ -575,7 +575,7 @@ public interface ModelResources {
       @NotNull final ModelContext<T, I> model, @NotNull final ServiceContext context, final boolean nonEquals,
       @NotNull final Runnable success) {
 
-    model.target.update(model.source, "bad_" + model.name, vertx).onComplete(update -> {
+    model.target.update(model.source, "bad_" + model.name, vertx, model.cache).onComplete(update -> {
 
       if (update.failed()) {
 

@@ -41,13 +41,14 @@ public class UpdateAsserts {
    * @param target      model to update.
    * @param source      model to update.
    * @param vertx       event bus to use.
+   * @param cache       of the validated models.
    * @param testContext test context to use.
    * @param <T>         type of model to update.
    */
   public static <T> void assertCannotUpdate(final Updateable<T> target, final T source, final Vertx vertx,
-      final VertxTestContext testContext) {
+      final ValidationCache cache, final VertxTestContext testContext) {
 
-    assertCannotUpdate(target, source, null, vertx, testContext);
+    assertCannotUpdate(target, source, null, vertx, cache, testContext);
 
   }
 
@@ -58,13 +59,14 @@ public class UpdateAsserts {
    * @param source      model to update.
    * @param fieldName   name of the field that is not valid.
    * @param vertx       event bus to use.
+   * @param cache       of the validated models.
    * @param testContext test context to use.
    * @param <T>         type of model to update.
    */
   public static <T> void assertCannotUpdate(final Updateable<T> target, final T source, final String fieldName,
-      final Vertx vertx, final VertxTestContext testContext) {
+      final Vertx vertx, final ValidationCache cache, final VertxTestContext testContext) {
 
-    target.update(source, "codePrefix", vertx).onComplete(testContext.failing(error -> testContext.verify(() -> {
+    target.update(source, "codePrefix", vertx, cache).onComplete(testContext.failing(error -> testContext.verify(() -> {
 
       assertThat(error).isInstanceOf(ValidationErrorException.class);
       var expectedCode = "codePrefix";
@@ -87,13 +89,14 @@ public class UpdateAsserts {
    * @param target      model to update.
    * @param source      model to update.
    * @param vertx       event bus to use.
+   * @param cache       of the validated models.
    * @param testContext test context to use.
    * @param <T>         model to test.
    */
   public static <T extends Validable> void assertCanUpdate(final Updateable<T> target, final T source,
-      final Vertx vertx, final VertxTestContext testContext) {
+      final Vertx vertx, final ValidationCache cache, final VertxTestContext testContext) {
 
-    assertCanUpdate(target, source, vertx, testContext, null);
+    assertCanUpdate(target, source, vertx, cache, testContext, null);
 
   }
 
@@ -103,23 +106,25 @@ public class UpdateAsserts {
    * @param target      model to update.
    * @param source      model to update.
    * @param vertx       event bus to use.
+   * @param cache       of the validated models.
    * @param testContext test context to use.
    * @param expected    function to validate the updated value.
    * @param <T>         model to test.
    */
   public static <T extends Validable> void assertCanUpdate(final Updateable<T> target, final T source,
-      final Vertx vertx, final VertxTestContext testContext, final Consumer<T> expected) {
+      final Vertx vertx, final ValidationCache cache, final VertxTestContext testContext, final Consumer<T> expected) {
 
-    target.update(source, "codePrefix", vertx).onComplete(testContext.succeeding(updated -> testContext.verify(() -> {
+    target.update(source, "codePrefix", vertx, cache)
+        .onComplete(testContext.succeeding(updated -> testContext.verify(() -> {
 
-      if (expected != null) {
+          if (expected != null) {
 
-        expected.accept(updated);
-      }
+            expected.accept(updated);
+          }
 
-      testContext.completeNow();
+          testContext.completeNow();
 
-    })));
+        })));
 
   }
 

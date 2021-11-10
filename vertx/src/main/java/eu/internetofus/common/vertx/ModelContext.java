@@ -21,6 +21,7 @@
 package eu.internetofus.common.vertx;
 
 import eu.internetofus.common.model.Model;
+import eu.internetofus.common.model.ValidationCache;
 
 /**
  * Contains the information of a model that is used on a operation.
@@ -61,6 +62,11 @@ public class ModelContext<T extends Model, I> {
    * The stored value of the model.
    */
   public T target;
+
+  /**
+   * The cache used for validation.
+   */
+  public ValidationCache cache = new ValidationCache();
 
   /**
    * {@inheritDoc}

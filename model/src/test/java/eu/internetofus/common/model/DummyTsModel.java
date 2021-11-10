@@ -52,7 +52,8 @@ public class DummyTsModel extends CreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<DummyTsModel> merge(final DummyTsModel source, final String codePrefix, final Vertx vertx) {
+  public Future<DummyTsModel> merge(final DummyTsModel source, final String codePrefix, final Vertx vertx,
+      final ValidationCache cache) {
 
     final Promise<DummyTsModel> promise = Promise.promise();
     var future = promise.future();
@@ -66,14 +67,15 @@ public class DummyTsModel extends CreateUpdateTsDetails
 
         merged.value = this.value;
       }
-      future = future.compose(Merges.mergeFieldList(this.dummies, source.dummies, codePrefix + ".dummies", vertx,
+
+      future = future.compose(Merges.mergeFieldList(this.dummies, source.dummies, codePrefix + ".dummies", vertx, cache,
           dummy -> dummy._id != null, (model1, model2) -> model1._id.equals(model2._id),
           (model, dummies) -> model.dummies = dummies));
       future = future.compose(model -> {
         model._id = this._id;
         return Future.succeededFuture(model);
       });
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx, cache));
       promise.complete(merged);
 
     } else {
@@ -88,7 +90,8 @@ public class DummyTsModel extends CreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<DummyTsModel> update(final DummyTsModel source, final String codePrefix, final Vertx vertx) {
+  public Future<DummyTsModel> update(final DummyTsModel source, final String codePrefix, final Vertx vertx,
+      final ValidationCache cache) {
 
     final Promise<DummyTsModel> promise = Promise.promise();
     var future = promise.future();
@@ -100,7 +103,7 @@ public class DummyTsModel extends CreateUpdateTsDetails
       updated.value = source.value;
       updated.dummies = source.dummies;
       updated._id = this._id;
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(Validations.validateChain(codePrefix, vertx, cache));
       promise.complete(updated);
 
     } else {
@@ -115,13 +118,13 @@ public class DummyTsModel extends CreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
     future = future.compose(Validations.validate(this.dummies,
         (model1, model2) -> model1._id == model2._id || model1._id != null && model1._id.equals(model2._id),
-        codePrefix + ".dummies", vertx));
+        codePrefix + ".dummies", vertx, cache));
     promise.complete();
     return future;
   }

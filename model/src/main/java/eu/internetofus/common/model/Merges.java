@@ -46,6 +46,7 @@ public interface Merges {
    * @param source           list to merge.
    * @param codePrefix       prefix for the error code.
    * @param vertx            the event bus infrastructure to use.
+   * @param cache            with the loaded components.
    * @param hasIdentifier    function to check if a model has identifier.
    * @param equalsIdentifier function to check if two models have the same
    *                         identifier.
@@ -58,8 +59,8 @@ public interface Merges {
    * @return the future that will provide the merged lists.
    */
   static <M, T extends Mergeable<T> & Validable> Function<M, Future<M>> mergeFieldList(final List<T> target,
-      final List<T> source, final String codePrefix, final Vertx vertx, final Predicate<T> hasIdentifier,
-      final BiPredicate<T, T> equalsIdentifier, final BiConsumer<M, List<T>> setter) {
+      final List<T> source, final String codePrefix, final Vertx vertx, final ValidationCache cache,
+      final Predicate<T> hasIdentifier, final BiPredicate<T, T> equalsIdentifier, final BiConsumer<M, List<T>> setter) {
 
     return model -> {
       final Promise<List<T>> promise = Promise.promise();
@@ -100,8 +101,8 @@ public interface Merges {
               if (equalsIdentifier.test(targetElement, sourceElement)) {
 
                 targetWithIds.remove(j);
-                future = future
-                    .compose(merged -> targetElement.merge(sourceElement, codeElement, vertx).map(mergedElement -> {
+                future = future.compose(
+                    merged -> targetElement.merge(sourceElement, codeElement, vertx, cache).map(mergedElement -> {
                       merged.add(mergedElement);
                       return merged;
                     }));
@@ -112,7 +113,7 @@ public interface Merges {
           }
 
           // Not found original model with the same id => check it as new
-          future = future.compose(merged -> sourceElement.validate(codeElement, vertx).map(empty -> {
+          future = future.compose(merged -> sourceElement.validate(codeElement, vertx, cache).map(empty -> {
             merged.add(sourceElement);
             return merged;
           }));
@@ -141,6 +142,7 @@ public interface Merges {
    * @param source     field value to merge.
    * @param codePrefix prefix for the error code.
    * @param vertx      the event bus infrastructure to use.
+   * @param cache      with the loaded components.
    * @param setter     function to set the merged field list into the merged
    *                   model.
    *
@@ -150,13 +152,13 @@ public interface Merges {
    * @return the future that will provide the merged lists.
    */
   static <M, T extends Mergeable<T> & Validable> Function<M, Future<M>> mergeField(final T target, final T source,
-      final String codePrefix, final Vertx vertx, final BiConsumer<M, T> setter) {
+      final String codePrefix, final Vertx vertx, final ValidationCache cache, final BiConsumer<M, T> setter) {
 
     return merged -> {
 
       if (target != null) {
 
-        return target.merge(source, codePrefix, vertx).map(mergedField -> {
+        return target.merge(source, codePrefix, vertx, cache).map(mergedField -> {
 
           setter.accept(merged, mergedField);
           return merged;
@@ -164,7 +166,7 @@ public interface Merges {
 
       } else if (source != null) {
 
-        return source.validate(codePrefix, vertx).map(empty -> {
+        return source.validate(codePrefix, vertx, cache).map(empty -> {
 
           setter.accept(merged, source);
           return merged;

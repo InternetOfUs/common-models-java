@@ -41,13 +41,14 @@ public class MergeAsserts {
    * @param target      model to merge.
    * @param source      model to merge.
    * @param vertx       event bus to use.
+   * @param cache       of the validated models.
    * @param testContext test context to use.
    * @param <T>         type of model to merge.
    */
   public static <T> void assertCannotMerge(final Mergeable<T> target, final T source, final Vertx vertx,
-      final VertxTestContext testContext) {
+      final ValidationCache cache, final VertxTestContext testContext) {
 
-    assertCannotMerge(target, source, null, vertx, testContext);
+    assertCannotMerge(target, source, null, vertx, cache, testContext);
 
   }
 
@@ -58,13 +59,14 @@ public class MergeAsserts {
    * @param source      model to merge.
    * @param fieldName   name of the field that is not valid.
    * @param vertx       event bus to use.
+   * @param cache       of the validated models.
    * @param testContext test context to use.
    * @param <T>         type of model to merge.
    */
   public static <T> void assertCannotMerge(final Mergeable<T> target, final T source, final String fieldName,
-      final Vertx vertx, final VertxTestContext testContext) {
+      final Vertx vertx, final ValidationCache cache, final VertxTestContext testContext) {
 
-    target.merge(source, "codePrefix", vertx).onComplete(testContext.failing(error -> testContext.verify(() -> {
+    target.merge(source, "codePrefix", vertx, cache).onComplete(testContext.failing(error -> testContext.verify(() -> {
 
       assertThat(error).isInstanceOf(ValidationErrorException.class);
       var expectedCode = "codePrefix";
@@ -87,13 +89,14 @@ public class MergeAsserts {
    * @param target      model to merge.
    * @param source      model to merge.
    * @param vertx       event bus to use.
+   * @param cache       of the validated models.
    * @param testContext test context to use.
    * @param <T>         model to test.
    */
   public static <T extends Validable> void assertCanMerge(final Mergeable<T> target, final T source, final Vertx vertx,
-      final VertxTestContext testContext) {
+      final ValidationCache cache, final VertxTestContext testContext) {
 
-    assertCanMerge(target, source, vertx, testContext, null);
+    assertCanMerge(target, source, vertx, cache, testContext, null);
 
   }
 
@@ -103,23 +106,25 @@ public class MergeAsserts {
    * @param target      model to merge.
    * @param source      model to merge.
    * @param vertx       event bus to use.
+   * @param cache       of the validated models.
    * @param testContext test context to use.
    * @param expected    function to validate the merged value.
    * @param <T>         model to test.
    */
   public static <T extends Validable> void assertCanMerge(final Mergeable<T> target, final T source, final Vertx vertx,
-      final VertxTestContext testContext, final Consumer<T> expected) {
+      final ValidationCache cache, final VertxTestContext testContext, final Consumer<T> expected) {
 
-    target.merge(source, "codePrefix", vertx).onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
+    target.merge(source, "codePrefix", vertx, cache)
+        .onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
 
-      if (expected != null) {
+          if (expected != null) {
 
-        expected.accept(merged);
-      }
+            expected.accept(merged);
+          }
 
-      testContext.completeNow();
+          testContext.completeNow();
 
-    })));
+        })));
 
   }
 }
