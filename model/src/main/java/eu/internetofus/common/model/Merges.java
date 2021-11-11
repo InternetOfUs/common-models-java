@@ -22,7 +22,6 @@ package eu.internetofus.common.model;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
@@ -44,9 +43,7 @@ public interface Merges {
    *
    * @param target           list to merge.
    * @param source           list to merge.
-   * @param codePrefix       prefix for the error code.
-   * @param vertx            the event bus infrastructure to use.
-   * @param cache            with the loaded components.
+   * @param context          to use in the merge and validation.
    * @param hasIdentifier    function to check if a model has identifier.
    * @param equalsIdentifier function to check if two models have the same
    *                         identifier.
@@ -55,12 +52,13 @@ public interface Merges {
    *
    * @param <M>              type of merging model.
    * @param <T>              type of the field.
+   * @param <C>              type of cache to use.
    *
    * @return the future that will provide the merged lists.
    */
-  static <M, T extends Mergeable<T> & Validable> Function<M, Future<M>> mergeFieldList(final List<T> target,
-      final List<T> source, final String codePrefix, final Vertx vertx, final ValidationCache cache,
-      final Predicate<T> hasIdentifier, final BiPredicate<T, T> equalsIdentifier, final BiConsumer<M, List<T>> setter) {
+  static <C extends ValidateContext<C>, M, T extends Mergeable<T, C> & Validable<C>> Function<M, Future<M>> mergeFieldList(
+      final List<T> target, final List<T> source, final C context, final Predicate<T> hasIdentifier,
+      final BiPredicate<T, T> equalsIdentifier, final BiConsumer<M, List<T>> setter) {
 
     return model -> {
       final Promise<List<T>> promise = Promise.promise();
@@ -81,7 +79,7 @@ public interface Merges {
         }
         INDEX: for (var index = 0; index < source.size(); index++) {
 
-          final var codeElement = codePrefix + "[" + index + "]";
+          final var contextElement = context.createElementContext(index);
           final var sourceElement = source.get(index);
           // Search if it modify any original model
           if (hasIdentifier.test(sourceElement)) {
@@ -91,8 +89,7 @@ public interface Merges {
               final var element = source.get(j);
               if (hasIdentifier.test(element) && equalsIdentifier.test(element, sourceElement)) {
 
-                return Future.failedFuture(
-                    new ValidationErrorException(codeElement, "The identifier is already defined at " + j));
+                return contextElement.fail("The identifier is already defined at " + j);
               }
             }
             for (var j = 0; j < targetWithIds.size(); j++) {
@@ -101,8 +98,8 @@ public interface Merges {
               if (equalsIdentifier.test(targetElement, sourceElement)) {
 
                 targetWithIds.remove(j);
-                future = future.compose(
-                    merged -> targetElement.merge(sourceElement, codeElement, vertx, cache).map(mergedElement -> {
+                future = future
+                    .compose(merged -> targetElement.merge(sourceElement, contextElement).map(mergedElement -> {
                       merged.add(mergedElement);
                       return merged;
                     }));
@@ -113,7 +110,7 @@ public interface Merges {
           }
 
           // Not found original model with the same id => check it as new
-          future = future.compose(merged -> sourceElement.validate(codeElement, vertx, cache).map(empty -> {
+          future = future.compose(merged -> sourceElement.validate(contextElement).map(empty -> {
             merged.add(sourceElement);
             return merged;
           }));
@@ -138,27 +135,25 @@ public interface Merges {
   /**
    * Merge a field.
    *
-   * @param target     field value to merge.
-   * @param source     field value to merge.
-   * @param codePrefix prefix for the error code.
-   * @param vertx      the event bus infrastructure to use.
-   * @param cache      with the loaded components.
-   * @param setter     function to set the merged field list into the merged
-   *                   model.
+   * @param target  field value to merge.
+   * @param source  field value to merge.
+   * @param context to use.
+   * @param setter  function to set the merged field list into the merged model.
    *
-   * @param <M>        type of merging model.
-   * @param <T>        type of the field.
+   * @param <M>     type of merging model.
+   * @param <T>     type of the field.
+   * @param <C>     type of cache to use.
    *
    * @return the future that will provide the merged lists.
    */
-  static <M, T extends Mergeable<T> & Validable> Function<M, Future<M>> mergeField(final T target, final T source,
-      final String codePrefix, final Vertx vertx, final ValidationCache cache, final BiConsumer<M, T> setter) {
+  static <C extends ValidateContext<C>, M, T extends Mergeable<T, C> & Validable<C>> Function<M, Future<M>> mergeField(
+      final T target, final T source, final C context, final BiConsumer<M, T> setter) {
 
     return merged -> {
 
       if (target != null) {
 
-        return target.merge(source, codePrefix, vertx, cache).map(mergedField -> {
+        return target.merge(source, context).map(mergedField -> {
 
           setter.accept(merged, mergedField);
           return merged;
@@ -166,7 +161,7 @@ public interface Merges {
 
       } else if (source != null) {
 
-        return source.validate(codePrefix, vertx, cache).map(empty -> {
+        return source.validate(context).map(empty -> {
 
           setter.accept(merged, source);
           return merged;

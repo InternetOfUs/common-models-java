@@ -702,16 +702,15 @@ public class ValidationsTest {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Validations#validate(List, java.util.function.BiPredicate, String,
-   *      Vertx, ValidationCache)
+   * @see Validations#validate(List, java.util.function.BiPredicate,
+   *      ValidateContext)
    */
   @Test
   public void shouldNullListOfModelsBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final Promise<Void> promise = Promise.promise();
     final var future = promise.future();
-    final var cache = new ValidationCache();
-    future.compose(Validations.validate(null, (a, b) -> a.equals(b), "codePrefix", vertx, cache))
+    future.compose(Validations.validate(null, (a, b) -> a.equals(b), new DummyValidateContext("codePrefix")))
         .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
     promise.complete();
   }
@@ -722,16 +721,16 @@ public class ValidationsTest {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Validations#validate(List, java.util.function.BiPredicate, String,
-   *      Vertx, ValidationCache)
+   * @see Validations#validate(List, java.util.function.BiPredicate,
+   *      ValidateContext)
    */
   @Test
   public void shouldEmptyListOfModelsBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final Promise<Void> promise = Promise.promise();
     final var future = promise.future();
-    final var cache = new ValidationCache();
-    future.compose(Validations.validate(new ArrayList<>(), (a, b) -> a.equals(b), "codePrefix", vertx, cache))
+    future
+        .compose(Validations.validate(new ArrayList<>(), (a, b) -> a.equals(b), new DummyValidateContext("codePrefix")))
         .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
     promise.complete();
   }
@@ -742,13 +741,13 @@ public class ValidationsTest {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Validations#validate(List, java.util.function.BiPredicate, String,
-   *      Vertx, ValidationCache)
+   * @see Validations#validate(List,
+   *      java.util.function.BiPredicate,ValidateContext)
    */
   @Test
   public void shouldListWithNullModelsBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final List<? extends Validable> models = new ArrayList<>();
+    final List<? extends Validable<DummyValidateContext>> models = new ArrayList<>();
     models.add(null);
     models.add(null);
     models.add(null);
@@ -756,8 +755,7 @@ public class ValidationsTest {
     models.add(null);
     final Promise<Void> promise = Promise.promise();
     final var future = promise.future();
-    final var cache = new ValidationCache();
-    future.compose(Validations.validate(models, (a, b) -> a.equals(b), "codePrefix", vertx, cache))
+    future.compose(Validations.validate(models, (a, b) -> a.equals(b), new DummyValidateContext("codePrefix")))
         .onComplete(testContext.succeeding(empty -> testContext.verify(() -> {
           assertThat(models).isEmpty();
           testContext.completeNow();
@@ -771,38 +769,37 @@ public class ValidationsTest {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Validations#validate(List, java.util.function.BiPredicate, String,
-   *      Vertx,ValidationCache)
+   * @see Validations#validate(List, java.util.function.BiPredicate,
+   *      ValidateContext)
    */
   @Test
   public void shouldListWithValidModelsBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    final Validable model1 = new Validable() {
+    final Validable<DummyValidateContext> model1 = new Validable<>() {
 
       @Override
-      public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+      public Future<Void> validate(final DummyValidateContext context) {
 
         return Future.succeededFuture();
       }
     };
-    final Validable model4 = new Validable() {
+    final Validable<DummyValidateContext> model4 = new Validable<>() {
 
       @Override
-      public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+      public Future<Void> validate(final DummyValidateContext context) {
 
         return Future.succeededFuture();
       }
     };
-    final List<Validable> models = new ArrayList<>();
+    final List<Validable<DummyValidateContext>> models = new ArrayList<>();
     models.add(null);
     models.add(model1);
     models.add(null);
     models.add(null);
     models.add(model4);
-    final var cache = new ValidationCache();
     final Promise<Void> promise = Promise.promise();
     final var future = promise.future();
-    future.compose(Validations.validate(models, (a, b) -> a.equals(b), "codePrefix", vertx, cache))
+    future.compose(Validations.validate(models, (a, b) -> a.equals(b), new DummyValidateContext("codePrefix")))
         .onComplete(testContext.succeeding(empty -> testContext.verify(() -> {
           assertThat(models).hasSize(2).contains(model1, atIndex(0)).contains(model4, atIndex(1));
           testContext.completeNow();
@@ -816,31 +813,31 @@ public class ValidationsTest {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Validations#validate(List, java.util.function.BiPredicate, String,
-   *      Vertx,ValidationCache)
+   * @see Validations#validate(List,
+   *      java.util.function.BiPredicate,ValidateContext)
    */
   @Test
   public void shouldListWithValidAndInvalidModelsBeNotValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final var validationError = new ValidationErrorException("code_of_error", "model not valid");
-    final Validable model1 = new Validable() {
+    final Validable<DummyValidateContext> model1 = new Validable<>() {
 
       @Override
-      public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+      public Future<Void> validate(final DummyValidateContext context) {
 
         return Future.failedFuture(validationError);
 
       }
     };
-    final Validable model4 = new Validable() {
+    final Validable<DummyValidateContext> model4 = new Validable<>() {
 
       @Override
-      public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+      public Future<Void> validate(final DummyValidateContext context) {
 
         return Future.succeededFuture();
       }
     };
-    final List<Validable> models = new ArrayList<>();
+    final List<Validable<DummyValidateContext>> models = new ArrayList<>();
     models.add(null);
     models.add(model1);
     models.add(null);
@@ -848,8 +845,7 @@ public class ValidationsTest {
     models.add(model4);
     final Promise<Void> promise = Promise.promise();
     final var future = promise.future();
-    final var cache = new ValidationCache();
-    future.compose(Validations.validate(models, (a, b) -> a.equals(b), "codePrefix", vertx, cache))
+    future.compose(Validations.validate(models, (a, b) -> a.equals(b), new DummyValidateContext("codePrefix")))
         .onComplete(testContext.failing(error -> testContext.verify(() -> {
           assertThat(error).isEqualTo(validationError);
           assertThat(models).hasSize(2).contains(model1, atIndex(0)).contains(model4, atIndex(1));
@@ -864,26 +860,26 @@ public class ValidationsTest {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Validations#validate(List, java.util.function.BiPredicate, String,
-   *      Vertx,ValidationCache)
+   * @see Validations#validate(List, java.util.function.BiPredicate,
+   *      ValidateContext)
    */
   @Test
   public void shouldListWithValidModelsBeNotValidBecauseExistoneDuplicatedOne(final Vertx vertx,
       final VertxTestContext testContext) {
 
-    final Validable model1 = new Validable() {
+    final Validable<DummyValidateContext> model1 = new Validable<>() {
 
       @Override
-      public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+      public Future<Void> validate(final DummyValidateContext context) {
 
         return Future.succeededFuture();
 
       }
     };
-    final Validable model3 = new Validable() {
+    final Validable<DummyValidateContext> model3 = new Validable<>() {
 
       @Override
-      public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+      public Future<Void> validate(final DummyValidateContext context) {
 
         return Future.succeededFuture();
 
@@ -898,25 +894,24 @@ public class ValidationsTest {
         return true;
       }
     };
-    final Validable model4 = new Validable() {
+    final Validable<DummyValidateContext> model4 = new Validable<>() {
 
       @Override
-      public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+      public Future<Void> validate(final DummyValidateContext context) {
 
         return Future.succeededFuture();
       }
     };
-    final List<Validable> models = new ArrayList<>();
+    final List<Validable<DummyValidateContext>> models = new ArrayList<>();
     models.add(null);
     models.add(model1);
     models.add(null);
     models.add(model3);
     models.add(null);
     models.add(model4);
-    final var cache = new ValidationCache();
     final Promise<Void> promise = Promise.promise();
     final var future = promise.future();
-    future.compose(Validations.validate(models, (a, b) -> a.equals(b), "codePrefix", vertx, cache))
+    future.compose(Validations.validate(models, (a, b) -> a.equals(b), new DummyValidateContext("codePrefix")))
         .onComplete(testContext.failing(error -> testContext.verify(() -> {
           assertThat(error).isInstanceOf(ValidationErrorException.class);
           assertThat(((ValidationErrorException) error).getCode()).isEqualTo("codePrefix[2]");
@@ -1084,225 +1079,6 @@ public class ValidationsTest {
           testContext.completeNow();
 
         })));
-  }
-
-  /**
-   * Check that validate id fails because it is {@code null}.
-   *
-   * @param testContext test context to use.
-   *
-   * @see Validations#composeValidateId(Future, String, String, String, boolean,
-   *      java.util.function.Function, ValidationCache, Class)
-   */
-  @Test
-  public void shouldComposeValidateIdFailesBecuaseIdIsNull(final VertxTestContext testContext) {
-
-    Validations.composeValidateId(Future.succeededFuture(), "codePrefix", "fieldName", null, false, null,
-        new ValidationCache(), String.class).onComplete(testContext.failing(error -> testContext.verify(() -> {
-
-          assertThat(error).isInstanceOf(ValidationErrorException.class);
-          final var code = ((ValidationErrorException) error).getCode();
-          assertThat(code).isEqualTo("codePrefix.fieldName");
-          testContext.completeNow();
-
-        })));
-  }
-
-  /**
-   * Check that validate id fails because it has to exist but cannot found.
-   *
-   * @param testContext test context to use.
-   *
-   * @see Validations#composeValidateId(Future, String, String, String, boolean,
-   *      java.util.function.Function, ValidationCache, Class)
-   */
-  @Test
-  public void shouldComposeValidateIdFailesBecuaseIdDoesNotExist(final VertxTestContext testContext) {
-
-    Validations
-        .composeValidateId(Future.succeededFuture(), "codePrefix", "fieldName", "1", true,
-            id -> Future.failedFuture("not found"), new ValidationCache(), String.class)
-        .onComplete(testContext.failing(error -> testContext.verify(() -> {
-
-          assertThat(error).isInstanceOf(ValidationErrorException.class);
-          final var code = ((ValidationErrorException) error).getCode();
-          assertThat(code).isEqualTo("codePrefix.fieldName");
-          testContext.completeNow();
-
-        })));
-  }
-
-  /**
-   * Check that validate id success because it exists.
-   *
-   * @param testContext test context to use.
-   *
-   * @see Validations#composeValidateId(Future, String, String, String, boolean,
-   *      java.util.function.Function, ValidationCache, Class)
-   */
-  @Test
-  public void shouldComposeValidateIdBecuaseIdExist(final VertxTestContext testContext) {
-
-    Validations
-        .composeValidateId(Future.succeededFuture(), "codePrefix", "fieldName", "1", true,
-            id -> Future.succeededFuture(), new ValidationCache(), String.class)
-        .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
-
-  }
-
-  /**
-   * Check that validate id fails because it has to exist but cannot found.
-   *
-   * @param testContext test context to use.
-   *
-   * @see Validations#composeValidateId(Future, String, String, String, boolean,
-   *      java.util.function.Function, ValidationCache, Class)
-   */
-  @Test
-  public void shouldComposeValidateIdFailesBecuaseIdExist(final VertxTestContext testContext) {
-
-    Validations
-        .composeValidateId(Future.succeededFuture(), "codePrefix", "fieldName", "1", false,
-            id -> Future.succeededFuture(), new ValidationCache(), String.class)
-        .onComplete(testContext.failing(error -> testContext.verify(() -> {
-
-          assertThat(error).isInstanceOf(ValidationErrorException.class);
-          final var code = ((ValidationErrorException) error).getCode();
-          assertThat(code).isEqualTo("codePrefix.fieldName");
-          testContext.completeNow();
-
-        })));
-  }
-
-  /**
-   * Check that validate id because it does not exist.
-   *
-   * @param testContext test context to use.
-   *
-   * @see Validations#composeValidateId(Future, String, String, String, boolean,
-   *      java.util.function.Function, ValidationCache, Class)
-   */
-  @Test
-  public void shouldComposeValidateIdBecuaseNotExist(final VertxTestContext testContext) {
-
-    Validations
-        .composeValidateId(Future.succeededFuture(), "codePrefix", "fieldName", "1", false,
-            id -> Future.failedFuture("Not found"), new ValidationCache(), String.class)
-        .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
-  }
-
-  /**
-   * Check that a {@code null} list of ids is valid.
-   *
-   * @param testContext test context to use.
-   *
-   * @see Validations#composeValidateIds(Future, String, String, List, boolean,
-   *      java.util.function.Function, ValidationCache, Class)
-   */
-  @Test
-  public void shouldComposeValidateIdsForNullBeValid(final VertxTestContext testContext) {
-
-    Validations.composeValidateIds(Future.succeededFuture(), "codePrefix", "fieldName", null, false, null,
-        new ValidationCache(), String.class).onComplete(testContext.succeeding(empty -> testContext.completeNow()));
-  }
-
-  /**
-   * Check that an empty list of ids is valid.
-   *
-   * @param testContext test context to use.
-   *
-   * @see Validations#composeValidateIds(Future, String, String, List, boolean,
-   *      java.util.function.Function, ValidationCache, Class)
-   */
-  @Test
-  public void shouldComposeValidateIdsForEmptyBeValid(final VertxTestContext testContext) {
-
-    Validations.composeValidateIds(Future.succeededFuture(), "codePrefix", "fieldName", new ArrayList<>(), false, null,
-        new ValidationCache(), String.class).onComplete(testContext.succeeding(empty -> testContext.completeNow()));
-  }
-
-  /**
-   * Check that some ids are valid.
-   *
-   * @param testContext test context to use.
-   *
-   * @see Validations#composeValidateIds(Future, String, String, List, boolean,
-   *      java.util.function.Function, ValidationCache, Class)
-   */
-  @Test
-  public void shouldComposeValidateIdsBeValid(final VertxTestContext testContext) {
-
-    final var ids = new ArrayList<String>();
-    ids.add(null);
-    ids.add("1");
-    ids.add("2");
-    Validations
-        .composeValidateIds(Future.succeededFuture(), "codePrefix", "fieldName", ids, true,
-            id -> Future.succeededFuture(), new ValidationCache(), String.class)
-        .onComplete(testContext.succeeding(empty -> testContext.verify(() -> {
-
-          assertThat(ids).hasSize(2).containsExactly("1", "2");
-          testContext.completeNow();
-
-        })));
-
-  }
-
-  /**
-   * Check that some ids are not valid.
-   *
-   * @param testContext test context to use.
-   *
-   * @see Validations#composeValidateId(Future, String, String, String, boolean,
-   *      java.util.function.Function, ValidationCache, Class)
-   */
-  @Test
-  public void shouldComposeValidateIdsNotValidBecuaseIdNotFound(final VertxTestContext testContext) {
-
-    final var ids = new ArrayList<String>();
-    ids.add("1");
-    ids.add("2");
-    Validations
-        .composeValidateIds(Future.succeededFuture(), "codePrefix", "fieldName", ids, true,
-            id -> Future.failedFuture("not found"), new ValidationCache(), String.class)
-        .onComplete(testContext.failing(error -> testContext.verify(() -> {
-
-          assertThat(error).isInstanceOf(ValidationErrorException.class);
-          final var code = ((ValidationErrorException) error).getCode();
-          assertThat(code).isEqualTo("codePrefix.fieldName[0]");
-          testContext.completeNow();
-
-        })));
-
-  }
-
-  /**
-   * Check that some ids are not valid because one is duplicated.
-   *
-   * @param testContext test context to use.
-   *
-   * @see Validations#composeValidateId(Future, String, String, String, boolean,
-   *      java.util.function.Function, ValidationCache, Class)
-   */
-  @Test
-  public void shouldComposeValidateIdsNotValidBecuaseDuplicatedId(final VertxTestContext testContext) {
-
-    final var ids = new ArrayList<String>();
-    ids.add("0");
-    ids.add("1");
-    ids.add("1");
-    Validations
-        .composeValidateIds(Future.succeededFuture(), "codePrefix", "fieldName", ids, false,
-            id -> Future.succeededFuture(), new ValidationCache(), String.class)
-        .onComplete(testContext.failing(error -> testContext.verify(() -> {
-
-          assertThat(error).isInstanceOf(ValidationErrorException.class);
-          final var code = ((ValidationErrorException) error).getCode();
-          assertThat(code).isEqualTo("codePrefix.fieldName[2]");
-          testContext.completeNow();
-
-        })));
-
   }
 
 }

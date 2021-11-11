@@ -72,14 +72,14 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#validate(String, Vertx,ValidationCache)
+   * @see DummyComplexModel#validate( DummyValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsValid(model, vertx, new ValidationCache(), testContext);
+    assertIsValid(model, new DummyValidateContext("codePrefix"), testContext);
 
   }
 
@@ -93,7 +93,7 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, new ValidationCache(), testContext, merged -> {
+    assertCanMerge(target, null, new DummyValidateContext("codePrefix"), testContext, merged -> {
       assertThat(merged).isSameAs(target);
     });
 
@@ -105,15 +105,14 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#merge(DummyComplexModel, String,
-   *      Vertx,ValidationCache)
+   * @see DummyComplexModel#merge(DummyComplexModel, DummyValidateContext)
    */
   @Test
   public void shouldMergeExamples(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     final var source = this.createModelExample(2);
-    assertCanMerge(target, source, vertx, new ValidationCache(), testContext, merged -> {
+    assertCanMerge(target, source, new DummyValidateContext("codePrefix"), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.index = source.index;
       target.siblings = source.siblings;
@@ -128,8 +127,7 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#merge(DummyComplexModel, String,
-   *      Vertx,ValidationCache)
+   * @see DummyComplexModel#merge(DummyComplexModel, DummyValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadSibling(final Vertx vertx, final VertxTestContext testContext) {
@@ -141,7 +139,7 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
     source.siblings.get(0).id = "0";
     source.siblings.add(new DummyComplexModel());
     source.siblings.get(1).id = "0";
-    assertCannotMerge(target, source, "siblings[1]", vertx, new ValidationCache(), testContext);
+    assertCannotMerge(target, source, "siblings[1]", new DummyValidateContext("codePrefix"), testContext);
 
   }
 
@@ -151,8 +149,7 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#update(DummyComplexModel, String,
-   *      Vertx,ValidationCache)
+   * @see DummyComplexModel#update(DummyComplexModel, DummyValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadSibling(final Vertx vertx, final VertxTestContext testContext) {
@@ -164,7 +161,7 @@ public class DummyComplexModelTest extends ModelTestCase<DummyComplexModel> {
     source.siblings.get(0).id = "0";
     source.siblings.add(new DummyComplexModel());
     source.siblings.get(1).id = "0";
-    assertCannotUpdate(target, source, "siblings[1]", vertx, new ValidationCache(), testContext);
+    assertCannotUpdate(target, source, "siblings[1]", new DummyValidateContext("codePrefix"), testContext);
 
   }
 

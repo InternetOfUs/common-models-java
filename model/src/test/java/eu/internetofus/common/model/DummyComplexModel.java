@@ -22,7 +22,6 @@ package eu.internetofus.common.model;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,8 +30,8 @@ import java.util.UUID;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class DummyComplexModel extends DummyModel
-    implements Validable, Mergeable<DummyComplexModel>, Updateable<DummyComplexModel> {
+public class DummyComplexModel extends DummyModel implements Validable<DummyValidateContext>,
+    Mergeable<DummyComplexModel, DummyValidateContext>, Updateable<DummyComplexModel, DummyValidateContext> {
 
   /**
    * The index of the model.
@@ -60,8 +59,7 @@ public class DummyComplexModel extends DummyModel
    * {@inheritDoc}
    */
   @Override
-  public Future<DummyComplexModel> merge(final DummyComplexModel source, final String codePrefix, final Vertx vertx,
-      final ValidationCache cache) {
+  public Future<DummyComplexModel> merge(final DummyComplexModel source, final DummyValidateContext context) {
 
     final Promise<DummyComplexModel> promise = Promise.promise();
     var future = promise.future();
@@ -70,13 +68,13 @@ public class DummyComplexModel extends DummyModel
       final var merged = new DummyComplexModel();
       merged.index = source.index;
       merged.siblings = source.siblings;
-      future = future.compose(Merges.mergeFieldList(this.siblings, source.siblings, codePrefix + ".siblings", vertx,
-          cache, dummyComplexModel -> dummyComplexModel.id != null,
+      future = future.compose(Merges.mergeFieldList(this.siblings, source.siblings,
+          context.createFieldContext("siblings"), dummyComplexModel -> dummyComplexModel.id != null,
           (dummyCompleModel1, dummyComplexModel2) -> dummyCompleModel1.id.equals(dummyComplexModel2.id),
           (dummyComplexModel, siblings) -> dummyComplexModel.siblings = siblings));
-      future = future.compose(Merges.mergeField(this.other, source.other, codePrefix + ".other", vertx, cache,
+      future = future.compose(Merges.mergeField(this.other, source.other, context.createFieldContext("other"),
           (otherMerged, other) -> otherMerged.other = other));
-      future = future.compose(Validations.validateChain(codePrefix, vertx, cache));
+      future = future.compose(context.chain());
       future = future.map(mergedAndValidated -> {
 
         mergedAndValidated.id = this.id;
@@ -97,7 +95,7 @@ public class DummyComplexModel extends DummyModel
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+  public Future<Void> validate(final DummyValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
@@ -109,11 +107,11 @@ public class DummyComplexModel extends DummyModel
     if (this.siblings != null) {
 
       future = future.compose(
-          Validations.validate(this.siblings, (d1, d2) -> d1.id.equals(d2.id), codePrefix + ".siblings", vertx, cache));
+          Validations.validate(this.siblings, (d1, d2) -> d1.id.equals(d2.id), context.createFieldContext("siblings")));
     }
     if (this.other != null) {
 
-      future = future.compose(empty -> this.other.validate(codePrefix + ".other", vertx, cache));
+      future = future.compose(empty -> this.other.validate(context.createFieldContext("other")));
     }
 
     promise.complete();
@@ -125,8 +123,7 @@ public class DummyComplexModel extends DummyModel
    * {@inheritDoc}
    */
   @Override
-  public Future<DummyComplexModel> update(final DummyComplexModel source, final String codePrefix, final Vertx vertx,
-      final ValidationCache cache) {
+  public Future<DummyComplexModel> update(final DummyComplexModel source, final DummyValidateContext context) {
 
     final Promise<DummyComplexModel> promise = Promise.promise();
     var future = promise.future();
@@ -136,7 +133,7 @@ public class DummyComplexModel extends DummyModel
       updated.index = source.index;
       updated.siblings = source.siblings;
       updated.other = source.other;
-      future = future.compose(Validations.validateChain(codePrefix, vertx, cache));
+      future = future.compose(context.chain());
       future = future.map(updatedAndValidated -> {
 
         updatedAndValidated.id = this.id;

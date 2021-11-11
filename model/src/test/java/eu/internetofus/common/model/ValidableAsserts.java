@@ -22,7 +22,6 @@ package eu.internetofus.common.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 
 /**
@@ -38,14 +37,14 @@ public class ValidableAsserts {
    * Assert that a model is not valid.
    *
    * @param model       to validate.
-   * @param vertx       event bus to use.
-   * @param cache       with the loaded components.
+   * @param context     with the loaded components.
    * @param testContext test context to use.
+   * @param <C>         type of context.
    */
-  public static void assertIsNotValid(final Validable model, final Vertx vertx, final ValidationCache cache,
+  public static <C extends ValidateContext<C>> void assertIsNotValid(final Validable<C> model, final C context,
       final VertxTestContext testContext) {
 
-    assertIsNotValid(model, null, vertx, cache, testContext);
+    assertIsNotValid(model, null, context, testContext);
 
   }
 
@@ -54,14 +53,14 @@ public class ValidableAsserts {
    *
    * @param model       to validate.
    * @param fieldName   name of the field that is not valid.
-   * @param vertx       event bus to use.
-   * @param cache       with the loaded components.
+   * @param context     with the loaded components.
    * @param testContext test context to use.
+   * @param <C>         type of context.
    */
-  public static void assertIsNotValid(final Validable model, final String fieldName, final Vertx vertx,
-      final ValidationCache cache, final VertxTestContext testContext) {
+  public static <C extends ValidateContext<C>> void assertIsNotValid(final Validable<C> model, final String fieldName,
+      final C context, final VertxTestContext testContext) {
 
-    model.validate("codePrefix", vertx, cache).onComplete(testContext.failing(error -> testContext.verify(() -> {
+    model.validate(context).onComplete(testContext.failing(error -> testContext.verify(() -> {
 
       assertThat(error).isInstanceOf(ValidationErrorException.class);
       final var code = ((ValidationErrorException) error).getCode();
@@ -83,15 +82,15 @@ public class ValidableAsserts {
    * Assert that a model is valid.
    *
    * @param model       to validate.
-   * @param vertx       event bus to use.
-   * @param cache       with the loaded components.
+   * @param context     with the loaded components.
    * @param testContext test context to use.
    * @param <T>         model to test.
+   * @param <C>         type of context.
    */
-  public static <T extends Validable> void assertIsValid(final T model, final Vertx vertx, final ValidationCache cache,
-      final VertxTestContext testContext) {
+  public static <C extends ValidateContext<C>, T extends Validable<C>> void assertIsValid(final T model,
+      final C context, final VertxTestContext testContext) {
 
-    assertIsValid(model, vertx, cache, testContext, null);
+    assertIsValid(model, context, testContext, null);
 
   }
 
@@ -99,16 +98,16 @@ public class ValidableAsserts {
    * Assert that a model is valid.
    *
    * @param model       to validate.
-   * @param vertx       event bus to use.
-   * @param cache       with the loaded components.
+   * @param context     with the loaded components.
    * @param testContext test context to use.
    * @param expected    function to check the validation result.
    * @param <T>         model to test.
+   * @param <C>         type of context.
    */
-  public static <T extends Validable> void assertIsValid(final T model, final Vertx vertx, final ValidationCache cache,
-      final VertxTestContext testContext, final Runnable expected) {
+  public static <C extends ValidateContext<C>, T extends Validable<C>> void assertIsValid(final T model,
+      final C context, final VertxTestContext testContext, final Runnable expected) {
 
-    model.validate("codePrefix", vertx, cache).onComplete(validation -> testContext.verify(() -> {
+    model.validate(context).onComplete(validation -> testContext.verify(() -> {
 
       if (validation.failed()) {
 

@@ -20,28 +20,45 @@
 
 package eu.internetofus.common.model;
 
-import io.vertx.core.Future;
-
 /**
- * This is implemented by any model that can validate its content.
+ * Dummy cache to use on some tests.
  *
- * @param <C> type of context to use.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public interface Validable<C extends ValidateContext<C>> {
+public class DummyValidateContext implements ValidateContext<DummyValidateContext> {
 
   /**
-   * Check if the model is right.
-   *
-   * @param context to use to validate the model.
-   *
-   *
-   * @return the future that inform if the value is right. If the model is not
-   *         valid the cause will be a {@link ValidationErrorException}.
-   *
-   * @see ValidationErrorException
+   * Error code of the context.
    */
-  Future<Void> validate(C context);
+  protected String errorCode;
+
+  /**
+   * Create new context.
+   *
+   * @param errorCode for the context.
+   */
+  public DummyValidateContext(final String errorCode) {
+
+    this.errorCode = errorCode;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String errorCode() {
+
+    return this.errorCode;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public DummyValidateContext createContextWithErrorCode(final String errorCode) {
+
+    return new DummyValidateContext(errorCode);
+  }
 
 }

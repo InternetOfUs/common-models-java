@@ -21,25 +21,23 @@
 package eu.internetofus.common.model;
 
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
 
 /**
  * This is implemented by any model that can be merged with another model to
  * create a new model.
  *
  * @param <T> type of models that can be merged.
+ * @param <C> type of context to use.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public interface Mergeable<T> {
+public interface Mergeable<T, C extends ValidateContext<C>> {
 
   /**
    * Merge the current model with a new one creating a new one.
    *
-   * @param source     model to merge with the current one.
-   * @param codePrefix the prefix of the code to use for the error message.
-   * @param vertx      the event bus infrastructure to use.
-   * @param cache      to use on the validation.
+   * @param source  model to merge with the current one.
+   * @param context to use in the merge process.
    *
    * @return the future that provide the merged model that has to be valid. If it
    *         cannot merge to a new model the cause will be a
@@ -47,6 +45,6 @@ public interface Mergeable<T> {
    *
    * @see ValidationErrorException
    */
-  Future<T> merge(T source, String codePrefix, Vertx vertx, ValidationCache cache);
+  Future<T> merge(T source, C context);
 
 }

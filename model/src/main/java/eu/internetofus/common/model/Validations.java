@@ -24,7 +24,6 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -347,23 +346,21 @@ public interface Validations {
   /**
    * Validate a fields that contains a list of models.
    *
-   * @param models     to validate.
-   * @param predicate  used to compare if two models are equals, to check if they
-   *                   are duplicated.
-   * @param codePrefix the prefix of the code to use for the error message.
-   * @param vertx      the event bus infrastructure to use.
-   * @param cache      with the loaded components.
+   * @param models    to validate.
+   * @param predicate used to compare if two models are equals, to check if they
+   *                  are duplicated.
+   * @param context   to use.
    *
-   * @param <T>        type of model to validate.
-   *
+   * @param <T>       type of model to validate.
+   * @param <C>       type of context to use.
    *
    * @return the function that can be composed with the future that is validating
    *         the model of the filed.
    *
    * @see ValidationErrorException
    */
-  static <T extends Validable> Function<Void, Future<Void>> validate(final List<T> models,
-      final BiPredicate<T, T> predicate, final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+  static <C extends ValidateContext<C>, T extends Validable<C>> Function<Void, Future<Void>> validate(
+      final List<T> models, final BiPredicate<T, T> predicate, final C context) {
 
     return mapper -> {
       final Promise<Void> promise = Promise.promise();
@@ -381,8 +378,8 @@ public interface Validations {
           } else {
 
             final var index = iterator.previousIndex();
-            final var modelPrefix = codePrefix + "[" + index + "]";
-            future = future.compose(elementMapper -> model.validate(modelPrefix, vertx, cache));
+            final var elementContext = context.createElementContext(index);
+            future = future.compose(elementMapper -> model.validate(elementContext));
             future = future.compose(elementMapper -> {
 
               for (var firstIndex = 0; firstIndex < index; firstIndex++) {
@@ -390,8 +387,7 @@ public interface Validations {
                 final var element = models.get(firstIndex);
                 if (predicate.test(element, model)) {
 
-                  return Future.failedFuture(new ValidationErrorException(modelPrefix,
-                      "This model is already defined at '" + firstIndex + "'."));
+                  return elementContext.fail("This model is already defined at '" + firstIndex + "'.");
 
                 }
               }
@@ -470,7 +466,7 @@ public interface Validations {
     } else if (value != null && maxValue != null && value.doubleValue() > maxValue.doubleValue()) {
 
       promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
-          "The '" + value + "' is not valid because it is greather than '" + maxValue + "'."));
+          "The '" + value + "' is not valid because it is greater than '" + maxValue + "'."));
 
     } else if (!nullable && value == null) {
 
@@ -482,197 +478,6 @@ public interface Validations {
       promise.complete();
     }
     return promise.future();
-  }
-
-  /**
-   * Validate that an identifier is valid.
-   *
-   * @param future     to compose.
-   * @param codePrefix the prefix of the code to use for the error message.
-   * @param fieldName  name of the checking field.
-   * @param id         value to verify.
-   * @param exist      is {@code true} if the identifier has to exist.
-   * @param searcher   component to search for the model.
-   * @param cache      with the validated models.
-   * @param type       of the model to get.
-   *
-   * @param <T>        type of model associated to the id.
-   *
-   * @return the mapper that will check the identifier.
-   */
-  static <T> Future<Void> composeValidateId(final Future<Void> future, final String codePrefix, final String fieldName,
-      final String id, final boolean exist, final Function<String, Future<T>> searcher, final ValidationCache cache,
-      final Class<T> type) {
-
-    return composeValidateIdAndGet(future, codePrefix, fieldName, id, exist, searcher, cache, type).map(any -> null);
-  }
-
-  /**
-   * Validate that an identifier is valid and return the model if exist.
-   *
-   * @param future     to compose.
-   * @param codePrefix the prefix of the code to use for the error message.
-   * @param fieldName  name of the checking field.
-   * @param id         value to verify.
-   * @param exist      is {@code true} if the identifier has to exist.
-   * @param searcher   component to search for the model.
-   * @param cache      with the validated models.
-   * @param type       of the model to get.
-   *
-   * @param <T>        type of model associated to the id.
-   *
-   * @return the mapper that will check the identifier.
-   */
-  static <T> Future<T> composeValidateIdAndGet(final Future<Void> future, final String codePrefix,
-      final String fieldName, final String id, final boolean exist, final Function<String, Future<T>> searcher,
-      final ValidationCache cache, final Class<T> type) {
-
-    return future.compose(map -> {
-
-      final Promise<T> promise = Promise.promise();
-      if (id == null) {
-
-        promise.fail(
-            new ValidationErrorException(codePrefix + "." + fieldName, "The '" + fieldName + "' cannot be 'null'."));
-
-      } else {
-
-        final var model = cache.getModel(id, type);
-        if (model != null) {
-
-          if (exist) {
-
-            promise.complete(model);
-
-          } else {
-
-            promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
-                "The '" + fieldName + "' '" + id + "' has already defined."));
-
-          }
-
-        } else {
-
-          searcher.apply(id).onComplete(search -> {
-
-            if (search.failed()) {
-
-              if (exist) {
-
-                promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
-                    "The '" + fieldName + "' '" + id + "' is not defined.", search.cause()));
-
-              } else {
-
-                promise.complete();
-              }
-
-            } else {
-
-              final var found = search.result();
-              cache.setModel(id, found);
-              if (exist) {
-
-                promise.complete(found);
-
-              } else {
-
-                promise.fail(new ValidationErrorException(codePrefix + "." + fieldName,
-                    "The '" + fieldName + "' '" + id + "' has already defined."));
-              }
-            }
-
-          });
-
-        }
-
-      }
-
-      return promise.future();
-    });
-
-  }
-
-  /**
-   * Validate that a list of identifiers are valid.
-   *
-   * @param future     to compose.
-   * @param codePrefix the prefix of the code to use for the error message.
-   * @param fieldName  name of the checking field.
-   * @param ids        value to verify.
-   * @param exist      is {@code true} if the identifier has to exist.
-   * @param searcher   component to search for the model.
-   * @param cache      with the validated models.
-   * @param type       of the model to get.
-   *
-   * @param <T>        type of model associated to the id.
-   *
-   * @return the mapper that will check the identifier.
-   */
-  static <T> Future<Void> composeValidateIds(final Future<Void> future, final String codePrefix, final String fieldName,
-      final List<String> ids, final boolean exist, final Function<String, Future<T>> searcher,
-      final ValidationCache cache, final Class<T> type) {
-
-    return future.compose(map -> {
-
-      if (ids == null || ids.isEmpty()) {
-
-        return Future.succeededFuture();
-
-      } else {
-
-        final Promise<Void> promise = Promise.promise();
-        var idsFuture = promise.future();
-        for (final var i = ids.listIterator(); i.hasNext();) {
-
-          final var id = i.next();
-          if (id != null) {
-
-            final var index = i.previousIndex();
-            final var elementName = fieldName + "[" + index + "]";
-            final var found = ids.indexOf(id);
-            if (found != index) {
-
-              return Future.failedFuture(new ValidationErrorException(codePrefix + "." + elementName,
-                  "Duplicated identifier at '" + found + "'."));
-
-            }
-            idsFuture = Validations.composeValidateId(idsFuture, codePrefix, elementName, id, exist, searcher, cache,
-                type);
-
-          } else {
-
-            i.remove();
-          }
-
-        }
-        promise.complete();
-
-        return idsFuture;
-      }
-    });
-
-  }
-
-  /**
-   * Validate the model received from the chain of events.
-   *
-   * @param codePrefix the prefix of the code to use for the error message.
-   * @param vertx      the event bus infrastructure to use.
-   * @param cache      with the loaded components.
-   *
-   * @param <T>        type of {@link Validable} model to validate.
-   *
-   * @return the mapper function that can validate the model received from the
-   *         future chain.
-   *
-   * @see Future#compose(Function)
-   */
-  static <T extends Validable> Function<T, Future<T>> validateChain(final String codePrefix, final Vertx vertx,
-      final ValidationCache cache) {
-
-    return model -> model.validate(codePrefix, vertx, cache).map(validation -> model);
-
   }
 
 }

@@ -21,25 +21,23 @@
 package eu.internetofus.common.model;
 
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
 
 /**
  * This is implemented by any model that can be updated with another model to
  * create a new model.
  *
  * @param <T> type of models that can be updated.
+ * @param <C> type of context to use.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public interface Updateable<T> {
+public interface Updateable<T, C extends ValidateContext<C>> {
 
   /**
    * Update the current model with a new one creating a new one.
    *
-   * @param source     model to update with the current one.
-   * @param codePrefix the prefix of the code to use for the error message.
-   * @param vertx      the event bus infrastructure to use.
-   * @param cache      with the validated models.
+   * @param source  model to update with the current one.
+   * @param context to use in the update process.
    *
    * @return the future that provide the updated model that has to be valid. If it
    *         cannot update to a new model the cause will be a
@@ -47,6 +45,6 @@ public interface Updateable<T> {
    *
    * @see ValidationErrorException
    */
-  Future<T> update(T source, String codePrefix, Vertx vertx, ValidationCache cache);
+  Future<T> update(T source, C context);
 
 }

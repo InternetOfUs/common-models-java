@@ -31,6 +31,7 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -428,6 +429,64 @@ public class ModelTest {
           assertThat(target).isNotNull().hasSize(1).containsExactly(model);
           testContext.completeNow();
         })));
+
+  }
+
+  /**
+   * Check that can convert a string array.
+   *
+   * @see Model#toJsonArray(Iterable)
+   */
+  @Test
+  public void shouldToJsonArrayAStringList() {
+
+    final var expected = new JsonArray();
+    expected.add("One");
+    expected.add("2");
+    expected.add("3.0");
+    assertThat(Model.toJsonArray(Arrays.asList("One", "2", "3.0"))).isEqualTo(expected);
+
+  }
+
+  /**
+   * Check that can convert a json array to a string list.
+   *
+   * @param testContext context for the test.
+   *
+   * @see Model#fromFutureJsonArray(Future, Class)
+   */
+  @Test
+  public void shouldFromFutureJsonArrayToAStringList(final VertxTestContext testContext) {
+
+    final var array = new JsonArray();
+    array.add("One");
+    array.add("2");
+    array.add("3.0");
+    Model.fromFutureJsonArray(Future.succeededFuture(array), String.class)
+        .onComplete(testContext.succeeding(target -> testContext.verify(() -> {
+
+          assertThat(target).isNotNull().hasSize(3).containsExactly("One", "2", "3.0");
+          testContext.completeNow();
+        })));
+
+  }
+
+  /**
+   * Check that can convert a json array to a string list.
+   *
+   * @param testContext context for the test.
+   *
+   * @see Model#fromFutureJsonArray(Future, Class)
+   */
+  @Test
+  public void shouldFailFromFutureJsonArray(final VertxTestContext testContext) {
+
+    final var array = new JsonArray();
+    array.add("One");
+    array.add(2);
+    array.add(3.0);
+    Model.fromFutureJsonArray(Future.succeededFuture(array), String.class)
+        .onComplete(testContext.failing(igored -> testContext.completeNow()));
 
   }
 
