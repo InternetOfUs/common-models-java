@@ -19,6 +19,7 @@
  */
 package eu.internetofus.common.vertx.basic;
 
+import eu.internetofus.common.model.DummyValidateContext;
 import eu.internetofus.common.model.ValidationErrorException;
 import eu.internetofus.common.vertx.ModelContext;
 import eu.internetofus.common.vertx.ModelResources;
@@ -62,11 +63,12 @@ public class UsersResource implements Users {
    *
    * @return the context of the {@link User}.
    */
-  protected ModelContext<User, String> createUserContext() {
+  protected ModelContext<User, String, DummyValidateContext> createUserContext() {
 
-    final var context = new ModelContext<User, String>();
+    final var context = new ModelContext<User, String, DummyValidateContext>();
     context.name = "user";
     context.type = User.class;
+    context.validateContext = new DummyValidateContext("bad_user");
     return context;
 
   }
@@ -95,7 +97,7 @@ public class UsersResource implements Users {
 
     final var model = this.createUserContext();
     final var context = new ServiceContext(request, resultHandler);
-    ModelResources.createModel(this.vertx, body, model,
+    ModelResources.createModel(body, model,
         (user, handler) -> UsersRepository.createProxy(this.vertx).storeUser(user).onComplete(handler), context);
   }
 
@@ -109,7 +111,7 @@ public class UsersResource implements Users {
     final var model = this.createUserContext();
     model.id = userId;
     final var context = new ServiceContext(request, resultHandler);
-    ModelResources.updateModel(this.vertx, body, model,
+    ModelResources.updateModel(body, model,
         (id, hanlder) -> UsersRepository.createProxy(this.vertx).searchUser(id).onComplete(hanlder),
         (user, handler) -> UsersRepository.createProxy(this.vertx).updateUser(user).onComplete(handler), context);
 
@@ -125,7 +127,7 @@ public class UsersResource implements Users {
     final var model = this.createUserContext();
     model.id = userId;
     final var context = new ServiceContext(request, resultHandler);
-    ModelResources.mergeModel(this.vertx, body, model,
+    ModelResources.mergeModel(body, model,
         (id, hanlder) -> UsersRepository.createProxy(this.vertx).searchUser(id).onComplete(hanlder),
         (user, handler) -> UsersRepository.createProxy(this.vertx).updateUser(user).onComplete(handler), context);
 

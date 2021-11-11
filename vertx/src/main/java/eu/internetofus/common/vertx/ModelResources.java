@@ -26,12 +26,12 @@ import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.TimeManager;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
+import eu.internetofus.common.model.ValidateContext;
 import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
@@ -64,10 +64,11 @@ public interface ModelResources {
    *
    * @param <T>      type of model to retrieve.
    * @param <I>      type for the model identifier.
+   * @param <C>      type of validation context to use.
    */
-  static public <T extends Model, I> void retrieveModelChain(@NotNull final ModelContext<T, I> model,
-      @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher, @NotNull final ServiceContext context,
-      @NotNull final Runnable success) {
+  static public <T extends Model, I, C extends ValidateContext<C>> void retrieveModelChain(
+      @NotNull final ModelContext<T, I, C> model, @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
+      @NotNull final ServiceContext context, @NotNull final Runnable success) {
 
     searcher.accept(model.id, retrieve -> {
 
@@ -98,9 +99,11 @@ public interface ModelResources {
    *
    * @param <T>      type of model to retrieve.
    * @param <I>      type for the model identifier.
+   * @param <C>      type of validation context to use.
    */
-  static public <T extends Model, I> void retrieveModel(@NotNull final ModelContext<T, I> model,
-      @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher, @NotNull final ServiceContext context) {
+  static public <T extends Model, I, C extends ValidateContext<C>> void retrieveModel(
+      @NotNull final ModelContext<T, I, C> model, @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
+      @NotNull final ServiceContext context) {
 
     retrieveModelChain(model, searcher, context,
         () -> ServiceResponseHandlers.responseOk(context.resultHandler, model.target));
@@ -117,10 +120,11 @@ public interface ModelResources {
    *
    * @param <T>     type of model to delete.
    * @param <I>     type for the model identifier.
+   * @param <C>     type of validation context to use.
    */
-  static public <T extends Model, I> void deleteModelChain(@NotNull final ModelContext<T, I> model,
-      @NotNull final BiConsumer<I, Handler<AsyncResult<Void>>> deleter, @NotNull final ServiceContext context,
-      @NotNull final Runnable success) {
+  static public <T extends Model, I, C extends ValidateContext<C>> void deleteModelChain(
+      @NotNull final ModelContext<T, I, C> model, @NotNull final BiConsumer<I, Handler<AsyncResult<Void>>> deleter,
+      @NotNull final ServiceContext context, @NotNull final Runnable success) {
 
     deleter.accept(model.id, delete -> {
 
@@ -149,9 +153,11 @@ public interface ModelResources {
    *
    * @param <T>     type of model to delete.
    * @param <I>     type for the model identifier.
+   * @param <C>     type of validation context to use.
    */
-  static public <T extends Model, I> void deleteModel(@NotNull final ModelContext<T, I> model,
-      @NotNull final BiConsumer<I, Handler<AsyncResult<Void>>> deleter, @NotNull final ServiceContext context) {
+  static public <T extends Model, I, C extends ValidateContext<C>> void deleteModel(
+      @NotNull final ModelContext<T, I, C> model, @NotNull final BiConsumer<I, Handler<AsyncResult<Void>>> deleter,
+      @NotNull final ServiceContext context) {
 
     deleteModelChain(model, deleter, context, () -> ServiceResponseHandlers.responseOk(context.resultHandler));
 
@@ -160,19 +166,19 @@ public interface ModelResources {
   /**
    * Validate a model.
    *
-   * @param vertx   event bus to use.
    * @param model   context of the model to validate.
    * @param context of the request.
    * @param success component to call if the model is valid.
    *
    * @param <T>     type of model to validate.
    * @param <I>     type for the model identifier.
+   * @param <C>     type of validation context to use.
    */
-  static public <T extends Model & Validable, I> void validate(@NotNull final Vertx vertx,
-      @NotNull final ModelContext<T, I> model, @NotNull final ServiceContext context, @NotNull final Runnable success) {
+  static public <C extends ValidateContext<C>, T extends Model & Validable<C>, I> void validate(
+      @NotNull final ModelContext<T, I, C> model, @NotNull final ServiceContext context,
+      @NotNull final Runnable success) {
 
-    final var codePrefix = "bad_" + model.name;
-    model.source.validate(codePrefix, vertx, model.cache).onComplete(valid -> {
+    model.source.validate(model.validateContext).onComplete(valid -> {
 
       if (valid.failed()) {
 
@@ -199,9 +205,11 @@ public interface ModelResources {
    *
    * @param <T>     type of model to obtain form the JSON.
    * @param <I>     type for the model identifier.
+   * @param <C>     type of validation context to use.
    */
-  static public <T extends Model, I> void toModel(final JsonObject value, @NotNull final ModelContext<T, I> model,
-      @NotNull final ServiceContext context, @NotNull final Runnable success) {
+  static public <T extends Model, I, C extends ValidateContext<C>> void toModel(final JsonObject value,
+      @NotNull final ModelContext<T, I, C> model, @NotNull final ServiceContext context,
+      @NotNull final Runnable success) {
 
     if (value == null) {
 
@@ -237,7 +245,6 @@ public interface ModelResources {
   /**
    * The method to call when is creating a model.
    *
-   * @param vertx   event bus to use.
    * @param value   of the model to verify.
    * @param model   context of the model to create.
    * @param storer  the function used to store the model.
@@ -245,12 +252,13 @@ public interface ModelResources {
    *
    * @param <T>     type of model to create.
    * @param <I>     type of the model identifier.
+   * @param <C>     type of validation context to use.
    */
-  static public <T extends Model & Validable, I> void createModel(@NotNull final Vertx vertx, final JsonObject value,
-      @NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<T, Handler<AsyncResult<T>>> storer,
-      @NotNull final ServiceContext context) {
+  static public <C extends ValidateContext<C>, T extends Model & Validable<C>, I> void createModel(
+      final JsonObject value, @NotNull final ModelContext<T, I, C> model,
+      @NotNull final BiConsumer<T, Handler<AsyncResult<T>>> storer, @NotNull final ServiceContext context) {
 
-    createModelChain(vertx, value, model, storer, context,
+    createModelChain(value, model, storer, context,
         () -> ServiceResponseHandlers.responseWith(context.resultHandler, Status.CREATED, model.value));
 
   }
@@ -258,7 +266,6 @@ public interface ModelResources {
   /**
    * The method to call when is creating a model.
    *
-   * @param vertx   event bus to use.
    * @param value   of the model to verify.
    * @param model   to create.
    * @param storer  the function used to store the model.
@@ -267,15 +274,16 @@ public interface ModelResources {
    *
    * @param <T>     type of model to create.
    * @param <I>     type of the model identifier.
+   * @param <C>     type of validation context to use.
    */
-  static public <T extends Model & Validable, I> void createModelChain(@NotNull final Vertx vertx,
-      final JsonObject value, @NotNull final ModelContext<T, I> model,
+  static public <C extends ValidateContext<C>, T extends Model & Validable<C>, I> void createModelChain(
+      final JsonObject value, @NotNull final ModelContext<T, I, C> model,
       @NotNull final BiConsumer<T, Handler<AsyncResult<T>>> storer, @NotNull final ServiceContext context,
       @NotNull final Runnable success) {
 
     toModel(value, model, context, () -> {
 
-      validate(vertx, model, context, () -> {
+      validate(model, context, () -> {
 
         if (model.value instanceof CreateUpdateTsDetails) {
 
@@ -307,25 +315,25 @@ public interface ModelResources {
   /**
    * Merge a source model with the target one.
    *
-   * @param vertx   event bus to use.
    * @param model   to merge.
    * @param context of the request.
    * @param success component to call if the model is valid.
    *
    * @param <T>     type of model to merge.
    * @param <I>     type of the model identifier.
+   * @param <C>     type of validation context to use.
    */
-  static public <T extends Model & Mergeable<T>, I> void merge(@NotNull final Vertx vertx,
-      @NotNull final ModelContext<T, I> model, @NotNull final ServiceContext context, @NotNull final Runnable success) {
+  static public <C extends ValidateContext<C>, T extends Model & Mergeable<T, C>, I> void merge(
+      @NotNull final ModelContext<T, I, C> model, @NotNull final ServiceContext context,
+      @NotNull final Runnable success) {
 
-    merge(vertx, model, context, true, success);
+    merge(model, context, true, success);
 
   }
 
   /**
    * Merge a source model with the target one.
    *
-   * @param vertx     event bus to use.
    * @param model     to merge.
    * @param context   of the request.
    * @param nonEquals is {@code true} if the model can not be equals to the
@@ -334,12 +342,13 @@ public interface ModelResources {
    *
    * @param <T>       type of model to merge.
    * @param <I>       type of the model identifier.
+   * @param <C>       type of validation context to use.
    */
-  static public <T extends Model & Mergeable<T>, I> void merge(@NotNull final Vertx vertx,
-      @NotNull final ModelContext<T, I> model, @NotNull final ServiceContext context, final boolean nonEquals,
+  static public <C extends ValidateContext<C>, T extends Model & Mergeable<T, C>, I> void merge(
+      @NotNull final ModelContext<T, I, C> model, @NotNull final ServiceContext context, final boolean nonEquals,
       @NotNull final Runnable success) {
 
-    model.target.merge(model.source, "bad_" + model.name, vertx, model.cache).onComplete(merge -> {
+    model.target.merge(model.source, model.validateContext).onComplete(merge -> {
 
       if (merge.failed()) {
 
@@ -370,7 +379,6 @@ public interface ModelResources {
   /**
    * Merge a JSON model to the defined on the DB and finish with an OK.
    *
-   * @param vertx    event bus to use.
    * @param value    of the model to merge.
    * @param model    context of the model to merge.
    * @param searcher the function used to obtain a model.
@@ -379,12 +387,14 @@ public interface ModelResources {
    *
    * @param <T>      type of model to merge.
    * @param <I>      type of the model identifier.
+   * @param <C>      type of validation context to use.
    */
-  static public <T extends Model & Mergeable<T>, I> void mergeModel(@NotNull final Vertx vertx, final JsonObject value,
-      @NotNull final ModelContext<T, I> model, @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
+  static public <C extends ValidateContext<C>, T extends Model & Mergeable<T, C>, I> void mergeModel(
+      final JsonObject value, @NotNull final ModelContext<T, I, C> model,
+      @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
       @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context) {
 
-    mergeModelChain(vertx, value, model, searcher, updater, context,
+    mergeModelChain(value, model, searcher, updater, context,
         () -> ServiceResponseHandlers.responseOk(context.resultHandler, model.value));
 
   }
@@ -392,7 +402,6 @@ public interface ModelResources {
   /**
    * Merge a JSON model to the defined on the DB.
    *
-   * @param vertx    event bus to use.
    * @param value    of the model to merge.
    * @param model    context of the model to merge.
    * @param searcher the function used to obtain a model.
@@ -402,21 +411,21 @@ public interface ModelResources {
    *
    * @param <T>      type of model to merge.
    * @param <I>      type of the model identifier.
+   * @param <C>      type of validation context to use.
    */
-  static public <T extends Model & Mergeable<T>, I> void mergeModelChain(@NotNull final Vertx vertx,
-      final JsonObject value, @NotNull final ModelContext<T, I> model,
+  static public <C extends ValidateContext<C>, T extends Model & Mergeable<T, C>, I> void mergeModelChain(
+      final JsonObject value, @NotNull final ModelContext<T, I, C> model,
       @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
       @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context,
       @NotNull final Runnable success) {
 
-    mergeModelChain(vertx, value, model, searcher, updater, context, true, success);
+    mergeModelChain(value, model, searcher, updater, context, true, success);
 
   }
 
   /**
    * Merge a JSON model to the defined on the DB.
    *
-   * @param vertx     event bus to use.
    * @param value     of the model to merge.
    * @param model     context of the model to merge.
    * @param searcher  the function used to obtain a model.
@@ -428,9 +437,10 @@ public interface ModelResources {
    *
    * @param <T>       type of model to merge.
    * @param <I>       type of the model identifier.
+   * @param <C>       type of validation context to use.
    */
-  static public <T extends Model & Mergeable<T>, I> void mergeModelChain(@NotNull final Vertx vertx,
-      final JsonObject value, @NotNull final ModelContext<T, I> model,
+  static public <C extends ValidateContext<C>, T extends Model & Mergeable<T, C>, I> void mergeModelChain(
+      final JsonObject value, @NotNull final ModelContext<T, I, C> model,
       @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
       @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context,
       final boolean nonEquals, @NotNull final Runnable success) {
@@ -439,7 +449,7 @@ public interface ModelResources {
 
       retrieveModelChain(model, searcher, context, () -> {
 
-        merge(vertx, model, context, nonEquals, () -> updateModelChain(model, updater, context, success));
+        merge(model, context, nonEquals, () -> updateModelChain(model, updater, context, success));
 
       });
     });
@@ -449,7 +459,6 @@ public interface ModelResources {
   /**
    * Update a JSON model to the defined on the DB.
    *
-   * @param vertx    event bus to use.
    * @param value    of the model to update.
    * @param model    context of the model to update.
    * @param searcher the function used to obtain a model.
@@ -459,20 +468,20 @@ public interface ModelResources {
    *
    * @param <T>      type of model to update.
    * @param <I>      type of the model identifier.
+   * @param <C>      type of validation context to use.
    */
-  static public <T extends Model & Updateable<T>, I> void updateModelChain(@NotNull final Vertx vertx,
-      final JsonObject value, @NotNull final ModelContext<T, I> model,
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, I> void updateModelChain(
+      final JsonObject value, @NotNull final ModelContext<T, I, C> model,
       @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
       @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context,
       @NotNull final Runnable success) {
 
-    updateModelChain(vertx, value, model, searcher, updater, context, true, success);
+    updateModelChain(value, model, searcher, updater, context, true, success);
   }
 
   /**
    * Update a JSON model to the defined on the DB.
    *
-   * @param vertx     event bus to use.
    * @param value     of the model to update.
    * @param model     context of the model to update.
    * @param searcher  the function used to obtain a model.
@@ -484,9 +493,10 @@ public interface ModelResources {
    *
    * @param <T>       type of model to update.
    * @param <I>       type of the model identifier.
+   * @param <C>       type of validation context to use.
    */
-  static public <T extends Model & Updateable<T>, I> void updateModelChain(@NotNull final Vertx vertx,
-      final JsonObject value, @NotNull final ModelContext<T, I> model,
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, I> void updateModelChain(
+      final JsonObject value, @NotNull final ModelContext<T, I, C> model,
       @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
       @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context,
       final boolean nonEquals, @NotNull final Runnable success) {
@@ -495,7 +505,7 @@ public interface ModelResources {
 
       retrieveModelChain(model, searcher, context, () -> {
 
-        update(vertx, model, context, nonEquals, () -> updateModelChain(model, updater, context, success));
+        update(model, context, nonEquals, () -> updateModelChain(model, updater, context, success));
 
       });
     });
@@ -512,10 +522,11 @@ public interface ModelResources {
    *
    * @param <T>     type of model to update.
    * @param <I>     type of the model identifier.
+   * @param <C>     type of validation context to use.
    */
-  static public <T extends Model, I> void updateModelChain(@NotNull final ModelContext<T, I> model,
-      @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context,
-      @NotNull final Runnable success) {
+  static public <T extends Model, I, C extends ValidateContext<C>> void updateModelChain(
+      @NotNull final ModelContext<T, I, C> model, @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater,
+      @NotNull final ServiceContext context, @NotNull final Runnable success) {
 
     if (model.value instanceof CreateUpdateTsDetails) {
 
@@ -543,25 +554,25 @@ public interface ModelResources {
   /**
    * Update a source model with the target one.
    *
-   * @param vertx   event bus to use.
    * @param model   context of the model to update.
    * @param context of the request.
    * @param success component to call if the model is valid.
    *
    * @param <T>     type of model to update.
    * @param <I>     type of the model identifier.
+   * @param <C>     type of validation context to use.
    */
-  static public <T extends Model & Updateable<T>, I> void update(@NotNull final Vertx vertx,
-      @NotNull final ModelContext<T, I> model, @NotNull final ServiceContext context, @NotNull final Runnable success) {
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, I> void update(
+      @NotNull final ModelContext<T, I, C> model, @NotNull final ServiceContext context,
+      @NotNull final Runnable success) {
 
-    update(vertx, model, context, true, success);
+    update(model, context, true, success);
 
   }
 
   /**
    * Update a source model with the target one.
    *
-   * @param vertx     event bus to use.
    * @param model     context of the model to update.
    * @param context   of the request.
    * @param nonEquals is {@code true} if the model can not be equals to the
@@ -570,12 +581,13 @@ public interface ModelResources {
    *
    * @param <T>       type of model to update.
    * @param <I>       type of the model identifier.
+   * @param <C>       type of validation context to use.
    */
-  static public <T extends Model & Updateable<T>, I> void update(@NotNull final Vertx vertx,
-      @NotNull final ModelContext<T, I> model, @NotNull final ServiceContext context, final boolean nonEquals,
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, I> void update(
+      @NotNull final ModelContext<T, I, C> model, @NotNull final ServiceContext context, final boolean nonEquals,
       @NotNull final Runnable success) {
 
-    model.target.update(model.source, "bad_" + model.name, vertx, model.cache).onComplete(update -> {
+    model.target.update(model.source, model.validateContext).onComplete(update -> {
 
       if (update.failed()) {
 
@@ -605,7 +617,6 @@ public interface ModelResources {
   /**
    * Update a JSON model to the defined on the DB and finish with an OK.
    *
-   * @param vertx    event bus to use.
    * @param value    of the model to update.
    * @param model    context of the model to update.
    * @param searcher the function used to obtain a model from an identifier.
@@ -614,13 +625,14 @@ public interface ModelResources {
    *
    * @param <T>      type of model to update.
    * @param <I>      type of the model identifier.
+   * @param <C>      type of validation context to use.
    */
-  static public <T extends Model & Updateable<T>, I> void updateModel(@NotNull final Vertx vertx,
-      final JsonObject value, @NotNull final ModelContext<T, I> model,
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, I> void updateModel(
+      final JsonObject value, @NotNull final ModelContext<T, I, C> model,
       @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
       @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context) {
 
-    updateModelChain(vertx, value, model, searcher, updater, context,
+    updateModelChain(value, model, searcher, updater, context,
         () -> ServiceResponseHandlers.responseOk(context.resultHandler, model.value));
 
   }
@@ -636,10 +648,11 @@ public interface ModelResources {
    * @param <T>      type of model that contains the fields.
    * @param <E>      type of the field.
    * @param <I>      type of the identifier.
+   * @param <C>      type of validation context to use.
    */
-  static public <T extends Model, E extends Model, I> void retrieveModelField(@NotNull final ModelContext<T, I> model,
-      @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
-      @NotNull final ServiceContext context) {
+  static public <T extends Model, E extends Model, I, C extends ValidateContext<C>> void retrieveModelField(
+      @NotNull final ModelContext<T, I, C> model, @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
+      @NotNull final Function<T, List<E>> getField, @NotNull final ServiceContext context) {
 
     retrieveModelChain(model, searcher, context, () -> {
 
@@ -675,9 +688,10 @@ public interface ModelResources {
    * @param <IT>          type of the model identifier.
    * @param <E>           type of the field.
    * @param <IE>          type of the field identifier.
+   * @param <C>           type of validation context to use.
    */
-  static public <T extends Model, E extends Model, IT, IE> void retrieveModelFieldElement(
-      @NotNull final ModelFieldContext<T, IT, E, IE> element,
+  static public <T extends Model, E extends Model, IT, IE, C extends ValidateContext<C>> void retrieveModelFieldElement(
+      @NotNull final ModelFieldContext<T, IT, E, IE, C> element,
       @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
       @NotNull final BiFunction<List<E>, IE, Integer> searchElement, @NotNull final ServiceContext context) {
 
@@ -701,10 +715,11 @@ public interface ModelResources {
    * @param <IT>          type of the model identifier.
    * @param <E>           type of the field.
    * @param <IE>          type of the field identifier.
+   * @param <C>           type of validation context to use.
    */
   @SuppressWarnings("unchecked")
-  static public <T extends Model, E extends Model, IT, IE> void retrieveModelFieldElementChain(
-      @NotNull final ModelFieldContext<T, IT, E, IE> element,
+  static public <T extends Model, E extends Model, IT, IE, C extends ValidateContext<C>> void retrieveModelFieldElementChain(
+      @NotNull final ModelFieldContext<T, IT, E, IE, C> element,
       @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
       @NotNull final BiFunction<List<E>, IE, Integer> searchElement, @NotNull final ServiceContext context,
       @NotNull final Runnable success) {
@@ -738,7 +753,6 @@ public interface ModelResources {
   /**
    * Merge an element of a field defined into a model.
    *
-   * @param vertx            event bus to use.
    * @param valueToMerge     to merge the model field element.
    * @param element          to merge.
    * @param searcher         the function used to obtain a model from an
@@ -753,22 +767,22 @@ public interface ModelResources {
    * @param <IT>             type of the model identifier.
    * @param <E>              type of the field.
    * @param <IE>             type of the field identifier.
+   * @param <C>              type of validation context to use.
    */
-  static public <T extends Model & Updateable<T>, IT, E extends Model & Mergeable<E>, IE> void mergeModelFieldElement(
-      @NotNull final Vertx vertx, final JsonObject valueToMerge, @NotNull final ModelFieldContext<T, IT, E, IE> element,
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, IT, E extends Model & Mergeable<E, C>, IE> void mergeModelFieldElement(
+      final JsonObject valueToMerge, @NotNull final ModelFieldContext<T, IT, E, IE, C> element,
       @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
       @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
       final BiConsumer<T, Handler<AsyncResult<Void>>> storerMergeModel, final ServiceContext context) {
 
-    mergeModelFieldElementChain(vertx, valueToMerge, element, searcher, getField, searchElement, storerMergeModel,
-        context, () -> ServiceResponseHandlers.responseOk(context.resultHandler, element.value));
+    mergeModelFieldElementChain(valueToMerge, element, searcher, getField, searchElement, storerMergeModel, context,
+        () -> ServiceResponseHandlers.responseOk(context.resultHandler, element.value));
 
   }
 
   /**
    * Merge an element of a field defined into a model.
    *
-   * @param vertx             event bus to use.
    * @param valueToMerge      to merge the model field element.
    * @param element           to merge.
    * @param searcher          the function used to obtain a model from an
@@ -784,24 +798,24 @@ public interface ModelResources {
    * @param <IT>              type of the model identifier.
    * @param <E>               type of the field.
    * @param <IE>              type of the field identifier.
+   * @param <C>               type of validation context to use.
    */
-  static public <T extends Model & Updateable<T>, IT, E extends Model & Mergeable<E>, IE> void mergeModelFieldElementChain(
-      @NotNull final Vertx vertx, final JsonObject valueToMerge, @NotNull final ModelFieldContext<T, IT, E, IE> element,
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, IT, E extends Model & Mergeable<E, C>, IE> void mergeModelFieldElementChain(
+      final JsonObject valueToMerge, @NotNull final ModelFieldContext<T, IT, E, IE, C> element,
       @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
       @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
       final BiConsumer<T, Handler<AsyncResult<Void>>> storerMergedModel, final ServiceContext context,
       @NotNull final Runnable success) {
 
     changeModelFieldElementBeforeChain(valueToMerge, element, searcher, getField, searchElement, context,
-        () -> merge(vertx, element, context,
-            () -> changeModelFieldElementAfterChain(vertx, element, getField, storerMergedModel, context, success)));
+        () -> merge(element, context,
+            () -> changeModelFieldElementAfterChain(element, getField, storerMergedModel, context, success)));
 
   }
 
   /**
    * Update an element of a field defined into a model.
    *
-   * @param vertx              event bus to use.
    * @param valueToUpdate      to update the model field element.
    * @param element            to update.
    * @param searcher           the function used to obtain a model from an
@@ -817,25 +831,24 @@ public interface ModelResources {
    * @param <IT>               type of the model identifier.
    * @param <E>                type of the field.
    * @param <IE>               type of the field identifier.
+   * @param <C>                type of validation context to use.
    */
-  static public <T extends Model & Updateable<T>, IT, E extends Model & Updateable<E>, IE> void updateModelFieldElementChain(
-      @NotNull final Vertx vertx, final JsonObject valueToUpdate,
-      @NotNull final ModelFieldContext<T, IT, E, IE> element,
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, IT, E extends Model & Updateable<E, C>, IE> void updateModelFieldElementChain(
+      final JsonObject valueToUpdate, @NotNull final ModelFieldContext<T, IT, E, IE, C> element,
       @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
       @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
       @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> storerUpdatedModel, final ServiceContext context,
       @NotNull final Runnable success) {
 
     changeModelFieldElementBeforeChain(valueToUpdate, element, searcher, getField, searchElement, context,
-        () -> update(vertx, element, context,
-            () -> changeModelFieldElementAfterChain(vertx, element, getField, storerUpdatedModel, context, success)));
+        () -> update(element, context,
+            () -> changeModelFieldElementAfterChain(element, getField, storerUpdatedModel, context, success)));
 
   }
 
   /**
    * Update an element of a field defined into a model.
    *
-   * @param vertx             event bus to use.
    * @param valueToUpdate     to update the model field element.
    * @param element           to update.
    * @param searcher          the function used to obtain a model from an
@@ -850,16 +863,16 @@ public interface ModelResources {
    * @param <IT>              type of the model identifier.
    * @param <E>               type of the field.
    * @param <IE>              type of the field identifier.
+   * @param <C>               type of validation context to use.
    */
-  static public <T extends Model & Updateable<T>, IT, E extends Model & Updateable<E>, IE> void updateModelFieldElement(
-      @NotNull final Vertx vertx, final JsonObject valueToUpdate,
-      @NotNull final ModelFieldContext<T, IT, E, IE> element,
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, IT, E extends Model & Updateable<E, C>, IE> void updateModelFieldElement(
+      final JsonObject valueToUpdate, @NotNull final ModelFieldContext<T, IT, E, IE, C> element,
       @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
       @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
       final BiConsumer<T, Handler<AsyncResult<Void>>> storerUpdateModel, final ServiceContext context) {
 
-    updateModelFieldElementChain(vertx, valueToUpdate, element, searcher, getField, searchElement, storerUpdateModel,
-        context, () -> ServiceResponseHandlers.responseOk(context.resultHandler, element.value));
+    updateModelFieldElementChain(valueToUpdate, element, searcher, getField, searchElement, storerUpdateModel, context,
+        () -> ServiceResponseHandlers.responseOk(context.resultHandler, element.value));
 
   }
 
@@ -879,9 +892,10 @@ public interface ModelResources {
    * @param <IT>          type of the model identifier.
    * @param <E>           type of the field.
    * @param <IE>          type of the field identifier.
+   * @param <C>           type of validation context to use.
    */
-  static public <T extends Model & Updateable<T>, IT, E extends Model, IE> void changeModelFieldElementBeforeChain(
-      final JsonObject value, @NotNull final ModelFieldContext<T, IT, E, IE> element,
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, IT, E extends Model, IE> void changeModelFieldElementBeforeChain(
+      final JsonObject value, @NotNull final ModelFieldContext<T, IT, E, IE, C> element,
       @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
       @NotNull final BiFunction<List<E>, IE, Integer> searchElement, final ServiceContext context,
       @NotNull final Runnable success) {
@@ -894,7 +908,6 @@ public interface ModelResources {
   /**
    * Change an element of a field defined into a model.
    *
-   * @param vertx              event bus to use.
    * @param element            to merge.
    * @param getField           return the field value associated to a model.
    * @param context            of the request.
@@ -905,17 +918,18 @@ public interface ModelResources {
    * @param <IT>               type of the model identifier.
    * @param <E>                type of the field.
    * @param <IE>               type of the field identifier.
+   * @param <C>                type of validation context to use.
    */
-  static public <T extends Model & Updateable<T>, IT, E extends Model, IE> void changeModelFieldElementAfterChain(
-      final Vertx vertx, @NotNull final ModelFieldContext<T, IT, E, IE> element,
-      @NotNull final Function<T, List<E>> getField, final BiConsumer<T, Handler<AsyncResult<Void>>> storerChangedModel,
-      @NotNull final ServiceContext context, @NotNull final Runnable success) {
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, IT, E extends Model, IE> void changeModelFieldElementAfterChain(
+      @NotNull final ModelFieldContext<T, IT, E, IE, C> element, @NotNull final Function<T, List<E>> getField,
+      final BiConsumer<T, Handler<AsyncResult<Void>>> storerChangedModel, @NotNull final ServiceContext context,
+      @NotNull final Runnable success) {
 
     element.model.source = Model.fromBuffer(element.model.target.toBuffer(), element.model.type);
     final var sourceField = getField.apply(element.model.source);
     sourceField.remove(element.index);
     sourceField.add(element.index, element.value);
-    update(vertx, element.model, context, () -> updateModelChain(element.model, storerChangedModel, context, success));
+    update(element.model, context, () -> updateModelChain(element.model, storerChangedModel, context, success));
 
   }
 
@@ -937,8 +951,8 @@ public interface ModelResources {
    * @param <E>                type of the field.
    * @param <IE>               type of the field identifier.
    */
-  static public <T extends Model, IT, E extends Model, IE> void deleteModelFieldElementChain(
-      @NotNull final ModelFieldContext<T, IT, E, IE> element,
+  static public <T extends Model, IT, E extends Model, IE, C extends ValidateContext<C>> void deleteModelFieldElementChain(
+      @NotNull final ModelFieldContext<T, IT, E, IE, C> element,
       @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
       @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
       final BiConsumer<T, Handler<AsyncResult<Void>>> storerDeletedModel, final ServiceContext context,
@@ -970,8 +984,8 @@ public interface ModelResources {
    * @param <E>               type of the field.
    * @param <IE>              type of the field identifier.
    */
-  static public <T extends Model, IT, E extends Model, IE> void deleteModelFieldElement(
-      @NotNull final ModelFieldContext<T, IT, E, IE> element,
+  static public <T extends Model, IT, E extends Model, IE, C extends ValidateContext<C>> void deleteModelFieldElement(
+      @NotNull final ModelFieldContext<T, IT, E, IE, C> element,
       @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
       @NotNull final BiFunction<List<E>, IE, Integer> searchElement,
       final BiConsumer<T, Handler<AsyncResult<Void>>> storerDeleteModel, final ServiceContext context) {
@@ -984,7 +998,6 @@ public interface ModelResources {
   /**
    * Create an element of a field defined into a model.
    *
-   * @param vertx             event bus to use.
    * @param valueToCreate     to create the model field element.
    * @param element           to create.
    * @param searcher          the function used to obtain a model from an
@@ -998,23 +1011,22 @@ public interface ModelResources {
    * @param <IT>              type of the model identifier.
    * @param <E>               type of the field.
    * @param <IE>              type of the field identifier.
+   * @param <C>               type of validation context to use.
    */
-  static public <T extends Model & Updateable<T>, IT, E extends Model & Validable, IE> void createModelFieldElement(
-      @NotNull final Vertx vertx, final JsonObject valueToCreate,
-      @NotNull final ModelFieldContext<T, IT, E, IE> element,
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, IT, E extends Model & Validable<C>, IE> void createModelFieldElement(
+      final JsonObject valueToCreate, @NotNull final ModelFieldContext<T, IT, E, IE, C> element,
       @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
       @NotNull final BiConsumer<T, List<E>> setField, final BiConsumer<T, Handler<AsyncResult<Void>>> storerCreateModel,
       final ServiceContext context) {
 
-    createModelFieldElementChain(vertx, valueToCreate, element, searcher, getField, setField, storerCreateModel,
-        context, () -> ServiceResponseHandlers.responseOk(context.resultHandler, element.value));
+    createModelFieldElementChain(valueToCreate, element, searcher, getField, setField, storerCreateModel, context,
+        () -> ServiceResponseHandlers.responseOk(context.resultHandler, element.value));
 
   }
 
   /**
    * Create an element of a field defined into a model.
    *
-   * @param vertx              event bus to use.
    * @param valueToCreate      to create the model field element.
    * @param element            to create.
    * @param searcher           the function used to obtain a model from an
@@ -1029,11 +1041,11 @@ public interface ModelResources {
    * @param <IT>               type of the model identifier.
    * @param <E>                type of the field.
    * @param <IE>               type of the field identifier.
+   * @param <C>                type of validation context to use.
    */
   @SuppressWarnings("unchecked")
-  static public <T extends Model & Updateable<T>, IT, E extends Model & Validable, IE> void createModelFieldElementChain(
-      @NotNull final Vertx vertx, final JsonObject valueToCreate,
-      @NotNull final ModelFieldContext<T, IT, E, IE> element,
+  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, IT, E extends Model & Validable<C>, IE> void createModelFieldElementChain(
+      final JsonObject valueToCreate, @NotNull final ModelFieldContext<T, IT, E, IE, C> element,
       @NotNull final BiConsumer<IT, Handler<AsyncResult<T>>> searcher, @NotNull final Function<T, List<E>> getField,
       @NotNull final BiConsumer<T, List<E>> setField,
       final BiConsumer<T, Handler<AsyncResult<Void>>> storerCreatedModel, final ServiceContext context,
@@ -1041,7 +1053,7 @@ public interface ModelResources {
 
     toModel(valueToCreate, element, context, () -> {
 
-      validate(vertx, element, context, () -> {
+      validate(element, context, () -> {
 
         if (element.value instanceof CreateUpdateTsDetails) {
 
@@ -1064,7 +1076,7 @@ public interface ModelResources {
 
           element.index = element.field.size();
           element.field.add(element.value);
-          update(vertx, element.model, context, () -> {
+          update(element.model, context, () -> {
 
             element.value = getField.apply(element.model.value).get(element.index);
             updateModelChain(element.model, storerCreatedModel, context, success);

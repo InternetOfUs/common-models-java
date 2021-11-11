@@ -30,6 +30,7 @@ import static org.mockito.Mockito.verify;
 import eu.internetofus.common.model.DummyComplexModel;
 import eu.internetofus.common.model.DummyComplexModelTest;
 import eu.internetofus.common.model.DummyTsModel;
+import eu.internetofus.common.model.DummyValidateContext;
 import eu.internetofus.common.model.ErrorMessage;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.TimeManager;
@@ -37,7 +38,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -69,12 +69,13 @@ public class ModelResourcesTest {
    *
    * @return the create context.
    */
-  protected ModelContext<DummyComplexModel, String> createModelContext() {
+  protected ModelContext<DummyComplexModel, String, DummyValidateContext> createModelContext() {
 
-    final var model = new ModelContext<DummyComplexModel, String>();
+    final var model = new ModelContext<DummyComplexModel, String, DummyValidateContext>();
     model.id = "id";
     model.name = "modelName";
     model.type = DummyComplexModel.class;
+    model.validateContext = new DummyValidateContext("bad_modelName");
     return model;
   }
 
@@ -273,7 +274,7 @@ public class ModelResourcesTest {
    * @param resultHandler handler to manage the HTTP result.
    * @param success       function to call when the validation success.
    *
-   * @see ModelResources#validate(Vertx, ModelContext, ServiceContext, Runnable)
+   * @see ModelResources#validate( ModelContext, ServiceContext, Runnable)
    */
   @Test
   public void shouldNotValidateIfModelIsNotValid(@Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
@@ -288,8 +289,7 @@ public class ModelResourcesTest {
     model.source.siblings.get(1).id = "0";
 
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
-    ModelResources.validate(vertx, model, context, success);
+    ModelResources.validate(model, context, success);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<AsyncResult<ServiceResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
@@ -311,7 +311,7 @@ public class ModelResourcesTest {
    * @param resultHandler handler to manage the HTTP result.
    * @param success       function to call when the validation success.
    *
-   * @see ModelResources#validate(Vertx, ModelContext, ServiceContext, Runnable)
+   * @see ModelResources#validate( ModelContext, ServiceContext, Runnable)
    */
   @Test
   public void shouldValidateModel(@Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
@@ -321,9 +321,8 @@ public class ModelResourcesTest {
     final var expected = new DummyComplexModelTest().createModelExample(2);
     model.source = expected;
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
 
-    ModelResources.validate(vertx, model, context, success);
+    ModelResources.validate(model, context, success);
     verify(success, timeout(30000).times(1)).run();
     assertThat(model.value).isEqualTo(expected);
 
@@ -335,7 +334,7 @@ public class ModelResourcesTest {
    * @param resultHandler handler to manage the HTTP result.
    * @param storer        the function used to store the model.
    *
-   * @see ModelResources#createModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#createModel( JsonObject, ModelContext, BiConsumer,
    *      ServiceContext)
    */
   @Test
@@ -345,8 +344,7 @@ public class ModelResourcesTest {
     final var model = this.createModelContext();
     final var expected = new DummyComplexModelTest().createModelExample(2);
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
-    ModelResources.createModel(vertx, expected.toJsonObject(), model, storer, context);
+    ModelResources.createModel(expected.toJsonObject(), model, storer, context);
 
     final var cause = new Throwable("Can not store the model");
     @SuppressWarnings("unchecked")
@@ -373,7 +371,7 @@ public class ModelResourcesTest {
    * @param resultHandler handler to manage the HTTP result.
    * @param storer        the function used to store the model.
    *
-   * @see ModelResources#createModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#createModel( JsonObject, ModelContext, BiConsumer,
    *      ServiceContext)
    */
   @Test
@@ -383,8 +381,7 @@ public class ModelResourcesTest {
     final var model = this.createModelContext();
     final var expected = new DummyComplexModelTest().createModelExample(1);
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
-    ModelResources.createModel(vertx, expected.toJsonObject(), model, storer, context);
+    ModelResources.createModel(expected.toJsonObject(), model, storer, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
@@ -411,7 +408,7 @@ public class ModelResourcesTest {
    * @param searcher      the function used to search a model.
    * @param updater       the function used to update a model.
    *
-   * @see ModelResources#mergeModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#mergeModel( JsonObject, ModelContext, BiConsumer,
    *      BiConsumer, ServiceContext)
    */
   @Test
@@ -421,8 +418,7 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
-    ModelResources.mergeModel(vertx, new JsonObject().put("undefined_key", "value"), model, searcher, updater, context);
+    ModelResources.mergeModel(new JsonObject().put("undefined_key", "value"), model, searcher, updater, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<AsyncResult<ServiceResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
@@ -445,7 +441,7 @@ public class ModelResourcesTest {
    * @param searcher      the function used to search a model.
    * @param updater       the function used to update a model.
    *
-   * @see ModelResources#mergeModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#mergeModel( JsonObject, ModelContext, BiConsumer,
    *      BiConsumer, ServiceContext)
    */
   @Test
@@ -455,9 +451,8 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var value = new DummyComplexModelTest().createModelExample(1).toJsonObject();
-    ModelResources.mergeModel(vertx, value, model, searcher, updater, context);
+    ModelResources.mergeModel(value, model, searcher, updater, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
@@ -485,7 +480,7 @@ public class ModelResourcesTest {
    * @param searcher      the function used to search a model.
    * @param updater       the function used to update a model.
    *
-   * @see ModelResources#mergeModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#mergeModel( JsonObject, ModelContext, BiConsumer,
    *      BiConsumer, ServiceContext)
    */
   @Test
@@ -495,7 +490,6 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(1);
     source.siblings = new ArrayList<>();
     source.siblings.add(new DummyComplexModel());
@@ -503,7 +497,7 @@ public class ModelResourcesTest {
     source.siblings.add(new DummyComplexModel());
     source.siblings.get(1).id = "0";
     final var value = source.toJsonObject();
-    ModelResources.mergeModel(vertx, value, model, searcher, updater, context);
+    ModelResources.mergeModel(value, model, searcher, updater, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
@@ -532,7 +526,7 @@ public class ModelResourcesTest {
    * @param searcher      the function used to search a model.
    * @param updater       the function used to update a model.
    *
-   * @see ModelResources#mergeModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#mergeModel( JsonObject, ModelContext, BiConsumer,
    *      BiConsumer, ServiceContext)
    */
   @Test
@@ -542,10 +536,9 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(2);
     final var value = source.toJsonObject();
-    ModelResources.mergeModel(vertx, value, model, searcher, updater, context);
+    ModelResources.mergeModel(value, model, searcher, updater, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
@@ -573,7 +566,7 @@ public class ModelResourcesTest {
    * @param searcher      the function used to search a model.
    * @param updater       the function used to update a model.
    *
-   * @see ModelResources#mergeModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#mergeModel( JsonObject, ModelContext, BiConsumer,
    *      BiConsumer, ServiceContext)
    */
   @Test
@@ -583,10 +576,9 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(2);
     final var value = source.toJsonObject();
-    ModelResources.mergeModel(vertx, value, model, searcher, updater, context);
+    ModelResources.mergeModel(value, model, searcher, updater, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
@@ -619,7 +611,7 @@ public class ModelResourcesTest {
    * @param searcher      the function used to search a model.
    * @param updater       the function used to update a model.
    *
-   * @see ModelResources#mergeModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#mergeModel( JsonObject, ModelContext, BiConsumer,
    *      BiConsumer, ServiceContext)
    */
   @Test
@@ -629,10 +621,9 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(2);
     final var value = source.toJsonObject();
-    ModelResources.mergeModel(vertx, value, model, searcher, updater, context);
+    ModelResources.mergeModel(value, model, searcher, updater, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
@@ -667,7 +658,7 @@ public class ModelResourcesTest {
    * @param searcher      the function used to search a model.
    * @param updater       the function used to update a model.
    *
-   * @see ModelResources#updateModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#updateModel( JsonObject, ModelContext, BiConsumer,
    *      BiConsumer, ServiceContext)
    */
   @Test
@@ -677,9 +668,7 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
-    ModelResources.updateModel(vertx, new JsonObject().put("undefined_key", "value"), model, searcher, updater,
-        context);
+    ModelResources.updateModel(new JsonObject().put("undefined_key", "value"), model, searcher, updater, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<AsyncResult<ServiceResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
@@ -702,7 +691,7 @@ public class ModelResourcesTest {
    * @param searcher      the function used to search a model.
    * @param updater       the function used to update a model.
    *
-   * @see ModelResources#updateModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#updateModel( JsonObject, ModelContext, BiConsumer,
    *      BiConsumer, ServiceContext)
    */
   @Test
@@ -712,9 +701,8 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var value = new DummyComplexModelTest().createModelExample(1).toJsonObject();
-    ModelResources.updateModel(vertx, value, model, searcher, updater, context);
+    ModelResources.updateModel(value, model, searcher, updater, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
@@ -742,7 +730,7 @@ public class ModelResourcesTest {
    * @param searcher      the function used to search a model.
    * @param updater       the function used to update a model.
    *
-   * @see ModelResources#updateModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#updateModel( JsonObject, ModelContext, BiConsumer,
    *      BiConsumer, ServiceContext)
    */
   @Test
@@ -752,7 +740,6 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(1);
     source.siblings = new ArrayList<>();
     source.siblings.add(new DummyComplexModel());
@@ -760,7 +747,7 @@ public class ModelResourcesTest {
     source.siblings.add(new DummyComplexModel());
     source.siblings.get(1).id = "0";
     final var value = source.toJsonObject();
-    ModelResources.updateModel(vertx, value, model, searcher, updater, context);
+    ModelResources.updateModel(value, model, searcher, updater, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
@@ -790,7 +777,7 @@ public class ModelResourcesTest {
    * @param searcher      the function used to search a model.
    * @param updater       the function used to update a model.
    *
-   * @see ModelResources#updateModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#updateModel( JsonObject, ModelContext, BiConsumer,
    *      BiConsumer, ServiceContext)
    */
   @Test
@@ -800,10 +787,9 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(2);
     final var value = source.toJsonObject();
-    ModelResources.updateModel(vertx, value, model, searcher, updater, context);
+    ModelResources.updateModel(value, model, searcher, updater, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
@@ -831,7 +817,7 @@ public class ModelResourcesTest {
    * @param searcher      the function used to search a model.
    * @param updater       the function used to update a model.
    *
-   * @see ModelResources#updateModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#updateModel( JsonObject, ModelContext, BiConsumer,
    *      BiConsumer, ServiceContext)
    */
   @Test
@@ -841,10 +827,9 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(2);
     final var value = source.toJsonObject();
-    ModelResources.updateModel(vertx, value, model, searcher, updater, context);
+    ModelResources.updateModel(value, model, searcher, updater, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
@@ -877,7 +862,7 @@ public class ModelResourcesTest {
    * @param searcher      the function used to search a model.
    * @param updater       the function used to update a model.
    *
-   * @see ModelResources#updateModel(Vertx, JsonObject, ModelContext, BiConsumer,
+   * @see ModelResources#updateModel( JsonObject, ModelContext, BiConsumer,
    *      BiConsumer, ServiceContext)
    */
   @Test
@@ -887,10 +872,9 @@ public class ModelResourcesTest {
 
     final var model = this.createModelContext();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(2);
     final var value = source.toJsonObject();
-    ModelResources.updateModel(vertx, value, model, searcher, updater, context);
+    ModelResources.updateModel(value, model, searcher, updater, context);
 
     @SuppressWarnings("unchecked")
     final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> storeCaptor = ArgumentCaptor.forClass(Handler.class);
@@ -1031,13 +1015,14 @@ public class ModelResourcesTest {
    *
    * @return the create context.
    */
-  protected ModelFieldContext<DummyComplexModel, String, DummyComplexModel, String> createModelFieldContextById() {
+  protected ModelFieldContext<DummyComplexModel, String, DummyComplexModel, String, DummyValidateContext> createModelFieldContextById() {
 
-    final var element = new ModelFieldContext<DummyComplexModel, String, DummyComplexModel, String>();
+    final var element = new ModelFieldContext<DummyComplexModel, String, DummyComplexModel, String, DummyValidateContext>();
     element.id = "id";
     element.name = "siblings";
     element.type = DummyComplexModel.class;
     element.model = this.createModelContext();
+    element.validateContext = new DummyValidateContext("bad_siblings");
     return element;
   }
 
@@ -1206,9 +1191,9 @@ public class ModelResourcesTest {
    * @param searcher          the function used to search a model.
    * @param storerUpdateModel the function to update the model.
    *
-   * @see ModelResources#updateModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function,
-   *      java.util.function.BiFunction, BiConsumer, ServiceContext)
+   * @see ModelResources#updateModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
+   *      BiConsumer, ServiceContext)
    */
   @Test
   public void shouldNotUpdateModelFieldElementBecauseBadValue(
@@ -1218,9 +1203,8 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var valueToUpdate = new JsonObject().put("undefined", "value");
-    ModelResources.updateModelFieldElement(vertx, valueToUpdate, element, searcher, dummy -> dummy.siblings,
+    ModelResources.updateModelFieldElement(valueToUpdate, element, searcher, dummy -> dummy.siblings,
         ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerUpdateModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1243,9 +1227,9 @@ public class ModelResourcesTest {
    * @param searcher          the function used to search a model.
    * @param storerUpdateModel the function to update the model.
    *
-   * @see ModelResources#updateModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function,
-   *      java.util.function.BiFunction, BiConsumer, ServiceContext)
+   * @see ModelResources#updateModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
+   *      BiConsumer, ServiceContext)
    */
   @Test
   public void shouldNotUpdateModelFieldElementBecauseNotFoundModel(
@@ -1255,10 +1239,9 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(1);
     final var valueToUpdate = source.toJsonObject();
-    ModelResources.updateModelFieldElement(vertx, valueToUpdate, element, searcher, dummy -> dummy.siblings,
+    ModelResources.updateModelFieldElement(valueToUpdate, element, searcher, dummy -> dummy.siblings,
         ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerUpdateModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1288,9 +1271,9 @@ public class ModelResourcesTest {
    * @param searcher          the function used to search a model.
    * @param storerUpdateModel the function to update the model.
    *
-   * @see ModelResources#updateModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function,
-   *      java.util.function.BiFunction, BiConsumer, ServiceContext)
+   * @see ModelResources#updateModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
+   *      BiConsumer, ServiceContext)
    */
   @Test
   public void shouldNotUpdateModelFieldElementBecauseNotFoundElement(
@@ -1300,10 +1283,9 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(1);
     final var valueToUpdate = source.toJsonObject();
-    ModelResources.updateModelFieldElement(vertx, valueToUpdate, element, searcher, dummy -> dummy.siblings,
+    ModelResources.updateModelFieldElement(valueToUpdate, element, searcher, dummy -> dummy.siblings,
         ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerUpdateModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1334,9 +1316,9 @@ public class ModelResourcesTest {
    * @param searcher          the function used to search a model.
    * @param storerUpdateModel the function to update the model.
    *
-   * @see ModelResources#updateModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function,
-   *      java.util.function.BiFunction, BiConsumer, ServiceContext)
+   * @see ModelResources#updateModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
+   *      BiConsumer, ServiceContext)
    */
   @Test
   public void shouldNotUpdateModelFieldElementBecauseCanNotUpdateElement(
@@ -1346,12 +1328,11 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var target = new DummyComplexModelTest().createModelExample(2);
     final var source = target.siblings.get(1);
     element.id = source.id;
     final var valueToUpdate = source.toJsonObject();
-    ModelResources.updateModelFieldElement(vertx, valueToUpdate, element, searcher, dummy -> dummy.siblings,
+    ModelResources.updateModelFieldElement(valueToUpdate, element, searcher, dummy -> dummy.siblings,
         ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerUpdateModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1381,9 +1362,9 @@ public class ModelResourcesTest {
    * @param searcher          the function used to search a model.
    * @param storerUpdateModel the function to update the model.
    *
-   * @see ModelResources#updateModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function,
-   *      java.util.function.BiFunction, BiConsumer, ServiceContext)
+   * @see ModelResources#updateModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
+   *      BiConsumer, ServiceContext)
    */
   @Test
   public void shouldNotUpdateModelFieldElementBecauseCanNotStoreUpdated(
@@ -1393,12 +1374,11 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var target = new DummyComplexModelTest().createModelExample(2);
     final var source = new DummyComplexModel();
     element.id = target.siblings.get(1).id;
     final var valueToUpdate = source.toJsonObject();
-    ModelResources.updateModelFieldElement(vertx, valueToUpdate, element, searcher, dummy -> dummy.siblings,
+    ModelResources.updateModelFieldElement(valueToUpdate, element, searcher, dummy -> dummy.siblings,
         ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerUpdateModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1432,9 +1412,9 @@ public class ModelResourcesTest {
    * @param searcher          the function used to search a model.
    * @param storerUpdateModel the function to update the model.
    *
-   * @see ModelResources#updateModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function,
-   *      java.util.function.BiFunction, BiConsumer, ServiceContext)
+   * @see ModelResources#updateModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
+   *      BiConsumer, ServiceContext)
    */
   @Test
   public void shouldUpdateModelFieldElement(@Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
@@ -1443,12 +1423,11 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var target = new DummyComplexModelTest().createModelExample(2);
     final var source = new DummyComplexModel();
     element.id = target.siblings.get(1).id;
     final var valueToUpdate = source.toJsonObject();
-    ModelResources.updateModelFieldElement(vertx, valueToUpdate, element, searcher, dummy -> dummy.siblings,
+    ModelResources.updateModelFieldElement(valueToUpdate, element, searcher, dummy -> dummy.siblings,
         ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerUpdateModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1484,9 +1463,9 @@ public class ModelResourcesTest {
    * @param searcher         the function used to search a model.
    * @param storerMergeModel the function to merge the model.
    *
-   * @see ModelResources#mergeModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function,
-   *      java.util.function.BiFunction, BiConsumer, ServiceContext)
+   * @see ModelResources#mergeModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
+   *      BiConsumer, ServiceContext)
    */
   @Test
   public void shouldNotMergeModelFieldElementBecauseBadValue(
@@ -1496,9 +1475,8 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var valueToMerge = new JsonObject().put("undefined", "value");
-    ModelResources.mergeModelFieldElement(vertx, valueToMerge, element, searcher, dummy -> dummy.siblings,
+    ModelResources.mergeModelFieldElement(valueToMerge, element, searcher, dummy -> dummy.siblings,
         ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerMergeModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1521,9 +1499,9 @@ public class ModelResourcesTest {
    * @param searcher         the function used to search a model.
    * @param storerMergeModel the function to merge the model.
    *
-   * @see ModelResources#mergeModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function,
-   *      java.util.function.BiFunction, BiConsumer, ServiceContext)
+   * @see ModelResources#mergeModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
+   *      BiConsumer, ServiceContext)
    */
   @Test
   public void shouldNotMergeModelFieldElementBecauseNotFoundModel(
@@ -1533,10 +1511,9 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(1);
     final var valueToMerge = source.toJsonObject();
-    ModelResources.mergeModelFieldElement(vertx, valueToMerge, element, searcher, dummy -> dummy.siblings,
+    ModelResources.mergeModelFieldElement(valueToMerge, element, searcher, dummy -> dummy.siblings,
         ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerMergeModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1566,9 +1543,9 @@ public class ModelResourcesTest {
    * @param searcher         the function used to search a model.
    * @param storerMergeModel the function to merge the model.
    *
-   * @see ModelResources#mergeModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function,
-   *      java.util.function.BiFunction, BiConsumer, ServiceContext)
+   * @see ModelResources#mergeModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
+   *      BiConsumer, ServiceContext)
    */
   @Test
   public void shouldNotMergeModelFieldElementBecauseNotFoundElement(
@@ -1578,10 +1555,9 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(1);
     final var valueToMerge = source.toJsonObject();
-    ModelResources.mergeModelFieldElement(vertx, valueToMerge, element, searcher, dummy -> dummy.siblings,
+    ModelResources.mergeModelFieldElement(valueToMerge, element, searcher, dummy -> dummy.siblings,
         ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerMergeModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1612,9 +1588,9 @@ public class ModelResourcesTest {
    * @param searcher         the function used to search a model.
    * @param storerMergeModel the function to merge the model.
    *
-   * @see ModelResources#mergeModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function,
-   *      java.util.function.BiFunction, BiConsumer, ServiceContext)
+   * @see ModelResources#mergeModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
+   *      BiConsumer, ServiceContext)
    */
   @Test
   public void shouldNotMergeModelFieldElementBecauseCanNotMergeElement(
@@ -1624,12 +1600,11 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var target = new DummyComplexModelTest().createModelExample(2);
     final var source = target.siblings.get(1);
     element.id = source.id;
     final var valueToMerge = source.toJsonObject();
-    ModelResources.mergeModelFieldElement(vertx, valueToMerge, element, searcher, dummy -> dummy.siblings,
+    ModelResources.mergeModelFieldElement(valueToMerge, element, searcher, dummy -> dummy.siblings,
         ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerMergeModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1659,9 +1634,9 @@ public class ModelResourcesTest {
    * @param searcher         the function used to search a model.
    * @param storerMergeModel the function to merge the model.
    *
-   * @see ModelResources#mergeModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function,
-   *      java.util.function.BiFunction, BiConsumer, ServiceContext)
+   * @see ModelResources#mergeModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
+   *      BiConsumer, ServiceContext)
    */
   @Test
   public void shouldNotMergeModelFieldElementBecauseCanNotStoreMerged(
@@ -1671,12 +1646,11 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var target = new DummyComplexModelTest().createModelExample(2);
     final var source = new DummyComplexModel();
     element.id = target.siblings.get(1).id;
     final var valueToMerge = source.toJsonObject();
-    ModelResources.mergeModelFieldElement(vertx, valueToMerge, element, searcher, dummy -> dummy.siblings,
+    ModelResources.mergeModelFieldElement(valueToMerge, element, searcher, dummy -> dummy.siblings,
         ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerMergeModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1710,9 +1684,9 @@ public class ModelResourcesTest {
    * @param searcher         the function used to search a model.
    * @param storerMergeModel the function to merge the model.
    *
-   * @see ModelResources#mergeModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function,
-   *      java.util.function.BiFunction, BiConsumer, ServiceContext)
+   * @see ModelResources#mergeModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
+   *      BiConsumer, ServiceContext)
    */
   @Test
   public void shouldMergeModelFieldElement(@Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
@@ -1721,12 +1695,11 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var target = new DummyComplexModelTest().createModelExample(2);
     final var source = new DummyComplexModel();
     element.id = target.siblings.get(1).id;
     final var valueToMerge = source.toJsonObject();
-    ModelResources.mergeModelFieldElement(vertx, valueToMerge, element, searcher, dummy -> dummy.siblings,
+    ModelResources.mergeModelFieldElement(valueToMerge, element, searcher, dummy -> dummy.siblings,
         ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerMergeModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1941,9 +1914,9 @@ public class ModelResourcesTest {
    * @param searcher          the function used to search a model.
    * @param storerCreateModel the function to create the model.
    *
-   * @see ModelResources#createModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function, BiConsumer,
-   *      BiConsumer, ServiceContext)
+   * @see ModelResources#createModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, BiConsumer, BiConsumer,
+   *      ServiceContext)
    */
   @Test
   public void shouldNotCreateModelFieldElementBecauseBadValue(
@@ -1953,9 +1926,8 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var valueToCreate = new JsonObject().put("undefined", "value");
-    ModelResources.createModelFieldElement(vertx, valueToCreate, element, searcher, dummy -> dummy.siblings,
+    ModelResources.createModelFieldElement(valueToCreate, element, searcher, dummy -> dummy.siblings,
         (dummy, siblings) -> dummy.siblings = siblings, storerCreateModel, context);
 
     @SuppressWarnings("unchecked")
@@ -1978,9 +1950,9 @@ public class ModelResourcesTest {
    * @param searcher          the function used to search a model.
    * @param storerCreateModel the function to create the model.
    *
-   * @see ModelResources#createModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function, BiConsumer,
-   *      BiConsumer, ServiceContext)
+   * @see ModelResources#createModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, BiConsumer, BiConsumer,
+   *      ServiceContext)
    */
   @Test
   public void shouldNotCreateModelFieldElementBecauseNotFoundModel(
@@ -1990,10 +1962,9 @@ public class ModelResourcesTest {
 
     final var element = this.createModelFieldContextById();
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModelTest().createModelExample(1);
     final var valueToCreate = source.toJsonObject();
-    ModelResources.createModelFieldElement(vertx, valueToCreate, element, searcher, dummy -> dummy.siblings,
+    ModelResources.createModelFieldElement(valueToCreate, element, searcher, dummy -> dummy.siblings,
         (dummy, siblings) -> dummy.siblings = siblings, storerCreateModel, context);
 
     @SuppressWarnings("unchecked")
@@ -2023,9 +1994,9 @@ public class ModelResourcesTest {
    * @param searcher          the function used to search a model.
    * @param storerCreateModel the function to create the model.
    *
-   * @see ModelResources#createModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function, BiConsumer,
-   *      BiConsumer, ServiceContext)
+   * @see ModelResources#createModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, BiConsumer, BiConsumer,
+   *      ServiceContext)
    */
   @Test
   public void shouldNotCreateModelFieldElementBecauseCanNotStoreCreated(
@@ -2037,10 +2008,9 @@ public class ModelResourcesTest {
     final var target = new DummyComplexModelTest().createModelExample(2);
     element.model.id = target.id;
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModel();
     final var valueToCreate = source.toJsonObject();
-    ModelResources.createModelFieldElement(vertx, valueToCreate, element, searcher, dummy -> dummy.siblings,
+    ModelResources.createModelFieldElement(valueToCreate, element, searcher, dummy -> dummy.siblings,
         (dummy, siblings) -> dummy.siblings = siblings, storerCreateModel, context);
 
     @SuppressWarnings("unchecked")
@@ -2074,9 +2044,9 @@ public class ModelResourcesTest {
    * @param searcher          the function used to search a model.
    * @param storerCreateModel the function to create the model.
    *
-   * @see ModelResources#createModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function, BiConsumer,
-   *      BiConsumer, ServiceContext)
+   * @see ModelResources#createModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, BiConsumer, BiConsumer,
+   *      ServiceContext)
    */
   @Test
   public void shouldCreateModelFieldElement(@Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
@@ -2087,10 +2057,9 @@ public class ModelResourcesTest {
     final var target = new DummyComplexModelTest().createModelExample(2);
     element.model.id = target.id;
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModel();
     final var valueToCreate = source.toJsonObject();
-    ModelResources.createModelFieldElement(vertx, valueToCreate, element, searcher, dummy -> dummy.siblings,
+    ModelResources.createModelFieldElement(valueToCreate, element, searcher, dummy -> dummy.siblings,
         (dummy, siblings) -> dummy.siblings = siblings, storerCreateModel, context);
 
     @SuppressWarnings("unchecked")
@@ -2126,9 +2095,9 @@ public class ModelResourcesTest {
    * @param searcher          the function used to search a model.
    * @param storerCreateModel the function to create the model.
    *
-   * @see ModelResources#createModelFieldElement(Vertx, JsonObject,
-   *      ModelFieldContext, BiConsumer, java.util.function.Function, BiConsumer,
-   *      BiConsumer, ServiceContext)
+   * @see ModelResources#createModelFieldElement( JsonObject, ModelFieldContext,
+   *      BiConsumer, java.util.function.Function, BiConsumer, BiConsumer,
+   *      ServiceContext)
    */
   @Test
   public void shouldCreateModelFieldElementWhenFieldIsNull(
@@ -2140,10 +2109,9 @@ public class ModelResourcesTest {
     final var target = new DummyComplexModelTest().createModelExample(1);
     element.model.id = target.id;
     final var context = this.createServiceContext(resultHandler);
-    final var vertx = Vertx.vertx();
     final var source = new DummyComplexModel();
     final var valueToCreate = source.toJsonObject();
-    ModelResources.createModelFieldElement(vertx, valueToCreate, element, searcher, dummy -> dummy.siblings,
+    ModelResources.createModelFieldElement(valueToCreate, element, searcher, dummy -> dummy.siblings,
         (dummy, siblings) -> dummy.siblings = siblings, storerCreateModel, context);
 
     @SuppressWarnings("unchecked")
@@ -2411,12 +2379,13 @@ public class ModelResourcesTest {
    *
    * @return the create context.
    */
-  protected ModelContext<DummyTsModel, String> createModelContextForDummyTsModel() {
+  protected ModelContext<DummyTsModel, String, DummyValidateContext> createModelContextForDummyTsModel() {
 
-    final var model = new ModelContext<DummyTsModel, String>();
+    final var model = new ModelContext<DummyTsModel, String, DummyValidateContext>();
     model.id = "1";
     model.name = "dummy_ts";
     model.type = DummyTsModel.class;
+    model.validateContext = new DummyValidateContext("bad_dummt_ts");
     return model;
   }
 
@@ -2425,13 +2394,14 @@ public class ModelResourcesTest {
    *
    * @return the create context.
    */
-  protected ModelFieldContext<DummyTsModel, String, DummyTsModel, String> createModelFieldContextForDummiesInDummyTsModel() {
+  protected ModelFieldContext<DummyTsModel, String, DummyTsModel, String, DummyValidateContext> createModelFieldContextForDummiesInDummyTsModel() {
 
-    final var element = new ModelFieldContext<DummyTsModel, String, DummyTsModel, String>();
+    final var element = new ModelFieldContext<DummyTsModel, String, DummyTsModel, String, DummyValidateContext>();
     element.id = "0";
     element.name = "dummies";
     element.type = DummyTsModel.class;
     element.model = this.createModelContextForDummyTsModel();
+    element.validateContext = new DummyValidateContext("bad_dummies");
     return element;
   }
 
@@ -2460,8 +2430,7 @@ public class ModelResourcesTest {
     newElement._creationTs = 2;
     newElement._lastUpdateTs = 3;
     newElement.value = "ElementToCreate";
-    final var vertx = Vertx.vertx();
-    ModelResources.createModelFieldElementChain(vertx, newElement.toJsonObject(), modelFieldContext, searcher,
+    ModelResources.createModelFieldElementChain(newElement.toJsonObject(), modelFieldContext, searcher,
         model -> model.dummies, (model, dummies) -> model.dummies = dummies, storerCreateModel, context, success);
 
     final var expectedModel = new DummyTsModel();
@@ -2517,9 +2486,8 @@ public class ModelResourcesTest {
     newElement._creationTs = 2;
     newElement._lastUpdateTs = 3;
     newElement.value = "ElementToCreate";
-    final var vertx = Vertx.vertx();
     final var start = TimeManager.now();
-    ModelResources.createModelChain(vertx, newElement.toJsonObject(), modelContext, storer, context, success);
+    ModelResources.createModelChain(newElement.toJsonObject(), modelContext, storer, context, success);
 
     final ArgumentCaptor<DummyTsModel> modelToStore = ArgumentCaptor.forClass(DummyTsModel.class);
     final ArgumentCaptor<Handler<AsyncResult<DummyTsModel>>> storerHandler = ArgumentCaptor.forClass(Handler.class);

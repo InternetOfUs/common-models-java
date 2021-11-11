@@ -21,17 +21,18 @@
 package eu.internetofus.common.vertx;
 
 import eu.internetofus.common.model.Model;
-import eu.internetofus.common.model.ValidationCache;
+import eu.internetofus.common.model.ValidateContext;
 
 /**
  * Contains the information of a model that is used on a operation.
  *
  * @param <T> type of model.
  * @param <I> type for the model identifier.
+ * @param <C> type of context for validations.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class ModelContext<T extends Model, I> {
+public class ModelContext<T extends Model, I, C extends ValidateContext<C>> {
 
   /**
    * The name of the model.
@@ -66,7 +67,7 @@ public class ModelContext<T extends Model, I> {
   /**
    * The cache used for validation.
    */
-  public ValidationCache cache = new ValidationCache();
+  public C validateContext;
 
   /**
    * {@inheritDoc}

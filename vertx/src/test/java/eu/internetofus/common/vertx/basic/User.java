@@ -19,23 +19,21 @@
  */
 package eu.internetofus.common.vertx.basic;
 
+import eu.internetofus.common.model.DummyValidateContext;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationCache;
-import eu.internetofus.common.model.ValidationErrorException;
-import eu.internetofus.common.model.Validations;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
 
 /**
  * The user model.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class User extends ReflectionModel implements Model, Validable, Mergeable<User>, Updateable<User> {
+public class User extends ReflectionModel implements Model, Validable<DummyValidateContext>,
+    Mergeable<User, DummyValidateContext>, Updateable<User, DummyValidateContext> {
 
   /**
    * The identifier of the community.
@@ -51,21 +49,19 @@ public class User extends ReflectionModel implements Model, Validable, Mergeable
    * {@inheritDoc}
    */
   @Override
-  public Future<User> update(final User source, final String codePrefix, final Vertx vertx,
-      final ValidationCache cache) {
+  public Future<User> update(final User source, final DummyValidateContext context) {
 
     final var updated = new User();
     updated._id = this._id;
     updated.name = source.name;
-    return Future.succeededFuture(updated).compose(Validations.validateChain(codePrefix, vertx, cache));
+    return Future.succeededFuture(updated).compose(context.chain());
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public Future<User> merge(final User source, final String codePrefix, final Vertx vertx,
-      final ValidationCache cache) {
+  public Future<User> merge(final User source, final DummyValidateContext context) {
 
     final var merged = new User();
     merged._id = this._id;
@@ -74,7 +70,7 @@ public class User extends ReflectionModel implements Model, Validable, Mergeable
 
       merged.name = this.name;
     }
-    return Future.succeededFuture(merged).compose(Validations.validateChain(codePrefix, vertx, cache));
+    return Future.succeededFuture(merged).compose(context.chain());
 
   }
 
@@ -82,11 +78,11 @@ public class User extends ReflectionModel implements Model, Validable, Mergeable
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+  public Future<Void> validate(final DummyValidateContext context) {
 
     if (this.name == null || this.name.length() == 0) {
 
-      return Future.failedFuture(new ValidationErrorException(codePrefix + ".name", "You must define a name"));
+      return context.createFieldContext("name").fail("You must define a name");
 
     } else {
 

@@ -21,6 +21,7 @@
 package eu.internetofus.common.vertx;
 
 import eu.internetofus.common.model.Model;
+import eu.internetofus.common.model.ValidateContext;
 import java.util.List;
 
 /**
@@ -30,15 +31,17 @@ import java.util.List;
  * @param <IT> type of the model identifier.
  * @param <E>  type of the field.
  * @param <IE> type of the field identifier.
+ * @param <C>  type of validation context to use.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class ModelFieldContext<T extends Model, IT, E extends Model, IE> extends ModelContext<E, IE> {
+public class ModelFieldContext<T extends Model, IT, E extends Model, IE, C extends ValidateContext<C>>
+    extends ModelContext<E, IE, C> {
 
   /**
    * The model where the field is defined.
    */
-  public ModelContext<T, IT> model;
+  public ModelContext<T, IT, C> model;
 
   /**
    * The value of the field.

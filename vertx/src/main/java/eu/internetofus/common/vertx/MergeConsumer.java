@@ -22,16 +22,18 @@ package eu.internetofus.common.vertx;
 
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Model;
+import eu.internetofus.common.model.ValidateContext;
 
 /**
  * Function used to consumer the merge result.
  *
  * @param <T> type of model that consumer the merge result.
+ * @param <C> type of validation context to use.
  *
  * @author UDT-IA, IIIA-CSIC
  */
 @FunctionalInterface
-public interface MergeConsumer<T extends Model & Mergeable<T>> {
+public interface MergeConsumer<C extends ValidateContext<C>, T extends Model & Mergeable<T, C>> {
 
   /**
    * Called when the merge was a success.
