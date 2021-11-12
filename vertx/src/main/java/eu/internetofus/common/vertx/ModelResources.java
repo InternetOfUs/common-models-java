@@ -315,25 +315,6 @@ public interface ModelResources {
   /**
    * Merge a source model with the target one.
    *
-   * @param model   to merge.
-   * @param context of the request.
-   * @param success component to call if the model is valid.
-   *
-   * @param <T>     type of model to merge.
-   * @param <I>     type of the model identifier.
-   * @param <C>     type of validation context to use.
-   */
-  static public <C extends ValidateContext<C>, T extends Model & Mergeable<T, C>, I> void merge(
-      @NotNull final ModelContext<T, I, C> model, @NotNull final ServiceContext context,
-      @NotNull final Runnable success) {
-
-    merge(model, context, true, success);
-
-  }
-
-  /**
-   * Merge a source model with the target one.
-   *
    * @param model     to merge.
    * @param context   of the request.
    * @param nonEquals is {@code true} if the model can not be equals to the
@@ -362,10 +343,9 @@ public interface ModelResources {
         model.value = merge.result();
         if (nonEquals && model.target.equals(model.value)) {
 
-          Logger.trace("The merged model {} is equals to the original.\n{}", () -> model.value, () -> context);
-          ServiceResponseHandlers.responseWithErrorMessage(context.resultHandler, Status.BAD_REQUEST,
-              model.name + "_to_merge_equal_to_original",
-              "The merged '" + model.name + "' is equals to the current one.");
+          Logger.trace("Ignored merged model {}, because it is equals to the original.\n{}", () -> model.value,
+              () -> context);
+          ServiceResponseHandlers.responseOk(context.resultHandler, model.value);
 
         } else {
 
@@ -554,25 +534,6 @@ public interface ModelResources {
   /**
    * Update a source model with the target one.
    *
-   * @param model   context of the model to update.
-   * @param context of the request.
-   * @param success component to call if the model is valid.
-   *
-   * @param <T>     type of model to update.
-   * @param <I>     type of the model identifier.
-   * @param <C>     type of validation context to use.
-   */
-  static public <C extends ValidateContext<C>, T extends Model & Updateable<T, C>, I> void update(
-      @NotNull final ModelContext<T, I, C> model, @NotNull final ServiceContext context,
-      @NotNull final Runnable success) {
-
-    update(model, context, true, success);
-
-  }
-
-  /**
-   * Update a source model with the target one.
-   *
    * @param model     context of the model to update.
    * @param context   of the request.
    * @param nonEquals is {@code true} if the model can not be equals to the
@@ -600,10 +561,8 @@ public interface ModelResources {
         model.value = update.result();
         if (nonEquals && model.target.equals(model.value)) {
 
-          Logger.trace("The updated model {} is equals to the original.\n{}", model, context);
-          ServiceResponseHandlers.responseWithErrorMessage(context.resultHandler, Status.BAD_REQUEST,
-              model.name + "_to_update_equal_to_original",
-              "The updated '" + model.name + "' is equals to the current one.");
+          Logger.trace("Ignored updated model {} because it is equals to the original.\n{}", model, context);
+          ServiceResponseHandlers.responseOk(context.resultHandler, model.value);
 
         } else {
 
@@ -808,7 +767,7 @@ public interface ModelResources {
       @NotNull final Runnable success) {
 
     changeModelFieldElementBeforeChain(valueToMerge, element, searcher, getField, searchElement, context,
-        () -> merge(element, context,
+        () -> merge(element, context, true,
             () -> changeModelFieldElementAfterChain(element, getField, storerMergedModel, context, success)));
 
   }
@@ -841,7 +800,7 @@ public interface ModelResources {
       @NotNull final Runnable success) {
 
     changeModelFieldElementBeforeChain(valueToUpdate, element, searcher, getField, searchElement, context,
-        () -> update(element, context,
+        () -> update(element, context, true,
             () -> changeModelFieldElementAfterChain(element, getField, storerUpdatedModel, context, success)));
 
   }
@@ -929,7 +888,7 @@ public interface ModelResources {
     final var sourceField = getField.apply(element.model.source);
     sourceField.remove(element.index);
     sourceField.add(element.index, element.value);
-    update(element.model, context, () -> updateModelChain(element.model, storerChangedModel, context, success));
+    update(element.model, context, true, () -> updateModelChain(element.model, storerChangedModel, context, success));
 
   }
 
@@ -1076,7 +1035,7 @@ public interface ModelResources {
 
           element.index = element.field.size();
           element.field.add(element.value);
-          update(element.model, context, () -> {
+          update(element.model, context, true, () -> {
 
             element.value = getField.apply(element.model.value).get(element.index);
             updateModelChain(element.model, storerCreatedModel, context, success);
