@@ -21,11 +21,13 @@ package eu.internetofus.common.vertx.basic;
 
 import eu.internetofus.common.model.DummyValidateContext;
 import eu.internetofus.common.model.Mergeable;
+import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 
 /**
  * The user model.
@@ -65,11 +67,7 @@ public class User extends ReflectionModel implements Model, Validable<DummyValid
 
     final var merged = new User();
     merged._id = this._id;
-    merged.name = source.name;
-    if (merged.name == null) {
-
-      merged.name = this.name;
-    }
+    merged.name = Merges.mergeValues(this.name, source.name);
     return Future.succeededFuture(merged).compose(context.chain());
 
   }
@@ -80,14 +78,10 @@ public class User extends ReflectionModel implements Model, Validable<DummyValid
   @Override
   public Future<Void> validate(final DummyValidateContext context) {
 
-    if (this.name == null || this.name.length() == 0) {
-
-      return context.createFieldContext("name").fail("You must define a name");
-
-    } else {
-
-      return Future.succeededFuture();
-    }
+    final Promise<Void> promise = Promise.promise();
+    this.name = context.validateStringField("name", this.name, promise);
+    promise.tryComplete();
+    return promise.future();
 
   }
 

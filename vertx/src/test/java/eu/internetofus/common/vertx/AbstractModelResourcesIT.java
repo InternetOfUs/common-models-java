@@ -354,8 +354,7 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotUpdateWithSameModel(final Vertx vertx, final WebClient client,
-      final VertxTestContext testContext) {
+  public void shouldUpdateWithSameModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
@@ -363,10 +362,10 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
         testRequest(client, HttpMethod.PUT, this.modelPath() + "/" + this.idOf(stored)).expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-          final var error = assertThatBodyIs(ErrorMessage.class, res);
-          assertThat(error.code).isNotEmpty();
-          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+          assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
+          @SuppressWarnings("unchecked")
+          final var target = (T) assertThatBodyIs(source.getClass(), res);
+          assertThat(target).isEqualTo(stored);
 
         }).sendJson(stored.toJsonObject(), testContext);
 
@@ -499,8 +498,7 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
    * @param testContext context to test.
    */
   @Test
-  public void shouldNotMergeWithSameModel(final Vertx vertx, final WebClient client,
-      final VertxTestContext testContext) {
+  public void shouldMergeWithSameModel(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     testContext.assertComplete(this.createValidModelExample(1, vertx, testContext)).onSuccess(source -> {
 
@@ -508,10 +506,10 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
 
         testRequest(client, HttpMethod.PATCH, this.modelPath() + "/" + this.idOf(stored)).expect(res -> {
 
-          assertThat(res.statusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-          final var error = assertThatBodyIs(ErrorMessage.class, res);
-          assertThat(error.code).isNotEmpty();
-          assertThat(error.message).isNotEmpty().isNotEqualTo(error.code);
+          assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
+          @SuppressWarnings("unchecked")
+          final var merged = (T) assertThatBodyIs(source.getClass(), res);
+          assertThat(merged).isNotNull().isEqualTo(stored);
 
         }).sendJson(stored.toJsonObject(), testContext);
 

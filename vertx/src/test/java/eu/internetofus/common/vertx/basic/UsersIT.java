@@ -51,7 +51,7 @@ public class UsersIT extends AbstractModelResourcesIT<User, String> {
   protected User createInvalidModel() {
 
     final var model = new User();
-    model.name = "";
+    model.name = "    ";
     return model;
 
   }

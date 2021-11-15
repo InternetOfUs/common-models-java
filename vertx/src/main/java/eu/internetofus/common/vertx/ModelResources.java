@@ -315,18 +315,16 @@ public interface ModelResources {
   /**
    * Merge a source model with the target one.
    *
-   * @param model     to merge.
-   * @param context   of the request.
-   * @param nonEquals is {@code true} if the model can not be equals to the
-   *                  original.
-   * @param success   component to call if the model is valid.
+   * @param model   to merge.
+   * @param context of the request.
+   * @param success component to call if the model is valid.
    *
-   * @param <T>       type of model to merge.
-   * @param <I>       type of the model identifier.
-   * @param <C>       type of validation context to use.
+   * @param <T>     type of model to merge.
+   * @param <I>     type of the model identifier.
+   * @param <C>     type of validation context to use.
    */
   static public <C extends ValidateContext<C>, T extends Model & Mergeable<T, C>, I> void merge(
-      @NotNull final ModelContext<T, I, C> model, @NotNull final ServiceContext context, final boolean nonEquals,
+      @NotNull final ModelContext<T, I, C> model, @NotNull final ServiceContext context,
       @NotNull final Runnable success) {
 
     model.target.merge(model.source, model.validateContext).onComplete(merge -> {
@@ -341,7 +339,7 @@ public interface ModelResources {
       } else {
 
         model.value = merge.result();
-        if (nonEquals && model.target.equals(model.value)) {
+        if (model.target.equals(model.value)) {
 
           Logger.trace("Ignored merged model {}, because it is equals to the original.\n{}", () -> model.value,
               () -> context);
@@ -399,37 +397,11 @@ public interface ModelResources {
       @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context,
       @NotNull final Runnable success) {
 
-    mergeModelChain(value, model, searcher, updater, context, true, success);
-
-  }
-
-  /**
-   * Merge a JSON model to the defined on the DB.
-   *
-   * @param value     of the model to merge.
-   * @param model     context of the model to merge.
-   * @param searcher  the function used to obtain a model.
-   * @param updater   the function used to update a model.
-   * @param context   of the request.
-   * @param nonEquals is {@code true} if the model can not be equals to the
-   *                  original.
-   * @param success   component to process the merged model.
-   *
-   * @param <T>       type of model to merge.
-   * @param <I>       type of the model identifier.
-   * @param <C>       type of validation context to use.
-   */
-  static public <C extends ValidateContext<C>, T extends Model & Mergeable<T, C>, I> void mergeModelChain(
-      final JsonObject value, @NotNull final ModelContext<T, I, C> model,
-      @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher,
-      @NotNull final BiConsumer<T, Handler<AsyncResult<Void>>> updater, @NotNull final ServiceContext context,
-      final boolean nonEquals, @NotNull final Runnable success) {
-
     toModel(value, model, context, () -> {
 
       retrieveModelChain(model, searcher, context, () -> {
 
-        merge(model, context, nonEquals, () -> updateModelChain(model, updater, context, success));
+        merge(model, context, () -> updateModelChain(model, updater, context, success));
 
       });
     });
@@ -767,7 +739,7 @@ public interface ModelResources {
       @NotNull final Runnable success) {
 
     changeModelFieldElementBeforeChain(valueToMerge, element, searcher, getField, searchElement, context,
-        () -> merge(element, context, true,
+        () -> merge(element, context,
             () -> changeModelFieldElementAfterChain(element, getField, storerMergedModel, context, success)));
 
   }
@@ -909,6 +881,7 @@ public interface ModelResources {
    * @param <IT>               type of the model identifier.
    * @param <E>                type of the field.
    * @param <IE>               type of the field identifier.
+   * @param <C>                type of validation context to use.
    */
   static public <T extends Model, IT, E extends Model, IE, C extends ValidateContext<C>> void deleteModelFieldElementChain(
       @NotNull final ModelFieldContext<T, IT, E, IE, C> element,
@@ -942,6 +915,7 @@ public interface ModelResources {
    * @param <IT>              type of the model identifier.
    * @param <E>               type of the field.
    * @param <IE>              type of the field identifier.
+   * @param <C>               type of validation context to use.
    */
   static public <T extends Model, IT, E extends Model, IE, C extends ValidateContext<C>> void deleteModelFieldElement(
       @NotNull final ModelFieldContext<T, IT, E, IE, C> element,

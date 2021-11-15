@@ -840,4 +840,37 @@ public class ComponentClientTest {
 
   }
 
+  /**
+   * Verify that can not post with an extractor.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to use.
+   * @param testContext context that manage the test.
+   */
+  @Test
+  public void shouldNotPostWithExtractor(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
+
+    final var service = new ComponentClient(client, "http://undefined/");
+    testContext.assertFailure(service.post(new JsonObject(), service.createVoidExtractor(), "path"))
+        .onFailure(ignored -> testContext.completeNow());
+
+  }
+
+  /**
+   * Verify that can not delete with parameters.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to use.
+   * @param testContext context that manage the test.
+   */
+  @Test
+  public void shouldNotÇDeleteWithQueryParams(final Vertx vertx, final WebClient client,
+      final VertxTestContext testContext) {
+
+    final var service = new ComponentClient(client, "http://undefined/");
+    testContext.assertFailure(service.delete(new HashMap<>(), "path")).onFailure(ignored -> testContext.completeNow());
+
+  }
+
 }

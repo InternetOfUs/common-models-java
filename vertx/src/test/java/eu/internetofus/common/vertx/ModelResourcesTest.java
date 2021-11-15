@@ -530,7 +530,7 @@ public class ModelResourcesTest {
    *      BiConsumer, ServiceContext)
    */
   @Test
-  public void shouldNotMergeModelBecauseNoChanges(@Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
+  public void shouldMergeModelWithNoChanges(@Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
       @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
       @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> updater) {
 
@@ -551,11 +551,9 @@ public class ModelResourcesTest {
     final var asyncResult = resultCaptor.getValue();
     assertThat(asyncResult.failed()).isFalse();
     final var result = asyncResult.result();
-    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
-    assertThat(error).isNotNull();
-    assertThat(error.code).isEqualTo("modelName_to_merge_equal_to_original");
-    assertThat(error.message).contains("modelName");
+    assertThat(result.getStatusCode()).isEqualTo(Status.OK.getStatusCode());
+    final var merged = Model.fromBuffer(result.getPayload(), DummyComplexModel.class);
+    assertThat(merged).isNotNull().isEqualTo(source);
 
   }
 
@@ -781,7 +779,7 @@ public class ModelResourcesTest {
    *      BiConsumer, ServiceContext)
    */
   @Test
-  public void shouldNotUpdateModelBecauseNoChanges(@Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
+  public void shouldUpdateModelWithNoChanges(@Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
       @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
       @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> updater) {
 
@@ -802,11 +800,9 @@ public class ModelResourcesTest {
     final var asyncResult = resultCaptor.getValue();
     assertThat(asyncResult.failed()).isFalse();
     final var result = asyncResult.result();
-    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
-    assertThat(error).isNotNull();
-    assertThat(error.code).isEqualTo("modelName_to_update_equal_to_original");
-    assertThat(error.message).contains("modelName");
+    assertThat(result.getStatusCode()).isEqualTo(Status.OK.getStatusCode());
+    final var merged = Model.fromBuffer(result.getPayload(), DummyComplexModel.class);
+    assertThat(merged).isNotNull().isEqualTo(source);
 
   }
 
@@ -1309,52 +1305,6 @@ public class ModelResourcesTest {
   }
 
   /**
-   * Should not update the model field element because it can not update the
-   * element.
-   *
-   * @param resultHandler     handler to manage the HTTP result.
-   * @param searcher          the function used to search a model.
-   * @param storerUpdateModel the function to update the model.
-   *
-   * @see ModelResources#updateModelFieldElement( JsonObject, ModelFieldContext,
-   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
-   *      BiConsumer, ServiceContext)
-   */
-  @Test
-  public void shouldNotUpdateModelFieldElementBecauseCanNotUpdateElement(
-      @Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
-      @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
-      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> storerUpdateModel) {
-
-    final var element = this.createModelFieldContextById();
-    final var context = this.createServiceContext(resultHandler);
-    final var target = new DummyComplexModelTest().createModelExample(2);
-    final var source = target.siblings.get(1);
-    element.id = source.id;
-    final var valueToUpdate = source.toJsonObject();
-    ModelResources.updateModelFieldElement(valueToUpdate, element, searcher, dummy -> dummy.siblings,
-        ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerUpdateModel, context);
-
-    @SuppressWarnings("unchecked")
-    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> searchHandler = ArgumentCaptor
-        .forClass(Handler.class);
-    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
-    searchHandler.getValue().handle(Future.succeededFuture(target));
-
-    @SuppressWarnings("unchecked")
-    final ArgumentCaptor<AsyncResult<ServiceResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
-    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
-    final var asyncResult = resultCaptor.getValue();
-    assertThat(asyncResult.failed()).isFalse();
-    final var result = asyncResult.result();
-    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
-    assertThat(error).isNotNull();
-    assertThat(error.code).contains("siblings");
-    assertThat(error.message).contains("siblings");
-  }
-
-  /**
    * Should not update the model field element because it can not stored updated
    * model.
    *
@@ -1578,52 +1528,6 @@ public class ModelResourcesTest {
     assertThat(error).isNotNull();
     assertThat(error.code).contains("modelName", "siblings");
     assertThat(error.message).contains("modelName", "id", "siblings");
-  }
-
-  /**
-   * Should not merge the model field element because it can not merge the
-   * element.
-   *
-   * @param resultHandler    handler to manage the HTTP result.
-   * @param searcher         the function used to search a model.
-   * @param storerMergeModel the function to merge the model.
-   *
-   * @see ModelResources#mergeModelFieldElement( JsonObject, ModelFieldContext,
-   *      BiConsumer, java.util.function.Function, java.util.function.BiFunction,
-   *      BiConsumer, ServiceContext)
-   */
-  @Test
-  public void shouldNotMergeModelFieldElementBecauseCanNotMergeElement(
-      @Mock final Handler<AsyncResult<ServiceResponse>> resultHandler,
-      @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
-      @Mock final BiConsumer<DummyComplexModel, Handler<AsyncResult<Void>>> storerMergeModel) {
-
-    final var element = this.createModelFieldContextById();
-    final var context = this.createServiceContext(resultHandler);
-    final var target = new DummyComplexModelTest().createModelExample(2);
-    final var source = target.siblings.get(1);
-    element.id = source.id;
-    final var valueToMerge = source.toJsonObject();
-    ModelResources.mergeModelFieldElement(valueToMerge, element, searcher, dummy -> dummy.siblings,
-        ModelResources.searchElementById((dummy, id) -> id != null && id.equals(dummy.id)), storerMergeModel, context);
-
-    @SuppressWarnings("unchecked")
-    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> searchHandler = ArgumentCaptor
-        .forClass(Handler.class);
-    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
-    searchHandler.getValue().handle(Future.succeededFuture(target));
-
-    @SuppressWarnings("unchecked")
-    final ArgumentCaptor<AsyncResult<ServiceResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
-    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
-    final var asyncResult = resultCaptor.getValue();
-    assertThat(asyncResult.failed()).isFalse();
-    final var result = asyncResult.result();
-    assertThat(result.getStatusCode()).isEqualTo(Status.BAD_REQUEST.getStatusCode());
-    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
-    assertThat(error).isNotNull();
-    assertThat(error.code).contains("siblings");
-    assertThat(error.message).contains("siblings");
   }
 
   /**
