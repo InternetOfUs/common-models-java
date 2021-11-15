@@ -53,14 +53,14 @@
   <com.googlecode.libphonenumber-version>8.12.27</com.googlecode.libphonenumber-version>
   <jakarta.ws.rs-version>2.1.6</jakarta.ws.rs-version>
   <org.apache.commons-lang3-version>3.12.0</org.apache.commons-lang3-version>
-  <org.tinylog-version>2.2.1</org.tinylog-version>
+  <org.tinylog-version>2.3.2</org.tinylog-version>
   <commons-cli-version>1.4</commons-cli-version>
   <!-- Test library versions -->
   <org.junit.jupiter-version>5.7.1</org.junit.jupiter-version>
   <io.reactiverse-version>0.3.0</io.reactiverse-version>
-  <org.assertj-version>3.20.2</org.assertj-version>
+  <org.assertj-version>3.21.0</org.assertj-version>
   <org.itsallcode-junit5-system-extensions-version>1.2.0</org.itsallcode-junit5-system-extensions-version>
-  <org.mockito-version>3.11.2</org.mockito-version>
+  <org.mockito-version>4.0.0</org.mockito-version>
   <org.testcontainers-version>1.15.3</org.testcontainers-version>
  </properties>
  <dependencyManagement>
