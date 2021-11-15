@@ -67,12 +67,10 @@ public class DummyComplexModel extends DummyModel implements Validable<DummyVali
 
       final var merged = new DummyComplexModel();
       merged.index = source.index;
-      merged.siblings = source.siblings;
-      future = future.compose(Merges.mergeFieldList(this.siblings, source.siblings,
-          context.createFieldContext("siblings"), dummyComplexModel -> dummyComplexModel.id != null,
+      future = future.compose(Merges.mergeListField(context, "siblings", this.siblings, source.siblings,
           (dummyCompleModel1, dummyComplexModel2) -> dummyCompleModel1.id.equals(dummyComplexModel2.id),
           (dummyComplexModel, siblings) -> dummyComplexModel.siblings = siblings));
-      future = future.compose(Merges.mergeField(this.other, source.other, context.createFieldContext("other"),
+      future = future.compose(Merges.mergeField(context, "other", this.other, source.other,
           (otherMerged, other) -> otherMerged.other = other));
       future = future.compose(context.chain());
       future = future.map(mergedAndValidated -> {
@@ -106,12 +104,13 @@ public class DummyComplexModel extends DummyModel implements Validable<DummyVali
     }
     if (this.siblings != null) {
 
-      future = future.compose(
-          Validations.validate(this.siblings, (d1, d2) -> d1.id.equals(d2.id), context.createFieldContext("siblings")));
+      future = future.compose(context.validateListField("siblings", this.siblings,
+          (d1, d2) -> d1.id == d2.id || d1.id != null && d1.id.equals(d2.id)));
+
     }
     if (this.other != null) {
 
-      future = future.compose(empty -> this.other.validate(context.createFieldContext("other")));
+      future = future.compose(context.validateField("other", this.other));
     }
 
     promise.complete();

@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 /**
  * The utility components to merge values.
@@ -39,12 +38,55 @@ import java.util.function.Predicate;
 public interface Merges {
 
   /**
-   * Merge a field lists.
+   * Merge a field that is mergeable too.
    *
-   * @param target           list to merge.
-   * @param source           list to merge.
-   * @param context          to use in the merge and validation.
-   * @param hasIdentifier    function to check if a model has identifier.
+   * @param context   to use.
+   * @param fieldName name of the field to merge.
+   * @param target    field value to merge.
+   * @param source    field value to merge.
+   * @param setter    function to set the merged field into the merged model.
+   *
+   * @param <M>       type of merging model.
+   * @param <T>       type of the field.
+   * @param <C>       type of validation context to use.
+   *
+   * @return the future that will provide the merged lists.
+   */
+  static <C extends ValidateContext<C>, M, T extends Mergeable<T, C>> Function<M, Future<M>> mergeField(final C context,
+      final String fieldName, final T target, final T source, final BiConsumer<M, T> setter) {
+
+    return merged -> {
+
+      if (target != null) {
+
+        final var fieldContext = context.createFieldContext(fieldName);
+        return target.merge(source, fieldContext).map(mergedField -> {
+
+          setter.accept(merged, mergedField);
+          return merged;
+
+        });
+
+      } else {
+
+        if (source != null) {
+
+          setter.accept(merged, source);
+        }
+        return Future.succeededFuture(merged);
+      }
+
+    };
+
+  }
+
+  /**
+   * Merge a list field that is mergeable too.
+   *
+   * @param context          to use.
+   * @param fieldName        name of the field to merge.
+   * @param target           field value to merge.
+   * @param source           field value to merge.
    * @param equalsIdentifier function to check if two models have the same
    *                         identifier.
    * @param setter           function to set the merged field list into the merged
@@ -52,123 +94,69 @@ public interface Merges {
    *
    * @param <M>              type of merging model.
    * @param <T>              type of the field.
-   * @param <C>              type of cache to use.
+   * @param <C>              type of validation context to use.
    *
    * @return the future that will provide the merged lists.
    */
-  static <C extends ValidateContext<C>, M, T extends Mergeable<T, C> & Validable<C>> Function<M, Future<M>> mergeFieldList(
-      final List<T> target, final List<T> source, final C context, final Predicate<T> hasIdentifier,
+  static <C extends ValidateContext<C>, M, T extends Mergeable<T, C> & Validable<C>> Function<M, Future<M>> mergeListField(
+      final C context, final String fieldName, final List<T> target, final List<T> source,
       final BiPredicate<T, T> equalsIdentifier, final BiConsumer<M, List<T>> setter) {
-
-    return model -> {
-      final Promise<List<T>> promise = Promise.promise();
-      var future = promise.future();
-      if (source != null) {
-
-        final List<T> targetWithIds = new ArrayList<>();
-        if (target != null) {
-
-          for (final T element : target) {
-
-            if (hasIdentifier.test(element)) {
-
-              targetWithIds.add(element);
-            }
-          }
-
-        }
-        INDEX: for (var index = 0; index < source.size(); index++) {
-
-          final var contextElement = context.createElementContext(index);
-          final var sourceElement = source.get(index);
-          // Search if it modify any original model
-          if (hasIdentifier.test(sourceElement)) {
-
-            for (var j = 0; j < index; j++) {
-
-              final var element = source.get(j);
-              if (hasIdentifier.test(element) && equalsIdentifier.test(element, sourceElement)) {
-
-                return contextElement.fail("The identifier is already defined at " + j);
-              }
-            }
-            for (var j = 0; j < targetWithIds.size(); j++) {
-
-              final var targetElement = targetWithIds.get(j);
-              if (equalsIdentifier.test(targetElement, sourceElement)) {
-
-                targetWithIds.remove(j);
-                future = future
-                    .compose(merged -> targetElement.merge(sourceElement, contextElement).map(mergedElement -> {
-                      merged.add(mergedElement);
-                      return merged;
-                    }));
-                continue INDEX;
-              }
-
-            }
-          }
-
-          // Not found original model with the same id => check it as new
-          future = future.compose(merged -> sourceElement.validate(contextElement).map(empty -> {
-            merged.add(sourceElement);
-            return merged;
-          }));
-
-        }
-
-        promise.complete(new ArrayList<>());
-
-      } else {
-
-        promise.complete(target);
-      }
-
-      return future.map(mergedList -> {
-        setter.accept(model, mergedList);
-        return model;
-      });
-    };
-
-  }
-
-  /**
-   * Merge a field.
-   *
-   * @param target  field value to merge.
-   * @param source  field value to merge.
-   * @param context to use.
-   * @param setter  function to set the merged field list into the merged model.
-   *
-   * @param <M>     type of merging model.
-   * @param <T>     type of the field.
-   * @param <C>     type of cache to use.
-   *
-   * @return the future that will provide the merged lists.
-   */
-  static <C extends ValidateContext<C>, M, T extends Mergeable<T, C> & Validable<C>> Function<M, Future<M>> mergeField(
-      final T target, final T source, final C context, final BiConsumer<M, T> setter) {
 
     return merged -> {
 
-      if (target != null) {
+      if (target != null && source != null) {
 
-        return target.merge(source, context).map(mergedField -> {
+        final Promise<List<T>> promise = Promise.promise();
+        promise.complete(new ArrayList<>());
+        var future = promise.future();
+        final var copy = new ArrayList<>(target);
+        for (final var sourceElement : source) {
 
-          setter.accept(merged, mergedField);
+          var found = false;
+          final var max = copy.size();
+          for (var i = 0; i < max; i++) {
+
+            final var targetElement = copy.get(i);
+            if (equalsIdentifier.test(targetElement, sourceElement)) {
+
+              copy.remove(i);
+              final var elementContext = context.createFieldElementContext(fieldName, i);
+              future = future
+                  .compose(mergedElements -> targetElement.merge(sourceElement, elementContext).map(mergedElement -> {
+
+                    mergedElements.add(mergedElement);
+                    return mergedElements;
+
+                  }));
+              found = true;
+              break;
+            }
+
+          }
+          if (!found) {
+
+            future = future.compose(mergedElements -> {
+
+              mergedElements.add(sourceElement);
+              return Future.succeededFuture(mergedElements);
+
+            });
+          }
+        }
+
+        return future.map(mergedElements -> {
+
+          setter.accept(merged, mergedElements);
           return merged;
-        });
 
-      } else if (source != null) {
-
-        return source.validate(context).map(empty -> {
-
-          setter.accept(merged, source);
-          return merged;
         });
 
       } else {
 
+        if (source != null) {
+
+          setter.accept(merged, source);
+        }
         return Future.succeededFuture(merged);
 
       }
@@ -185,7 +173,8 @@ public interface Merges {
    *
    * @return the merged value.
    */
-  static Object mergeValues(final Object target, final Object source) {
+  @SuppressWarnings("unchecked")
+  static <T> T mergeValues(final T target, final T source) {
 
     if (source == null) {
 
@@ -197,11 +186,11 @@ public interface Merges {
 
     } else if (source instanceof JsonObject) {
 
-      return mergeJsonObjects((JsonObject) target, (JsonObject) source);
+      return (T) mergeJsonObjects((JsonObject) target, (JsonObject) source);
 
     } else if (source instanceof JsonArray) {
 
-      return mergeJsonArrays((JsonArray) target, (JsonArray) source);
+      return (T) mergeJsonArrays((JsonArray) target, (JsonArray) source);
 
     } else {
 

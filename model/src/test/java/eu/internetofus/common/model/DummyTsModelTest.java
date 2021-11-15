@@ -69,7 +69,7 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#validate(DummyValidateContext)
+   * @see DummyTsModel#validate(DummyValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
@@ -104,7 +104,7 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#merge(DummyComplexModel, DummyValidateContext)
+   * @see DummyTsModel#merge(DummyTsModel, DummyValidateContext)
    */
   @Test
   public void shouldMergeExamples(final Vertx vertx, final VertxTestContext testContext) {
@@ -117,7 +117,6 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
     assertCanMerge(target, source, context, testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       source._id = target._id;
-      source.value = target.value;
       source._creationTs = target._creationTs;
       source._lastUpdateTs = merged._lastUpdateTs;
       assertThat(merged).isEqualTo(source);
@@ -131,7 +130,7 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#merge(DummyComplexModel, DummyValidateContext)
+   * @see DummyTsModel#merge(DummyTsModel, DummyValidateContext)
    */
   @Test
   public void shouldNotMergeWithDuplicatedDummy(final Vertx vertx, final VertxTestContext testContext) {
@@ -167,7 +166,7 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#update(DummyComplexModel, DummyValidateContext)
+   * @see DummyTsModel#update(DummyTsModel, DummyValidateContext)
    */
   @Test
   public void shouldUpdateExamples(final Vertx vertx, final VertxTestContext testContext) {
@@ -193,7 +192,7 @@ public class DummyTsModelTest extends ModelTestCase<DummyTsModel> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see DummyComplexModel#update(DummyComplexModel, DummyValidateContext)
+   * @see DummyTsModel#update(DummyTsModel, DummyValidateContext)
    */
   @Test
   public void shouldNotUpdateWithDuplicatedDummy(final Vertx vertx, final VertxTestContext testContext) {

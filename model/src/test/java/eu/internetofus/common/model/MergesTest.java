@@ -51,7 +51,7 @@ public class MergesTest {
   @Test
   public void shoulMergeValues() {
 
-    assertThat(Merges.mergeValues(null, null)).isNull();
+    assertThat(Merges.mergeValues((Object) null, null)).isNull();
 
     final var source = UUID.randomUUID().toString();
     assertThat(Merges.mergeValues(null, source)).isSameAs(source);
@@ -71,8 +71,6 @@ public class MergesTest {
    */
   @Test
   public void shoulMergeJsonObjectValues() {
-
-    assertThat(Merges.mergeValues(null, null)).isNull();
 
     final var source = new JsonObject();
     source.put("source", "source");
@@ -97,8 +95,6 @@ public class MergesTest {
    */
   @Test
   public void shoulMergeJsonArrayValues() {
-
-    assertThat(Merges.mergeValues(null, null)).isNull();
 
     final var source = new JsonArray();
     source.add("source");
@@ -199,7 +195,7 @@ public class MergesTest {
 
     final var model = new DummyComplexModelTest().createModelExample(1);
     Future.succeededFuture(model)
-        .compose(Merges.mergeField(null, null, new DummyValidateContext("codePrefix.other"), null))
+        .compose(Merges.mergeField(new DummyValidateContext("codePrefix"), "other", null, null, null))
         .onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
 
           assertThat(merged).isSameAs(model);
@@ -222,7 +218,7 @@ public class MergesTest {
     final var model = new DummyComplexModelTest().createModelExample(1);
     final var target = new DummyComplexModelTest().createModelExample(2);
     Future.succeededFuture(model)
-        .compose(Merges.mergeField(target, null, new DummyValidateContext("codePrefix.other"),
+        .compose(Merges.mergeField(new DummyValidateContext("codePrefix"), "other", target, null,
             (mergedModel, field) -> mergedModel.other = field))
         .onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
 
@@ -247,7 +243,7 @@ public class MergesTest {
     final var model = new DummyComplexModelTest().createModelExample(1);
     final var source = new DummyComplexModelTest().createModelExample(2);
     Future.succeededFuture(model)
-        .compose(Merges.mergeField(null, source, new DummyValidateContext("codePrefix.other"),
+        .compose(Merges.mergeField(new DummyValidateContext("codePrefix"), "other", null, source,
             (mergedModel, field) -> mergedModel.other = field))
         .onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
 
@@ -264,7 +260,9 @@ public class MergesTest {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Merges#mergeFieldList
+   * @see Merges#mergeListField(ValidateContext, String, java.util.List,
+   *      java.util.List, java.util.function.BiPredicate,
+   *      java.util.function.BiConsumer)
    */
   @Test
   public void shouldMergeFieldList(final Vertx vertx, final VertxTestContext testContext) {
@@ -282,8 +280,10 @@ public class MergesTest {
     source.add(new DummyComplexModelTest().createModelExample(30));
     source.get(1).index = 90;
     source.get(2).id = null;
-    Future.succeededFuture(model).compose(Merges.mergeFieldList(source, source, new DummyValidateContext("siblings"),
-        sibling -> sibling.id != null, (a, b) -> a.id.equals(b.id), (merged, siblings) -> merged.siblings = siblings))
+    Future.succeededFuture(model)
+        .compose(Merges.mergeListField(new DummyValidateContext("codePrefix"), "siblings", source, source,
+            (a, b) -> a.id == b.id || a.id != null && a.id.equals(b.id),
+            (merged, siblings) -> merged.siblings = siblings))
         .onComplete(testContext.succeeding(merged -> testContext.verify(() -> {
 
           assertThat(merged).isSameAs(model);

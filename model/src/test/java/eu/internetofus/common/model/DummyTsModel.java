@@ -60,15 +60,9 @@ public class DummyTsModel extends CreateUpdateTsDetails implements Model, Valida
       final var merged = new DummyTsModel();
       merged._creationTs = this._creationTs;
       merged._lastUpdateTs = TimeManager.now();
-      merged.value = source.value;
-      if (merged.value != null) {
-
-        merged.value = this.value;
-      }
-
-      future = future.compose(Merges.mergeFieldList(this.dummies, source.dummies, context.createFieldContext("dummies"),
-          dummy -> dummy._id != null, (model1, model2) -> model1._id.equals(model2._id),
-          (model, dummies) -> model.dummies = dummies));
+      merged.value = Merges.mergeValues(this.value, source.value);
+      future = future.compose(Merges.mergeListField(context, "dummies", this.dummies, source.dummies,
+          this::equalsDummyTsModelIds, (model, dummies) -> model.dummies = dummies));
       future = future.compose(model -> {
         model._id = this._id;
         return Future.succeededFuture(model);
@@ -112,6 +106,19 @@ public class DummyTsModel extends CreateUpdateTsDetails implements Model, Valida
   }
 
   /**
+   * Check if two dummy models has the same identifier.
+   *
+   * @param model1 to compare.
+   * @param model2 to compare.
+   *
+   * @return {@code true} if they has the same identifier.
+   */
+  private boolean equalsDummyTsModelIds(final DummyTsModel model1, final DummyTsModel model2) {
+
+    return model1._id == model2._id || model1._id != null && model1._id.equals(model2._id);
+  }
+
+  /**
    * {@inheritDoc}
    */
   @Override
@@ -119,9 +126,10 @@ public class DummyTsModel extends CreateUpdateTsDetails implements Model, Valida
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    future = future.compose(Validations.validate(this.dummies,
-        (model1, model2) -> model1._id == model2._id || model1._id != null && model1._id.equals(model2._id),
-        context.createFieldContext("dummies")));
+    if (this.dummies != null) {
+
+      future = future.compose(context.validateListField("dummies", this.dummies, this::equalsDummyTsModelIds));
+    }
     promise.complete();
     return future;
   }
