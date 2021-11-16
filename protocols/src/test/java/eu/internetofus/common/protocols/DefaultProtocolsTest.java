@@ -21,6 +21,7 @@ package eu.internetofus.common.protocols;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -91,7 +92,7 @@ public class DefaultProtocolsTest {
   public void shouldProtocolsBeValid(final DefaultProtocols protocol, final Vertx vertx,
       final VertxTestContext testContext) {
 
-    protocol.load(vertx).compose(taskType -> taskType.validate("root", vertx))
+    protocol.load(vertx).compose(taskType -> taskType.validate(new WeNetValidateContext("root", vertx)))
         .onComplete(testContext.succeeding(taskType -> testContext.completeNow()));
 
   }
