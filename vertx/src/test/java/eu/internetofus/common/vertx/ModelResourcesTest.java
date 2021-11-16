@@ -2407,4 +2407,110 @@ public class ModelResourcesTest {
 
   }
 
+  /**
+   * Should fail check model exist because not found.
+   *
+   * @param searcher      the function that will search the model.
+   * @param resultHandler handler to manage the HTTP result.
+   *
+   * @see ModelResources#checkModelExist(ModelContext, BiConsumer, ServiceContext)
+   */
+  @Test
+  public void shouldFailCheckModelExistBecauseNotFound(
+      @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
+      @Mock final Handler<AsyncResult<ServiceResponse>> resultHandler) {
+
+    final var model = this.createModelContext();
+    final var context = this.createServiceContext(resultHandler);
+    ModelResources.checkModelExist(model, searcher, context);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> searchHandler = ArgumentCaptor
+        .forClass(Handler.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
+    searchHandler.getValue().handle(Future.succeededFuture());
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<ServiceResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
+    assertThat(error).isNotNull();
+    assertThat(error.code).contains("modelName");
+    assertThat(error.message).contains("modelName", "id");
+
+  }
+
+  /**
+   * Should fail check model exist because not found.
+   *
+   * @param searcher      the function that will search the model.
+   * @param resultHandler handler to manage the HTTP result.
+   *
+   * @see ModelResources#checkModelExist(ModelContext, BiConsumer, ServiceContext)
+   */
+  @Test
+  public void shouldFailCheckModelExistBecauseFailSearch(
+      @Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
+      @Mock final Handler<AsyncResult<ServiceResponse>> resultHandler) {
+
+    final var model = this.createModelContext();
+    final var context = this.createServiceContext(resultHandler);
+    ModelResources.checkModelExist(model, searcher, context);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> searchHandler = ArgumentCaptor
+        .forClass(Handler.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
+    searchHandler.getValue().handle(Future.failedFuture("Not found"));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<ServiceResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.NOT_FOUND.getStatusCode());
+    final var error = Model.fromBuffer(result.getPayload(), ErrorMessage.class);
+    assertThat(error).isNotNull();
+    assertThat(error.code).contains("modelName");
+    assertThat(error.message).contains("modelName", "id");
+
+  }
+
+  /**
+   * Should check model exist.
+   *
+   * @param searcher      the function that will search the model.
+   * @param resultHandler handler to manage the HTTP result.
+   *
+   * @see ModelResources#checkModelExist(ModelContext, BiConsumer, ServiceContext)
+   */
+  @Test
+  public void shouldCheckModelExist(@Mock final BiConsumer<String, Handler<AsyncResult<DummyComplexModel>>> searcher,
+      @Mock final Handler<AsyncResult<ServiceResponse>> resultHandler) {
+
+    final var model = this.createModelContext();
+    final var context = this.createServiceContext(resultHandler);
+    ModelResources.checkModelExist(model, searcher, context);
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<Handler<AsyncResult<DummyComplexModel>>> searchHandler = ArgumentCaptor
+        .forClass(Handler.class);
+    verify(searcher, timeout(30000).times(1)).accept(any(), searchHandler.capture());
+    searchHandler.getValue().handle(Future.succeededFuture(new DummyComplexModel()));
+
+    @SuppressWarnings("unchecked")
+    final ArgumentCaptor<AsyncResult<ServiceResponse>> resultCaptor = ArgumentCaptor.forClass(AsyncResult.class);
+    verify(resultHandler, timeout(30000).times(1)).handle(resultCaptor.capture());
+    final var asyncResult = resultCaptor.getValue();
+    assertThat(asyncResult.failed()).isFalse();
+    final var result = asyncResult.result();
+    assertThat(result.getStatusCode()).isEqualTo(Status.NO_CONTENT.getStatusCode());
+
+  }
+
 }

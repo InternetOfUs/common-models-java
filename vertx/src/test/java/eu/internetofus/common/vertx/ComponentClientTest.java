@@ -253,7 +253,7 @@ public class ComponentClientTest {
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldGeJsonObject(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+  public void shouldGetJsonObject(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
 
     vertx.createHttpServer().requestHandler(request -> {
       final var response = request.response();
@@ -282,7 +282,7 @@ public class ComponentClientTest {
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldGeJsonObjectWithParams(final Vertx vertx, final WebClient client,
+  public void shouldGetJsonObjectWithParams(final Vertx vertx, final WebClient client,
       final VertxTestContext testContext) {
 
     vertx.createHttpServer().requestHandler(request -> {
@@ -760,7 +760,7 @@ public class ComponentClientTest {
    *      String)
    */
   @Test
-  public void shouldHhandleWithoutBodyAndSuccessReponse(@Mock final HttpResponse<Buffer> response,
+  public void shouldHandleWithoutBodyAndSuccessReponse(@Mock final HttpResponse<Buffer> response,
       final VertxTestContext testContext) {
 
     final var service = new ComponentClient(null, null);
@@ -786,7 +786,7 @@ public class ComponentClientTest {
    *      String)
    */
   @Test
-  public void shouldHhandleWithBodyAndSuccessReponse(@Mock final HttpResponse<Buffer> response,
+  public void shouldHandleWithBodyAndSuccessReponse(@Mock final HttpResponse<Buffer> response,
       final VertxTestContext testContext) {
 
     final var service = new ComponentClient(null, null);
@@ -813,7 +813,7 @@ public class ComponentClientTest {
    *      String)
    */
   @Test
-  public void shouldHhandleWithBodyAndErrorReponse(@Mock final HttpResponse<Buffer> response,
+  public void shouldHandleWithBodyAndErrorReponse(@Mock final HttpResponse<Buffer> response,
       final VertxTestContext testContext) {
 
     final var service = new ComponentClient(null, null);
@@ -865,11 +865,55 @@ public class ComponentClientTest {
    * @param testContext context that manage the test.
    */
   @Test
-  public void shouldNotÇDeleteWithQueryParams(final Vertx vertx, final WebClient client,
+  public void shouldNotDeleteWithQueryParams(final Vertx vertx, final WebClient client,
       final VertxTestContext testContext) {
 
     final var service = new ComponentClient(client, "http://undefined/");
     testContext.assertFailure(service.delete(new HashMap<>(), "path")).onFailure(ignored -> testContext.completeNow());
+
+  }
+
+  /**
+   * Verify that can get a head response.
+   *
+   * @param vertx       platform that manage the event bus.
+   * @param client      to use.
+   * @param testContext context that manage the test.
+   */
+  @Test
+  public void shouldHead(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    vertx.createHttpServer().requestHandler(request -> {
+      final var response = request.response();
+      response.setStatusCode(204);
+      response.putHeader("content-type", "application/json");
+      response.end();
+    }).listen(0, "localhost", testContext.succeeding(server -> {
+
+      final var service = new ComponentClient(client, "http://localhost:" + server.actualPort() + "/api");
+      service.head().onComplete(testContext.succeeding(content -> testContext.verify(() -> {
+
+        server.close();
+        testContext.completeNow();
+
+      })));
+
+    }));
+
+  }
+
+  /**
+   * Verify that can not get a head response.
+   *
+   * @param vertx       event bus to use.
+   * @param client      to use.
+   * @param testContext context that manage the test.
+   */
+  @Test
+  public void shouldNotHead(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    final var service = new ComponentClient(client, "http://undefined/");
+    testContext.assertFailure(service.head("path")).onFailure(ignored -> testContext.completeNow());
 
   }
 

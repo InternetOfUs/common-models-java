@@ -691,4 +691,36 @@ public class ComponentClient {
 
   }
 
+  /**
+   * Check if the head is defined.
+   *
+   * @param paths to the component to post.
+   *
+   * @return the future with the response object.
+   */
+  protected Future<Boolean> head(@NotNull final Object... paths) {
+
+    final Promise<Boolean> promise = Promise.promise();
+    final var url = this.createAbsoluteUrlWith(paths);
+    final var actionId = this.createActionId(HttpMethod.HEAD, url);
+    Logger.trace("{} with {} STARTED", actionId);
+    try {
+
+      this.client.requestAbs(HttpMethod.HEAD, url).send().onSuccess(response -> {
+
+        final var code = response.statusCode();
+        final var success = Status.Family.familyOf(code) == Status.Family.SUCCESSFUL;
+        promise.complete(success);
+
+      }).onFailure(this.createRequestFailureHandler(promise, actionId));
+
+    } catch (final Throwable throwable) {
+
+      promise.tryFail(throwable);
+
+    }
+
+    return promise.future();
+  }
+
 }

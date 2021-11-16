@@ -1139,4 +1139,33 @@ public interface ModelResources {
 
   }
 
+  /**
+   * Check if a model exist.
+   *
+   * @param model    context of the model to check id exist.
+   * @param searcher function to obtain the model.
+   * @param context  of the request.
+   *
+   * @param <I>      type of identifier.
+   * @param <T>      type of model.
+   */
+  static <I, T extends Model> void checkModelExist(@NotNull final ModelContext<T, I, ?> model,
+      @NotNull final BiConsumer<I, Handler<AsyncResult<T>>> searcher, @NotNull final ServiceContext context) {
+
+    searcher.accept(model.id, search -> {
+
+      if (search.result() != null) {
+
+        ServiceResponseHandlers.responseOk(context.resultHandler);
+
+      } else {
+
+        ServiceResponseHandlers.responseWithErrorMessage(context.resultHandler, Status.NOT_FOUND,
+            "not_found_" + model.name, "Does not exist a '" + model.name + "' associated to '" + model.id + "'.");
+      }
+
+    });
+
+  }
+
 }
