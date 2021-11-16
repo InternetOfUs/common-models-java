@@ -22,10 +22,12 @@ package eu.internetofus.common.components.service;
 
 import eu.internetofus.common.vertx.ComponentClient;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import javax.validation.constraints.NotNull;
 
 /**
  * The implementation of the {@link WeNetService}.
@@ -42,7 +44,8 @@ public class WeNetServiceClient extends ComponentClient implements WeNetService 
   public static final String DEFAULT_SERVICE_API_URL = "https://wenet.u-hopper.com/prod/service";
 
   /**
-   * The name of the configuration property that contains the URL to the service API.
+   * The name of the configuration property that contains the URL to the service
+   * API.
    */
   public static final String SERVICE_CONF_KEY = "service";
 
@@ -76,6 +79,15 @@ public class WeNetServiceClient extends ComponentClient implements WeNetService 
 
     this.getJsonArray("/app", id, "/users").onComplete(handler);
 
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void isAppDefined(final String id, @NotNull final Handler<AsyncResult<Boolean>> handler) {
+
+    this.retrieveApp(id, retrieve -> handler.handle(Future.succeededFuture(retrieve.result() != null)));
   }
 
 }

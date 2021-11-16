@@ -20,15 +20,15 @@
 
 package eu.internetofus.common.components.models;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
+import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
+import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationErrorException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * Represents a date.
@@ -36,7 +36,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "date", description = "The information of a date.")
-public class ProfileDate extends ReflectionModel implements Model, Validable, Mergeable<ProfileDate> {
+public class ProfileDate extends ReflectionModel implements Model, Validable<WeNetValidateContext>,
+    Mergeable<ProfileDate, WeNetValidateContext>, Updateable<ProfileDate, WeNetValidateContext> {
 
   /**
    * The year of the date.
@@ -67,35 +68,30 @@ public class ProfileDate extends ReflectionModel implements Model, Validable, Me
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
-    final Promise<Void> promise = Promise.promise();
     if (this.month != null && (this.month < 1 || this.month > 12)) {
 
-      promise.fail(new ValidationErrorException(codePrefix + ".month", "The month has to be on the range [1,12]"));
+      return context.failField("month", "The day has to be on the range [1,12]");
 
     } else if (this.day != null && (this.day < 1 || this.day > 31)) {
 
-      promise.fail(new ValidationErrorException(codePrefix + ".day", "The day has to be on the range [1,31]"));
+      return context.failField("day", "The day has to be on the range [1,31]");
 
     } else if (this.year != null && this.month != null && this.day != null) {
 
       try {
 
         java.time.LocalDate.of(this.year, this.month, this.day);
-        promise.complete();
 
       } catch (final Throwable exception) {
 
-        promise.fail(new ValidationErrorException(codePrefix, exception));
+        return context.fail(exception);
       }
 
-    } else {
-      // not enough data to check the date
-      promise.complete();
     }
 
-    return promise.future();
+    return Future.succeededFuture();
 
   }
 
@@ -103,37 +99,37 @@ public class ProfileDate extends ReflectionModel implements Model, Validable, Me
    * {@inheritDoc}
    */
   @Override
-  public Future<ProfileDate> merge(final ProfileDate source, final String codePrefix, final Vertx vertx) {
+  public Future<ProfileDate> merge(final ProfileDate source, final WeNetValidateContext context) {
 
     if (source != null) {
 
       final var merged = this.createProfileDate();
-      if (source.year != null) {
+      merged.day = Merges.mergeValues(this.day, source.day);
+      merged.month = Merges.mergeValues(this.month, source.month);
+      merged.year = Merges.mergeValues(this.year, source.year);
+      return Future.succeededFuture(merged).compose(context.chain());
 
-        merged.year = source.year;
+    } else {
 
-      } else {
+      return Future.succeededFuture(this);
 
-        merged.year = this.year;
-      }
-      if (source.month != null) {
+    }
 
-        merged.month = source.month;
+  }
 
-      } else {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<ProfileDate> update(final ProfileDate source, final WeNetValidateContext context) {
 
-        merged.month = this.month;
-      }
-      if (source.day != null) {
+    if (source != null) {
 
-        merged.day = source.day;
-
-      } else {
-
-        merged.day = this.day;
-      }
-
-      return merged.validate(codePrefix, vertx).map(empty -> merged);
+      final var updated = this.createProfileDate();
+      updated.day = source.day;
+      updated.month = source.month;
+      updated.year = source.year;
+      return Future.succeededFuture(updated).compose(context.chain());
 
     } else {
 

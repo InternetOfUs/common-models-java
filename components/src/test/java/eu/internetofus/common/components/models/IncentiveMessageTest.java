@@ -24,6 +24,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
@@ -60,14 +61,14 @@ public class IncentiveMessageTest extends ModelTestCase<IncentiveMessage> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutContent(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.content = null;
-    assertIsNotValid(model, "content", vertx, testContext);
+    assertIsNotValid(model, "content", new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
   /**
@@ -77,7 +78,7 @@ public class IncentiveMessageTest extends ModelTestCase<IncentiveMessage> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
@@ -86,7 +87,7 @@ public class IncentiveMessageTest extends ModelTestCase<IncentiveMessage> {
     final var model = this.createModelExample(index);
     final var expected = model.content;
     model.content = "   \n  " + expected + "   \n";
-    assertIsValid(model, vertx, testContext, () -> {
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       assertThat(model.content).isEqualTo(expected);
     });

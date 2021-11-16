@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -97,13 +98,13 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#validate(String, Vertx)
+   * @see PlannedActivity#validate(WeNetValidateContext)
    */
   @Test
   public void shouldEmptyModelBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new PlannedActivity();
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -114,14 +115,14 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#validate(String, Vertx)
+   * @see PlannedActivity#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -133,7 +134,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#validate(String, Vertx)
+   * @see PlannedActivity#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
@@ -153,7 +154,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       model.attendees.add(0, null);
       model.attendees.add(null);
 
-      assertIsValid(model, vertx, testContext, () -> {
+      assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
         assertThat(model.id).isNotNull();
         assertThat(model.startTime).isEqualTo(originalStartTime);
@@ -171,14 +172,14 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#validate(String,Vertx)
+   * @see PlannedActivity#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new PlannedActivity();
     model.id = "has_id";
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -189,7 +190,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#validate(String,Vertx)
+   * @see PlannedActivity#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "Should not be valid with startTime = {0}")
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
@@ -198,7 +199,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
     final var model = new PlannedActivity();
     model.startTime = badTime;
-    assertIsNotValid(model, "startTime", vertx, testContext);
+    assertIsNotValid(model, "startTime", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -209,7 +210,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#validate(String,Vertx)
+   * @see PlannedActivity#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "Should not be valid with endTime = {0}")
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
@@ -218,7 +219,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
 
     final var model = new PlannedActivity();
     model.endTime = badTime;
-    assertIsNotValid(model, "endTime", vertx, testContext);
+    assertIsNotValid(model, "endTime", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -228,7 +229,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#validate(String,Vertx)
+   * @see PlannedActivity#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadAttender(final Vertx vertx, final VertxTestContext testContext) {
@@ -236,7 +237,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     final var model = new PlannedActivity();
     model.attendees = new ArrayList<>();
     model.attendees.add("undefined attendee identifier");
-    assertIsNotValid(model, "attendees[0]", vertx, testContext);
+    assertIsNotValid(model, "attendees[0]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -246,14 +247,14 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#validate(String,Vertx)
+   * @see PlannedActivity#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidEmptyAttender(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new PlannedActivity();
     model.attendees = new ArrayList<>();
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -263,7 +264,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#validate(String,Vertx)
+   * @see PlannedActivity#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithSomeAttenders(final Vertx vertx, final VertxTestContext testContext) {
@@ -276,7 +277,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
         model.attendees = new ArrayList<>();
         model.attendees.add(stored.id);
         model.attendees.add(stored2.id);
-        assertIsValid(model, vertx, testContext);
+        assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
       });
 
@@ -290,7 +291,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#validate(String,Vertx)
+   * @see PlannedActivity#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithDuplicatedAttenders(final Vertx vertx, final VertxTestContext testContext) {
@@ -304,7 +305,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
         model.attendees.add(stored.id);
         model.attendees.add(stored2.id);
         model.attendees.add(stored.id);
-        assertIsNotValid(model, "attendees[2]", vertx, testContext);
+        assertIsNotValid(model, "attendees[2]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
       });
 
@@ -318,7 +319,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#validate(String,Vertx)
+   * @see PlannedActivity#validate(WeNetValidateContext)
    */
   @Test
   public void shouldEmptyAttenderWillRemoved(final Vertx vertx, final VertxTestContext testContext) {
@@ -329,7 +330,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     model.attendees.add(null);
     model.attendees.add(null);
 
-    assertIsValid(model, vertx, testContext, () -> {
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var expected = new PlannedActivity();
       expected.id = model.id;
@@ -346,7 +347,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @ParameterizedTest(name = "Should not be valid with startTime = {0}")
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
@@ -356,7 +357,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     final var target = this.createModelExample(1);
     final var source = new PlannedActivity();
     source.startTime = badTime;
-    assertCannotMerge(target, source, "startTime", vertx, testContext);
+    assertCannotMerge(target, source, "startTime", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -367,7 +368,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @ParameterizedTest(name = "Should not be valid with endTime = {0}")
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
@@ -377,7 +378,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     final var target = this.createModelExample(1);
     final var source = new PlannedActivity();
     source.endTime = badTime;
-    assertCannotMerge(target, source, "endTime", vertx, testContext);
+    assertCannotMerge(target, source, "endTime", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -387,7 +388,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadAttender(final Vertx vertx, final VertxTestContext testContext) {
@@ -396,7 +397,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     final var source = new PlannedActivity();
     source.attendees = new ArrayList<>();
     source.attendees.add("undefined attendee identifier");
-    assertCannotMerge(target, source, "attendees[0]", vertx, testContext);
+    assertCannotMerge(target, source, "attendees[0]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -406,7 +407,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldMergeEmptyAttender(final Vertx vertx, final VertxTestContext testContext) {
@@ -414,7 +415,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     final var target = this.createModelExample(1);
     final var source = new PlannedActivity();
     source.attendees = new ArrayList<>();
-    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.attendees).isEmpty());
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged.attendees).isEmpty());
 
   }
 
@@ -424,7 +426,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithSomeAttenders(final Vertx vertx, final VertxTestContext testContext) {
@@ -438,7 +440,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
         source.attendees = new ArrayList<>();
         source.attendees.add(stored.id);
         source.attendees.add(stored2.id);
-        assertCanMerge(target, source, vertx, testContext);
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext);
 
       });
 
@@ -452,7 +454,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithDuplicatedAttenders(final Vertx vertx, final VertxTestContext testContext) {
@@ -467,7 +469,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
         source.attendees.add(stored.id);
         source.attendees.add(stored2.id);
         source.attendees.add(stored.id);
-        assertCannotMerge(target, source, "attendees[2]", vertx, testContext);
+        assertCannotMerge(target, source, "attendees[2]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
       });
 
@@ -481,7 +483,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldMergeEmptyAttenderWillRemoved(final Vertx vertx, final VertxTestContext testContext) {
@@ -492,7 +494,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     source.attendees.add(null);
     source.attendees.add(null);
     source.attendees.add(null);
-    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.attendees).isNotNull().isEmpty());
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged.attendees).isNotNull().isEmpty());
 
   }
 
@@ -502,7 +505,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
@@ -512,7 +515,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       this.createModelExample(1, vertx, testContext).onSuccess(source -> {
 
         target.id = "1";
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
           source.id = "1";
@@ -530,14 +533,14 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
-      assertCanMerge(target, null, vertx, testContext, merged -> {
+      assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isSameAs(target);
         testContext.completeNow();
@@ -554,7 +557,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyStartTime(final Vertx vertx, final VertxTestContext testContext) {
@@ -563,7 +566,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       target.id = "1";
       final var source = new PlannedActivity();
       source.startTime = "2000-02-19T16:18:00Z";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.startTime = "2000-02-19T16:18:00Z";
         assertThat(merged).isEqualTo(target);
@@ -579,7 +582,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyEndTime(final Vertx vertx, final VertxTestContext testContext) {
@@ -589,7 +592,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       target.id = "1";
       final var source = new PlannedActivity();
       source.endTime = "2020-02-19T16:18:00Z";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.endTime = "2020-02-19T16:18:00Z";
         assertThat(merged).isEqualTo(target);
@@ -605,7 +608,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyDescription(final Vertx vertx, final VertxTestContext testContext) {
@@ -614,7 +617,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       target.id = "1";
       final var source = new PlannedActivity();
       source.description = "New description";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.description = "New description";
         assertThat(merged).isEqualTo(target);
@@ -630,7 +633,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyStatus(final Vertx vertx, final VertxTestContext testContext) {
@@ -639,7 +642,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       target.id = "1";
       final var source = new PlannedActivity();
       source.status = PlannedActivityStatus.tentative;
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.status = PlannedActivityStatus.tentative;
         assertThat(merged).isEqualTo(target);
@@ -655,7 +658,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldMergeRemoveAttenders(final Vertx vertx, final VertxTestContext testContext) {
@@ -664,7 +667,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       target.id = "1";
       final var source = new PlannedActivity();
       source.attendees = new ArrayList<>();
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.attendees.clear();
         assertThat(merged).isEqualTo(target);
@@ -680,7 +683,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#merge(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#merge(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAddNewAttenders(final Vertx vertx, final VertxTestContext testContext) {
@@ -693,7 +696,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
         source.attendees = new ArrayList<>();
         source.attendees.add(stored.id);
         source.attendees.addAll(target.attendees);
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
           target.attendees.add(0, stored.id);
@@ -711,7 +714,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @ParameterizedTest(name = "Should not be valid with startTime = {0}")
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
@@ -721,7 +724,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     final var target = this.createModelExample(1);
     final var source = new PlannedActivity();
     source.startTime = badTime;
-    assertCannotUpdate(target, source, "startTime", vertx, testContext);
+    assertCannotUpdate(target, source, "startTime", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -732,7 +735,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @ParameterizedTest(name = "Should not be valid with endTime = {0}")
   @ValueSource(strings = { "0", "tomorrow", "2019-23-10", "10:00", "2019-02-30T00:00:00Z" })
@@ -742,7 +745,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     final var target = this.createModelExample(1);
     final var source = new PlannedActivity();
     source.endTime = badTime;
-    assertCannotUpdate(target, source, "endTime", vertx, testContext);
+    assertCannotUpdate(target, source, "endTime", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -752,7 +755,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithABadAttender(final Vertx vertx, final VertxTestContext testContext) {
@@ -761,7 +764,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     final var source = new PlannedActivity();
     source.attendees = new ArrayList<>();
     source.attendees.add("undefined attendee identifier");
-    assertCannotUpdate(target, source, "attendees[0]", vertx, testContext);
+    assertCannotUpdate(target, source, "attendees[0]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -771,7 +774,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateEmptyAttender(final Vertx vertx, final VertxTestContext testContext) {
@@ -779,7 +782,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     final var target = this.createModelExample(1);
     final var source = new PlannedActivity();
     source.attendees = new ArrayList<>();
-    assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated.attendees).isEmpty());
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
+        updated -> assertThat(updated.attendees).isEmpty());
 
   }
 
@@ -789,7 +793,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithSomeAttenders(final Vertx vertx, final VertxTestContext testContext) {
@@ -803,7 +807,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
         source.attendees = new ArrayList<>();
         source.attendees.add(stored.id);
         source.attendees.add(stored2.id);
-        assertCanUpdate(target, source, vertx, testContext);
+        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext);
 
       });
 
@@ -817,7 +821,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithDuplicatedAttenders(final Vertx vertx, final VertxTestContext testContext) {
@@ -832,7 +836,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
         source.attendees.add(stored.id);
         source.attendees.add(stored2.id);
         source.attendees.add(stored.id);
-        assertCannotUpdate(target, source, "attendees[2]", vertx, testContext);
+        assertCannotUpdate(target, source, "attendees[2]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
       });
 
@@ -846,7 +850,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateEmptyAttenderWillRemoved(final Vertx vertx, final VertxTestContext testContext) {
@@ -857,7 +861,8 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
     source.attendees.add(null);
     source.attendees.add(null);
     source.attendees.add(null);
-    assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated.attendees).isNotNull().isEmpty());
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
+        updated -> assertThat(updated.attendees).isNotNull().isEmpty());
 
   }
 
@@ -867,7 +872,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldUpdate(final Vertx vertx, final VertxTestContext testContext) {
@@ -877,7 +882,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       this.createModelExample(1, vertx, testContext).onSuccess(source -> {
 
         target.id = "1";
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
           assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
           source.id = "1";
@@ -895,14 +900,14 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
-      assertCanUpdate(target, null, vertx, testContext, updated -> {
+      assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
         assertThat(updated).isSameAs(target);
         testContext.completeNow();
@@ -919,7 +924,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyStartTime(final Vertx vertx, final VertxTestContext testContext) {
@@ -928,7 +933,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       target.id = "1";
       final var source = new PlannedActivity();
       source.startTime = "2000-02-19T16:18:00Z";
-      assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
         assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
         source.id = target.id;
         assertThat(updated).isEqualTo(source);
@@ -944,7 +949,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyEndTime(final Vertx vertx, final VertxTestContext testContext) {
@@ -954,7 +959,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       target.id = "1";
       final var source = new PlannedActivity();
       source.endTime = "2020-02-19T16:18:00Z";
-      assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
         assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
         source.id = target.id;
         assertThat(updated).isEqualTo(source);
@@ -970,7 +975,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyDescription(final Vertx vertx, final VertxTestContext testContext) {
@@ -979,7 +984,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       target.id = "1";
       final var source = new PlannedActivity();
       source.description = "New description";
-      assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
         assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
         source.id = target.id;
         assertThat(updated).isEqualTo(source);
@@ -995,7 +1000,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyStatus(final Vertx vertx, final VertxTestContext testContext) {
@@ -1004,7 +1009,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       target.id = "1";
       final var source = new PlannedActivity();
       source.status = PlannedActivityStatus.tentative;
-      assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
         assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
         source.id = target.id;
         assertThat(updated).isEqualTo(source);
@@ -1020,7 +1025,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateRemoveAttenders(final Vertx vertx, final VertxTestContext testContext) {
@@ -1029,7 +1034,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
       target.id = "1";
       final var source = new PlannedActivity();
       source.attendees = new ArrayList<>();
-      assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
         assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
         source.id = target.id;
         assertThat(updated).isEqualTo(source);
@@ -1045,7 +1050,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see PlannedActivity#update(PlannedActivity, String, Vertx)
+   * @see PlannedActivity#update(PlannedActivity, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateAddNewAttenders(final Vertx vertx, final VertxTestContext testContext) {
@@ -1058,7 +1063,7 @@ public class PlannedActivityTest extends ModelTestCase<PlannedActivity> {
         source.attendees = new ArrayList<>();
         source.attendees.add(stored.id);
         source.attendees.addAll(target.attendees);
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
           assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
           source.id = target.id;

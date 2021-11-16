@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.atIndex;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
@@ -124,14 +125,14 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#validate(String, Vertx)
+   * @see TaskType#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -141,12 +142,12 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#validate(String, Vertx)
+   * @see TaskType#validate(WeNetValidateContext)
    */
   @Test
   public void shouldEmptyBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    assertIsValid(new TaskType(), vertx, testContext);
+    assertIsValid(new TaskType(), new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -156,7 +157,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithAnExistingId(final Vertx vertx, final VertxTestContext testContext) {
@@ -165,7 +166,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
 
       final var model = this.createModelExample(1);
       model.id = created.id;
-      assertIsNotValid(model, "id", vertx, testContext);
+      assertIsNotValid(model, "id", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -177,14 +178,14 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithAnNotExistingId(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.id = UUID.randomUUID().toString();
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -194,14 +195,14 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#merge(TaskType, String, Vertx)
+   * @see TaskType#merge(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     final var source = this.createModelExample(23);
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       source.attributes = Merges.mergeJsonObjects(target.attributes, source.attributes);
@@ -219,7 +220,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#merge(TaskType, String, Vertx)
+   * @see TaskType#merge(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldMergeEmptymodels(final Vertx vertx, final VertxTestContext testContext) {
@@ -228,7 +229,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     target.id = "1";
     final var source = new TaskType();
     source.id = "2";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       assertThat(merged).isEqualTo(target).isNotEqualTo(source);
 
@@ -242,13 +243,14 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#merge(TaskType, String, Vertx)
+   * @see TaskType#merge(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged).isSameAs(target));
 
   }
 
@@ -258,14 +260,15 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#validate(String, Vertx)
+   * @see TaskType#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidANameWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.name = "   1234567890   ";
-    assertIsValid(model, vertx, testContext, () -> assertThat(model.name).isEqualTo("1234567890"));
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext,
+        () -> assertThat(model.name).isEqualTo("1234567890"));
 
   }
 
@@ -275,14 +278,15 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#validate(String, Vertx)
+   * @see TaskType#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidADescriptionWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.description = "   description   ";
-    assertIsValid(model, vertx, testContext, () -> assertThat(model.description).isEqualTo("description"));
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext,
+        () -> assertThat(model.description).isEqualTo("description"));
 
   }
 
@@ -292,7 +296,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#validate(String, Vertx)
+   * @see TaskType#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidAKeywordWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
@@ -304,7 +308,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     model.keywords.add(null);
     model.keywords.add("     ");
     model.keywords.add("\n\t");
-    assertIsValid(model, vertx, testContext,
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext,
         () -> assertThat(model.keywords).isNotEmpty().hasSize(1).contains("1234567890", atIndex(0)));
 
   }
@@ -315,7 +319,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see TaskType#validate(String, Vertx)
+   * @see TaskType#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadNorm(final Vertx vertx, final VertxTestContext testContext) {
@@ -326,7 +330,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     model.norms.add(new ProtocolNormTest().createModelExample(2));
     model.norms.add(new ProtocolNormTest().createModelExample(3));
     model.norms.get(1).whenever = null;
-    assertIsNotValid(model, "norms[1].whenever", vertx, testContext);
+    assertIsNotValid(model, "norms[1].whenever", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -336,7 +340,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#merge(TaskType, String, Vertx)
+   * @see TaskType#merge(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldMergeANameWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
@@ -344,7 +348,8 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     final var target = this.createModelExample(1);
     final var source = new TaskType();
     source.name = "   1234567890   ";
-    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.name).isEqualTo("1234567890"));
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged.name).isEqualTo("1234567890"));
 
   }
 
@@ -354,7 +359,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#merge(TaskType, String, Vertx)
+   * @see TaskType#merge(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldMergeADescriptionWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
@@ -363,7 +368,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     target.name = "name";
     final var source = new TaskType();
     source.description = "   description   ";
-    assertCanMerge(target, source, vertx, testContext,
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
         merged -> assertThat(merged.description).isEqualTo("description"));
 
   }
@@ -374,7 +379,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#merge(TaskType, String, Vertx)
+   * @see TaskType#merge(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAKeywordWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
@@ -388,7 +393,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     source.keywords.add("     ");
     source.keywords.add("\n\t");
 
-    assertCanMerge(target, source, vertx, testContext,
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
         merged -> assertThat(merged.keywords).isNotEmpty().hasSize(1).contains("1234567890", atIndex(0)));
 
   }
@@ -399,7 +404,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see TaskType#merge(TaskType, String, Vertx)
+   * @see TaskType#merge(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadNorm(final Vertx vertx, final VertxTestContext testContext) {
@@ -411,7 +416,8 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     source.norms.add(new ProtocolNormTest().createModelExample(3));
     source.norms.get(1).thenceforth = null;
     final var target = this.createModelExample(1);
-    assertCannotMerge(target, source, "norms[1].thenceforth", vertx, testContext);
+    assertCannotMerge(target, source, "norms[1].thenceforth", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -421,7 +427,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#update(TaskType, String, Vertx)
+   * @see TaskType#update(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateANameWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
@@ -429,7 +435,8 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     final var target = this.createModelExample(1);
     final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
     source.name = "   1234567890   ";
-    assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated.name).isEqualTo("1234567890"));
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
+        updated -> assertThat(updated.name).isEqualTo("1234567890"));
 
   }
 
@@ -439,7 +446,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#update(TaskType, String, Vertx)
+   * @see TaskType#update(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateADescriptionWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
@@ -448,7 +455,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     target.name = "name";
     final var source = Model.fromJsonObject(target.toJsonObject(), TaskType.class);
     source.description = "   description   ";
-    assertCanUpdate(target, source, vertx, testContext,
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
         updated -> assertThat(updated.description).isEqualTo("description"));
 
   }
@@ -459,7 +466,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#update(TaskType, String, Vertx)
+   * @see TaskType#update(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateAKeywordWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
@@ -473,7 +480,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     source.keywords.add("     ");
     source.keywords.add("\n\t");
 
-    assertCanUpdate(target, source, vertx, testContext,
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
         updated -> assertThat(updated.keywords).isNotEmpty().hasSize(1).contains("1234567890", atIndex(0)));
 
   }
@@ -484,7 +491,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see TaskType#update(TaskType, String, Vertx)
+   * @see TaskType#update(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithABadNorm(final Vertx vertx, final VertxTestContext testContext) {
@@ -497,7 +504,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     source.norms.add(new ProtocolNormTest().createModelExample(3));
     source.norms.get(1).whenever = null;
 
-    assertCannotUpdate(target, source, "norms[1].whenever", vertx, testContext);
+    assertCannotUpdate(target, source, "norms[1].whenever", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -507,13 +514,13 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#update(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanUpdate(target, null, vertx, testContext, updated -> {
+    assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isSameAs(target);
     });
 
@@ -543,7 +550,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#update(TaskType, String, Vertx)
+   * @see TaskType#update(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateEmptyModels(final Vertx vertx, final VertxTestContext testContext) {
@@ -552,7 +559,7 @@ public class TaskTypeTest extends ModelTestCase<TaskType> {
     target.id = "1";
     final var source = new TaskType();
     source.id = "2";
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
       assertThat(updated).isEqualTo(target).isNotEqualTo(source);
 

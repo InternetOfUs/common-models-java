@@ -26,14 +26,15 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.ModelTestCase;
+import io.vertx.core.Vertx;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import io.vertx.core.Vertx;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
 
 /**
  * Generic test of teh class that extends {@link ProfileDate}.
@@ -77,7 +78,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
   public void shouldEmptyModelBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final ProfileDate model = this.createEmptyModel();
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -96,7 +97,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
     model.year = 2020;
     model.month = month;
     model.day = 2;
-    assertIsNotValid(model, "month", vertx, testContext);
+    assertIsNotValid(model, "month", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -115,7 +116,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
     model.year = 2020;
     model.month = 4;
     model.day = day;
-    assertIsNotValid(model, "day", vertx, testContext);
+    assertIsNotValid(model, "day", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -132,7 +133,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
     model.year = 2020;
     model.month = 2;
     model.day = 31;
-    assertIsNotValid(model, vertx, testContext);
+    assertIsNotValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -148,7 +149,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
     final ProfileDate model = this.createEmptyModel();
     model.month = 2;
     model.day = 31;
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -164,7 +165,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
     final ProfileDate model = this.createEmptyModel();
     model.year = 2020;
     model.day = 31;
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -180,7 +181,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
     final ProfileDate model = this.createEmptyModel();
     model.year = 2020;
     model.month = 2;
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -201,7 +202,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
     source.year = 2020;
     source.month = month;
     source.day = 2;
-    assertCannotMerge(target, source, "month", vertx, testContext);
+    assertCannotMerge(target, source, "month", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -221,7 +222,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
     source.year = 2020;
     source.month = 4;
     source.day = day;
-    assertCannotMerge(target, source, "day", vertx, testContext);
+    assertCannotMerge(target, source, "day", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -239,7 +240,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
     source.year = 2020;
     source.month = 2;
     source.day = 31;
-    assertCannotMerge(target, source, vertx, testContext);
+    assertCannotMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -249,7 +250,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see ProfileDate#merge(ProfileDate, String, Vertx)
+   * @see ProfileDate#merge(ProfileDate, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyYear(final Vertx vertx, final VertxTestContext testContext) {
@@ -257,7 +258,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
     final ProfileDate target = this.createModelExample(1);
     final ProfileDate source = this.createEmptyModel();
     source.year = target.year - 1;
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       assertThat(merged).isNotEqualTo(target);
       target.year--;
@@ -273,7 +274,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see ProfileDate#merge(ProfileDate, String, Vertx)
+   * @see ProfileDate#merge(ProfileDate, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyMonth(final Vertx vertx, final VertxTestContext testContext) {
@@ -281,7 +282,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
     final ProfileDate target = this.createModelExample(1);
     final ProfileDate source = this.createEmptyModel();
     source.month = (byte) (target.month - 1);
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       assertThat(merged).isNotEqualTo(target);
       target.month--;
@@ -297,7 +298,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see ProfileDate#merge(ProfileDate, String, Vertx)
+   * @see ProfileDate#merge(ProfileDate, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyDay(final Vertx vertx, final VertxTestContext testContext) {
@@ -305,7 +306,7 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
     final ProfileDate target = this.createModelExample(1);
     final ProfileDate source = this.createEmptyModel();
     source.day = (byte) (target.day - 1);
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       assertThat(merged).isNotEqualTo(target);
       target.day--;

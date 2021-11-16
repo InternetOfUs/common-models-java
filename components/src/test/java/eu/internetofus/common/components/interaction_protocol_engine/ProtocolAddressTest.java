@@ -25,6 +25,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.components.models.WeNetUserProfile;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
@@ -88,14 +89,14 @@ public class ProtocolAddressTest extends ModelTestCase<ProtocolAddress> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolMessage#validate(String, Vertx)
+   * @see ProtocolMessage#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6 })
   public void shouldExampleNotBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsNotValid(model, vertx, testContext);
+    assertIsNotValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -107,13 +108,14 @@ public class ProtocolAddressTest extends ModelTestCase<ProtocolAddress> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolMessage#validate(String, Vertx)
+   * @see ProtocolMessage#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext).onSuccess(model -> assertIsValid(model, vertx, testContext));
+    this.createModelExample(index, vertx, testContext)
+        .onSuccess(model -> assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext));
 
   }
 
@@ -123,13 +125,13 @@ public class ProtocolAddressTest extends ModelTestCase<ProtocolAddress> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolMessage#validate(String, Vertx)
+   * @see ProtocolMessage#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotValidWithoutComponent(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new ProtocolAddress();
-    assertIsNotValid(model, "component", vertx, testContext);
+    assertIsNotValid(model, "component", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -139,14 +141,14 @@ public class ProtocolAddressTest extends ModelTestCase<ProtocolAddress> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolMessage#validate(String, Vertx)
+   * @see ProtocolMessage#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithoutUserId(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.userId = null;
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 

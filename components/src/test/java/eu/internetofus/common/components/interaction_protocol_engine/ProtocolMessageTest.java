@@ -23,6 +23,7 @@ package eu.internetofus.common.components.interaction_protocol_engine;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -98,14 +99,14 @@ public class ProtocolMessageTest extends AbstractProtocolActionTestCase<Protocol
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolMessage#validate(String, Vertx)
+   * @see ProtocolMessage#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutSender(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.sender = null;
-      assertIsNotValid(model, "sender", vertx, testContext);
+      assertIsNotValid(model, "sender", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -115,14 +116,14 @@ public class ProtocolMessageTest extends AbstractProtocolActionTestCase<Protocol
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolMessage#validate(String, Vertx)
+   * @see ProtocolMessage#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithBadSender(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.sender = new ProtocolAddressTest().createModelExample(1);
-      assertIsNotValid(model, "sender.userId", vertx, testContext);
+      assertIsNotValid(model, "sender.userId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -132,14 +133,14 @@ public class ProtocolMessageTest extends AbstractProtocolActionTestCase<Protocol
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolMessage#validate(String, Vertx)
+   * @see ProtocolMessage#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutReceiver(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.receiver = null;
-      assertIsNotValid(model, "receiver", vertx, testContext);
+      assertIsNotValid(model, "receiver", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -149,14 +150,14 @@ public class ProtocolMessageTest extends AbstractProtocolActionTestCase<Protocol
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolMessage#validate(String, Vertx)
+   * @see ProtocolMessage#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithBadReceiver(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.receiver = new ProtocolAddressTest().createModelExample(2);
-      assertIsNotValid(model, "receiver.userId", vertx, testContext);
+      assertIsNotValid(model, "receiver.userId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 

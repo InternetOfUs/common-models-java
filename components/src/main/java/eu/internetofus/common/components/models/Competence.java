@@ -20,16 +20,15 @@
 
 package eu.internetofus.common.components.models;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * A competence necessary for do a social practice.
@@ -37,8 +36,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Competence", description = "It describe a competence of a user.")
-public class Competence extends ReflectionModel
-    implements Model, Validable, Mergeable<Competence>, Updateable<Competence> {
+public class Competence extends ReflectionModel implements Model, Validable<WeNetValidateContext>,
+    Mergeable<Competence, WeNetValidateContext>, Updateable<Competence, WeNetValidateContext> {
 
   /**
    * The name of the competence.
@@ -69,21 +68,14 @@ public class Competence extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
-    future = future.compose(empty -> Validations.validateStringField(codePrefix, "name", this.name).map(name -> {
-      this.name = name;
-      return null;
-    }));
-    future = future
-        .compose(empty -> Validations.validateStringField(codePrefix, "ontology", this.ontology).map(ontology -> {
-          this.ontology = ontology;
-          return null;
-        }));
-    future = future.compose(empty -> Validations.validateNumberOnRange(codePrefix, "level", this.level, false, 0d, 1d));
-    promise.complete();
+    final var future = promise.future();
+    this.name = context.validateStringField("name", this.name, promise);
+    this.ontology = context.validateStringField("ontology", this.ontology, promise);
+    context.validateNumberOnRangeField("level", this.level, 0.0d, 1.0d, promise);
+    promise.tryComplete();
     return future;
   }
 
@@ -91,7 +83,7 @@ public class Competence extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<Competence> merge(final Competence source, final String codePrefix, final Vertx vertx) {
+  public Future<Competence> merge(final Competence source, final WeNetValidateContext context) {
 
     final Promise<Competence> promise = Promise.promise();
     var future = promise.future();
@@ -118,7 +110,7 @@ public class Competence extends ReflectionModel
       promise.complete(merged);
 
       // Validate the merged value
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 
@@ -131,7 +123,7 @@ public class Competence extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<Competence> update(final Competence source, final String codePrefix, final Vertx vertx) {
+  public Future<Competence> update(final Competence source, final WeNetValidateContext context) {
 
     final Promise<Competence> promise = Promise.promise();
     var future = promise.future();
@@ -144,13 +136,28 @@ public class Competence extends ReflectionModel
       promise.complete(updated);
 
       // Validate the updated value
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 
       promise.complete(this);
     }
     return future;
+
+  }
+
+  /**
+   * Check if two competences are equivalent by its identifier fields.
+   *
+   * @param a first model to compare.
+   * @param b second model to compare.
+   *
+   * @return {@code true} if the competences can be considered equals by its
+   *         identifier.
+   */
+  static boolean compareIds(final Competence a, final Competence b) {
+
+    return a != null && a.name != null && a.name.equals(b.name) && a.ontology != null && a.ontology.equals(b.ontology);
 
   }
 

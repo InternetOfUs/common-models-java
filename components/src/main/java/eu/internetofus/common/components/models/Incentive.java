@@ -20,17 +20,13 @@
 
 package eu.internetofus.common.components.models;
 
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.service.WeNetService;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationErrorException;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * Represents an incentive for an user.
@@ -38,7 +34,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Incentive", description = "An user incentive.")
-public class Incentive extends ReflectionModel implements Model, Validable {
+public class Incentive extends ReflectionModel implements Model, Validable<WeNetValidateContext> {
 
   /**
    * Identifier of the application.
@@ -80,47 +76,38 @@ public class Incentive extends ReflectionModel implements Model, Validable {
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
 
     if (this.AppID != null) {
 
-      future = Validations.composeValidateId(future, codePrefix, "AppID", this.AppID, true,
-          WeNetService.createProxy(vertx)::retrieveApp);
+      future = context.validateDefinedAppIdField("AppID", this.AppID, future);
 
     }
     if (this.UserId != null) {
 
-      future = Validations.composeValidateId(future, codePrefix, "UserId", this.UserId, true,
-          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+      future = context.validateDefinedProfileIdField("UserId", this.UserId, future);
 
     }
-    future = future.compose(
-        empty -> Validations.validateStringField(codePrefix, "IncentiveType", this.IncentiveType).map(IncentiveType -> {
-          this.IncentiveType = IncentiveType;
-          return null;
-        }));
-    future = future.compose(empty -> Validations.validateStringField(codePrefix, "Issuer", this.Issuer).map(Issuer -> {
-      this.Issuer = Issuer;
-      return null;
-    }));
+
+    this.IncentiveType = context.validateStringField("IncentiveType", this.IncentiveType, promise);
+    this.IncentiveType = context.validateStringField("Issuer", this.Issuer, promise);
 
     if (this.Message == null && this.Badge == null) {
 
-      promise.fail(new ValidationErrorException(codePrefix + ".Message", "You must specify a message or a badge"));
+      return context.failField("Message", "You must specify a message or a badge");
     }
 
     if (this.Message != null) {
 
-      future = future.compose(val -> this.Message.validate(codePrefix + ".Message", vertx));
+      future = future.compose(context.validateField("Message", this.Message));
     }
 
     if (this.Badge != null) {
 
-      future = future.compose(val -> this.Badge.validate(codePrefix + ".Badge", vertx));
-
+      future = future.compose(context.validateField("Badge", this.Badge));
     }
 
     promise.tryComplete();

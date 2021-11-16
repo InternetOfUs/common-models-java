@@ -20,16 +20,15 @@
 
 package eu.internetofus.common.components.models;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * A material necessary for do a social practice.
@@ -37,7 +36,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Material", description = "It describes an object that is available to a user.")
-public class Material extends ReflectionModel implements Model, Validable, Mergeable<Material>, Updateable<Material> {
+public class Material extends ReflectionModel implements Model, Validable<WeNetValidateContext>,
+    Mergeable<Material, WeNetValidateContext>, Updateable<Material, WeNetValidateContext> {
 
   /**
    * The name of the material.
@@ -72,28 +72,16 @@ public class Material extends ReflectionModel implements Model, Validable, Merge
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
+    final var future = promise.future();
 
-    future = future.compose(empty -> Validations.validateStringField(codePrefix, "name", this.name).map(name -> {
-      this.name = name;
-      return null;
-    }));
-    future = future.compose(empty -> Validations
-        .validateNullableStringField(codePrefix, "description", this.description).map(description -> {
-          this.description = description;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateNumberOnRange(codePrefix, "quantity", this.quantity, false, 1, null));
-    future = future.compose(empty -> Validations.validateStringField(codePrefix, "classification", this.classification)
-        .map(classification -> {
-          this.classification = classification;
-          return null;
-        }));
-    promise.complete();
+    this.name = context.validateStringField("name", this.name, promise);
+    this.description = context.normalizeString(this.description);
+    context.validateNumberOnRangeField("quantity", this.quantity, 1d, null, promise);
+    this.classification = context.validateStringField("classification", this.classification, promise);
+    promise.tryComplete();
 
     return future;
 
@@ -103,7 +91,7 @@ public class Material extends ReflectionModel implements Model, Validable, Merge
    * {@inheritDoc}
    */
   @Override
-  public Future<Material> merge(final Material source, final String codePrefix, final Vertx vertx) {
+  public Future<Material> merge(final Material source, final WeNetValidateContext context) {
 
     final Promise<Material> promise = Promise.promise();
     var future = promise.future();
@@ -137,7 +125,7 @@ public class Material extends ReflectionModel implements Model, Validable, Merge
       promise.complete(merged);
 
       // Validate the merged value
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 
@@ -150,7 +138,7 @@ public class Material extends ReflectionModel implements Model, Validable, Merge
    * {@inheritDoc}
    */
   @Override
-  public Future<Material> update(final Material source, final String codePrefix, final Vertx vertx) {
+  public Future<Material> update(final Material source, final WeNetValidateContext context) {
 
     final Promise<Material> promise = Promise.promise();
     var future = promise.future();
@@ -165,13 +153,29 @@ public class Material extends ReflectionModel implements Model, Validable, Merge
       promise.complete(updated);
 
       // Validate the updated value
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 
       promise.complete(this);
     }
     return future;
+
+  }
+
+  /**
+   * Check if two materials are equivalent by its identifier fields.
+   *
+   * @param a first model to compare.
+   * @param b second model to compare.
+   *
+   * @return {@code true} if the materials can be considered equals by its
+   *         identifier.
+   */
+  static boolean compareIds(final Material a, final Material b) {
+
+    return a != null && a.name != null && a.name.equals(b.name) && a.classification != null
+        && a.classification.equals(b.classification);
 
   }
 

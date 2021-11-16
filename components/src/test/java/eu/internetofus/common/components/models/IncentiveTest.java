@@ -25,6 +25,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
@@ -95,14 +96,14 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Incentive#validate(String, Vertx)
+   * @see Incentive#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleNoBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsNotValid(model, vertx, testContext);
+    assertIsNotValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -115,13 +116,14 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Incentive#validate(String, Vertx)
+   * @see Incentive#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext).onSuccess(model -> assertIsValid(model, vertx, testContext));
+    this.createModelExample(index, vertx, testContext)
+        .onSuccess(model -> assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext));
 
   }
 
@@ -131,7 +133,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see Incentive#validate(String, Vertx)
+   * @see Incentive#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithAnUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -139,7 +141,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.AppID = "Undefined";
-      assertIsNotValid(model, "AppID", vertx, testContext);
+      assertIsNotValid(model, "AppID", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
 
   }
@@ -150,7 +152,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see Incentive#validate(String, Vertx)
+   * @see Incentive#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithAnUndefinedUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -158,7 +160,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.UserId = "Undefined";
-      assertIsNotValid(model, "UserId", vertx, testContext);
+      assertIsNotValid(model, "UserId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
 
   }
@@ -169,7 +171,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see Incentive#validate(String, Vertx)
+   * @see Incentive#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutMesageAndBadge(final Vertx vertx, final VertxTestContext testContext) {
@@ -178,7 +180,7 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
 
       model.Message = null;
       model.Badge = null;
-      assertIsNotValid(model, "Message", vertx, testContext);
+      assertIsNotValid(model, "Message", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
 
   }

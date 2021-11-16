@@ -23,6 +23,7 @@ package eu.internetofus.common.components.models;
 import static eu.internetofus.common.model.MergeAsserts.assertCannotMerge;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import java.time.LocalDate;
@@ -52,7 +53,7 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see AliveBirthDate#validate(String, Vertx)
+   * @see AliveBirthDate#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidToBornOnTheFuture(final Vertx vertx, final VertxTestContext testContext) {
@@ -62,7 +63,7 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
     model.year = tomorrow.getYear();
     model.month = (byte) tomorrow.getMonthValue();
     model.day = (byte) tomorrow.getDayOfMonth();
-    assertIsNotValid(model, vertx, testContext);
+    assertIsNotValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -72,7 +73,7 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see AliveBirthDate#validate(String, Vertx)
+   * @see AliveBirthDate#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidToBornBeforeTheOldestPersonOnTheWorld(final Vertx vertx,
@@ -82,7 +83,7 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
     model.year = 1903;
     model.month = 1;
     model.day = 1;
-    assertIsNotValid(model, vertx, testContext);
+    assertIsNotValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
   /**
@@ -91,7 +92,7 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see AliveBirthDate#merge(ProfileDate, String, Vertx)
+   * @see AliveBirthDate#merge(ProfileDate, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeToBornOnTheFuture(final Vertx vertx, final VertxTestContext testContext) {
@@ -102,7 +103,7 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
     source.year = tomorrow.getYear();
     source.month = (byte) tomorrow.getMonthValue();
     source.day = (byte) tomorrow.getDayOfMonth();
-    assertCannotMerge(target, source, vertx, testContext);
+    assertCannotMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -112,7 +113,7 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see AliveBirthDate#merge(ProfileDate, String, Vertx)
+   * @see AliveBirthDate#merge(ProfileDate, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeToBornBeforeTheOldestPersonOnTheWorld(final Vertx vertx,
@@ -123,7 +124,7 @@ public class AliveBirthDateTest extends ProfileDateTestCase<AliveBirthDate> {
     source.year = 1903;
     source.month = 1;
     source.day = 1;
-    assertCannotMerge(target, source, vertx, testContext);
+    assertCannotMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 

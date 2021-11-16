@@ -20,19 +20,16 @@
 
 package eu.internetofus.common.components.models;
 
-import eu.internetofus.common.components.MergeFieldLists;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.CreateUpdateTsDetails;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import java.util.List;
 
 /**
@@ -41,8 +38,8 @@ import java.util.List;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "WeNetUserProfile", description = "The profile of a WeNet user.")
-public class WeNetUserProfile extends CreateUpdateTsDetails
-    implements Validable, Mergeable<WeNetUserProfile>, Updateable<WeNetUserProfile> {
+public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable<WeNetValidateContext>,
+    Mergeable<WeNetUserProfile, WeNetValidateContext>, Updateable<WeNetUserProfile, WeNetValidateContext> {
 
   /**
    * A person whose gender identity matches to female.
@@ -192,80 +189,53 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
 
     if (this.id != null) {
 
-      future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
-          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+      future = context.validateNotDefinedProfileIdField("id", this.id, future);
 
     }
 
     if (this.name != null) {
 
-      future = future.compose(mapper -> this.name.validate(codePrefix + ".name", vertx));
+      future = future.compose(context.validateField("name", this.name));
     }
     if (this.dateOfBirth != null) {
 
-      future = future.compose(mapper -> this.dateOfBirth.validate(codePrefix + ".dateOfBirth", vertx));
-
+      future = future.compose(context.validateField("dateOfBirth", this.dateOfBirth));
     }
 
-    future = future.compose(
-        empty -> Validations.validateNullableStringField(codePrefix, "gender", this.gender, GENDERS).map(gender -> {
-          this.gender = gender;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateNullableEmailField(codePrefix, "email", this.email).map(email -> {
-          this.email = email;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateNullableLocaleField(codePrefix, "locale", this.locale).map(locale -> {
-          this.locale = locale;
-          return null;
-        }));
-    future = future.compose(empty -> Validations
-        .validateNullableTelephoneField(codePrefix, "phoneNumber", this.locale, this.phoneNumber).map(phoneNumber -> {
-          this.phoneNumber = phoneNumber;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateNullableURLField(codePrefix, "avatar", this.avatar).map(avatar -> {
-          this.avatar = avatar;
-          return null;
-        }));
-    future = future.compose(empty -> Validations
-        .validateNullableStringField(codePrefix, "nationality", this.nationality).map(nationality -> {
-          this.nationality = nationality;
-          return null;
-        }));
-    future = future.compose(
-        empty -> Validations.validateNullableStringField(codePrefix, "occupation", this.occupation).map(occupation -> {
-          this.occupation = occupation;
-          return null;
-        }));
-    future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
-    future = future.compose(Validations.validate(this.plannedActivities, (a, b) -> a.id.equals(b.id),
-        codePrefix + ".plannedActivities", vertx));
-    future = future.compose(Validations.validate(this.relevantLocations, (a, b) -> a.id.equals(b.id),
-        codePrefix + ".relevantLocations", vertx));
-    future = future.compose(Validations.validate(this.relationships, (a, b) -> a.equalsByAppUserAndType(b),
-        codePrefix + ".relationships", vertx));
-    future = future.compose(
-        Validations.validate(this.personalBehaviors, (a, b) -> a.equals(b), codePrefix + ".personalBehaviors", vertx));
-    future = future
-        .compose(Validations.validate(this.materials, (a, b) -> a.equals(b), codePrefix + ".materials", vertx));
-    future = future
-        .compose(Validations.validate(this.competences, (a, b) -> a.equals(b), codePrefix + ".competences", vertx));
-    future = future
-        .compose(Validations.validate(this.meanings, (a, b) -> a.equals(b), codePrefix + ".meanings", vertx));
+    this.gender = context.normalizeString(this.gender);
+    if (this.gender != null) {
 
-    promise.complete();
+      context.validateEnumField("gender", this.gender, promise, GENDERS);
+    }
+
+    this.email = context.validateNullableEmailField("email", this.email, promise);
+    this.locale = context.validateNullableLocaleField("locale", this.locale, promise);
+    this.phoneNumber = context.validateNullableTelephoneField("phoneNumber", this.phoneNumber, this.locale, promise);
+    this.locale = context.validateNullableUrlField("avatar", this.avatar, promise);
+    this.nationality = context.normalizeString(this.nationality);
+    this.occupation = context.normalizeString(this.occupation);
+
+    future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
+    future = future
+        .compose(context.validateListField("plannedActivities", this.plannedActivities, PlannedActivity::compareIds));
+    future = future
+        .compose(context.validateListField("relevantLocations", this.relevantLocations, RelevantLocation::compareIds));
+    future = future
+        .compose(context.validateListField("relationships", this.relationships, SocialNetworkRelationship::compareIds));
+    future = future
+        .compose(context.validateListField("personalBehaviors", this.personalBehaviors, Routine::compareIds));
+    future = future.compose(context.validateListField("materials", this.materials, Material::compareIds));
+    future = future.compose(context.validateListField("competences", this.competences, Competence::compareIds));
+    future = future.compose(context.validateListField("meanings", this.meanings, Meaning::compareIds));
+
+    promise.tryComplete();
 
     return future;
   }
@@ -274,7 +244,7 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<WeNetUserProfile> merge(final WeNetUserProfile source, final String codePrefix, final Vertx vertx) {
+  public Future<WeNetUserProfile> merge(final WeNetUserProfile source, final WeNetValidateContext context) {
 
     final Promise<WeNetUserProfile> promise = Promise.promise();
     var future = promise.future();
@@ -284,109 +254,57 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
       merged._creationTs = this._creationTs;
       merged._lastUpdateTs = this._lastUpdateTs;
 
-      merged.gender = source.gender;
-      if (merged.gender == null) {
+      merged.gender = Merges.mergeValues(this.gender, source.gender);
+      merged.email = Merges.mergeValues(this.email, source.email);
+      merged.locale = Merges.mergeValues(this.locale, source.locale);
+      merged.phoneNumber = Merges.mergeValues(this.phoneNumber, source.phoneNumber);
+      merged.avatar = Merges.mergeValues(this.avatar, source.avatar);
+      merged.nationality = Merges.mergeValues(this.nationality, source.nationality);
+      merged.occupation = Merges.mergeValues(this.occupation, source.occupation);
+      merged.hasLocations = Merges.mergeValues(this.hasLocations, source.hasLocations);
 
-        merged.gender = this.gender;
-      }
+      future = future.compose(
+          Merges.mergeField(context, "name", this.name, source.name, (model, mergedValue) -> model.name = mergedValue));
 
-      merged.email = source.email;
-      if (merged.email == null) {
+      future = future.compose(Merges.mergeField(context, "dateOfBirth", this.dateOfBirth, source.dateOfBirth,
+          (model, mergedValue) -> model.dateOfBirth = (AliveBirthDate) mergedValue));
 
-        merged.email = this.email;
-      }
-      merged.locale = source.locale;
-      if (merged.locale == null) {
+      future = future.compose(Merges.mergeListField(context, "norms", this.norms, source.norms,
+          ProtocolNorm::compareIds, (model, norms) -> model.norms = norms));
 
-        merged.locale = this.locale;
-      }
-      merged.phoneNumber = source.phoneNumber;
-      if (merged.phoneNumber == null) {
+      future = future
+          .compose(Merges.mergeListField(context, "plannedActivities", this.plannedActivities, source.plannedActivities,
+              PlannedActivity::compareIds, (model, mergedValue) -> model.plannedActivities = mergedValue));
 
-        merged.phoneNumber = this.phoneNumber;
-      }
-      merged.avatar = source.avatar;
-      if (merged.avatar == null) {
+      future = future
+          .compose(Merges.mergeListField(context, "relevantLocations", this.relevantLocations, source.relevantLocations,
+              RelevantLocation::compareIds, (model, mergedValue) -> model.relevantLocations = mergedValue));
 
-        merged.avatar = this.avatar;
-      }
+      future = future
+          .compose(Merges.mergeListField(context, "personalBehaviors", this.personalBehaviors, source.personalBehaviors,
+              Routine::compareIds, (model, mergedValue) -> model.personalBehaviors = mergedValue));
 
-      merged.nationality = source.nationality;
-      if (merged.nationality == null) {
+      future = future.compose(Merges.mergeListField(context, "relationships", this.relationships, source.relationships,
+          SocialNetworkRelationship::compareIds, (model, mergedValue) -> model.relationships = mergedValue));
 
-        merged.nationality = this.nationality;
-      }
+      future = future.compose(Merges.mergeListField(context, "materials", this.materials, source.materials,
+          Material::compareIds, (model, mergedValue) -> model.materials = mergedValue));
 
-      merged.occupation = source.occupation;
-      if (merged.occupation == null) {
+      future = future.compose(Merges.mergeListField(context, "competences", this.competences, source.competences,
+          Competence::compareIds, (model, mergedValue) -> model.competences = mergedValue));
 
-        merged.occupation = this.occupation;
-      }
+      future = future.compose(Merges.mergeListField(context, "meanings", this.meanings, source.meanings,
+          Meaning::compareIds, (model, mergedValue) -> model.meanings = mergedValue));
 
-      merged.hasLocations = source.hasLocations;
-      if (merged.hasLocations == null) {
-
-        merged.hasLocations = this.hasLocations;
-      }
-
-      merged.relationships = source.relationships;
-      if (merged.relationships == null) {
-
-        merged.relationships = this.relationships;
-      }
-
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
-
-      future = future.compose(Merges.mergeField(this.name, source.name, codePrefix + ".name", vertx,
-          (model, mergedName) -> model.name = mergedName));
-
-      future = future.compose(Merges.mergeField(this.dateOfBirth, source.dateOfBirth, codePrefix + ".dateOfBirth",
-          vertx, (model, mergedDateOfBirth) -> model.dateOfBirth = (AliveBirthDate) mergedDateOfBirth));
-
-      merged.norms = source.norms;
-      if (merged.norms == null) {
-
-        merged.norms = this.norms;
-      }
-
-      future = future.compose(MergeFieldLists.mergePlannedActivities(this.plannedActivities, source.plannedActivities,
-          codePrefix + ".plannedActivities", vertx, (model, mergedPlannedActivities) -> {
-            merged.plannedActivities = mergedPlannedActivities;
-          }));
-
-      future = future.compose(MergeFieldLists.mergeRelevantLocations(this.relevantLocations, source.relevantLocations,
-          codePrefix + ".relevantLocations", vertx, (model, mergedRelevantLocations) -> {
-            model.relevantLocations = mergedRelevantLocations;
-          }));
-
-      future = future.compose(MergeFieldLists.mergeRoutines(this.personalBehaviors, source.personalBehaviors,
-          codePrefix + ".personalBehaviors", vertx, (model, mergedPersonalBehaviors) -> {
-            model.personalBehaviors = mergedPersonalBehaviors;
-          }));
-
-      future = future.compose(MergeFieldLists.mergeMaterials(this.materials, source.materials,
-          codePrefix + ".materials", vertx, (model, mergedMaterials) -> {
-            model.materials = mergedMaterials;
-          }));
-
-      future = future.compose(MergeFieldLists.mergeCompetences(this.competences, source.competences,
-          codePrefix + ".competences", vertx, (model, mergedCompetences) -> {
-            model.competences = mergedCompetences;
-          }));
-
-      future = future.compose(MergeFieldLists.mergeMeanings(this.meanings, source.meanings, codePrefix + ".meanings",
-          vertx, (model, mergedMeanings) -> {
-            model.meanings = mergedMeanings;
-          }));
-
-      promise.complete(merged);
-
+      future = future.compose(context.chain());
       // When merged set the fixed field values
       future = future.map(mergedValidatedModel -> {
 
         mergedValidatedModel.id = this.id;
         return mergedValidatedModel;
       });
+
+      promise.complete(merged);
 
     } else {
 
@@ -400,7 +318,7 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<WeNetUserProfile> update(final WeNetUserProfile source, final String codePrefix, final Vertx vertx) {
+  public Future<WeNetUserProfile> update(final WeNetUserProfile source, final WeNetValidateContext context) {
 
     final Promise<WeNetUserProfile> promise = Promise.promise();
     var future = promise.future();
@@ -429,7 +347,7 @@ public class WeNetUserProfile extends CreateUpdateTsDetails
       updated.competences = source.competences;
       updated.meanings = source.meanings;
 
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
       future = future.map(updatedValidatedModel -> {
 
         updatedValidatedModel.id = this.id;

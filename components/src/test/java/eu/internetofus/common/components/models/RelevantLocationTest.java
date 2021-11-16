@@ -28,6 +28,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
@@ -65,13 +66,13 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see RelevantLocation#validate(WeNetValidateContext)
    */
   @Test
   public void shouldExampleBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -81,7 +82,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see RelevantLocation#validate(WeNetValidateContext)
    */
   @Test
   public void shouldFullModelBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -92,7 +93,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     model.longitude = 10d;
     model.latitude = -10d;
 
-    assertIsValid(model, vertx, testContext, () -> {
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var expected = new RelevantLocation();
       expected.id = model.id;
@@ -110,14 +111,14 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see RelevantLocation#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new RelevantLocation();
     model.id = "has_id";
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -127,14 +128,14 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see RelevantLocation#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadLongitudeLessThanMinimum(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new RelevantLocation();
     model.longitude = -180.0001;
-    assertIsNotValid(model, "longitude", vertx, testContext);
+    assertIsNotValid(model, "longitude", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -144,14 +145,14 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see RelevantLocation#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadLongitudeMoreThanMaximum(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new RelevantLocation();
     model.longitude = 180.0001;
-    assertIsNotValid(model, "longitude", vertx, testContext);
+    assertIsNotValid(model, "longitude", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -161,14 +162,14 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see RelevantLocation#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadLatitudeLessThanMinimum(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new RelevantLocation();
     model.latitude = -90.0001;
-    assertIsNotValid(model, "latitude", vertx, testContext);
+    assertIsNotValid(model, "latitude", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -178,14 +179,14 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see RelevantLocation#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadLatitudeMoreThanMaximum(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new RelevantLocation();
     model.latitude = 90.0001;
-    assertIsNotValid(model, "latitude", vertx, testContext);
+    assertIsNotValid(model, "latitude", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -195,7 +196,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadLongitudeLessThanMinimum(final Vertx vertx, final VertxTestContext testContext) {
@@ -203,7 +204,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var target = this.createModelExample(1);
     final var source = new RelevantLocation();
     source.longitude = -180.0001;
-    assertCannotMerge(target, source, "longitude", vertx, testContext);
+    assertCannotMerge(target, source, "longitude", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -213,7 +214,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadLongitudeMoreThanMaximum(final Vertx vertx, final VertxTestContext testContext) {
@@ -221,7 +222,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var target = this.createModelExample(1);
     final var source = new RelevantLocation();
     source.longitude = 180.0001;
-    assertCannotMerge(target, source, "longitude", vertx, testContext);
+    assertCannotMerge(target, source, "longitude", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -231,7 +232,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadLatitudeLessThanMinimum(final Vertx vertx, final VertxTestContext testContext) {
@@ -239,7 +240,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var target = this.createModelExample(1);
     final var source = new RelevantLocation();
     source.latitude = -90.0001;
-    assertCannotMerge(target, source, "latitude", vertx, testContext);
+    assertCannotMerge(target, source, "latitude", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -249,7 +250,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadLatitudeMoreThanMaximum(final Vertx vertx, final VertxTestContext testContext) {
@@ -257,7 +258,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var target = this.createModelExample(1);
     final var source = new RelevantLocation();
     source.latitude = 90.0001;
-    assertCannotMerge(target, source, "latitude", vertx, testContext);
+    assertCannotMerge(target, source, "latitude", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -267,7 +268,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
@@ -275,7 +276,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var target = this.createModelExample(1);
     target.id = "1";
     final var source = this.createModelExample(2);
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       source.id = "1";
       assertThat(merged).isEqualTo(source);
@@ -288,13 +289,14 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged).isSameAs(target));
   }
 
   /**
@@ -303,7 +305,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyLabel(final Vertx vertx, final VertxTestContext testContext) {
@@ -314,7 +316,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     source.label = "NEW LABEL";
     source.latitude = target.latitude;
     source.longitude = target.longitude;
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.label = "NEW LABEL";
       assertThat(merged).isEqualTo(target);
@@ -327,7 +329,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeLatitude(final Vertx vertx, final VertxTestContext testContext) {
@@ -336,7 +338,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     target.id = "1";
     final var source = new RelevantLocation();
     source.latitude = 45d;
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.latitude = 45d;
       assertThat(merged).isEqualTo(target);
@@ -349,7 +351,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeLongitude(final Vertx vertx, final VertxTestContext testContext) {
@@ -358,7 +360,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     target.id = "1";
     final var source = new RelevantLocation();
     source.longitude = 45d;
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.longitude = 45d;
       assertThat(merged).isEqualTo(target);
@@ -371,7 +373,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyLongitude(final Vertx vertx, final VertxTestContext testContext) {
@@ -381,7 +383,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var source = new RelevantLocation();
     source.latitude = target.latitude;
     source.longitude = 0d;
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.longitude = 0d;
       assertThat(merged).isEqualTo(target);
@@ -395,7 +397,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyLatitude(final Vertx vertx, final VertxTestContext testContext) {
@@ -405,7 +407,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var source = new RelevantLocation();
     source.longitude = target.longitude;
     source.latitude = 0d;
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.latitude = 0d;
       assertThat(merged).isEqualTo(target);
@@ -418,7 +420,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithABadLongitudeLessThanMinimum(final Vertx vertx, final VertxTestContext testContext) {
@@ -426,7 +428,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var target = this.createModelExample(1);
     final var source = new RelevantLocation();
     source.longitude = -180.0001;
-    assertCannotUpdate(target, source, "longitude", vertx, testContext);
+    assertCannotUpdate(target, source, "longitude", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -436,7 +438,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithABadLongitudeMoreThanMaximum(final Vertx vertx, final VertxTestContext testContext) {
@@ -444,7 +446,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var target = this.createModelExample(1);
     final var source = new RelevantLocation();
     source.longitude = 180.0001;
-    assertCannotUpdate(target, source, "longitude", vertx, testContext);
+    assertCannotUpdate(target, source, "longitude", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -454,7 +456,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithABadLatitudeLessThanMinimum(final Vertx vertx, final VertxTestContext testContext) {
@@ -462,7 +464,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var target = this.createModelExample(1);
     final var source = new RelevantLocation();
     source.latitude = -90.0001;
-    assertCannotUpdate(target, source, "latitude", vertx, testContext);
+    assertCannotUpdate(target, source, "latitude", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -472,7 +474,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithABadLatitudeMoreThanMaximum(final Vertx vertx, final VertxTestContext testContext) {
@@ -480,7 +482,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var target = this.createModelExample(1);
     final var source = new RelevantLocation();
     source.latitude = 90.0001;
-    assertCannotUpdate(target, source, "latitude", vertx, testContext);
+    assertCannotUpdate(target, source, "latitude", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -490,7 +492,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldUpdate(final Vertx vertx, final VertxTestContext testContext) {
@@ -498,7 +500,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var target = this.createModelExample(1);
     target.id = "1";
     final var source = this.createModelExample(2);
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       source.id = "1";
       assertThat(updated).isEqualTo(source);
@@ -511,13 +513,14 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanUpdate(target, null, vertx, testContext, updated -> assertThat(updated).isSameAs(target));
+    assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        updated -> assertThat(updated).isSameAs(target));
   }
 
   /**
@@ -526,7 +529,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyLabel(final Vertx vertx, final VertxTestContext testContext) {
@@ -537,7 +540,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     source.label = "NEW LABEL";
     source.latitude = target.latitude;
     source.longitude = target.longitude;
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       target.label = "NEW LABEL";
       assertThat(updated).isEqualTo(target);
@@ -550,7 +553,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateLatitudeLongitude(final Vertx vertx, final VertxTestContext testContext) {
@@ -558,7 +561,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var target = this.createModelExample(1);
     target.id = "1";
     final var source = new RelevantLocation();
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
       assertThat(updated).isEqualTo(source);
@@ -571,7 +574,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyLongitude(final Vertx vertx, final VertxTestContext testContext) {
@@ -581,7 +584,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var source = new RelevantLocation();
     source.latitude = target.latitude;
     source.longitude = 0d;
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
       assertThat(updated).isEqualTo(source);
@@ -595,7 +598,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyLatitude(final Vertx vertx, final VertxTestContext testContext) {
@@ -605,7 +608,7 @@ public class RelevantLocationTest extends ModelTestCase<RelevantLocation> {
     final var source = new RelevantLocation();
     source.longitude = target.longitude;
     source.latitude = 0d;
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
       assertThat(updated).isEqualTo(source);

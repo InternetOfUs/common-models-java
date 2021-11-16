@@ -20,14 +20,12 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationCache;
-import eu.internetofus.common.model.ValidationErrorException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * A message that can be interchange in an interaction protocol.
@@ -35,7 +33,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(name = "ProtocolMessage", description = "A message that can be interchange in an interaction protocol.")
-public class ProtocolMessage extends AbstractProtocolAction implements Model, Validable {
+public class ProtocolMessage extends AbstractProtocolAction implements Model, Validable<WeNetValidateContext> {
 
   /**
    * The identifier of the user that is sending the message.
@@ -53,26 +51,14 @@ public class ProtocolMessage extends AbstractProtocolAction implements Model, Va
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
-    var future = super.validate(codePrefix, vertx, cache).compose(empty -> promise.future());
-    if (this.sender == null) {
-
-      promise.fail(new ValidationErrorException(codePrefix + ".sender", "You must to define a sender"));
-
-    } else if (this.receiver == null) {
-
-      promise.fail(new ValidationErrorException(codePrefix + ".receiver", "You must to define a receiver"));
-
-    } else {
-
-      future = future.compose(map -> this.sender.validate(codePrefix + ".sender", vertx, cache));
-      future = future.compose(map -> this.receiver.validate(codePrefix + ".receiver", vertx, cache));
-      promise.complete();
-
-    }
-
+    var future = promise.future();
+    future = future.compose(empty -> super.validate(context));
+    future = future.compose(context.validateField("sender", this.sender));
+    future = future.compose(context.validateField("receiver", this.receiver));
+    promise.tryComplete();
     return future;
 
   }

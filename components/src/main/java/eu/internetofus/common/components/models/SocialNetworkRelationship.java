@@ -20,20 +20,15 @@
 
 package eu.internetofus.common.components.models;
 
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.service.WeNetService;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationErrorException;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import java.util.Objects;
 
 /**
  * A relationship with another user.
@@ -42,7 +37,8 @@ import java.util.Objects;
  */
 @Schema(hidden = true, description = "A social relationship with another WeNet user.")
 public class SocialNetworkRelationship extends ReflectionModel
-    implements Model, Validable, Mergeable<SocialNetworkRelationship>, Updateable<SocialNetworkRelationship> {
+    implements Model, Validable<WeNetValidateContext>, Mergeable<SocialNetworkRelationship, WeNetValidateContext>,
+    Updateable<SocialNetworkRelationship, WeNetValidateContext> {
 
   /**
    * The identifier of the application where the relation happens.
@@ -72,25 +68,21 @@ public class SocialNetworkRelationship extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
 
     if (this.type == null) {
 
-      promise.fail(new ValidationErrorException(codePrefix + ".type",
-          "It is not allowed a social relationship without a type'."));
+      return context.failField("type", "It is not allowed a social relationship without a type'.");
 
     } else {
 
-      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
-          WeNetService.createProxy(vertx)::retrieveApp);
-      future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
-          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
-      future = future
-          .compose(empty -> Validations.validateNumberOnRange(codePrefix, "weight", this.weight, true, 0d, 1d));
-      promise.complete();
+      future = context.validateDefinedAppIdField("appId", this.appId, future);
+      future = context.validateDefinedProfileIdField("userId", this.userId, future);
+      context.validateNumberOnRangeField("weight", this.weight, 0.0d, 1.0d, promise);
+      promise.tryComplete();
     }
 
     return future;
@@ -98,25 +90,11 @@ public class SocialNetworkRelationship extends ReflectionModel
   }
 
   /**
-   * Check equals by user and type.
-   *
-   * @param relationship to compare.
-   *
-   * @return {@code true} if the relations has the same user and type.
-   */
-  public boolean equalsByAppUserAndType(final SocialNetworkRelationship relationship) {
-
-    return relationship != null && Objects.equals(this.type, relationship.type)
-        && Objects.equals(this.appId, relationship.appId) && Objects.equals(this.userId, relationship.userId);
-
-  }
-
-  /**
    * {@inheritDoc}
    */
   @Override
-  public Future<SocialNetworkRelationship> merge(final SocialNetworkRelationship source, final String codePrefix,
-      final Vertx vertx) {
+  public Future<SocialNetworkRelationship> merge(final SocialNetworkRelationship source,
+      final WeNetValidateContext context) {
 
     final Promise<SocialNetworkRelationship> promise = Promise.promise();
     var future = promise.future();
@@ -150,7 +128,7 @@ public class SocialNetworkRelationship extends ReflectionModel
       promise.complete(merged);
 
       // validate the merged value
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 
@@ -165,8 +143,8 @@ public class SocialNetworkRelationship extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<SocialNetworkRelationship> update(final SocialNetworkRelationship source, final String codePrefix,
-      final Vertx vertx) {
+  public Future<SocialNetworkRelationship> update(final SocialNetworkRelationship source,
+      final WeNetValidateContext context) {
     final Promise<SocialNetworkRelationship> promise = Promise.promise();
     var future = promise.future();
     if (source != null) {
@@ -180,7 +158,7 @@ public class SocialNetworkRelationship extends ReflectionModel
       promise.complete(updated);
 
       // validate the updated value
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 
@@ -189,4 +167,22 @@ public class SocialNetworkRelationship extends ReflectionModel
     }
     return future;
   }
+
+  /**
+   * Check if two social network relationships are equivalent by its identifier
+   * fields.
+   *
+   * @param a first model to compare.
+   * @param b second model to compare.
+   *
+   * @return {@code true} if the social network relationships can be considered
+   *         equals by its identifier.
+   */
+  static boolean compareIds(final SocialNetworkRelationship a, final SocialNetworkRelationship b) {
+
+    return a != null && a.type != null && a.type.equals(b.type) && a.appId != null && a.appId.equals(b.appId)
+        && a.userId != null && a.userId.equals(b.userId);
+
+  }
+
 }

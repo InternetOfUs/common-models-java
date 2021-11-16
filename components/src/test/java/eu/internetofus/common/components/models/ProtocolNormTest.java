@@ -26,6 +26,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
@@ -68,14 +69,14 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#validate(String, Vertx)
+   * @see TaskType#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -85,14 +86,14 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutWhenever(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.whenever = null;
-    assertIsNotValid(model, "whenever", vertx, testContext);
+    assertIsNotValid(model, "whenever", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -102,14 +103,14 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutThenceforth(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.thenceforth = null;
-    assertIsNotValid(model, "thenceforth", vertx, testContext);
+    assertIsNotValid(model, "thenceforth", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -119,14 +120,14 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithThenceforthEqualsToWhenever(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.thenceforth = model.whenever;
-    assertIsNotValid(model, "thenceforth", vertx, testContext);
+    assertIsNotValid(model, "thenceforth", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -136,14 +137,14 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#merge(TaskType, String, Vertx)
+   * @see TaskType#merge(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     final var source = this.createModelExample(23);
-    assertCanMerge(target, source, vertx, testContext,
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
         merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
 
   }
@@ -154,13 +155,14 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#merge(TaskType, String, Vertx)
+   * @see TaskType#merge(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged).isSameAs(target));
 
   }
 
@@ -170,13 +172,13 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#merge(TaskType, String, Vertx)
+   * @see TaskType#merge(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithEmptyNorm(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, new ProtocolNorm(), vertx, testContext,
+    assertCanMerge(target, new ProtocolNorm(), new WeNetValidateContext("codePrefix", vertx), testContext,
         merged -> assertThat(merged).isNotSameAs(target).isEqualTo(target));
 
   }
@@ -187,14 +189,14 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#update(TaskType, String, Vertx)
+   * @see TaskType#update(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldUpdate(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     final var source = this.createModelExample(23);
-    assertCanUpdate(target, source, vertx, testContext,
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
         updated -> assertThat(updated).isNotEqualTo(target).isEqualTo(source));
 
   }
@@ -205,13 +207,14 @@ public class ProtocolNormTest extends ModelTestCase<ProtocolNorm> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskType#update(TaskType, String, Vertx)
+   * @see TaskType#update(TaskType, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanUpdate(target, null, vertx, testContext, updated -> assertThat(updated).isSameAs(target));
+    assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        updated -> assertThat(updated).isSameAs(target));
 
   }
 

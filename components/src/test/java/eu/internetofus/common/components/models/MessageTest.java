@@ -25,6 +25,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
@@ -94,14 +95,14 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Message#validate(String, Vertx)
+   * @see Message#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be not valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldSimpleExampleBeInValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsNotValid(model, vertx, testContext);
+    assertIsNotValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -114,13 +115,14 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Message#validate(String, Vertx)
+   * @see Message#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext).onSuccess(model -> assertIsValid(model, vertx, testContext));
+    this.createModelExample(index, vertx, testContext)
+        .onSuccess(model -> assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext));
 
   }
 
@@ -130,12 +132,12 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Message#validate(String, Vertx)
+   * @see Message#validate(WeNetValidateContext)
    */
   @Test
   public void shouldEmptyMessageNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    assertIsNotValid(new Message(), vertx, testContext);
+    assertIsNotValid(new Message(), new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -145,7 +147,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -153,7 +155,7 @@ public class MessageTest extends ModelTestCase<Message> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.appId = "undefined";
-      assertIsNotValid(model, "appId", vertx, testContext);
+      assertIsNotValid(model, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -165,7 +167,7 @@ public class MessageTest extends ModelTestCase<Message> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadReceiverId(final Vertx vertx, final VertxTestContext testContext) {
@@ -173,7 +175,7 @@ public class MessageTest extends ModelTestCase<Message> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.receiverId = "undefined";
-      assertIsNotValid(model, "receiverId", vertx, testContext);
+      assertIsNotValid(model, "receiverId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 

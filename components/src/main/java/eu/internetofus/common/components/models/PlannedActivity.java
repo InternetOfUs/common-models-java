@@ -20,19 +20,17 @@
 
 package eu.internetofus.common.components.models;
 
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
@@ -43,8 +41,8 @@ import java.util.UUID;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, description = "An activity planned by an user.")
-public class PlannedActivity extends ReflectionModel
-    implements Model, Validable, Mergeable<PlannedActivity>, Updateable<PlannedActivity> {
+public class PlannedActivity extends ReflectionModel implements Model, Validable<WeNetValidateContext>,
+    Mergeable<PlannedActivity, WeNetValidateContext>, Updateable<PlannedActivity, WeNetValidateContext> {
 
   /**
    * The identifier of the activity.
@@ -93,7 +91,7 @@ public class PlannedActivity extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
@@ -101,27 +99,17 @@ public class PlannedActivity extends ReflectionModel
     if (this.id == null) {
 
       this.id = UUID.randomUUID().toString();
+
+    } else {
+
+      this.id = context.normalizeString(this.id);
     }
-    future = future.compose(empty -> Validations
-        .validateNullableStringDateField(codePrefix, "startTime", DateTimeFormatter.ISO_INSTANT, this.startTime)
-        .map(startTime -> {
-          this.startTime = startTime;
-          return null;
-        }));
-    future = future.compose(empty -> Validations
-        .validateNullableStringDateField(codePrefix, "endTime", DateTimeFormatter.ISO_INSTANT, this.endTime)
-        .map(endTime -> {
-          this.endTime = endTime;
-          return null;
-        }));
-    future = future.compose(empty -> Validations
-        .validateNullableStringField(codePrefix, "description", this.description).map(description -> {
-          this.description = description;
-          return null;
-        }));
-    future = Validations.composeValidateIds(future, codePrefix, "attendees", this.attendees, true,
-        WeNetProfileManager.createProxy(vertx)::retrieveProfile);
-    promise.complete();
+    this.endTime = context.validateNullableDateField("startTime", this.startTime, DateTimeFormatter.ISO_INSTANT,
+        promise);
+    this.endTime = context.validateNullableDateField("endTime", this.endTime, DateTimeFormatter.ISO_INSTANT, promise);
+    this.description = context.normalizeString(this.description);
+    future = context.validateDefinedProfileIdsField("attendees", this.attendees, future);
+    promise.tryComplete();
 
     return future;
 
@@ -131,7 +119,7 @@ public class PlannedActivity extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<PlannedActivity> merge(final PlannedActivity source, final String codePrefix, final Vertx vertx) {
+  public Future<PlannedActivity> merge(final PlannedActivity source, final WeNetValidateContext context) {
 
     final Promise<PlannedActivity> promise = Promise.promise();
     var future = promise.future();
@@ -168,7 +156,7 @@ public class PlannedActivity extends ReflectionModel
       promise.complete(merged);
 
       // validate the merged value and set the id
-      future = future.compose(Validations.validateChain(codePrefix, vertx)).map(mergedValidatedModel -> {
+      future = future.compose(context.chain()).map(mergedValidatedModel -> {
 
         mergedValidatedModel.id = this.id;
         return mergedValidatedModel;
@@ -187,7 +175,7 @@ public class PlannedActivity extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<PlannedActivity> update(final PlannedActivity source, final String codePrefix, final Vertx vertx) {
+  public Future<PlannedActivity> update(final PlannedActivity source, final WeNetValidateContext context) {
 
     final Promise<PlannedActivity> promise = Promise.promise();
     var future = promise.future();
@@ -204,7 +192,7 @@ public class PlannedActivity extends ReflectionModel
       promise.complete(updated);
 
       // validate the merged value and set the id
-      future = future.compose(Validations.validateChain(codePrefix, vertx)).map(mergedValidatedModel -> {
+      future = future.compose(context.chain()).map(mergedValidatedModel -> {
 
         mergedValidatedModel.id = this.id;
         return mergedValidatedModel;
@@ -216,6 +204,21 @@ public class PlannedActivity extends ReflectionModel
 
     }
     return future;
+  }
+
+  /**
+   * Check if two planned activities are equivalent by its identifier fields.
+   *
+   * @param a first model to compare.
+   * @param b second model to compare.
+   *
+   * @return {@code true} if the planned activities can be considered equals by
+   *         its identifier.
+   */
+  static boolean compareIds(final PlannedActivity a, final PlannedActivity b) {
+
+    return a != null && a.id != null && a.id.equals(b.id);
+
   }
 
 }

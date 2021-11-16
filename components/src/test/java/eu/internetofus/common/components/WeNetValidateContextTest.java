@@ -18,21 +18,21 @@
  * -----------------------------------------------------------------------------
  */
 
-package eu.internetofus.common.model;
+package eu.internetofus.common.components;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
 /**
- * Test the {@link ValidationCache}.
+ * Test the {@link WeNetValidateContext}.
  *
- * @see ValidationCache
+ * @see WeNetValidateContext
  *
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class ValidationCacheTest {
+public class WeNetValidateContextTest {
 
   /**
    * Check that can not obtain model with undefined or {@code null} arguments.
@@ -40,7 +40,7 @@ public class ValidationCacheTest {
   @Test
   public void shouldNoGetUndefinedModel() {
 
-    final var cache = new ValidationCache();
+    final var cache = new WeNetValidateContext("codePrefix", null);
     assertThat(cache.getModel(null, (Class<?>) null)).isNull();
     assertThat(cache.getModel("undefined", (Class<?>) null)).isNull();
     assertThat(cache.getModel(null, String.class)).isNull();
@@ -53,7 +53,7 @@ public class ValidationCacheTest {
   @Test
   public void shouldNoGetModelWithSameKeyDiferentClass() {
 
-    final var cache = new ValidationCache();
+    final var cache = new WeNetValidateContext("codePrefix", null);
     cache.setModel("id", 3);
     assertThat(cache.getModel("id", Number.class)).isNull();
 
@@ -65,7 +65,7 @@ public class ValidationCacheTest {
   @Test
   public void shouldSetGetModel() {
 
-    final var cache = new ValidationCache();
+    final var cache = new WeNetValidateContext("codePrefix", null);
     cache.setModel("id", "value");
     assertThat(cache.getModel("id", String.class)).isEqualTo("value");
     assertThat(cache.existModel("id", String.class)).isTrue();
@@ -78,7 +78,7 @@ public class ValidationCacheTest {
   @Test
   public void shouldNotSetNullModel() {
 
-    final var cache = new ValidationCache();
+    final var cache = new WeNetValidateContext("codePrefix", null);
     cache.setModel("id", null);
     assertThat(cache.existModel("id", String.class)).isFalse();
 
@@ -90,7 +90,7 @@ public class ValidationCacheTest {
   @Test
   public void shouldNotExistWithNullId() {
 
-    final var cache = new ValidationCache();
+    final var cache = new WeNetValidateContext("codePrefix", null);
     assertThat(cache.existModel(null, String.class)).isFalse();
 
   }
@@ -101,7 +101,7 @@ public class ValidationCacheTest {
   @Test
   public void shouldNotExistWithNullType() {
 
-    final var cache = new ValidationCache();
+    final var cache = new WeNetValidateContext("codePrefix", null);
     assertThat(cache.existModel("id", null)).isFalse();
 
   }

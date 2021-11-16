@@ -28,6 +28,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
@@ -79,7 +80,7 @@ public class MaterialTest extends ModelTestCase<Material> {
     model.classification = "    classification_" + index + "    ";
     model.quantity = Math.max(1, index);
 
-    assertIsValid(model, vertx, testContext, () -> {
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var expected = this.createModelExample(index);
       assertThat(model).isEqualTo(expected);
@@ -100,7 +101,7 @@ public class MaterialTest extends ModelTestCase<Material> {
 
     final var model = this.createModelExample(1);
     model.name = name;
-    assertIsNotValid(model, "name", vertx, testContext);
+    assertIsNotValid(model, "name", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -115,7 +116,7 @@ public class MaterialTest extends ModelTestCase<Material> {
 
     final var model = this.createModelExample(1);
     model.description = null;
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -133,7 +134,7 @@ public class MaterialTest extends ModelTestCase<Material> {
 
     final var model = this.createModelExample(1);
     model.classification = classification;
-    assertIsNotValid(model, "classification", vertx, testContext);
+    assertIsNotValid(model, "classification", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -152,7 +153,7 @@ public class MaterialTest extends ModelTestCase<Material> {
 
     final var model = this.createModelExample(1);
     model.quantity = quantity;
-    assertIsNotValid(model, "quantity", vertx, testContext);
+    assertIsNotValid(model, "quantity", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -175,7 +176,7 @@ public class MaterialTest extends ModelTestCase<Material> {
 
     final var target = this.createModelExample(index - 1);
 
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       final var expected = this.createModelExample(index);
       assertThat(merged).isEqualTo(expected);
@@ -198,7 +199,7 @@ public class MaterialTest extends ModelTestCase<Material> {
     final var source = new Material();
     source.quantity = quantity;
     final var target = this.createModelExample(1);
-    assertCannotMerge(target, source, "quantity", vertx, testContext);
+    assertCannotMerge(target, source, "quantity", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -208,13 +209,13 @@ public class MaterialTest extends ModelTestCase<Material> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#merge(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> {
+    assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isSameAs(target);
     });
 
@@ -239,7 +240,7 @@ public class MaterialTest extends ModelTestCase<Material> {
 
     final var target = this.createModelExample(index - 1);
 
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
       final var expected = this.createModelExample(index);
       assertThat(updated).isEqualTo(expected);
@@ -259,7 +260,7 @@ public class MaterialTest extends ModelTestCase<Material> {
     final var source = new Material();
     source.name = null;
     final var target = this.createModelExample(1);
-    assertCannotUpdate(target, source, "name", vertx, testContext);
+    assertCannotUpdate(target, source, "name", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -278,7 +279,7 @@ public class MaterialTest extends ModelTestCase<Material> {
     final var source = this.createModelExample(0);
     source.quantity = quantity;
     final var target = this.createModelExample(1);
-    assertCannotUpdate(target, source, "quantity", vertx, testContext);
+    assertCannotUpdate(target, source, "quantity", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -288,13 +289,13 @@ public class MaterialTest extends ModelTestCase<Material> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#update(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanUpdate(target, null, vertx, testContext, updated -> {
+    assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isSameAs(target);
     });
 

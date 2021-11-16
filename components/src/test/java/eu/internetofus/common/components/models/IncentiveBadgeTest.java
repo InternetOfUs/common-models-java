@@ -24,6 +24,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Vertx;
@@ -65,7 +66,7 @@ public class IncentiveBadgeTest extends ModelTestCase<IncentiveBadge> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
@@ -77,7 +78,7 @@ public class IncentiveBadgeTest extends ModelTestCase<IncentiveBadge> {
     model.Criteria = "   \n  " + model.Criteria + "   \n";
     model.ImgUrl = "   \n  " + model.ImgUrl + "   \n";
     model.Message = "   \n  " + model.Message + "   \n";
-    assertIsValid(model, vertx, testContext, () -> {
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       assertThat(model).isEqualTo(expected);
     });
@@ -90,14 +91,14 @@ public class IncentiveBadgeTest extends ModelTestCase<IncentiveBadge> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadImgUrl(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.ImgUrl = "@·hkjhoj//.lhfohoñ\\ohpiuv";
-    assertIsNotValid(model, "ImgUrl", vertx, testContext);
+    assertIsNotValid(model, "ImgUrl", new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
 }

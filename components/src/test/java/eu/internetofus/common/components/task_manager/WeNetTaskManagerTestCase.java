@@ -22,6 +22,7 @@ package eu.internetofus.common.components.task_manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetComponentTestCase;
 import eu.internetofus.common.components.models.Message;
 import eu.internetofus.common.components.models.MessageTest;
@@ -547,6 +548,96 @@ public class WeNetTaskManagerTestCase extends WeNetComponentTestCase<WeNetTaskMa
 
         }));
 
+  }
+
+  /**
+   * Should defined task .
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldDefinedTask(final Vertx vertx, final VertxTestContext testContext) {
+
+    StoreServices.storeTaskExample(0, vertx, testContext).onSuccess(task -> {
+
+      testContext.assertComplete(this.createComponentProxy(vertx).isTaskDefined(task.id)).onSuccess(defined -> {
+
+        testContext.verify(() -> {
+
+          assertThat(defined).isTrue();
+        });
+        testContext.completeNow();
+
+      });
+    });
+
+  }
+
+  /**
+   * Should not defined task .
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotDefinedTask(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(this.createComponentProxy(vertx).isTaskDefined("undefined-task-identifier"))
+        .onSuccess(defined -> {
+
+          testContext.verify(() -> {
+
+            assertThat(defined).isFalse();
+          });
+          testContext.completeNow();
+
+        });
+  }
+
+  /**
+   * Should defined task type.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldDefinedTaskType(final Vertx vertx, final VertxTestContext testContext) {
+
+    StoreServices.storeTaskTypeExample(0, vertx, testContext).onSuccess(taskType -> {
+
+      testContext.assertComplete(this.createComponentProxy(vertx).isTaskTypeDefined(taskType.id)).onSuccess(defined -> {
+
+        testContext.verify(() -> {
+
+          assertThat(defined).isTrue();
+        });
+        testContext.completeNow();
+
+      });
+    });
+
+  }
+
+  /**
+   * Should not defined task type.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotDefinedTaskType(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(this.createComponentProxy(vertx).isTaskTypeDefined("undefined-taskType-identifier"))
+        .onSuccess(defined -> {
+
+          testContext.verify(() -> {
+
+            assertThat(defined).isFalse();
+          });
+          testContext.completeNow();
+
+        });
   }
 
 }

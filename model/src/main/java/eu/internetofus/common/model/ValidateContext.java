@@ -68,6 +68,25 @@ public interface ValidateContext<SELF extends ValidateContext<SELF>> {
   }
 
   /**
+   * Crate a failed future with the specified error message and cause.
+   *
+   * @param code    of the error.
+   * @param message of the error.
+   * @param cause   of the error.
+   * @param <T>     type of expecting future.
+   *
+   * @return The failed future with the {@link ValidationErrorException} with the
+   *         error code and message.
+   *
+   * @see #errorCode()
+   */
+  default <T> Future<T> fail(final String code, final String message, final Throwable cause) {
+
+    return Future.failedFuture(new ValidationErrorException(code, message, cause));
+
+  }
+
+  /**
    * Crate a failed future with the specified error message.
    *
    * @param code    of the error.
@@ -123,6 +142,26 @@ public interface ValidateContext<SELF extends ValidateContext<SELF>> {
   }
 
   /**
+   * Crate a failed future with the specified error message and cause.
+   *
+   * @param field   name of the failed field.
+   * @param message of the error.
+   * @param cause   of the fail
+   * @param <T>     type of expecting future.
+   *
+   * @return The failed future with the {@link ValidationErrorException} with the
+   *         error code and message.
+   *
+   * @see #errorCode()
+   */
+  default <T> Future<T> failField(final String field, final String message, final Throwable cause) {
+
+    final var code = this.fieldErrorCode(field);
+    return this.fail(code, message, cause);
+
+  }
+
+  /**
    * Crate a failed future with the specified cause.
    *
    * @param field name of the failed field.
@@ -142,6 +181,46 @@ public interface ValidateContext<SELF extends ValidateContext<SELF>> {
   }
 
   /**
+   * Crate a failed future with the specified error message.
+   *
+   * @param field   name of the failed field.
+   * @param index   of the element.
+   * @param message of the error.
+   * @param <T>     type of expecting future.
+   *
+   * @return The failed future with the {@link ValidationErrorException} with the
+   *         error code and message.
+   *
+   * @see #errorCode()
+   */
+  default <T> Future<T> failFieldElement(final String field, final int index, final String message) {
+
+    final var code = this.fieldElementErrorCode(field, index);
+    return this.fail(code, message);
+
+  }
+
+  /**
+   * Crate a failed future with the specified cause.
+   *
+   * @param field name of the failed field.
+   * @param index of the element.
+   * @param cause the validation fails.
+   * @param <T>   type of expecting future.
+   *
+   * @return The failed future with the {@link ValidationErrorException} with the
+   *         cause.
+   *
+   * @see #errorCode()
+   */
+  default <T> Future<T> failFieldElement(final String field, final int index, final Throwable cause) {
+
+    final var code = this.fieldElementErrorCode(field, index);
+    return Future.failedFuture(new ValidationErrorException(code, cause));
+
+  }
+
+  /**
    * Create a context for a field element.
    *
    * @param name  of the field to create the context.
@@ -152,8 +231,7 @@ public interface ValidateContext<SELF extends ValidateContext<SELF>> {
    */
   default SELF createFieldElementContext(final String name, final int index) {
 
-    var code = this.fieldErrorCode(name);
-    code += "[" + index + "]";
+    final var code = this.fieldElementErrorCode(name, index);
     return this.createContextWithErrorCode(code);
   }
 
@@ -171,15 +249,28 @@ public interface ValidateContext<SELF extends ValidateContext<SELF>> {
   }
 
   /**
-   * Return the error code for a name.
+   * Return the error code for a field.
    *
-   * @param name of the field to create the context.
+   * @param name of the field.
    *
    * @return the error code for a field.
    */
-  private String fieldErrorCode(final String name) {
+  default String fieldErrorCode(final String name) {
 
     return this.errorCode() + "." + name;
+  }
+
+  /**
+   * Return the error code for a field element.
+   *
+   * @param name  of the field.
+   * @param index of the element.
+   *
+   * @return the error code for a field element.
+   */
+  default String fieldElementErrorCode(final String name, final int index) {
+
+    return this.fieldErrorCode(name) + "[" + index + "]";
   }
 
   /**
@@ -503,7 +594,7 @@ public interface ValidateContext<SELF extends ValidateContext<SELF>> {
     if (value == null) {
 
       promise.tryFail(
-          new ValidationErrorException(this.fieldErrorCode(fieldName), "The '" + value + "' has to be defined."));
+          new ValidationErrorException(this.fieldErrorCode(fieldName), "The '" + fieldName + "' has to be defined."));
 
     } else if (minValue != null && value.doubleValue() < minValue.doubleValue()) {
 
@@ -594,7 +685,18 @@ public interface ValidateContext<SELF extends ValidateContext<SELF>> {
   default <T extends Validable<SELF>> Function<Void, Future<Void>> validateField(final String fieldName,
       final T value) {
 
-    return empty -> value.validate(this.createFieldContext(fieldName));
+    return empty -> {
+
+      if (value == null) {
+
+        return this.failField(fieldName, "The '" + fieldName + "' can not be 'null'.");
+
+      } else {
+
+        return value.validate(this.createFieldContext(fieldName));
+      }
+
+    };
 
   }
 

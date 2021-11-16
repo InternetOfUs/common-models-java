@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
@@ -86,13 +87,14 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext).onSuccess(model -> assertIsValid(model, vertx, testContext));
+    this.createModelExample(index, vertx, testContext)
+        .onSuccess(model -> assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext));
 
   }
 
@@ -102,12 +104,12 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldEmptyTaskNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    assertIsNotValid(new Task(), vertx, testContext);
+    assertIsNotValid(new Task(), new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -117,14 +119,14 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTaskWithoutIdBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.id = null;
-      assertIsValid(model, vertx, testContext);
+      assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
     });
 
   }
@@ -135,14 +137,14 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTaskWitIdBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> testContext.verify(() -> {
       model.id = UUID.randomUUID().toString();
-      assertIsValid(model, vertx, testContext);
+      assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
     }));
 
   }
@@ -179,7 +181,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithAnExistingId(final Vertx vertx, final VertxTestContext testContext) {
@@ -188,7 +190,7 @@ public class TaskTest extends ModelTestCase<Task> {
       this.createModelExample(2, vertx, testContext).onSuccess(model -> {
 
         model.id = created.id;
-        assertIsNotValid(model, "id", vertx, testContext);
+        assertIsNotValid(model, "id", new WeNetValidateContext("codePrefix", vertx), testContext);
 
       });
     });
@@ -201,7 +203,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
@@ -209,7 +211,7 @@ public class TaskTest extends ModelTestCase<Task> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.taskTypeId = null;
-      assertIsNotValid(model, "taskTypeId", vertx, testContext);
+      assertIsNotValid(model, "taskTypeId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -221,7 +223,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithAnUndefinedTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
@@ -229,7 +231,7 @@ public class TaskTest extends ModelTestCase<Task> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.taskTypeId = "Undefined-task-type-ID";
-      assertIsNotValid(model, "taskTypeId", vertx, testContext);
+      assertIsNotValid(model, "taskTypeId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -241,7 +243,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutRequesterId(final Vertx vertx, final VertxTestContext testContext) {
@@ -249,7 +251,7 @@ public class TaskTest extends ModelTestCase<Task> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.requesterId = null;
-      assertIsNotValid(model, "requesterId", vertx, testContext);
+      assertIsNotValid(model, "requesterId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -261,7 +263,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithAnUndefinedRequesterId(final Vertx vertx, final VertxTestContext testContext) {
@@ -269,7 +271,7 @@ public class TaskTest extends ModelTestCase<Task> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.requesterId = "Undefined-requester-id";
-      assertIsNotValid(model, "requesterId", vertx, testContext);
+      assertIsNotValid(model, "requesterId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -281,7 +283,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -289,7 +291,7 @@ public class TaskTest extends ModelTestCase<Task> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.appId = null;
-      assertIsNotValid(model, "appId", vertx, testContext);
+      assertIsNotValid(model, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -301,7 +303,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithAnUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -309,7 +311,7 @@ public class TaskTest extends ModelTestCase<Task> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.appId = "Undefined-app-id";
-      assertIsNotValid(model, "appId", vertx, testContext);
+      assertIsNotValid(model, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -321,7 +323,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutCommunityId(final Vertx vertx, final VertxTestContext testContext) {
@@ -329,7 +331,7 @@ public class TaskTest extends ModelTestCase<Task> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.communityId = null;
-      assertIsNotValid(model, "communityId", vertx, testContext);
+      assertIsNotValid(model, "communityId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -341,7 +343,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithAnUndefinedCommunityId(final Vertx vertx, final VertxTestContext testContext) {
@@ -349,7 +351,7 @@ public class TaskTest extends ModelTestCase<Task> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.communityId = "Undefined-community-id";
-      assertIsNotValid(model, "communityId", vertx, testContext);
+      assertIsNotValid(model, "communityId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -361,7 +363,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -373,7 +375,7 @@ public class TaskTest extends ModelTestCase<Task> {
       model.norms.add(new ProtocolNormTest().createModelExample(2));
       model.norms.add(new ProtocolNormTest().createModelExample(3));
       model.norms.get(1).whenever = model.norms.get(1).thenceforth;
-      assertIsNotValid(model, "norms[1].thenceforth", vertx, testContext);
+      assertIsNotValid(model, "norms[1].thenceforth", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -385,7 +387,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeStoredModels(final Vertx vertx, final VertxTestContext testContext) {
@@ -398,7 +400,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
           StoreServices.storeTask(sourceToStore, vertx, testContext).onSuccess(source -> {
 
-            assertCanMerge(target, source, vertx, testContext, merged -> {
+            assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
               source.id = target.id;
               source._creationTs = target._creationTs;
@@ -419,7 +421,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
@@ -432,7 +434,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
           final var source = new Task();
           source.taskTypeId = taskType.id;
-          assertCanMerge(target, source, vertx, testContext, merged -> {
+          assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
             assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
             target.taskTypeId = taskType.id;
@@ -452,7 +454,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
@@ -463,7 +465,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         final var source = new Task();
         source.taskTypeId = "undefined-task-type-identifier";
-        assertCannotMerge(target, source, "taskTypeId", vertx, testContext);
+        assertCannotMerge(target, source, "taskTypeId", new WeNetValidateContext("codePrefix", vertx), testContext);
       });
 
     });
@@ -476,7 +478,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeRequesterId(final Vertx vertx, final VertxTestContext testContext) {
@@ -489,7 +491,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
           final var source = new Task();
           source.requesterId = requester.id;
-          assertCanMerge(target, source, vertx, testContext, merged -> {
+          assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
             assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
             target.requesterId = requester.id;
@@ -508,7 +510,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadRequesterId(final Vertx vertx, final VertxTestContext testContext) {
@@ -519,7 +521,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         final var source = new Task();
         source.requesterId = "undefined-requester-identifier";
-        assertCannotMerge(target, source, "requesterId", vertx, testContext);
+        assertCannotMerge(target, source, "requesterId", new WeNetValidateContext("codePrefix", vertx), testContext);
       });
 
     });
@@ -532,7 +534,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -545,7 +547,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
           final var source = new Task();
           source.appId = app.appId;
-          assertCanMerge(target, source, vertx, testContext, merged -> {
+          assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
             assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
             target.appId = app.appId;
@@ -564,7 +566,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -575,7 +577,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         final var source = new Task();
         source.appId = "undefined-application-identifier";
-        assertCannotMerge(target, source, "appId", vertx, testContext);
+        assertCannotMerge(target, source, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
       });
 
     });
@@ -588,7 +590,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeGoal(final Vertx vertx, final VertxTestContext testContext) {
@@ -599,7 +601,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         final var source = new Task();
         source.goal = new HumanDescriptionTest().createModelExample(2);
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
           target.goal = new HumanDescriptionTest().createModelExample(2);
@@ -618,7 +620,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeGoalWithNullFields(final Vertx vertx, final VertxTestContext testContext) {
@@ -629,7 +631,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         final var source = new Task();
         source.goal = new HumanDescription();
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
           assertThat(merged).isEqualTo(target).isNotEqualTo(source);
         });
@@ -646,7 +648,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadTaskType(final Vertx vertx, final VertxTestContext testContext) {
@@ -657,7 +659,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         final var source = new Task();
         source.taskTypeId = "undefined";
-        assertCannotMerge(target, source, "taskTypeId", vertx, testContext);
+        assertCannotMerge(target, source, "taskTypeId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
       });
 
@@ -671,7 +673,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeNewNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -683,7 +685,7 @@ public class TaskTest extends ModelTestCase<Task> {
         final var source = new Task();
         source.norms = new ArrayList<>();
         source.norms.add(new ProtocolNormTest().createModelExample(2));
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
           target.norms.clear();
@@ -703,7 +705,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeAddingNewNorm(final Vertx vertx, final VertxTestContext testContext) {
@@ -716,7 +718,7 @@ public class TaskTest extends ModelTestCase<Task> {
         source.norms = new ArrayList<>();
         source.norms.add(new ProtocolNormTest().createModelExample(2));
         source.norms.addAll(target.norms);
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
           target.norms.add(0, new ProtocolNormTest().createModelExample(2));
@@ -735,7 +737,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -747,7 +749,8 @@ public class TaskTest extends ModelTestCase<Task> {
         final var source = new Task();
         source.norms = new ArrayList<>();
         source.norms.add(new ProtocolNorm());
-        assertCannotMerge(target, source, "norms[0].whenever", vertx, testContext);
+        assertCannotMerge(target, source, "norms[0].whenever", new WeNetValidateContext("codePrefix", vertx),
+            testContext);
       });
 
     });
@@ -760,7 +763,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeNewAttributes(final Vertx vertx, final VertxTestContext testContext) {
@@ -769,7 +772,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       final var source = new Task();
       source.attributes = new JsonObject().put("a_int", 2);
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.attributes = new JsonObject().put("a_int", 2);
@@ -786,7 +789,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutGoal(final Vertx vertx, final VertxTestContext testContext) {
@@ -794,7 +797,7 @@ public class TaskTest extends ModelTestCase<Task> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.goal = null;
-      assertIsNotValid(model, "goal", vertx, testContext);
+      assertIsNotValid(model, "goal", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -806,7 +809,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Task#validate(String, Vertx)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithATooSoonCloseTimeStampn(final Vertx vertx, final VertxTestContext testContext) {
@@ -814,7 +817,7 @@ public class TaskTest extends ModelTestCase<Task> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.closeTs = model._creationTs - 1;
-      assertIsNotValid(model, "closeTs", vertx, testContext);
+      assertIsNotValid(model, "closeTs", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -826,7 +829,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateStoredModels(final Vertx vertx, final VertxTestContext testContext) {
@@ -839,7 +842,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
           StoreServices.storeTask(sourceToStore, vertx, testContext).onSuccess(source -> {
 
-            assertCanUpdate(target, source, vertx, testContext, updated -> {
+            assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
               source.id = target.id;
               source._creationTs = target._creationTs;
@@ -860,7 +863,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
@@ -873,7 +876,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
           final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
           source.taskTypeId = taskType.id;
-          assertCanUpdate(target, source, vertx, testContext, updated -> {
+          assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
             assertThat(updated).isNotEqualTo(target).isEqualTo(source);
             target.taskTypeId = taskType.id;
@@ -893,7 +896,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
@@ -904,7 +907,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.taskTypeId = "undefined-task-type-identifier";
-        assertCannotUpdate(target, source, "taskTypeId", vertx, testContext);
+        assertCannotUpdate(target, source, "taskTypeId", new WeNetValidateContext("codePrefix", vertx), testContext);
       });
 
     });
@@ -917,7 +920,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateRequesterId(final Vertx vertx, final VertxTestContext testContext) {
@@ -930,7 +933,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
           final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
           source.requesterId = requester.id;
-          assertCanUpdate(target, source, vertx, testContext, updated -> {
+          assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
             assertThat(updated).isNotEqualTo(target).isEqualTo(source);
             target.requesterId = requester.id;
@@ -950,7 +953,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadRequesterId(final Vertx vertx, final VertxTestContext testContext) {
@@ -961,7 +964,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.requesterId = "undefined-requester-identifier";
-        assertCannotUpdate(target, source, "requesterId", vertx, testContext);
+        assertCannotUpdate(target, source, "requesterId", new WeNetValidateContext("codePrefix", vertx), testContext);
       });
 
     });
@@ -974,7 +977,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -987,7 +990,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
           final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
           source.appId = app.appId;
-          assertCanUpdate(target, source, vertx, testContext, updated -> {
+          assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
             assertThat(updated).isNotEqualTo(target).isEqualTo(source);
             target.appId = app.appId;
@@ -1007,7 +1010,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -1018,7 +1021,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.appId = "undefined-application-identifier";
-        assertCannotUpdate(target, source, "appId", vertx, testContext);
+        assertCannotUpdate(target, source, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
       });
 
     });
@@ -1031,7 +1034,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateGoal(final Vertx vertx, final VertxTestContext testContext) {
@@ -1042,7 +1045,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.goal = new HumanDescriptionTest().createModelExample(2);
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
           assertThat(updated).isNotEqualTo(target).isEqualTo(source);
           target.goal = new HumanDescriptionTest().createModelExample(2);
@@ -1061,7 +1064,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadGoal(final Vertx vertx, final VertxTestContext testContext) {
@@ -1073,7 +1076,7 @@ public class TaskTest extends ModelTestCase<Task> {
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.goal = new HumanDescription();
         source.goal.name = null;
-        assertCannotUpdate(target, source, "goal.name", vertx, testContext);
+        assertCannotUpdate(target, source, "goal.name", new WeNetValidateContext("codePrefix", vertx), testContext);
       });
 
     });
@@ -1086,7 +1089,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateNewNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -1098,7 +1101,7 @@ public class TaskTest extends ModelTestCase<Task> {
         final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
         source.norms = new ArrayList<>();
         source.norms.add(new ProtocolNormTest().createModelExample(2));
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
           assertThat(updated).isNotEqualTo(target).isEqualTo(source);
         });
@@ -1115,7 +1118,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateAddingNewNorm(final Vertx vertx, final VertxTestContext testContext) {
@@ -1128,7 +1131,7 @@ public class TaskTest extends ModelTestCase<Task> {
         source.norms = new ArrayList<>();
         source.norms.add(new ProtocolNormTest().createModelExample(2));
         source.norms.addAll(target.norms);
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
           assertThat(updated).isNotEqualTo(target).isEqualTo(source);
         });
@@ -1145,7 +1148,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -1158,7 +1161,8 @@ public class TaskTest extends ModelTestCase<Task> {
         source.norms = new ArrayList<>();
         source.norms.add(new ProtocolNormTest().createModelExample(2));
         source.norms.get(0).whenever = source.norms.get(0).thenceforth;
-        assertCannotUpdate(target, source, "norms[0].thenceforth", vertx, testContext);
+        assertCannotUpdate(target, source, "norms[0].thenceforth", new WeNetValidateContext("codePrefix", vertx),
+            testContext);
       });
 
     });
@@ -1171,7 +1175,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateNewAttributes(final Vertx vertx, final VertxTestContext testContext) {
@@ -1180,7 +1184,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
       source.attributes = new JsonObject().put("a_int", 2);
-      assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
         assertThat(updated).isNotEqualTo(target).isEqualTo(source);
         target.attributes = new JsonObject().put("a_int", 2);
@@ -1197,14 +1201,14 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#merge(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
-      assertCanMerge(target, null, vertx, testContext, merged -> {
+      assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
         assertThat(merged).isSameAs(target);
       });
     });
@@ -1217,14 +1221,14 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#update(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
-      assertCanUpdate(target, null, vertx, testContext, updated -> {
+      assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
         assertThat(updated).isSameAs(target);
       });
     });

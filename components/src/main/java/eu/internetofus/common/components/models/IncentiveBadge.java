@@ -20,14 +20,13 @@
 
 package eu.internetofus.common.components.models;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * The badge on an {@link Incentive}
@@ -35,7 +34,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Badge", description = "The badge on an incentive.")
-public class IncentiveBadge extends ReflectionModel implements Model, Validable {
+public class IncentiveBadge extends ReflectionModel implements Model, Validable<WeNetValidateContext> {
 
   /**
    * The badge class.
@@ -65,32 +64,16 @@ public class IncentiveBadge extends ReflectionModel implements Model, Validable 
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
+    final var future = promise.future();
 
-    future = future
-        .compose(empty -> Validations.validateStringField(codePrefix, "BadgeClass", this.BadgeClass).map(BadgeClass -> {
-          this.BadgeClass = BadgeClass;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateNullableURLField(codePrefix, "ImgUrl", this.ImgUrl).map(ImgUrl -> {
-          this.ImgUrl = ImgUrl;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateStringField(codePrefix, "Criteria", this.Criteria).map(Criteria -> {
-          this.Criteria = Criteria;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateStringField(codePrefix, "Message", this.Message).map(Message -> {
-          this.Message = Message;
-          return null;
-        }));
-    promise.complete();
+    this.BadgeClass = context.validateStringField("BadgeClass", this.BadgeClass, promise);
+    this.ImgUrl = context.validateNullableUrlField("ImgUrl", this.ImgUrl, promise);
+    this.Criteria = context.validateStringField("Criteria", this.Criteria, promise);
+    this.Message = context.validateStringField("Message", this.Message, promise);
+    promise.tryComplete();
 
     return future;
   }

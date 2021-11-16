@@ -24,6 +24,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.components.models.TaskTransactionTest;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.model.ModelTestCase;
@@ -54,14 +55,14 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(eu.internetofus.common.components.WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6 })
   public void shouldExampleNotBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsNotValid(model, vertx, testContext);
+    assertIsNotValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -106,13 +107,14 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext).onSuccess(model -> assertIsValid(model, vertx, testContext));
+    this.createModelExample(index, vertx, testContext)
+        .onSuccess(model -> assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext));
 
   }
 
@@ -122,14 +124,14 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithoutAppId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.appId = null;
-      assertIsValid(model, vertx, testContext);
+      assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -139,14 +141,14 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.appId = "undefined";
-      assertIsNotValid(model, "appId", vertx, testContext);
+      assertIsNotValid(model, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -156,14 +158,14 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithoutCommunityId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.communityId = null;
-      assertIsValid(model, vertx, testContext);
+      assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -173,14 +175,14 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithUndefinedCommunityId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.communityId = "undefined";
-      assertIsNotValid(model, "communityId", vertx, testContext);
+      assertIsNotValid(model, "communityId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -190,7 +192,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithoutTaskId(final Vertx vertx, final VertxTestContext testContext) {
@@ -198,7 +200,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.taskId = null;
       model.transactionId = null;
-      assertIsValid(model, vertx, testContext);
+      assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -208,14 +210,14 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithUndefinedTaskId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.taskId = "undefined";
-      assertIsNotValid(model, "taskId", vertx, testContext);
+      assertIsNotValid(model, "taskId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -225,14 +227,14 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithoutTransactionId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.transactionId = null;
-      assertIsValid(model, vertx, testContext);
+      assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -242,14 +244,14 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithTransactionIdAndWithoutTask(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.taskId = null;
-      assertIsNotValid(model, "transactionId", vertx, testContext);
+      assertIsNotValid(model, "transactionId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -259,14 +261,14 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithUndefinedTransactionId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.transactionId = "undefined";
-      assertIsNotValid(model, "transactionId", vertx, testContext);
+      assertIsNotValid(model, "transactionId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -276,14 +278,14 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutParticle(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.particle = null;
-      assertIsNotValid(model, "particle", vertx, testContext);
+      assertIsNotValid(model, "particle", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -293,14 +295,14 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutContent(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.content = null;
-      assertIsNotValid(model, "content", vertx, testContext);
+      assertIsNotValid(model, "content", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 

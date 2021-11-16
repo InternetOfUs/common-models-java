@@ -291,4 +291,22 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void isTaskDefined(final String id, @NotNull final Handler<AsyncResult<Boolean>> handler) {
+
+    this.head("/tasks", id).onComplete(handler);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void isTaskTypeDefined(final String id, @NotNull final Handler<AsyncResult<Boolean>> handler) {
+
+    this.head("/taskTypes", id).onComplete(handler);
+  }
+
 }

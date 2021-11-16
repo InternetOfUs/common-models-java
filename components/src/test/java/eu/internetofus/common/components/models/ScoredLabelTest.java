@@ -25,6 +25,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
@@ -60,13 +61,13 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see RelevantLocation#validate(WeNetValidateContext)
    */
   @Test
   public void shouldExampleBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -76,14 +77,14 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see RelevantLocation#validate(WeNetValidateContext)
    */
   @Test
   public void shouldScoredLabelWithoutLabelNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.label = null;
-    assertIsNotValid(model, "label", vertx, testContext);
+    assertIsNotValid(model, "label", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -93,14 +94,14 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see RelevantLocation#validate(WeNetValidateContext)
    */
   @Test
   public void shouldLabelWithTooLargeNameNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.label.name = null;
-    assertIsNotValid(model, "label.name", vertx, testContext);
+    assertIsNotValid(model, "label.name", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -110,14 +111,14 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#validate(String, Vertx)
+   * @see RelevantLocation#validate(WeNetValidateContext)
    */
   @Test
   public void shouldScoredLabelWithoutScoreNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.score = null;
-    assertIsNotValid(model, "score", vertx, testContext);
+    assertIsNotValid(model, "score", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -127,13 +128,14 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged).isSameAs(target));
   }
 
   /**
@@ -142,14 +144,14 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
 
     final var source = this.createModelExample(1);
     final var target = this.createModelExample(2);
-    assertCanMerge(target, source, vertx, testContext,
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
         merged -> assertThat(merged).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source));
   }
 
@@ -159,7 +161,7 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyLabel(final Vertx vertx, final VertxTestContext testContext) {
@@ -168,7 +170,7 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
     source.label = new Label();
     source.label.name = "NEW NAME";
     final var target = this.createModelExample(2);
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
       target.label.name = source.label.name;
       assertThat(merged).isEqualTo(target);
@@ -181,7 +183,7 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyScore(final Vertx vertx, final VertxTestContext testContext) {
@@ -189,7 +191,7 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
     final var source = new ScoredLabel();
     source.score = 10.0d;
     final var target = this.createModelExample(2);
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
       target.score = source.score;
       assertThat(merged).isEqualTo(target);

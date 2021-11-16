@@ -20,17 +20,15 @@
 
 package eu.internetofus.common.components.models;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationErrorException;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * A norm used in a protocol.
@@ -38,8 +36,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "ProtocolNorm", description = "The description of a rule that has to follow by the wenet users.")
-public class ProtocolNorm extends ReflectionModel
-    implements Model, Validable, Mergeable<ProtocolNorm>, Updateable<ProtocolNorm> {
+public class ProtocolNorm extends ReflectionModel implements Model, Validable<WeNetValidateContext>,
+    Mergeable<ProtocolNorm, WeNetValidateContext>, Updateable<ProtocolNorm, WeNetValidateContext> {
 
   /**
    * The conditions that fires the norms.
@@ -69,7 +67,7 @@ public class ProtocolNorm extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<ProtocolNorm> update(final ProtocolNorm source, final String codePrefix, final Vertx vertx) {
+  public Future<ProtocolNorm> update(final ProtocolNorm source, final WeNetValidateContext context) {
 
     final Promise<ProtocolNorm> promise = Promise.promise();
     var future = promise.future();
@@ -81,7 +79,7 @@ public class ProtocolNorm extends ReflectionModel
       updated.thenceforth = source.thenceforth;
       updated.ontology = source.ontology;
 
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
       promise.complete(updated);
 
     } else {
@@ -95,7 +93,7 @@ public class ProtocolNorm extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<ProtocolNorm> merge(final ProtocolNorm source, final String codePrefix, final Vertx vertx) {
+  public Future<ProtocolNorm> merge(final ProtocolNorm source, final WeNetValidateContext context) {
 
     final Promise<ProtocolNorm> promise = Promise.promise();
     var future = promise.future();
@@ -124,7 +122,7 @@ public class ProtocolNorm extends ReflectionModel
         merged.ontology = this.ontology;
       }
 
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
       promise.complete(merged);
 
     } else {
@@ -138,45 +136,39 @@ public class ProtocolNorm extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
+    final var future = promise.future();
 
-    future = future.compose(empty -> Validations
-        .validateNullableStringField(codePrefix, "description", this.description).map(description -> {
-          this.description = description;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateStringField(codePrefix, "whenever", this.whenever).map(whenever -> {
-          this.whenever = whenever;
-          return null;
-        }));
-    future = future.compose(
-        empty -> Validations.validateStringField(codePrefix, "thenceforth", this.thenceforth).map(thenceforth -> {
-          this.thenceforth = thenceforth;
-          return null;
-        }));
-    future = future.compose(
-        empty -> Validations.validateNullableStringField(codePrefix, "ontology", this.ontology).map(ontology -> {
-          this.ontology = ontology;
-          return null;
-        }));
-    future = future.compose(empty -> {
-      if (this.whenever.equals(this.thenceforth)) {
+    this.description = context.normalizeString(this.description);
+    this.whenever = context.validateStringField("whenever", this.whenever, promise);
+    this.thenceforth = context.validateStringField("thenceforth", this.thenceforth, promise);
+    this.ontology = context.normalizeString(this.ontology);
+    if (this.whenever != null && this.whenever.equals(this.thenceforth)) {
 
-        return Future.failedFuture(new ValidationErrorException(codePrefix + ".thenceforth",
-            "The 'thenceforth' can not be equals to the  'whenever'."));
+      return context.failField("thenceforth", "The 'thenceforth' can not be equals to the 'whenever'.");
 
-      } else {
-
-        return Future.succeededFuture();
-      }
-    });
-    promise.complete();
+    }
+    promise.tryComplete();
 
     return future;
+
+  }
+
+  /**
+   * Check if two social practices are equivalent by its identifier fields.
+   *
+   * @param a first model to compare.
+   * @param b second model to compare.
+   *
+   * @return {@code true} if the social practice can be considered equals by its
+   *         identifier.
+   */
+  static boolean compareIds(final ProtocolNorm a, final ProtocolNorm b) {
+
+    return a != null && b != null && a.whenever != null && a.thenceforth != null && a.whenever.equals(b.whenever)
+        && a.thenceforth.equals(b.thenceforth);
 
   }
 

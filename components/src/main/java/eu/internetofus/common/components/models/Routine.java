@@ -21,7 +21,7 @@
 package eu.internetofus.common.components.models;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.JsonObjectDeserializer;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Merges;
@@ -29,17 +29,13 @@ import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationErrorException;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 /**
  * An activity that an user do regularly.
@@ -47,7 +43,8 @@ import java.util.function.Predicate;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Routine", description = "Labels distribution for a given user, time and weekday.")
-public class Routine extends ReflectionModel implements Model, Validable, Mergeable<Routine>, Updateable<Routine> {
+public class Routine extends ReflectionModel implements Model, Validable<WeNetValidateContext>,
+    Mergeable<Routine, WeNetValidateContext>, Updateable<Routine, WeNetValidateContext> {
 
   /**
    * The identifier of the user.
@@ -75,71 +72,53 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
   public Double confidence;
 
   /**
-   * Create an empty routine.
-   */
-  public Routine() {
-
-  }
-
-  /**
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
 
-    future = Validations.composeValidateId(future, codePrefix, "user_id", this.user_id, true,
-        WeNetProfileManager.createProxy(vertx)::retrieveProfile);
-
-    future = future
-        .compose(empty -> Validations.validateStringField(codePrefix, "weekday", this.weekday).map(weekday -> {
-          this.weekday = weekday;
-          return null;
-        }));
+    future = context.validateDefinedProfileIdField("user_id", this.user_id, future);
+    this.weekday = context.validateStringField("weekday", this.weekday, promise);
     if (this.label_distribution == null) {
 
-      promise.fail(new ValidationErrorException(codePrefix + ".label_distribution",
-          "The 'label_distribution' can not be null."));
+      return context.failField("label_distribution", "The 'label_distribution' can not be null.");
 
     } else {
 
       for (final String fieldName : this.label_distribution.fieldNames()) {
 
+        final var scorePrefix = "label_distribution." + fieldName;
         try {
 
           final var array = this.label_distribution.getJsonArray(fieldName);
           final var labels = Model.fromJsonArray(array, ScoredLabel.class);
-          final var scorePrefix = codePrefix + ".label_distribution." + fieldName;
           if (labels == null) {
 
-            promise.fail(
-                new ValidationErrorException(scorePrefix, "The '" + array + "' is not a valid array of ScoredLabel."));
-            return future;
+            return context.failField(scorePrefix, "The '" + array + "' is not a valid array of ScoredLabel.");
 
           } else {
 
             future = future.compose(
-                Validations.validate(labels, (l1, l2) -> l1.label.name.equals(l2.label.name), scorePrefix, vertx));
+                context.validateListField(scorePrefix, labels, (l1, l2) -> l1.label.name.equals(l2.label.name)));
           }
 
         } catch (final ClassCastException cause) {
 
-          promise.fail(new ValidationErrorException(codePrefix + ".label_distribution." + fieldName,
-              "Does not contains an array of scored labels.", cause));
-          return future;
+          return context.failField(scorePrefix, "Does not contains an array of scored labels.", cause);
         }
 
       }
 
       if (this.confidence == null) {
 
-        promise.fail(new ValidationErrorException(codePrefix + ".confidence", "The 'confidence' can not be null."));
+        return context.failField("confidence", "The 'confidence' can not be null.");
 
       } else {
 
-        promise.complete();
+        promise.tryComplete();
       }
     }
 
@@ -151,7 +130,7 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
    * {@inheritDoc}
    */
   @Override
-  public Future<Routine> merge(final Routine source, final String codePrefix, final Vertx vertx) {
+  public Future<Routine> merge(final Routine source, final WeNetValidateContext context) {
 
     final Promise<Routine> promise = Promise.promise();
     var future = promise.future();
@@ -185,24 +164,23 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
 
         for (final String fieldName : merged.label_distribution.fieldNames()) {
 
+          final var scorePrefix = "label_distribution." + fieldName;
           try {
 
             final var sourceLabelDistributionArray = merged.label_distribution.getJsonArray(fieldName);
             final var sourceLabelDistribution = Model.fromJsonArray(sourceLabelDistributionArray, ScoredLabel.class);
-            final var scorePrefix = codePrefix + ".label_distribution." + fieldName;
             if (sourceLabelDistribution == null) {
 
-              promise.fail(new ValidationErrorException(scorePrefix,
-                  "The '" + sourceLabelDistributionArray + "' is not a valid array of ScoredLabel."));
-              return future;
+              return context.failField(scorePrefix,
+                  "The '" + sourceLabelDistributionArray + "' is not a valid array of ScoredLabel.");
 
             }
             final var targetLabelDistributionArray = this.label_distribution.getJsonArray(fieldName);
             final var targetLabelDistribution = Model.fromJsonArray(targetLabelDistributionArray, ScoredLabel.class);
             future = future
-                .compose(Merges.mergeFieldList(targetLabelDistribution, sourceLabelDistribution, scorePrefix, vertx,
-                    (Predicate<ScoredLabel>) scoredLabel -> scoredLabel.label != null && scoredLabel.label.name != null,
-                    (BiPredicate<ScoredLabel, ScoredLabel>) (l1, l2) -> l1.label.name.equals(l2.label.name),
+                .compose(Merges.mergeListField(context, scorePrefix, targetLabelDistribution, sourceLabelDistribution,
+                    (BiPredicate<ScoredLabel, ScoredLabel>) (l1, l2) -> l1.label != null && l1.label.name != null
+                        && l1.label.name.equals(l2.label.name),
                     (BiConsumer<Routine, List<ScoredLabel>>) (mergedRoutine, mergedScoredLabel) -> {
 
                       final var value = Model.toJsonArray(mergedScoredLabel);
@@ -212,9 +190,7 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
 
           } catch (final ClassCastException cause) {
 
-            promise.fail(new ValidationErrorException(codePrefix + ".label_distribution." + fieldName,
-                "Does not contains an array of scored labels.", cause));
-            return future;
+            return context.failField(scorePrefix, "Does not contains an array of scored labels.", cause);
           }
 
         }
@@ -224,7 +200,7 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
       promise.complete(merged);
 
       // Validate the merged value
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 
@@ -239,7 +215,7 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
    * {@inheritDoc}
    */
   @Override
-  public Future<Routine> update(final Routine source, final String codePrefix, final Vertx vertx) {
+  public Future<Routine> update(final Routine source, final WeNetValidateContext context) {
     final Promise<Routine> promise = Promise.promise();
     var future = promise.future();
     if (source != null) {
@@ -253,7 +229,7 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
       promise.complete(updated);
 
       // Validate the updated value
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 
@@ -261,6 +237,21 @@ public class Routine extends ReflectionModel implements Model, Validable, Mergea
 
     }
     return future;
+  }
+
+  /**
+   * Check if two routines are equivalent by its identifier fields.
+   *
+   * @param a first model to compare.
+   * @param b second model to compare.
+   *
+   * @return {@code true} if the routines can be considered equals by its
+   *         identifier.
+   */
+  static boolean compareIds(final Routine a, final Routine b) {
+
+    return a != null && a.equals(b);
+
   }
 
 }

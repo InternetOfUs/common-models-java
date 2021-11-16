@@ -525,4 +525,52 @@ public interface WeNetTaskManager extends WeNetComponent {
 
   }
 
+  /**
+   * Check if a task is defined.
+   *
+   * @param id identifier of the task to check if exist.
+   *
+   * @return the future that check if the task exist or not.
+   */
+  @GenIgnore
+  default Future<Boolean> isTaskDefined(final String id) {
+
+    final Promise<Boolean> promise = Promise.promise();
+    this.isTaskDefined(id, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Check if a task is defined.
+   *
+   * @param id      identifier of the task to check if exist.
+   * @param handler to manage if the task exist or not.
+   */
+  void isTaskDefined(final String id, @NotNull Handler<AsyncResult<Boolean>> handler);
+
+  /**
+   * Check if a task type is defined.
+   *
+   * @param id identifier of the task type to check if exist.
+   *
+   * @return the future that check if the task type exist or not.
+   */
+  @GenIgnore
+  default Future<Boolean> isTaskTypeDefined(final String id) {
+
+    final Promise<Boolean> promise = Promise.promise();
+    this.isTaskTypeDefined(id, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Check if a task type is defined.
+   *
+   * @param id      identifier of the task type to check if exist.
+   * @param handler to manage if the task type exist or not.
+   */
+  void isTaskTypeDefined(final String id, @NotNull Handler<AsyncResult<Boolean>> handler);
+
 }

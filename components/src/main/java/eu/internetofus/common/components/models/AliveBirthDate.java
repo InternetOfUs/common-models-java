@@ -20,11 +20,9 @@
 
 package eu.internetofus.common.components.models;
 
-import eu.internetofus.common.model.ValidationErrorException;
+import eu.internetofus.common.components.WeNetValidateContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import java.time.LocalDate;
 
 /**
@@ -39,33 +37,24 @@ public class AliveBirthDate extends ProfileDate {
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
-    return super.validate(codePrefix, vertx).compose(mapper -> {
+    return super.validate(context).compose(mapper -> {
 
-      final Promise<Void> promise = Promise.promise();
-      if (this.year == null || this.month == null || this.day == null) {
-
-        promise.complete();
-
-      } else {
+      if (this.year != null && this.month != null && this.day != null) {
 
         final var birthDate = LocalDate.of(this.year, this.month, this.day);
         if (birthDate.isAfter(LocalDate.now())) {
 
-          promise.fail(new ValidationErrorException(codePrefix, "The birth date can not be on the future"));
+          return context.fail("The birth date can not be on the future");
 
         } else if (birthDate.isBefore(LocalDate.of(1903, 1, 2))) {
 
-          promise.fail(new ValidationErrorException(codePrefix,
-              "The user can not be born before Kane Tanake, the oldest living person on earth"));
+          return context.fail("The user can not be born before Kane Tanake, the oldest living person on earth");
 
-        } else {
-
-          promise.complete();
         }
       }
-      return promise.future();
+      return Future.succeededFuture();
 
     });
   }

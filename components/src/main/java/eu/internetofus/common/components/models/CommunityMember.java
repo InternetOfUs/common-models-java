@@ -20,18 +20,17 @@
 
 package eu.internetofus.common.components.models;
 
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.CreateUpdateTsDetails;
 import eu.internetofus.common.model.Mergeable;
+import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationCache;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -40,8 +39,8 @@ import java.util.List;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "CommunityMember", description = "A member of a community.")
-public class CommunityMember extends CreateUpdateTsDetails
-    implements Validable, Mergeable<CommunityMember>, Updateable<CommunityMember> {
+public class CommunityMember extends CreateUpdateTsDetails implements Validable<WeNetValidateContext>,
+    Mergeable<CommunityMember, WeNetValidateContext>, Updateable<CommunityMember, WeNetValidateContext> {
 
   /**
    * Identifier of the user that is member of the community.
@@ -59,18 +58,15 @@ public class CommunityMember extends CreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
-    future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
-        WeNetProfileManager.createProxy(vertx)::retrieveProfile);
-    future = future.compose(empty -> Validations
-        .validateNullableListStringField(codePrefix, "privileges", this.privileges).map(privileges -> {
-          this.privileges = privileges;
-          return null;
-        }));
-    promise.complete();
+    this.userId = context.normalizeString(this.userId);
+    future = future.compose(context.validateField(this.userId, null));
+    future = context.validateDefinedProfileIdField("userId", this.userId, future);
+    this.privileges = context.validateNullableStringListField("privileges", this.privileges, promise);
+    promise.tryComplete();
     return future;
 
   }
@@ -79,8 +75,7 @@ public class CommunityMember extends CreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<CommunityMember> merge(final CommunityMember source, final String codePrefix, final Vertx vertx,
-      final ValidationCache cache) {
+  public Future<CommunityMember> merge(final CommunityMember source, final WeNetValidateContext context) {
 
     final Promise<CommunityMember> promise = Promise.promise();
     var future = promise.future();
@@ -90,13 +85,8 @@ public class CommunityMember extends CreateUpdateTsDetails
       merged._creationTs = this._creationTs;
       merged._lastUpdateTs = this._lastUpdateTs;
       merged.userId = this.userId;
-      merged.privileges = source.privileges;
-      if (merged.privileges == null) {
-
-        merged.privileges = this.privileges;
-      }
-
-      future = future.compose(Validations.validateChain(codePrefix, vertx, cache));
+      merged.privileges = Merges.mergeValues(this.privileges, source.privileges);
+      future = future.compose(context.chain());
 
       promise.complete(merged);
 
@@ -113,8 +103,7 @@ public class CommunityMember extends CreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<CommunityMember> update(final CommunityMember source, final String codePrefix, final Vertx vertx,
-      final ValidationCache cache) {
+  public Future<CommunityMember> update(final CommunityMember source, final WeNetValidateContext context) {
 
     final Promise<CommunityMember> promise = Promise.promise();
     var future = promise.future();
@@ -125,8 +114,7 @@ public class CommunityMember extends CreateUpdateTsDetails
       updated._lastUpdateTs = this._lastUpdateTs;
       updated.userId = this.userId;
       updated.privileges = source.privileges;
-
-      future = future.compose(Validations.validateChain(codePrefix, vertx, cache));
+      future = future.compose(context.chain());
 
       promise.complete(updated);
 
@@ -136,6 +124,75 @@ public class CommunityMember extends CreateUpdateTsDetails
     }
 
     return future;
+  }
+
+  /**
+   * Check if two community member practices are equivalent by its identifier
+   * fields.
+   *
+   * @param a first model to compare.
+   * @param b second model to compare.
+   *
+   * @return {@code true} if the community members can be considered equals by its
+   *         identifier.
+   */
+  static boolean compareIds(final CommunityMember a, final CommunityMember b) {
+
+    return a != null && a.userId != null && a.userId.equals(b.userId);
+
+  }
+
+  /**
+   * Return an iterable object over the identifiers of some members.
+   *
+   * @param members to iterate its identifiers.
+   *
+   * @return the iterable component over the members.
+   */
+  public static Iterable<String> idsIterable(final Iterable<CommunityMember> members) {
+
+    return new Iterable<String>() {
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Iterator<String> iterator() {
+
+        final var iter = members.iterator();
+        return new Iterator<String>() {
+
+          /**
+           * {@inheritDoc}
+           */
+          @Override
+          public boolean hasNext() {
+
+            return iter.hasNext();
+          }
+
+          /**
+           * {@inheritDoc}
+           */
+          @Override
+          public String next() {
+
+            return iter.next().userId;
+
+          }
+
+          /**
+           * {@inheritDoc}
+           */
+          @Override
+          public void remove() {
+
+            iter.remove();
+          }
+        };
+      }
+    };
+
   }
 
 }

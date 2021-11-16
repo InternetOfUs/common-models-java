@@ -20,17 +20,13 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationCache;
-import eu.internetofus.common.model.ValidationErrorException;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * An address of the sender or receiver of the {@link ProtocolMessage}.
@@ -38,7 +34,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(description = "The component that send/receive a message.")
-public class ProtocolAddress extends ReflectionModel implements Model, Validable {
+public class ProtocolAddress extends ReflectionModel implements Model, Validable<WeNetValidateContext> {
 
   /**
    * The possible components of the address.
@@ -93,23 +89,22 @@ public class ProtocolAddress extends ReflectionModel implements Model, Validable
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
     if (this.component == null) {
 
-      promise.fail(new ValidationErrorException(codePrefix + ".component", "You must to specify the component."));
+      return context.failField("component", "You must to specify the component.");
 
     } else {
 
       if (this.userId != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
-            WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+        future = context.validateDefinedProfileIdField("userId", this.userId, future);
 
       }
-      promise.complete();
+      promise.tryComplete();
 
     }
 

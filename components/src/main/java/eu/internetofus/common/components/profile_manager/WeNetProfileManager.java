@@ -430,4 +430,52 @@ public interface WeNetProfileManager extends WeNetComponent {
 
   }
 
+  /**
+   * Check if a profile is defined.
+   *
+   * @param id identifier of the profile to check if exist.
+   *
+   * @return the future that check if the profile exist or not.
+   */
+  @GenIgnore
+  default Future<Boolean> isProfileDefined(final String id) {
+
+    final Promise<Boolean> promise = Promise.promise();
+    this.isProfileDefined(id, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Check if a profile is defined.
+   *
+   * @param id      identifier of the profile to check if exist.
+   * @param handler to manage if the profile exist or not.
+   */
+  void isProfileDefined(final String id, @NotNull Handler<AsyncResult<Boolean>> handler);
+
+  /**
+   * Check if a community is defined.
+   *
+   * @param id identifier of the community to check if exist.
+   *
+   * @return the future that check if the community exist or not.
+   */
+  @GenIgnore
+  default Future<Boolean> isCommunityDefined(final String id) {
+
+    final Promise<Boolean> promise = Promise.promise();
+    this.isCommunityDefined(id, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Check if a community is defined.
+   *
+   * @param id      identifier of the community to check if exist.
+   * @param handler to manage if the community exist or not.
+   */
+  void isCommunityDefined(final String id, @NotNull Handler<AsyncResult<Boolean>> handler);
+
 }

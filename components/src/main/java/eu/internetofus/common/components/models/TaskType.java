@@ -22,20 +22,17 @@ package eu.internetofus.common.components.models;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import eu.internetofus.common.components.HumanDescriptionWithCreateUpdateTsDetails;
-import eu.internetofus.common.components.task_manager.WeNetTaskManager;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.JsonObjectDeserializer;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.Validations;
-import eu.internetofus.common.vertx.OpenAPIValidator;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import java.util.List;
 
@@ -46,7 +43,8 @@ import java.util.List;
  */
 @Schema(hidden = true, name = "TaskType", description = "The component that describe a possible task.")
 public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
-    implements Model, Validable, Mergeable<TaskType>, Updateable<TaskType> {
+    implements Model, Validable<WeNetValidateContext>, Mergeable<TaskType, WeNetValidateContext>,
+    Updateable<TaskType, WeNetValidateContext> {
 
   /**
    * The identifier of the profile.
@@ -85,51 +83,37 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
     if (this.id != null) {
 
-      future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
-          WeNetTaskManager.createProxy(vertx)::retrieveTaskType);
+      future = context.validateNotDefinedTaskTypeIdField("id", this.id, future);
+
     }
 
-    future = future
-        .compose(empty -> Validations.validateNullableStringField(codePrefix, "name", this.name).map(value -> {
-          this.name = value;
-          return null;
-        }));
-    future = future.compose(
-        empty -> Validations.validateNullableStringField(codePrefix, "description", this.description).map(value -> {
-          this.description = value;
-          return null;
-        }));
-    future = future.compose(
-        empty -> Validations.validateNullableListStringField(codePrefix, "keywords", this.keywords).map(value -> {
-          this.keywords = value;
-          return null;
-        }));
-    future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+    this.name = context.normalizeString(this.name);
+    this.description = context.normalizeString(this.description);
+    this.keywords = context.validateNullableStringListField("keywords", this.keywords, promise);
+    future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
 
     if (this.callbacks != null) {
 
-      future = future
-          .compose(empty -> OpenAPIValidator.validateComposedSpecification("callbacks", vertx, this.callbacks));
+      future = context.validateOpenAPISpecificationField("callbacks", this.callbacks, future);
     }
 
     if (this.transactions != null) {
 
-      future = future
-          .compose(empty -> OpenAPIValidator.validateComposedSpecification("transactions", vertx, this.transactions));
+      future = context.validateOpenAPISpecificationField("transactions", this.transactions, future);
     }
 
     if (this.attributes != null) {
 
-      future = future.compose(empty -> OpenAPIValidator.validateSpecification("attributes", vertx, this.attributes));
+      future = context.validateOpenAPISpecificationField("attributes", this.attributes, future);
     }
 
-    promise.complete();
+    promise.tryComplete();
 
     return future;
   }
@@ -138,7 +122,7 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<TaskType> merge(final TaskType source, final String codePrefix, final Vertx vertx) {
+  public Future<TaskType> merge(final TaskType source, final WeNetValidateContext context) {
 
     final Promise<TaskType> promise = Promise.promise();
     var future = promise.future();
@@ -174,7 +158,7 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
 
         merged.norms = this.norms;
       }
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
       promise.complete(merged);
       future = future.map(mergedValidatedModel -> {
 
@@ -193,7 +177,7 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<TaskType> update(final TaskType source, final String codePrefix, final Vertx vertx) {
+  public Future<TaskType> update(final TaskType source, final WeNetValidateContext context) {
 
     final Promise<TaskType> promise = Promise.promise();
     var future = promise.future();
@@ -211,7 +195,7 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
       updated.callbacks = source.callbacks;
       updated.norms = source.norms;
 
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
       future = future.map(updatedValidatedModel -> {
 
         updatedValidatedModel.id = this.id;

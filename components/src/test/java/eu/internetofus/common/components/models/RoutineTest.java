@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
@@ -78,13 +79,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#validate(String, io.vertx.core.Vertx)
+   * @see Routine#validate(WeNetValidateContext)
    */
   @Test
   public void shouldExampleNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
-    assertIsNotValid(model, "user_id", vertx, testContext);
+    assertIsNotValid(model, "user_id", new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
   /**
@@ -114,12 +115,13 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#validate(String, io.vertx.core.Vertx)
+   * @see Routine#validate(WeNetValidateContext)
    */
   @Test
   public void shouldComplexExampleBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext).onSuccess(routine -> assertIsValid(routine, vertx, testContext));
+    this.createModelExample(1, vertx, testContext)
+        .onSuccess(routine -> assertIsValid(routine, new WeNetValidateContext("codePrefix", vertx), testContext));
 
   }
 
@@ -129,7 +131,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#validate(String, Vertx)
+   * @see Routine#validate(WeNetValidateContext)
    */
   @Test
   public void shouldRoutineWithoutUserIdNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -137,7 +139,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.user_id = null;
-      assertIsNotValid(model, "user_id", vertx, testContext);
+      assertIsNotValid(model, "user_id", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -149,7 +151,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#validate(String, Vertx)
+   * @see Routine#validate(WeNetValidateContext)
    */
   @Test
   public void shouldRoutineWithUndefinedUserIdNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -157,7 +159,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.user_id = "Undefined user id";
-      assertIsNotValid(model, "user_id", vertx, testContext);
+      assertIsNotValid(model, "user_id", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -169,7 +171,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#validate(String, Vertx)
+   * @see Routine#validate(WeNetValidateContext)
    */
   @Test
   public void shouldRoutineWithoutWeekdaydNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -177,7 +179,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.weekday = null;
-      assertIsNotValid(model, "weekday", vertx, testContext);
+      assertIsNotValid(model, "weekday", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -189,7 +191,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#validate(String, Vertx)
+   * @see Routine#validate(WeNetValidateContext)
    */
   @Test
   public void shouldRoutineWithoutConfidencedNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -197,7 +199,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.confidence = null;
-      assertIsNotValid(model, "confidence", vertx, testContext);
+      assertIsNotValid(model, "confidence", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -209,7 +211,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#validate(String, Vertx)
+   * @see Routine#validate(WeNetValidateContext)
    */
   @Test
   public void shouldRoutineWithoutLabel_distributiondNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -217,7 +219,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.label_distribution = null;
-      assertIsNotValid(model, "label_distribution", vertx, testContext);
+      assertIsNotValid(model, "label_distribution", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -230,7 +232,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#validate(String, Vertx)
+   * @see Routine#validate(WeNetValidateContext)
    */
   @Test
   public void shouldRoutineWithANotArrayInLabel_distributiondNotBeValid(final Vertx vertx,
@@ -239,7 +241,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.label_distribution.put("bad_distribution", new JsonObject());
-      assertIsNotValid(model, "label_distribution.bad_distribution", vertx, testContext);
+      assertIsNotValid(model, "label_distribution.bad_distribution", new WeNetValidateContext("codePrefix", vertx),
+          testContext);
 
     });
 
@@ -252,7 +255,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#validate(String, Vertx)
+   * @see Routine#validate(WeNetValidateContext)
    */
   @Test
   public void shouldRoutineWithANotScoredLabelArrayInLabel_distributiondNotBeValid(final Vertx vertx,
@@ -261,7 +264,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.label_distribution.put("bad_value", new JsonArray().add(new JsonArray()));
-      assertIsNotValid(model, "label_distribution.bad_value", vertx, testContext);
+      assertIsNotValid(model, "label_distribution.bad_value", new WeNetValidateContext("codePrefix", vertx),
+          testContext);
 
     });
 
@@ -274,7 +278,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#validate(String, Vertx)
+   * @see Routine#validate(WeNetValidateContext)
    */
   @Test
   public void shouldRoutineWithABadScoredLabelArrayInLabel_distributiondNotBeValid(final Vertx vertx,
@@ -284,7 +288,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       model.label_distribution.put("bad_score_label",
           new JsonArray().add(new ScoredLabelTest().createModelExample(1).toJsonObject()).add(new JsonObject()));
-      assertIsNotValid(model, "label_distribution.bad_score_label[1].label", vertx, testContext);
+      assertIsNotValid(model, "label_distribution.bad_score_label[1].label",
+          new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -296,13 +301,14 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#merge(Routine, String, Vertx)
+   * @see Routine#merge(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged).isSameAs(target));
   }
 
   /**
@@ -311,15 +317,16 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#merge(Routine, String, Vertx)
+   * @see Routine#merge(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldMergeTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext)
         .onSuccess(target -> this.createModelExample(2, vertx, testContext)
-            .onSuccess(source -> assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged)
-                .isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))));
+            .onSuccess(source -> assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx),
+                testContext, merged -> assertThat(merged).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target)
+                    .isNotSameAs(source))));
   }
 
   /**
@@ -328,7 +335,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#merge(Routine, String, Vertx)
+   * @see Routine#merge(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -339,7 +346,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
         final var source = new Routine();
         source.user_id = profile.id;
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
           assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
           target.user_id = source.user_id;
@@ -358,7 +365,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#merge(Routine, String, Vertx)
+   * @see Routine#merge(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -367,7 +374,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = new Routine();
       source.user_id = "undefined user indentifier";
-      assertCannotMerge(target, source, "user_id", vertx, testContext);
+      assertCannotMerge(target, source, "user_id", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
   }
@@ -378,7 +385,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#merge(Routine, String, Vertx)
+   * @see Routine#merge(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyWeekday(final Vertx vertx, final VertxTestContext testContext) {
@@ -387,7 +394,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = new Routine();
       source.weekday = "DV";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
         target.weekday = source.weekday;
@@ -404,7 +411,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#merge(Routine, String, Vertx)
+   * @see Routine#merge(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyConfidence(final Vertx vertx, final VertxTestContext testContext) {
@@ -413,7 +420,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = new Routine();
       source.confidence = 43d;
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
         target.confidence = source.confidence;
@@ -430,7 +437,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#merge(Routine, String, Vertx)
+   * @see Routine#merge(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyLabelDistribution(final Vertx vertx, final VertxTestContext testContext) {
@@ -439,7 +446,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = new Routine();
       source.label_distribution = new JsonObject();
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
         target.label_distribution = source.label_distribution;
@@ -456,7 +463,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#merge(Routine, String, Vertx)
+   * @see Routine#merge(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadLabelDistibutionField(final Vertx vertx, final VertxTestContext testContext) {
@@ -465,7 +472,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = new Routine();
       source.label_distribution = new JsonObject().put("bad_field", new JsonObject());
-      assertCannotMerge(target, source, "label_distribution.bad_field", vertx, testContext);
+      assertCannotMerge(target, source, "label_distribution.bad_field", new WeNetValidateContext("codePrefix", vertx),
+          testContext);
 
     });
   }
@@ -476,7 +484,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#merge(Routine, String, Vertx)
+   * @see Routine#merge(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadLabelDistibutionArray(final Vertx vertx, final VertxTestContext testContext) {
@@ -485,7 +493,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = new Routine();
       source.label_distribution = new JsonObject().put("bad_array", new JsonArray().add(new JsonArray()));
-      assertCannotMerge(target, source, "label_distribution.bad_array", vertx, testContext);
+      assertCannotMerge(target, source, "label_distribution.bad_array", new WeNetValidateContext("codePrefix", vertx),
+          testContext);
 
     });
   }
@@ -496,7 +505,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#merge(Routine, String, Vertx)
+   * @see Routine#merge(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadLabelDistibutionScoredLabel(final Vertx vertx, final VertxTestContext testContext) {
@@ -505,7 +514,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = new Routine();
       source.label_distribution = new JsonObject().put("bad_scored_label", new JsonArray().add(new JsonObject()));
-      assertCannotMerge(target, source, "label_distribution.bad_scored_label[0].label", vertx, testContext);
+      assertCannotMerge(target, source, "label_distribution.bad_scored_label[0].label",
+          new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
   }
@@ -516,7 +526,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#merge(Routine, String, Vertx)
+   * @see Routine#merge(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyScoredLAbelInLabelDistribution(final Vertx vertx, final VertxTestContext testContext) {
@@ -527,7 +537,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
       source.label_distribution = new JsonObject(target.label_distribution.toBuffer());
       source.label_distribution.getJsonArray("additional_1").getJsonObject(0).clear()
           .put("label", new JsonObject().put("name", "name_1").put("latitude", -43d)).put("score", 43d);
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
         target.label_distribution.getJsonArray("additional_1").getJsonObject(0).getJsonObject("label").put("latitude",
@@ -546,13 +556,14 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#update(Routine, String, Vertx)
+   * @see Routine#update(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanUpdate(target, null, vertx, testContext, updated -> assertThat(updated).isSameAs(target));
+    assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        updated -> assertThat(updated).isSameAs(target));
   }
 
   /**
@@ -561,15 +572,16 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#update(Routine, String, Vertx)
+   * @see Routine#update(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext)
         .onSuccess(target -> this.createModelExample(2, vertx, testContext)
-            .onSuccess(source -> assertCanUpdate(target, source, vertx, testContext, updated -> assertThat(updated)
-                .isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source))));
+            .onSuccess(source -> assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx),
+                testContext, updated -> assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target)
+                    .isNotSameAs(source))));
 
   }
 
@@ -579,7 +591,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#update(Routine, String, Vertx)
+   * @see Routine#update(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -590,7 +602,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
         final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
         source.user_id = profile.id;
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
           assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
 
@@ -607,7 +619,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#update(Routine, String, Vertx)
+   * @see Routine#update(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -616,7 +628,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.user_id = "undefined user indentifier";
-      assertCannotUpdate(target, source, "user_id", vertx, testContext);
+      assertCannotUpdate(target, source, "user_id", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
   }
@@ -627,7 +639,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#update(Routine, String, Vertx)
+   * @see Routine#update(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyWeekday(final Vertx vertx, final VertxTestContext testContext) {
@@ -636,7 +648,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.weekday = "DV";
-      assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
         assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
 
@@ -651,7 +663,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#update(Routine, String, Vertx)
+   * @see Routine#update(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyConfidence(final Vertx vertx, final VertxTestContext testContext) {
@@ -660,7 +672,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.confidence = 43d;
-      assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
         assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
 
@@ -675,7 +687,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#update(Routine, String, Vertx)
+   * @see Routine#update(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyLabelDistribution(final Vertx vertx, final VertxTestContext testContext) {
@@ -684,7 +696,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.label_distribution = new JsonObject();
-      assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
         assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
 
@@ -699,7 +711,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#update(Routine, String, Vertx)
+   * @see Routine#update(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadLabelDistibutionField(final Vertx vertx, final VertxTestContext testContext) {
@@ -708,7 +720,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.label_distribution = new JsonObject().put("bad_field", new JsonObject());
-      assertCannotUpdate(target, source, "label_distribution.bad_field", vertx, testContext);
+      assertCannotUpdate(target, source, "label_distribution.bad_field", new WeNetValidateContext("codePrefix", vertx),
+          testContext);
 
     });
   }
@@ -719,7 +732,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#update(Routine, String, Vertx)
+   * @see Routine#update(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadLabelDistibutionArray(final Vertx vertx, final VertxTestContext testContext) {
@@ -728,7 +741,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.label_distribution = new JsonObject().put("bad_array", new JsonArray().add(new JsonArray()));
-      assertCannotUpdate(target, source, "label_distribution.bad_array", vertx, testContext);
+      assertCannotUpdate(target, source, "label_distribution.bad_array", new WeNetValidateContext("codePrefix", vertx),
+          testContext);
 
     });
   }
@@ -739,7 +753,7 @@ public class RoutineTest extends ModelTestCase<Routine> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see Routine#update(Routine, String, Vertx)
+   * @see Routine#update(Routine, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadLabelDistibutionScoredLabel(final Vertx vertx, final VertxTestContext testContext) {
@@ -748,7 +762,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
       source.label_distribution = new JsonObject().put("bad_scored_label", new JsonArray().add(new JsonObject()));
-      assertCannotUpdate(target, source, "label_distribution.bad_scored_label[0].label", vertx, testContext);
+      assertCannotUpdate(target, source, "label_distribution.bad_scored_label[0].label",
+          new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
   }

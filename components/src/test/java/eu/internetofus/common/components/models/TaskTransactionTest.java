@@ -25,6 +25,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.model.ModelTestCase;
 import eu.internetofus.common.model.TimeManager;
@@ -101,14 +102,14 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleNotBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsNotValid(model, "actioneerId", vertx, testContext);
+    assertIsNotValid(model, "actioneerId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -120,14 +121,14 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext)
-        .onComplete(testContext.succeeding(model -> assertIsValid(model, vertx, testContext)));
+    this.createModelExample(index, vertx, testContext).onComplete(testContext
+        .succeeding(model -> assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext)));
 
   }
 
@@ -137,12 +138,12 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldEmptyTransactionBeNotValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    assertIsNotValid(new TaskTransaction(), "label", vertx, testContext);
+    assertIsNotValid(new TaskTransaction(), "label", new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
   /**
@@ -151,14 +152,14 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithoutTaskId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> {
       model.taskId = null;
-      assertIsNotValid(model, "taskId", vertx, testContext);
+      assertIsNotValid(model, "taskId", new WeNetValidateContext("codePrefix", vertx), testContext);
     }));
 
   }
@@ -169,14 +170,14 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithoutTaskLabel(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> {
       model.label = null;
-      assertIsNotValid(model, "label", vertx, testContext);
+      assertIsNotValid(model, "label", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     }));
   }
@@ -187,16 +188,17 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithUndefinedTaskType(final Vertx vertx,
       final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext)
-        .onComplete(testContext.succeeding(model -> WeNetTaskManager.createProxy(vertx).retrieveTask(model.taskId)
-            .compose(task -> WeNetTaskManager.createProxy(vertx).deleteTaskType(task.taskTypeId))
-            .onComplete(testContext.succeeding(empty -> assertIsNotValid(model, "taskId", vertx, testContext)))));
+    this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> WeNetTaskManager
+        .createProxy(vertx).retrieveTask(model.taskId)
+        .compose(task -> WeNetTaskManager.createProxy(vertx).deleteTaskType(task.taskTypeId))
+        .onComplete(testContext.succeeding(
+            empty -> assertIsNotValid(model, "taskId", new WeNetValidateContext("codePrefix", vertx), testContext)))));
 
   }
 
@@ -206,7 +208,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithTaskTypeWithoutTransactions(final Vertx vertx,
@@ -220,7 +222,8 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
               newType.id = task.taskTypeId;
               return WeNetTaskManager.createProxy(vertx).createTaskType(newType);
 
-            })).onComplete(testContext.succeeding(empty -> assertIsNotValid(model, "label", vertx, testContext)))));
+            })).onComplete(testContext.succeeding(empty -> assertIsNotValid(model, "label",
+                new WeNetValidateContext("codePrefix", vertx), testContext)))));
 
   }
 
@@ -230,7 +233,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithTaskTypeWithoutLabelTransaction(final Vertx vertx,
@@ -245,7 +248,8 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
               newType.transactions = new JsonObject().put("undefined", new JsonObject());
               return WeNetTaskManager.createProxy(vertx).createTaskType(newType);
 
-            })).onComplete(testContext.succeeding(empty -> assertIsNotValid(model, "label", vertx, testContext)))));
+            })).onComplete(testContext.succeeding(empty -> assertIsNotValid(model, "label",
+                new WeNetValidateContext("codePrefix", vertx), testContext)))));
 
   }
 
@@ -255,7 +259,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithoutAttributesWhenTypeDefineAttributes(final Vertx vertx,
@@ -263,7 +267,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
 
     this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> {
       model.attributes = null;
-      assertIsNotValid(model, "attributes", vertx, testContext);
+      assertIsNotValid(model, "attributes", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     }));
   }
@@ -274,7 +278,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithEmptyAttributesWhenTypeDefineAttributes(final Vertx vertx,
@@ -282,7 +286,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
 
     this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> {
       model.attributes = new JsonObject();
-      assertIsNotValid(model, "attributes.index", vertx, testContext);
+      assertIsNotValid(model, "attributes.index", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     }));
   }
@@ -293,7 +297,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTaskTransactionBeNotValidWithUndefinedAttributesOnTheType(final Vertx vertx,
@@ -301,7 +305,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
 
     this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> {
       model.attributes.put("undefined", "value");
-      assertIsNotValid(model, "attributes.undefined", vertx, testContext);
+      assertIsNotValid(model, "attributes.undefined", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     }));
   }
@@ -312,7 +316,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTaskTransactionBeValidWithTaskTypeWithLabelButMissingNullableAttributes(final Vertx vertx,
@@ -329,7 +333,8 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
                     new JsonObject().put("type", "string").put("nullable", true))));
         return WeNetTaskManager.createProxy(vertx).mergeTaskType(task.taskTypeId, newType);
 
-      }).onComplete(testContext.succeeding(empty -> assertIsValid(model, vertx, testContext)));
+      }).onComplete(testContext
+          .succeeding(empty -> assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext)));
     }));
 
   }
@@ -340,7 +345,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTransactionIsNotValidWhenIsCreateTaskWithSomeAttributes(final Vertx vertx,
@@ -349,7 +354,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
     final var model = new TaskTransaction();
     model.label = TaskTransaction.CREATE_TASK_LABEL;
     model.attributes = new JsonObject().put("key", "value");
-    assertIsNotValid(model, "attributes", vertx, testContext);
+    assertIsNotValid(model, "attributes", new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
   /**
@@ -359,7 +364,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTransactionBeValidWhenIsCreateTaskWithEmptyAttributes(final Vertx vertx,
@@ -368,7 +373,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
     final var model = new TaskTransaction();
     model.label = TaskTransaction.CREATE_TASK_LABEL;
     model.attributes = new JsonObject();
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
   /**
@@ -378,7 +383,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see TaskTransaction#validate(String, Vertx)
+   * @see TaskTransaction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldTransactionBeValidWhenIsCreateTaskWithNullAttributes(final Vertx vertx,
@@ -386,7 +391,7 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
 
     final var model = new TaskTransaction();
     model.label = TaskTransaction.CREATE_TASK_LABEL;
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
 }

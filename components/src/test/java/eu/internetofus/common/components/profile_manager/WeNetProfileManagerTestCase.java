@@ -23,6 +23,7 @@ package eu.internetofus.common.components.profile_manager;
 import static eu.internetofus.common.vertx.ComponentClientAsserts.assertStatusError;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetComponentTestCase;
 import eu.internetofus.common.components.models.CommunityProfileTest;
 import eu.internetofus.common.components.models.WeNetUserProfileTest;
@@ -377,6 +378,97 @@ public abstract class WeNetProfileManagerTestCase extends WeNetComponentTestCase
 
         })));
 
+  }
+
+  /**
+   * Should defined profile .
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldDefinedProfile(final Vertx vertx, final VertxTestContext testContext) {
+
+    StoreServices.storeProfileExample(0, vertx, testContext).onSuccess(profile -> {
+
+      testContext.assertComplete(this.createComponentProxy(vertx).isProfileDefined(profile.id)).onSuccess(defined -> {
+
+        testContext.verify(() -> {
+
+          assertThat(defined).isTrue();
+        });
+        testContext.completeNow();
+
+      });
+    });
+
+  }
+
+  /**
+   * Should not defined profile .
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotDefinedProfile(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(this.createComponentProxy(vertx).isProfileDefined("undefined-profile-identifier"))
+        .onSuccess(defined -> {
+
+          testContext.verify(() -> {
+
+            assertThat(defined).isFalse();
+          });
+          testContext.completeNow();
+
+        });
+  }
+
+  /**
+   * Should defined community .
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldDefinedCommunity(final Vertx vertx, final VertxTestContext testContext) {
+
+    StoreServices.storeCommunityExample(0, vertx, testContext).onSuccess(community -> {
+
+      testContext.assertComplete(this.createComponentProxy(vertx).isCommunityDefined(community.id))
+          .onSuccess(defined -> {
+
+            testContext.verify(() -> {
+
+              assertThat(defined).isTrue();
+            });
+            testContext.completeNow();
+
+          });
+    });
+
+  }
+
+  /**
+   * Should not defined community .
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldNotDefinedCommunity(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(this.createComponentProxy(vertx).isCommunityDefined("undefined-community-identifier"))
+        .onSuccess(defined -> {
+
+          testContext.verify(() -> {
+
+            assertThat(defined).isFalse();
+          });
+          testContext.completeNow();
+
+        });
   }
 
 }

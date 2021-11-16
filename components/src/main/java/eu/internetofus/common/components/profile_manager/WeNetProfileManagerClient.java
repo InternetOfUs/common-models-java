@@ -214,4 +214,22 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
     this.post(data, "/operations/similarity").onComplete(handler);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void isProfileDefined(final String id, @NotNull final Handler<AsyncResult<Boolean>> handler) {
+
+    this.head("/profiles", id).onComplete(handler);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void isCommunityDefined(final String id, @NotNull final Handler<AsyncResult<Boolean>> handler) {
+
+    this.head("/communities", id).onComplete(handler);
+  }
+
 }

@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.ModelTestCase;
 import eu.internetofus.common.model.TimeManager;
 import io.vertx.core.Future;
@@ -92,13 +93,13 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityMember#validate(String, Vertx)
+   * @see CommunityMember#validate(WeNetValidateContext)
    */
   @Test
   public void shouldEmptyModelNotBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new CommunityMember();
-    assertIsNotValid(model, "userId", vertx, testContext);
+    assertIsNotValid(model, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -109,14 +110,14 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityMember#validate(String, Vertx)
+   * @see CommunityMember#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldBasicExampleNotBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsNotValid(model, "userId", vertx, testContext);
+    assertIsNotValid(model, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -128,7 +129,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityMember#validate(String, Vertx)
+   * @see CommunityMember#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
@@ -136,7 +137,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
 
     this.createModelExample(index, vertx, testContext).onSuccess(model -> {
 
-      assertIsValid(model, vertx, testContext);
+      assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -148,14 +149,14 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityMember#validate(String, Vertx)
+   * @see CommunityMember#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithANullUserId(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.userId = null;
-    assertIsNotValid(model, "userId", vertx, testContext);
+    assertIsNotValid(model, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
   /**
@@ -164,14 +165,14 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityMember#validate(String, Vertx)
+   * @see CommunityMember#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithAnUdefinedUserId(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
     model.userId = UUID.randomUUID().toString();
-    assertIsNotValid(model, "userId", vertx, testContext);
+    assertIsNotValid(model, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -181,13 +182,13 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#merge(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext).onSuccess(
-        target -> assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target)));
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> assertCanMerge(target, null,
+        new WeNetValidateContext("codePrefix", vertx), testContext, merged -> assertThat(merged).isSameAs(target)));
 
   }
 
@@ -197,7 +198,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityMember#merge(CommunityMember, String, Vertx)
+   * @see CommunityMember#merge(CommunityMember, WeNetValidateContext)
    */
   @Test
   public void shouldMergeExamples(final Vertx vertx, final VertxTestContext testContext) {
@@ -207,7 +208,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
       target._lastUpdateTs = TimeManager.now();
       this.createModelExample(2, vertx, testContext).onSuccess(source -> {
 
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
           source.userId = target.userId;
           source._creationTs = target._creationTs;
@@ -225,7 +226,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityMember#merge(CommunityMember, String, Vertx)
+   * @see CommunityMember#merge(CommunityMember, WeNetValidateContext)
    */
   @Test
   public void shouldMergeEmptyModel(final Vertx vertx, final VertxTestContext testContext) {
@@ -233,7 +234,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new CommunityMember();
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
         assertThat(merged).isEqualTo(target).isNotEqualTo(source);
       });
 
@@ -247,7 +248,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityMember#merge(CommunityMember, String, Vertx)
+   * @see CommunityMember#merge(CommunityMember, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergePrivileges(final Vertx vertx, final VertxTestContext testContext) {
@@ -257,7 +258,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
       final var source = new CommunityMember();
       source.privileges = new ArrayList<>(target.privileges);
       source.privileges.add("New privilege");
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         source.userId = target.userId;
         source._creationTs = target._creationTs;
@@ -274,14 +275,14 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#update(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
-      assertCanUpdate(target, null, vertx, testContext, updated -> {
+      assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
         assertThat(updated).isSameAs(target);
       });
     });
@@ -294,7 +295,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityMember#update(CommunityMember, String, Vertx)
+   * @see CommunityMember#update(CommunityMember, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateExamples(final Vertx vertx, final VertxTestContext testContext) {
@@ -304,7 +305,7 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
       target._lastUpdateTs = TimeManager.now();
       this.createModelExample(2, vertx, testContext).onSuccess(source -> {
 
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
           assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
           source.userId = target.userId;
           source._creationTs = target._creationTs;

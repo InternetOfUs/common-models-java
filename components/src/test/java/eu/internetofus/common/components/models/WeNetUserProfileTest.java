@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
@@ -311,13 +312,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldEmptyModelBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new WeNetUserProfile();
-    testContext.assertComplete(model.validate("codePrefix", vertx)).onComplete(result -> testContext.completeNow());
+    testContext.assertComplete(model.validate(new WeNetValidateContext("codePrefix", vertx)))
+        .onComplete(result -> testContext.completeNow());
 
   }
 
@@ -328,14 +330,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -347,7 +349,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
@@ -355,7 +357,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       final VertxTestContext testContext) {
 
     testContext.assertComplete(this.createModelExample(index, vertx, testContext))
-        .onSuccess(model -> assertIsValid(model, vertx, testContext));
+        .onSuccess(model -> assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext));
 
   }
 
@@ -365,7 +367,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithAnExistingId(final Vertx vertx, final VertxTestContext testContext) {
@@ -374,7 +376,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
       final var model = new WeNetUserProfile();
       model.id = created.id;
-      assertIsNotValid(model, "id", vertx, testContext);
+      assertIsNotValid(model, "id", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -386,14 +388,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithAnNewId(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new WeNetUserProfile();
     model.id = UUID.randomUUID().toString();
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -403,7 +405,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadBirthDate(final Vertx vertx, final VertxTestContext testContext) {
@@ -411,7 +413,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     final var model = new WeNetUserProfile();
     model.dateOfBirth = new AliveBirthDateTest().createModelExample(1);
     model.dateOfBirth.month = 0;
-    assertIsNotValid(model, "dateOfBirth.month", vertx, testContext);
+    assertIsNotValid(model, "dateOfBirth.month", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -421,7 +423,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABirthDateOnTheFuture(final Vertx vertx, final VertxTestContext testContext) {
@@ -432,7 +434,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.dateOfBirth.year = tomorrow.getYear();
     model.dateOfBirth.month = (byte) tomorrow.getMonthValue();
     model.dateOfBirth.day = (byte) tomorrow.getDayOfMonth();
-    assertIsNotValid(model, "dateOfBirth", vertx, testContext);
+    assertIsNotValid(model, "dateOfBirth", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -442,7 +444,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABirthDateBeforeTheBirthDateOldestPersonOnWorld(final Vertx vertx,
@@ -453,7 +455,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.dateOfBirth.year = 1903;
     model.dateOfBirth.month = 1;
     model.dateOfBirth.day = 1;
-    assertIsNotValid(model, "dateOfBirth", vertx, testContext);
+    assertIsNotValid(model, "dateOfBirth", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -463,14 +465,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadEmail(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new WeNetUserProfile();
     model.email = " bad email @ adrress ";
-    assertIsNotValid(model, "email", vertx, testContext);
+    assertIsNotValid(model, "email", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -480,14 +482,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadLocale(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new WeNetUserProfile();
     model.locale = " bad locale";
-    assertIsNotValid(model, "locale", vertx, testContext);
+    assertIsNotValid(model, "locale", new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
   /**
@@ -496,14 +498,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadPhoneNumber(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new WeNetUserProfile();
     model.phoneNumber = " bad phone number";
-    assertIsNotValid(model, "phoneNumber", vertx, testContext);
+    assertIsNotValid(model, "phoneNumber", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -513,14 +515,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadAvatar(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new WeNetUserProfile();
     model.avatar = " bad avatar";
-    assertIsNotValid(model, "avatar", vertx, testContext);
+    assertIsNotValid(model, "avatar", new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
   /**
@@ -529,7 +531,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -539,7 +541,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.norms.add(new ProtocolNormTest().createModelExample(0));
     model.norms.add(new ProtocolNorm());
     model.norms.add(new ProtocolNormTest().createModelExample(2));
-    assertIsNotValid(model, "norms[1].whenever", vertx, testContext);
+    assertIsNotValid(model, "norms[1].whenever", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -549,7 +551,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadPlannedActivities(final Vertx vertx, final VertxTestContext testContext) {
@@ -561,7 +563,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.plannedActivities.add(new PlannedActivity());
     model.plannedActivities.get(1).attendees = new ArrayList<>();
     model.plannedActivities.get(1).attendees.add("undefined");
-    assertIsNotValid(model, "plannedActivities[1].attendees[0]", vertx, testContext);
+    assertIsNotValid(model, "plannedActivities[1].attendees[0]", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -571,7 +574,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
@@ -582,7 +585,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.relevantLocations.add(new RelevantLocationTest().createModelExample(2));
     model.relevantLocations.add(new RelevantLocationTest().createModelExample(3));
     model.relevantLocations.get(1).latitude = 1988d;
-    assertIsNotValid(model, "relevantLocations[1].latitude", vertx, testContext);
+    assertIsNotValid(model, "relevantLocations[1].latitude", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -592,7 +596,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadRelationships(final Vertx vertx, final VertxTestContext testContext) {
@@ -600,7 +604,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     final var model = new WeNetUserProfile();
     model.relationships = new ArrayList<>();
     model.relationships.add(new SocialNetworkRelationship());
-    assertIsNotValid(model, "relationships[0].type", vertx, testContext);
+    assertIsNotValid(model, "relationships[0].type", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -610,7 +614,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithADuplicatedRelationships(final Vertx vertx, final VertxTestContext testContext) {
@@ -624,7 +628,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
             model.relationships = new ArrayList<>();
             model.relationships.add(relation);
             model.relationships.add(Model.fromJsonObject(relation.toJsonObject(), SocialNetworkRelationship.class));
-            assertIsNotValid(model, "relationships[1]", vertx, testContext);
+            assertIsNotValid(model, "relationships[1]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
           }));
 
@@ -638,7 +642,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithSomeRelationships(final Vertx vertx, final VertxTestContext testContext) {
@@ -653,7 +657,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
             model.relationships.add(relation);
             model.relationships.add(
                 Model.fromJsonObject(relation.toJsonObject().put("type", "family"), SocialNetworkRelationship.class));
-            assertIsValid(model, vertx, testContext);
+            assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
           }));
 
@@ -667,7 +671,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadPersonalBehaviors(final Vertx vertx, final VertxTestContext testContext) {
@@ -677,7 +681,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.personalBehaviors.add(new Routine());
     model.personalBehaviors.add(new Routine());
     model.personalBehaviors.add(new Routine());
-    assertIsNotValid(model, "personalBehaviors[0].label_distribution", vertx, testContext);
+    assertIsNotValid(model, "personalBehaviors[0].label_distribution", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -687,7 +692,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadMaterials(final Vertx vertx, final VertxTestContext testContext) {
@@ -696,7 +701,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.materials = new ArrayList<>();
     model.materials.add(new MaterialTest().createModelExample(1));
     model.materials.add(new Material());
-    assertIsNotValid(model, "materials[1].name", vertx, testContext);
+    assertIsNotValid(model, "materials[1].name", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -706,7 +711,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadCompetences(final Vertx vertx, final VertxTestContext testContext) {
@@ -715,7 +720,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.competences = new ArrayList<>();
     model.competences.add(new CompetenceTest().createModelExample(1));
     model.competences.add(new Competence());
-    assertIsNotValid(model, "competences[1].name", vertx, testContext);
+    assertIsNotValid(model, "competences[1].name", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -725,7 +730,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadMeanings(final Vertx vertx, final VertxTestContext testContext) {
@@ -734,7 +739,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.meanings = new ArrayList<>();
     model.meanings.add(new MeaningTest().createModelExample(1));
     model.meanings.add(new Meaning());
-    assertIsNotValid(model, "meanings[1].name", vertx, testContext);
+    assertIsNotValid(model, "meanings[1].name", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -744,7 +749,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadBirthDate(final Vertx vertx, final VertxTestContext testContext) {
@@ -752,7 +757,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     final var source = new WeNetUserProfile();
     source.dateOfBirth = new AliveBirthDateTest().createModelExample(1);
     source.dateOfBirth.month = 13;
-    assertCannotMerge(new WeNetUserProfile(), source, "dateOfBirth.month", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "dateOfBirth.month",
+        new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -762,7 +768,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABirthDateOnTheFuture(final Vertx vertx, final VertxTestContext testContext) {
@@ -773,7 +779,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.dateOfBirth.year = tomorrow.getYear();
     source.dateOfBirth.month = (byte) tomorrow.getMonthValue();
     source.dateOfBirth.day = (byte) tomorrow.getDayOfMonth();
-    assertCannotMerge(new WeNetUserProfile(), source, "dateOfBirth", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "dateOfBirth", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -783,7 +790,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABirthDateBeforeTheBirthDateOldestPersonOnWorld(final Vertx vertx,
@@ -794,7 +801,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.dateOfBirth.year = 1903;
     source.dateOfBirth.month = 1;
     source.dateOfBirth.day = 1;
-    assertCannotMerge(new WeNetUserProfile(), source, "dateOfBirth", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "dateOfBirth", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -804,14 +812,15 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadEmail(final Vertx vertx, final VertxTestContext testContext) {
 
     final var source = new WeNetUserProfile();
     source.email = " bad email @ adrress ";
-    assertCannotMerge(new WeNetUserProfile(), source, "email", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "email", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -821,14 +830,15 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadLocale(final Vertx vertx, final VertxTestContext testContext) {
 
     final var source = new WeNetUserProfile();
     source.locale = " bad locale";
-    assertCannotMerge(new WeNetUserProfile(), source, "locale", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "locale", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
   }
 
   /**
@@ -837,14 +847,15 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadPhoneNumber(final Vertx vertx, final VertxTestContext testContext) {
 
     final var source = new WeNetUserProfile();
     source.phoneNumber = " bad phone number";
-    assertCannotMerge(new WeNetUserProfile(), source, "phoneNumber", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "phoneNumber", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -854,14 +865,15 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadAvatar(final Vertx vertx, final VertxTestContext testContext) {
 
     final var source = new WeNetUserProfile();
     source.avatar = " bad avatar";
-    assertCannotMerge(new WeNetUserProfile(), source, "avatar", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "avatar", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
   }
 
   /**
@@ -870,7 +882,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -880,7 +892,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.norms.add(new ProtocolNormTest().createModelExample(0));
     source.norms.add(new ProtocolNorm());
     source.norms.add(new ProtocolNormTest().createModelExample(1));
-    assertCannotMerge(new WeNetUserProfile(), source, "norms[1].whenever", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "norms[1].whenever",
+        new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -890,7 +903,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithADuplicatedNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -903,7 +916,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     final var target = new WeNetUserProfile();
     target.norms = new ArrayList<>();
     target.norms.add(new ProtocolNormTest().createModelExample(3));
-    assertCannotMerge(target, source, "norms[2]", vertx, testContext);
+    assertCannotMerge(target, source, "norms[2]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -913,7 +926,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -926,7 +939,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.norms.add(new ProtocolNormTest().createModelExample(0));
     source.norms.add(new ProtocolNormTest().createModelExample(1));
     source.norms.add(new ProtocolNormTest().createModelExample(2));
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       assertThat(merged.norms).isNotEqualTo(target.norms).isEqualTo(source.norms);
 
@@ -940,7 +953,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadPlannedActivities(final Vertx vertx, final VertxTestContext testContext) {
@@ -952,7 +965,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.plannedActivities.add(new PlannedActivity());
     source.plannedActivities.get(1).attendees = new ArrayList<>();
     source.plannedActivities.get(1).attendees.add("undefined");
-    assertCannotMerge(new WeNetUserProfile(), source, "plannedActivities[1].attendees[0]", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "plannedActivities[1].attendees[0]",
+        new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -962,7 +976,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithDuplicatedPlannedActivityId(final Vertx vertx, final VertxTestContext testContext) {
@@ -974,7 +988,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.plannedActivities.add(new PlannedActivityTest().createModelExample(3));
     source.plannedActivities.get(0).id = "1";
     source.plannedActivities.get(1).id = "1";
-    assertCannotMerge(new WeNetUserProfile(), source, "plannedActivities[1]", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "plannedActivities[1]",
+        new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -984,7 +999,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithPlannedActivities(final Vertx vertx, final VertxTestContext testContext) {
@@ -999,7 +1014,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.plannedActivities.add(new PlannedActivity());
     source.plannedActivities.add(new PlannedActivity());
     source.plannedActivities.get(1).id = "1";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       assertThat(merged.plannedActivities).isNotEqualTo(target.plannedActivities).isEqualTo(source.plannedActivities);
       assertThat(merged.plannedActivities.get(0).id).isNotEmpty();
@@ -1016,7 +1031,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
@@ -1027,7 +1042,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.relevantLocations.add(new RelevantLocationTest().createModelExample(1));
     source.relevantLocations.add(new RelevantLocationTest().createModelExample(2));
     source.relevantLocations.get(1).latitude = 1988D;
-    assertCannotMerge(new WeNetUserProfile(), source, "relevantLocations[1].latitude", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "relevantLocations[1].latitude",
+        new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -1037,7 +1053,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithADuplicatedRelevantLocationIds(final Vertx vertx, final VertxTestContext testContext) {
@@ -1053,7 +1069,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     target.relevantLocations = new ArrayList<>();
     target.relevantLocations.add(new RelevantLocation());
     target.relevantLocations.get(0).id = "1";
-    assertCannotMerge(target, source, "relevantLocations[2]", vertx, testContext);
+    assertCannotMerge(target, source, "relevantLocations[2]", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -1063,7 +1080,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithDuplicatedRelevantLocationId(final Vertx vertx, final VertxTestContext testContext) {
@@ -1075,7 +1092,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.relevantLocations.add(new RelevantLocationTest().createModelExample(2));
     source.relevantLocations.get(0).id = "1";
     source.relevantLocations.get(1).id = "1";
-    assertCannotMerge(new WeNetUserProfile(), source, "relevantLocations[1]", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "relevantLocations[1]",
+        new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -1085,7 +1103,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
@@ -1100,7 +1118,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.relevantLocations.add(new RelevantLocationTest().createModelExample(2));
     source.relevantLocations.add(new RelevantLocationTest().createModelExample(3));
     source.relevantLocations.get(1).id = "1";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       assertThat(merged.relevantLocations).isNotEqualTo(target.relevantLocations).isEqualTo(source.relevantLocations);
       assertThat(merged.relevantLocations.get(0).id).isNotEmpty();
@@ -1117,7 +1135,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadRelationships(final Vertx vertx, final VertxTestContext testContext) {
@@ -1125,7 +1143,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     final var source = new WeNetUserProfile();
     source.relationships = new ArrayList<>();
     source.relationships.add(new SocialNetworkRelationship());
-    assertCannotMerge(new WeNetUserProfile(), source, "relationships[0].type", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "relationships[0].type",
+        new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -1135,7 +1154,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithDuplicatedRelationships(final Vertx vertx, final VertxTestContext testContext) {
@@ -1149,7 +1168,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
             source.relationships = new ArrayList<>();
             source.relationships.add(relation);
             source.relationships.add(Model.fromJsonObject(relation.toJsonObject(), SocialNetworkRelationship.class));
-            assertCannotMerge(new WeNetUserProfile(), source, "relationships[1]", vertx, testContext);
+            assertCannotMerge(new WeNetUserProfile(), source, "relationships[1]",
+                new WeNetValidateContext("codePrefix", vertx), testContext);
 
           }));
 
@@ -1163,7 +1183,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeRelationships(final Vertx vertx, final VertxTestContext testContext) {
@@ -1188,7 +1208,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
             source.relationships.get(0).appId = relation.appId;
             source.relationships.get(0).userId = stored.id;
             source.relationships.get(0).type = SocialNetworkRelationshipType.family;
-            assertCanMerge(target, source, vertx, testContext, merged -> {
+            assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
               assertThat(merged.relationships).isNotEqualTo(target.relationships).isEqualTo(source.relationships);
 
@@ -1205,7 +1225,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadPersonalBehaviors(final Vertx vertx, final VertxTestContext testContext) {
@@ -1213,7 +1233,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     final var source = new WeNetUserProfile();
     source.personalBehaviors = new ArrayList<>();
     source.personalBehaviors.add(new Routine());
-    assertCannotMerge(new WeNetUserProfile(), source, "personalBehaviors[0].label_distribution", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "personalBehaviors[0].label_distribution",
+        new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -1223,14 +1244,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeEmptyModels(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = new WeNetUserProfile();
     final var source = new WeNetUserProfile();
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       assertThat(merged).isEqualTo(target);
 
@@ -1244,7 +1265,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeBasicModels(final Vertx vertx, final VertxTestContext testContext) {
@@ -1257,7 +1278,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.id = "4";
     source._creationTs = 5;
     source._lastUpdateTs = 6;
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       assertThat(merged).isEqualTo(target).isNotEqualTo(source);
 
@@ -1271,7 +1292,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeExampleModels(final Vertx vertx, final VertxTestContext testContext) {
@@ -1280,7 +1301,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     target.id = "1";
     final var source = this.createModelExample(2);
     source.id = "2";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       source.id = target.id;
       source._creationTs = target._creationTs;
@@ -1297,7 +1318,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeStoredModels(final Vertx vertx, final VertxTestContext testContext) {
@@ -1307,7 +1328,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
             .compose(target -> this.createModelExample(2, vertx, testContext).compose(
                 sourceToStore -> StoreServices.storeProfile(sourceToStore, vertx, testContext).onSuccess(source ->
 
-                assertCanMerge(target, source, vertx, testContext, merged -> {
+                assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
                   source.id = target.id;
                   source._creationTs = target._creationTs;
@@ -1324,18 +1345,18 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyUserName(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createBasicExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.name = new UserName();
       source.name.middle = "NEW MIDDLE NAME";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.name.middle = "NEW MIDDLE NAME";
@@ -1353,7 +1374,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAddUserName(final Vertx vertx, final VertxTestContext testContext) {
@@ -1363,7 +1384,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     final var source = new WeNetUserProfile();
     source.name = new UserName();
     source.name.middle = "NEW MIDDLE NAME";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.name = new UserName();
@@ -1380,18 +1401,18 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyBirthDate(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createBasicExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.dateOfBirth = new AliveBirthDate();
       source.dateOfBirth.year = 1923;
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.dateOfBirth.year = 1923;
@@ -1409,7 +1430,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAddBirthDate(final Vertx vertx, final VertxTestContext testContext) {
@@ -1418,7 +1439,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     target.id = "1";
     final var source = new WeNetUserProfile();
     source.dateOfBirth = new AliveBirthDateTest().createModelExample(1);
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.dateOfBirth = new AliveBirthDateTest().createModelExample(1);
@@ -1434,17 +1455,17 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyGender(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createBasicExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.gender = WeNetUserProfile.GENDERS[0];
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.gender = WeNetUserProfile.GENDERS[0];
@@ -1462,17 +1483,17 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyEmail(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createBasicExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.email = "new@email.com";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.email = "new@email.com";
@@ -1490,17 +1511,17 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyLocale(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createBasicExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.locale = "en_NZ";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.locale = "en_NZ";
@@ -1518,17 +1539,17 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyPhoneNumber(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createBasicExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.phoneNumber = "+1 412 535 2223";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.phoneNumber = "+1 412-535-2223";
@@ -1546,17 +1567,17 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyAvatar(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createBasicExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.avatar = "http://new-avatar.com";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.avatar = "http://new-avatar.com";
@@ -1574,17 +1595,17 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyNationality(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createBasicExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.nationality = "Canadian";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.nationality = "Canadian";
@@ -1602,17 +1623,17 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyOccupation(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createBasicExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.occupation = "Bus driver";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.occupation = "Bus driver";
@@ -1630,19 +1651,19 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeRemovePlannedActivities(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext)
-        .onSuccess(created -> assertIsValid(created, vertx, testContext, () -> {
+        .onSuccess(created -> assertIsValid(created, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
           StoreServices.storeProfile(created, vertx, testContext).onSuccess(target -> {
 
             final var source = new WeNetUserProfile();
             source.plannedActivities = new ArrayList<>();
-            assertCanMerge(target, source, vertx, testContext, merged -> {
+            assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
               assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
               target.plannedActivities.clear();
@@ -1662,23 +1683,25 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldFailMergeBadPlannedActivities(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext).onSuccess(created -> assertIsValid(created, vertx, testContext,
-        () -> StoreServices.storeProfile(created, vertx, testContext).onSuccess(target -> {
+    this.createModelExample(1, vertx, testContext)
+        .onSuccess(created -> assertIsValid(created, new WeNetValidateContext("codePrefix", vertx), testContext,
+            () -> StoreServices.storeProfile(created, vertx, testContext).onSuccess(target -> {
 
-          final var source = new WeNetUserProfile();
-          source.plannedActivities = new ArrayList<>();
-          source.plannedActivities.add(new PlannedActivity());
-          source.plannedActivities.get(0).id = target.plannedActivities.get(0).id;
-          source.plannedActivities.get(0).attendees = new ArrayList<>();
-          source.plannedActivities.get(0).attendees.add("undefined");
-          assertCannotMerge(target, source, "plannedActivities[0].attendees[0]", vertx, testContext);
+              final var source = new WeNetUserProfile();
+              source.plannedActivities = new ArrayList<>();
+              source.plannedActivities.add(new PlannedActivity());
+              source.plannedActivities.get(0).id = target.plannedActivities.get(0).id;
+              source.plannedActivities.get(0).attendees = new ArrayList<>();
+              source.plannedActivities.get(0).attendees.add("undefined");
+              assertCannotMerge(target, source, "plannedActivities[0].attendees[0]",
+                  new WeNetValidateContext("codePrefix", vertx), testContext);
 
-        })));
+            })));
 
   }
 
@@ -1688,14 +1711,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldFailMergeBadNewPlannedActivities(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(created -> {
 
-      assertIsValid(created, vertx, testContext, () -> {
+      assertIsValid(created, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
         StoreServices.storeProfile(created, vertx, testContext).onSuccess(target -> {
 
@@ -1704,7 +1727,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
           source.plannedActivities.add(new PlannedActivity());
           source.plannedActivities.get(0).attendees = new ArrayList<>();
           source.plannedActivities.get(0).attendees.add("undefined");
-          assertCannotMerge(target, source, "plannedActivities[0].attendees[0]", vertx, testContext);
+          assertCannotMerge(target, source, "plannedActivities[0].attendees[0]",
+              new WeNetValidateContext("codePrefix", vertx), testContext);
 
         });
 
@@ -1719,14 +1743,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAddmodifyPlannedActivities(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(created -> {
 
-      assertIsValid(created, vertx, testContext, () -> {
+      assertIsValid(created, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
         StoreServices.storeProfile(created, vertx, testContext).onSuccess(target -> {
 
@@ -1736,7 +1760,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
           source.plannedActivities.add(new PlannedActivity());
           source.plannedActivities.get(0).id = target.plannedActivities.get(1).id;
           source.plannedActivities.get(0).description = "NEW description";
-          assertCanMerge(target, source, vertx, testContext, merged -> {
+          assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
             assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
             target.plannedActivities.remove(0);
@@ -1759,20 +1783,20 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeRemoveRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(created -> {
 
-      assertIsValid(created, vertx, testContext, () -> {
+      assertIsValid(created, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
         StoreServices.storeProfile(created, vertx, testContext).onSuccess(target -> {
 
           final var source = new WeNetUserProfile();
           source.relevantLocations = new ArrayList<>();
-          assertCanMerge(target, source, vertx, testContext, merged -> {
+          assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
             assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
             target.relevantLocations.clear();
             assertThat(merged).isEqualTo(target);
@@ -1789,13 +1813,13 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   public void shouldFailMergeBadRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(created -> {
 
-      assertIsValid(created, vertx, testContext, () -> {
+      assertIsValid(created, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
         StoreServices.storeProfile(created, vertx, testContext).onSuccess(target -> {
 
@@ -1804,7 +1828,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
           source.relevantLocations.add(new RelevantLocation());
           source.relevantLocations.get(0).id = target.relevantLocations.get(0).id;
           source.relevantLocations.get(0).longitude = 1988D;
-          assertCannotMerge(target, source, "relevantLocations[0].longitude", vertx, testContext);
+          assertCannotMerge(target, source, "relevantLocations[0].longitude",
+              new WeNetValidateContext("codePrefix", vertx), testContext);
         });
       });
     });
@@ -1816,13 +1841,13 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   public void shouldFailMergeBadNewRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(created -> {
 
-      assertIsValid(created, vertx, testContext, () -> {
+      assertIsValid(created, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
         StoreServices.storeProfile(created, vertx, testContext).onSuccess(target -> {
 
@@ -1830,7 +1855,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
           source.relevantLocations = new ArrayList<>();
           source.relevantLocations.add(new RelevantLocation());
           source.relevantLocations.get(0).longitude = 1088D;
-          assertCannotMerge(target, source, "relevantLocations[0].longitude", vertx, testContext);
+          assertCannotMerge(target, source, "relevantLocations[0].longitude",
+              new WeNetValidateContext("codePrefix", vertx), testContext);
 
         });
       });
@@ -1843,14 +1869,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAddModifyRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(created -> {
 
-      assertIsValid(created, vertx, testContext, () -> {
+      assertIsValid(created, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
         StoreServices.storeProfile(created, vertx, testContext).onSuccess(target -> {
 
@@ -1860,7 +1886,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
           source.relevantLocations.add(new RelevantLocationTest().createModelExample(1));
           source.relevantLocations.get(1).id = target.relevantLocations.get(0).id;
           source.relevantLocations.get(1).label = "NEW label";
-          assertCanMerge(target, source, vertx, testContext, merged -> {
+          assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
             assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
             target.relevantLocations.add(0, new RelevantLocation());
@@ -1880,20 +1906,20 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeRemovePersonalBehaviors(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(created -> {
 
-      assertIsValid(created, vertx, testContext, () -> {
+      assertIsValid(created, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
         StoreServices.storeProfile(created, vertx, testContext).onSuccess(target -> {
 
           final var source = new WeNetUserProfile();
           source.personalBehaviors = new ArrayList<>();
-          assertCanMerge(target, source, vertx, testContext, merged -> {
+          assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
             assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
             target.personalBehaviors.clear();
@@ -1911,21 +1937,22 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldFailMergeBadNewPersonalBehaviors(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(created -> {
 
-      assertIsValid(created, vertx, testContext, () -> {
+      assertIsValid(created, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
         StoreServices.storeProfile(created, vertx, testContext).onSuccess(target -> {
 
           final var source = new WeNetUserProfile();
           source.personalBehaviors = new ArrayList<>();
           source.personalBehaviors.add(new Routine());
-          assertCannotMerge(target, source, "personalBehaviors[0].label_distribution", vertx, testContext);
+          assertCannotMerge(target, source, "personalBehaviors[0].label_distribution",
+              new WeNetValidateContext("codePrefix", vertx), testContext);
         });
       });
     });
@@ -1937,7 +1964,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAddModifyPersonalBehaviors(final Vertx vertx, final VertxTestContext testContext) {
@@ -1951,7 +1978,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
         source.personalBehaviors.add(createdRoutine);
         source.personalBehaviors.addAll(target.personalBehaviors);
         source.personalBehaviors.get(1).confidence = 0.0;
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
           target.personalBehaviors.add(0, createdRoutine);
@@ -1970,7 +1997,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadMaterials(final Vertx vertx, final VertxTestContext testContext) {
@@ -1981,7 +2008,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.materials.add(new MaterialTest().createModelExample(2));
     source.materials.add(new MaterialTest().createModelExample(3));
     source.materials.get(1).name = null;
-    assertCannotMerge(new WeNetUserProfile(), source, "materials[1].name", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "materials[1].name",
+        new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -1991,17 +2019,17 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeRemoveMaterials(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.materials = new ArrayList<>();
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.materials.clear();
@@ -2019,7 +2047,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAddAndModifyMaterials(final Vertx vertx, final VertxTestContext testContext) {
@@ -2029,7 +2057,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     target.materials.add(new MaterialTest().createModelExample(1));
     target.materials.add(new MaterialTest().createModelExample(2));
     target.materials.add(new MaterialTest().createModelExample(3));
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.materials = new ArrayList<>();
@@ -2041,7 +2069,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       source.materials.get(1).quantity = 144;
       source.materials.get(2).quantity = 145;
       source.materials.get(3).quantity = 146;
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.materials.add(target.materials.remove(0));
@@ -2064,7 +2092,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadCompetences(final Vertx vertx, final VertxTestContext testContext) {
@@ -2075,7 +2103,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.competences.add(new CompetenceTest().createModelExample(2));
     source.competences.add(new CompetenceTest().createModelExample(3));
     source.competences.get(1).name = null;
-    assertCannotMerge(new WeNetUserProfile(), source, "competences[1].name", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "competences[1].name",
+        new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -2085,17 +2114,17 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeRemoveCompetences(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.competences = new ArrayList<>();
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target);
         assertThat(merged).isNotEqualTo(source);
@@ -2114,7 +2143,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAddAndModifyCompetences(final Vertx vertx, final VertxTestContext testContext) {
@@ -2124,7 +2153,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     target.competences.add(0, new CompetenceTest().createModelExample(1));
     target.competences.add(1, new CompetenceTest().createModelExample(2));
     target.competences.add(2, new CompetenceTest().createModelExample(3));
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.competences = new ArrayList<>();
@@ -2136,7 +2165,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       source.competences.get(1).level = 0.144;
       source.competences.get(2).level = 0.145;
       source.competences.get(3).level = 0.146;
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.competences.add(target.competences.remove(0));
@@ -2159,7 +2188,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadMeanings(final Vertx vertx, final VertxTestContext testContext) {
@@ -2170,7 +2199,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.meanings.add(new MeaningTest().createModelExample(2));
     source.meanings.add(new MeaningTest().createModelExample(3));
     source.meanings.get(1).name = null;
-    assertCannotMerge(new WeNetUserProfile(), source, "meanings[1].name", vertx, testContext);
+    assertCannotMerge(new WeNetUserProfile(), source, "meanings[1].name", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -2180,17 +2210,17 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeRemoveMeanings(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.meanings = new ArrayList<>();
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.meanings.clear();
@@ -2208,7 +2238,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAddAndModifyMeanings(final Vertx vertx, final VertxTestContext testContext) {
@@ -2218,7 +2248,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     target.meanings.add(new MeaningTest().createModelExample(1));
     target.meanings.add(new MeaningTest().createModelExample(2));
     target.meanings.add(new MeaningTest().createModelExample(3));
-    assertIsValid(target, vertx, testContext, () -> {
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var source = new WeNetUserProfile();
       source.meanings = new ArrayList<>();
@@ -2230,7 +2260,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       source.meanings.get(1).level = 144d;
       source.meanings.get(2).level = 145d;
       source.meanings.get(3).level = 146d;
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
         target.meanings.add(target.meanings.remove(0));
@@ -2253,13 +2283,13 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#merge(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext).onSuccess(
-        target -> assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target)));
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> assertCanMerge(target, null,
+        new WeNetValidateContext("codePrefix", vertx), testContext, merged -> assertThat(merged).isSameAs(target)));
 
   }
 
@@ -2269,7 +2299,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotValidWithDuplicatedNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -2278,7 +2308,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.norms = new ArrayList<>();
     model.norms.add(new ProtocolNormTest().createModelExample(1));
     model.norms.add(new ProtocolNormTest().createModelExample(1));
-    assertIsNotValid(model, "norms[1]", vertx, testContext);
+    assertIsNotValid(model, "norms[1]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -2289,7 +2319,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotValidWithDuplicatedRelevantLocations(final Vertx vertx, final VertxTestContext testContext) {
@@ -2301,7 +2331,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       model.relevantLocations.add(new RelevantLocationTest().createModelExample(i));
       model.relevantLocations.get(i).id = "Duplicated Identifier";
     }
-    assertIsNotValid(model, "relevantLocations[1]", vertx, testContext);
+    assertIsNotValid(model, "relevantLocations[1]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -2312,7 +2342,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotValidWithDuplicatedPersonalBehaviors(final Vertx vertx, final VertxTestContext testContext) {
@@ -2323,7 +2353,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       model.personalBehaviors = new ArrayList<>();
       model.personalBehaviors.add(routine);
       model.personalBehaviors.add(Model.fromJsonObject(routine.toJsonObject(), Routine.class));
-      assertIsNotValid(model, "personalBehaviors[1]", vertx, testContext);
+      assertIsNotValid(model, "personalBehaviors[1]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -2335,13 +2365,13 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#update(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext).onSuccess(
-        target -> assertCanUpdate(target, null, vertx, testContext, updated -> assertThat(updated).isSameAs(target)));
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> assertCanUpdate(target, null,
+        new WeNetValidateContext("codePrefix", vertx), testContext, updated -> assertThat(updated).isSameAs(target)));
 
   }
 
@@ -2351,7 +2381,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithABadPersonalBehaviors(final Vertx vertx, final VertxTestContext testContext) {
@@ -2359,7 +2389,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     final var source = new WeNetUserProfile();
     source.personalBehaviors = new ArrayList<>();
     source.personalBehaviors.add(new Routine());
-    assertCannotUpdate(new WeNetUserProfile(), source, "personalBehaviors[0].label_distribution", vertx, testContext);
+    assertCannotUpdate(new WeNetUserProfile(), source, "personalBehaviors[0].label_distribution",
+        new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -2369,14 +2400,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateEmptyModels(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = new WeNetUserProfile();
     final var source = new WeNetUserProfile();
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
       assertThat(updated).isEqualTo(target);
 
@@ -2390,7 +2421,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateBasicModels(final Vertx vertx, final VertxTestContext testContext) {
@@ -2403,7 +2434,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     source.id = "4";
     source._creationTs = 5;
     source._lastUpdateTs = 6;
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
       assertThat(updated).isEqualTo(target).isNotEqualTo(source);
 
@@ -2417,7 +2448,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateExampleModels(final Vertx vertx, final VertxTestContext testContext) {
@@ -2426,7 +2457,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     target.id = "1";
     final var source = this.createModelExample(2);
     source.id = "2";
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
       source.id = target.id;
       source._creationTs = target._creationTs;
@@ -2443,7 +2474,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateStoredModels(final Vertx vertx, final VertxTestContext testContext) {
@@ -2452,14 +2483,15 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
         .compose(targetToStore -> StoreServices.storeProfile(targetToStore, vertx, testContext)
             .compose(target -> this.createModelExample(2, vertx, testContext)
                 .compose(sourceToStore -> StoreServices.storeProfile(sourceToStore, vertx, testContext)
-                    .onSuccess(source -> assertCanUpdate(target, source, vertx, testContext, updated -> {
+                    .onSuccess(source -> assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx),
+                        testContext, updated -> {
 
-                      source.id = target.id;
-                      source._creationTs = target._creationTs;
-                      source._lastUpdateTs = target._lastUpdateTs;
-                      assertThat(updated).isNotEqualTo(target).isEqualTo(source);
+                          source.id = target.id;
+                          source._creationTs = target._creationTs;
+                          source._lastUpdateTs = target._lastUpdateTs;
+                          assertThat(updated).isNotEqualTo(target).isEqualTo(source);
 
-                    })))));
+                        })))));
 
   }
 
@@ -2469,7 +2501,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(String, Vertx)
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithRelationWithTheSameUserAndType(final Vertx vertx,
@@ -2480,7 +2512,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       final var copy = Model.fromJsonObject(model.relationships.get(0).toJsonObject(), SocialNetworkRelationship.class);
       copy.weight += 0.1d;
       model.relationships.add(copy);
-      assertIsNotValid(model, "relationships[2]", vertx, testContext);
+      assertIsNotValid(model, "relationships[2]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     }));
 

@@ -146,7 +146,7 @@ public class ValidateContextTest {
    *
    * @param testContext test context to use.
    *
-   * @see ValidateContext#fail(Throwable)
+   * @see ValidateContext#failField(String,Throwable)
    */
   @Test
   public void shouldFailFieldWithCause(final VertxTestContext testContext) {
@@ -171,6 +171,35 @@ public class ValidateContextTest {
   }
 
   /**
+   * Should create a fail field future with a cause.
+   *
+   * @param testContext test context to use.
+   *
+   * @see ValidateContext#failFieldElement(String, int, Throwable)
+   */
+  @Test
+  public void shouldFailFieldElementWithCause(final VertxTestContext testContext) {
+
+    doReturn("codeCause").when(this.context).errorCode();
+    final var cause = new Throwable("cause");
+    final var future = this.context.failFieldElement("field", 3, cause);
+    testContext.assertFailure(future).onFailure(error -> {
+
+      testContext.verify(() -> {
+
+        assertThat(error).isInstanceOf(ValidationErrorException.class);
+        final var failedCause = (ValidationErrorException) error;
+        assertThat(failedCause.getCode()).isEqualTo("codeCause.field[3]");
+        assertThat(failedCause.getMessage()).contains(cause.getMessage());
+        assertThat(failedCause.getCause()).isEqualTo(cause);
+
+      });
+      testContext.completeNow();
+    });
+
+  }
+
+  /**
    * Should create a fail future for a field.
    *
    * @param testContext test context to use.
@@ -178,7 +207,7 @@ public class ValidateContextTest {
    * @see ValidateContext#failField(String, String)
    */
   @Test
-  public void shouldFailField(final VertxTestContext testContext) {
+  public void shouldFailFieldWithMessage(final VertxTestContext testContext) {
 
     doReturn("codePrefix3").when(this.context).errorCode();
     final var future = this.context.failField("field", "message3");
@@ -189,6 +218,33 @@ public class ValidateContextTest {
         assertThat(error).isInstanceOf(ValidationErrorException.class);
         final var cause = (ValidationErrorException) error;
         assertThat(cause.getCode()).isEqualTo("codePrefix3.field");
+        assertThat(cause.getMessage()).isEqualTo("message3");
+
+      });
+      testContext.completeNow();
+    });
+
+  }
+
+  /**
+   * Should create a fail future for a field.
+   *
+   * @param testContext test context to use.
+   *
+   * @see ValidateContext#failFieldElement(String,int, String)
+   */
+  @Test
+  public void shouldFailFieldElementWithMessage(final VertxTestContext testContext) {
+
+    doReturn("codePrefix3").when(this.context).errorCode();
+    final var future = this.context.failFieldElement("field", 4, "message3");
+    testContext.assertFailure(future).onFailure(error -> {
+
+      testContext.verify(() -> {
+
+        assertThat(error).isInstanceOf(ValidationErrorException.class);
+        final var cause = (ValidationErrorException) error;
+        assertThat(cause.getCode()).isEqualTo("codePrefix3.field[4]");
         assertThat(cause.getMessage()).isEqualTo("message3");
 
       });
@@ -772,7 +828,7 @@ public class ValidateContextTest {
         assertThat(error).isInstanceOf(ValidationErrorException.class);
         final var cause = (ValidationErrorException) error;
         assertThat(cause.getCode()).isEqualTo("codePrefixRange.range");
-        assertThat(cause.getMessage()).contains("'null'");
+        assertThat(cause.getMessage()).contains("'range'");
 
       });
       testContext.completeNow();

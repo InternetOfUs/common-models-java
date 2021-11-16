@@ -21,24 +21,18 @@
 package eu.internetofus.common.components.models;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.task_manager.WeNetTaskManager;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.CreateUpdateTsDetails;
 import eu.internetofus.common.model.JsonObjectDeserializer;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationErrorException;
-import eu.internetofus.common.model.Validations;
-import eu.internetofus.common.vertx.OpenAPIValidator;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import java.util.List;
 
@@ -48,7 +42,8 @@ import java.util.List;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Task", description = "A WeNet task.")
-public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<Task>, Updateable<Task> {
+public class Task extends CreateUpdateTsDetails implements Validable<WeNetValidateContext>,
+    Mergeable<Task, WeNetValidateContext>, Updateable<Task, WeNetValidateContext> {
 
   /**
    * The identifier of the profile.
@@ -116,79 +111,60 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
 
     if (this.id != null) {
 
-      future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
-          WeNetTaskManager.createProxy(vertx)::retrieveTask);
+      future = context.validateNotDefinedTaskIdField("id", this.id, future);
     }
 
-    future = Validations.composeValidateId(future, codePrefix, "requesterId", this.requesterId, true,
-        WeNetProfileManager.createProxy(vertx)::retrieveProfile);
-
-    future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
-        WeNetService.createProxy(vertx)::retrieveApp);
-
-    future = Validations.composeValidateId(future, codePrefix, "communityId", this.communityId, true,
-        WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
+    future = context.validateDefinedProfileIdField("requesterId", this.requesterId, future);
+    future = context.validateDefinedAppIdField("appId", this.appId, future);
+    future = context.validateDefinedCommunityIdField("communityId", this.communityId, future);
 
     if (this.goal == null) {
 
-      promise.fail(new ValidationErrorException(codePrefix + ".goal", "You must to define the 'goal' of the task."));
+      return context.failField("goal", "You must to define the 'goal' of the task.");
 
     } else {
 
-      future = future
-          .compose(empty -> Validations.validateStringField(codePrefix, "goal.name", this.goal.name).map(name -> {
-            this.goal.name = name;
-            return null;
-          }));
-      future = future.compose(empty -> Validations
-          .validateNullableStringField(codePrefix, "goal.description", this.goal.description).map(description -> {
-            this.goal.description = description;
-            return null;
-          }));
-      future = future.compose(empty -> Validations
-          .validateNullableListStringField(codePrefix, "keywords", this.goal.keywords).map(keywords -> {
-            this.goal.keywords = keywords;
-            return null;
-          }));
+      this.goal.name = context.validateStringField("goal.name", this.goal.name, promise);
+      this.goal.description = context.normalizeString(this.goal.description);
+      this.goal.keywords = context.validateNullableStringListField("goal.keywords", this.goal.keywords, promise);
 
-      future = future.compose(empty -> Validations.validateTimeStamp(codePrefix, "closeTs", this.closeTs, true));
+      context.validateTimeStampField("closeTs", this.closeTs, promise);
       if (this.closeTs != null && this.closeTs < this._creationTs) {
 
-        promise.fail(
-            new ValidationErrorException(codePrefix + ".closeTs", "The 'closeTs' has to be after the '_creationTs'."));
+        return context.failField("closeTs", "The 'closeTs' has to be after the '_creationTs'.");
 
       } else {
 
-        future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+        future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
 
-        future = Validations.composeValidateIdAndGet(future, codePrefix, "taskTypeId", this.taskTypeId, true,
-            WeNetTaskManager.createProxy(vertx)::retrieveTaskType).compose(taskType -> {
+        future = future.compose(
+            empty -> context.validateDefinedTaskTypeByIdField("taskTypeId", this.taskTypeId).transform(search -> {
 
-              if (taskType.attributes == null) {
+              if (search.failed()) {
 
-                return Future.succeededFuture();
+                return Future.failedFuture(search.cause());
 
               } else {
-
-                return OpenAPIValidator
-                    .validateValue(codePrefix + ".attributes", vertx, taskType.attributes, this.attributes)
+                final var taskType = search.result();
+                return context.validateOpenAPIValueField("attributes", this.attributes, taskType.attributes)
                     .map(validAttributes -> {
 
                       this.attributes = validAttributes;
                       return null;
                     });
+
               }
 
-            });
+            }));
 
-        promise.complete();
+        promise.tryComplete();
 
       }
     }
@@ -200,7 +176,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
    * {@inheritDoc}
    */
   @Override
-  public Future<Task> merge(final Task source, final String codePrefix, final Vertx vertx) {
+  public Future<Task> merge(final Task source, final WeNetValidateContext context) {
 
     final Promise<Task> promise = Promise.promise();
     var future = promise.future();
@@ -278,7 +254,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
         merged.norms = this.norms;
       }
 
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
       promise.complete(merged);
 
@@ -301,7 +277,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
    * {@inheritDoc}
    */
   @Override
-  public Future<Task> update(final Task source, final String codePrefix, final Vertx vertx) {
+  public Future<Task> update(final Task source, final WeNetValidateContext context) {
 
     final Promise<Task> promise = Promise.promise();
     var future = promise.future();
@@ -321,7 +297,7 @@ public class Task extends CreateUpdateTsDetails implements Validable, Mergeable<
       updated.norms = source.norms;
       updated.transactions = source.transactions;
 
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
       // When updated set the fixed field values
       future = future.map(updatedValidatedModel -> {

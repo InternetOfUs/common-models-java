@@ -20,15 +20,14 @@
 
 package eu.internetofus.common.components.models;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * A label.
@@ -36,7 +35,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Label", description = "label")
-public class Label extends ReflectionModel implements Model, Validable, Mergeable<Label> {
+public class Label extends ReflectionModel
+    implements Model, Validable<WeNetValidateContext>, Mergeable<Label, WeNetValidateContext> {
 
   /**
    * The name of the label.
@@ -66,25 +66,23 @@ public class Label extends ReflectionModel implements Model, Validable, Mergeabl
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
+    final var future = promise.future();
 
-    future = future.compose(empty -> Validations.validateStringField(codePrefix, "name", this.name).map(name -> {
-      this.name = name;
-      return null;
-    }));
-    future = future.compose(empty -> Validations.validateNumberOnRange(codePrefix, "semantic_class",
-        this.semantic_class, false, null, null));
-    future = future
-        .compose(empty -> Validations.validateNumberOnRange(codePrefix, "latitude", this.latitude, false, -90, 90));
-    future = future
-        .compose(empty -> Validations.validateNumberOnRange(codePrefix, "longitude", this.longitude, false, -180, 180));
+    this.name = context.validateStringField("name", this.name, promise);
+    context.validateNumberOnRangeField("latitude", this.latitude, -90.0d, 90.0d, promise);
+    context.validateNumberOnRangeField("longitude", this.longitude, -180.0d, 180.0d, promise);
+    if (this.semantic_class == null) {
 
-    promise.complete();
+      return context.failField("semantic_class", "You must define the semantic class.");
 
-    return future;
+    } else {
+
+      promise.tryComplete();
+      return future;
+    }
 
   }
 
@@ -92,7 +90,7 @@ public class Label extends ReflectionModel implements Model, Validable, Mergeabl
    * {@inheritDoc}
    */
   @Override
-  public Future<Label> merge(final Label source, final String codePrefix, final Vertx vertx) {
+  public Future<Label> merge(final Label source, final WeNetValidateContext context) {
 
     final Promise<Label> promise = Promise.promise();
     var future = promise.future();
@@ -125,7 +123,7 @@ public class Label extends ReflectionModel implements Model, Validable, Mergeabl
       promise.complete(merged);
 
       // validate the merged value and set the id
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 

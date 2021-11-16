@@ -20,17 +20,15 @@
 
 package eu.internetofus.common.components.models;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationErrorException;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * An activity that an user do regularly.
@@ -38,7 +36,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "ScoredLabel", description = "Label with score.")
-public class ScoredLabel extends ReflectionModel implements Model, Validable, Mergeable<ScoredLabel> {
+public class ScoredLabel extends ReflectionModel
+    implements Model, Validable<WeNetValidateContext>, Mergeable<ScoredLabel, WeNetValidateContext> {
 
   /**
    * The label.
@@ -56,26 +55,19 @@ public class ScoredLabel extends ReflectionModel implements Model, Validable, Me
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
 
-    if (this.label == null) {
+    future = future.compose(context.validateField("label", this.label));
+    if (this.score == null) {
 
-      promise.fail(new ValidationErrorException(codePrefix + ".label", "You must to define a label."));
+      return context.failField("score", "You must to define a score.");
 
     } else {
 
-      future = future.compose(mapper -> this.label.validate(codePrefix + ".label", vertx));
-      if (this.score == null) {
-
-        promise.fail(new ValidationErrorException(codePrefix + ".score", "You must to define a score."));
-
-      } else {
-
-        promise.complete();
-      }
+      promise.complete();
     }
 
     return future;
@@ -86,7 +78,7 @@ public class ScoredLabel extends ReflectionModel implements Model, Validable, Me
    * {@inheritDoc}
    */
   @Override
-  public Future<ScoredLabel> merge(final ScoredLabel source, final String codePrefix, final Vertx vertx) {
+  public Future<ScoredLabel> merge(final ScoredLabel source, final WeNetValidateContext context) {
 
     final Promise<ScoredLabel> promise = Promise.promise();
     var future = promise.future();
@@ -99,13 +91,13 @@ public class ScoredLabel extends ReflectionModel implements Model, Validable, Me
         merged.score = this.score;
       }
 
-      future = future.compose(Merges.mergeField(this.label, source.label, codePrefix + ".label", vertx,
+      future = future.compose(Merges.mergeField(context, "label", this.label, source.label,
           (model, mergedLabel) -> model.label = mergedLabel));
 
       promise.complete(merged);
 
       // validate the merged value and set the id
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 

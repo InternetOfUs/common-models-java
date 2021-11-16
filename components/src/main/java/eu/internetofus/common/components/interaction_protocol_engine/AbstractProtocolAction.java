@@ -21,21 +21,16 @@
 package eu.internetofus.common.components.interaction_protocol_engine;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.components.models.TaskTransaction;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.service.WeNetService;
-import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.model.JsonObjectDeserializer;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationCache;
 import eu.internetofus.common.model.ValidationErrorException;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -43,7 +38,7 @@ import io.vertx.core.json.JsonObject;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class AbstractProtocolAction extends ReflectionModel implements Model, Validable {
+public class AbstractProtocolAction extends ReflectionModel implements Model, Validable<WeNetValidateContext> {
 
   /**
    * The identifier of the application associated to the protocol.
@@ -86,7 +81,7 @@ public class AbstractProtocolAction extends ReflectionModel implements Model, Va
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
@@ -94,91 +89,69 @@ public class AbstractProtocolAction extends ReflectionModel implements Model, Va
 
       if (this.appId != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
-            WeNetService.createProxy(vertx)::retrieveApp);
+        future = context.validateDefinedAppIdField("appId", this.appId, future);
 
       }
 
       if (this.communityId != null) {
 
-        future = Validations.composeValidateId(future, codePrefix, "communityId", this.communityId, true,
-            WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
+        future = context.validateDefinedCommunityIdField("communityId", this.communityId, future);
 
       }
 
       if (this.taskId != null) {
 
-        future = future.compose(empty -> {
+        future = future
+            .compose(empty -> context.validateDefinedTaskByIdField("taskId", this.taskId).transform(search -> {
 
-          final Promise<Void> taskPromise = Promise.promise();
-          WeNetTaskManager.createProxy(vertx).retrieveTask(this.taskId).onComplete(retrieve -> {
+              if (search.failed()) {
 
-            if (retrieve.failed()) {
-
-              taskPromise.fail(new ValidationErrorException(codePrefix + ".taskId",
-                  "Cannot found task associated to the identifier.", retrieve.cause()));
-
-            } else {
-
-              final var task = retrieve.result();
-              if (this.transactionId == null) {
-
-                taskPromise.complete();
+                return Future.failedFuture(search.cause());
 
               } else {
 
-                var found = false;
-                if (task.transactions != null) {
+                final var task = search.result();
+                if (this.transactionId != null) {
 
-                  for (final TaskTransaction transaction : task.transactions) {
+                  var found = false;
+                  if (task.transactions != null) {
 
-                    if (this.transactionId.equals(transaction.id)) {
+                    for (final TaskTransaction transaction : task.transactions) {
 
-                      found = true;
-                      break;
+                      if (this.transactionId.equals(transaction.id)) {
+
+                        found = true;
+                        break;
+                      }
                     }
                   }
+
+                  if (!found) {
+
+                    return context.failField("transactionId", "Cannot found transaction associated to the identifier.");
+                  }
                 }
-
-                if (!found) {
-
-                  taskPromise.fail(new ValidationErrorException(codePrefix + ".transactionId",
-                      "Cannot found transaction associated to the identifier."));
-
-                } else {
-
-                  taskPromise.complete();
-                }
+                return Future.succeededFuture();
               }
 
-            }
-
-          });
-
-          return taskPromise.future();
-
-        });
+            }));
 
       }
 
-      future = future
-          .compose(empty -> Validations.validateStringField(codePrefix, "particle", this.particle).map(particle -> {
-            this.particle = particle;
-            return null;
-          }));
+      this.particle = context.validateStringField("particle", this.particle, promise);
 
       if (this.transactionId != null && this.taskId == null) {
 
-        promise.fail(new ValidationErrorException(codePrefix + ".transactionId",
-            "You must to define the task identifier ('taskId') where the transaction is"));
+        return context.fail("transactionId",
+            "You must to define the task identifier ('taskId') where the transaction is associated.");
 
       } else if (this.content == null) {
 
-        promise.fail(new ValidationErrorException(codePrefix + ".content", "You must to define a content"));
+        return context.fail("content", "You must to define a content");
 
       } else {
 
-        promise.complete();
+        promise.tryComplete();
 
       }
 

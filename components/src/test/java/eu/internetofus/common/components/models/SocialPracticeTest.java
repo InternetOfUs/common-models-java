@@ -28,6 +28,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Vertx;
@@ -77,13 +78,13 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#validate(String, Vertx)
+   * @see SocialPractice#validate(WeNetValidateContext)
    */
   @Test
   public void shouldExampleBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(1);
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
   /**
@@ -92,7 +93,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#validate(String, Vertx)
+   * @see SocialPractice#validate(WeNetValidateContext)
    */
   @Test
   public void shouldFullModelBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -106,7 +107,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     model.competences.add(new CompetenceTest().createModelExample(1));
     model.norms = new ArrayList<>();
     model.norms.add(new ProtocolNormTest().createModelExample(1));
-    assertIsValid(model, vertx, testContext, () -> {
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var expected = new SocialPractice();
       expected.id = model.id;
@@ -128,14 +129,14 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#validate(String, Vertx)
+   * @see SocialPractice#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithAnId(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new SocialPractice();
     model.id = "has_id";
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -145,7 +146,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#validate(String, Vertx)
+   * @see SocialPractice#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -156,7 +157,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     model.norms.add(new ProtocolNormTest().createModelExample(2));
     model.norms.add(new ProtocolNormTest().createModelExample(3));
     model.norms.get(1).whenever = model.norms.get(1).thenceforth;
-    assertIsNotValid(model, "norms[1].thenceforth", vertx, testContext);
+    assertIsNotValid(model, "norms[1].thenceforth", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -167,7 +168,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#validate(String, Vertx)
+   * @see SocialPractice#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithAMaterialWithSameNameAndClassification(final Vertx vertx,
@@ -176,7 +177,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final var model = this.createModelExample(1);
     model.materials.add(Model.fromJsonObject(model.materials.get(0).toJsonObject(), Material.class));
     model.materials.get(model.materials.size() - 1).description = "Other description";
-    assertIsNotValid(model, "materials[3]", vertx, testContext);
+    assertIsNotValid(model, "materials[3]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -187,7 +188,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#validate(String, Vertx)
+   * @see SocialPractice#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithAMaterialWithTheSameNameButDiferentClassification(final Vertx vertx,
@@ -196,7 +197,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final var model = this.createModelExample(1);
     model.materials.add(Model.fromJsonObject(model.materials.get(0).toJsonObject(), Material.class));
     model.materials.get(model.materials.size() - 1).classification = "OtherClassification";
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -207,7 +208,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#validate(String, Vertx)
+   * @see SocialPractice#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithAMaterialWithTheSameClassificationButDiferentName(final Vertx vertx,
@@ -216,7 +217,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final var model = this.createModelExample(1);
     model.materials.add(Model.fromJsonObject(model.materials.get(0).toJsonObject(), Material.class));
     model.materials.get(model.materials.size() - 1).name = "OtherName";
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -227,7 +228,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#validate(String, Vertx)
+   * @see SocialPractice#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithACompetenceWithSameNameAndOntology(final Vertx vertx,
@@ -236,7 +237,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final var model = this.createModelExample(1);
     model.competences.add(Model.fromJsonObject(model.competences.get(0).toJsonObject(), Competence.class));
     model.competences.get(model.competences.size() - 1).level = 0d;
-    assertIsNotValid(model, "competences[3]", vertx, testContext);
+    assertIsNotValid(model, "competences[3]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -247,7 +248,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#validate(String, Vertx)
+   * @see SocialPractice#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithACompetenceWithTheSameNameButDiferentOntology(final Vertx vertx,
@@ -256,7 +257,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final var model = this.createModelExample(1);
     model.competences.add(Model.fromJsonObject(model.competences.get(0).toJsonObject(), Competence.class));
     model.competences.get(model.competences.size() - 1).ontology = "OtherOntology";
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -267,7 +268,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#validate(String, Vertx)
+   * @see SocialPractice#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithACompetenceWithTheSameOntologyButDiferentName(final Vertx vertx,
@@ -276,7 +277,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final var model = this.createModelExample(1);
     model.competences.add(Model.fromJsonObject(model.competences.get(0).toJsonObject(), Competence.class));
     model.competences.get(model.competences.size() - 1).name = "OtherName";
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -286,7 +287,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -298,7 +299,8 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     source.norms.add(new ProtocolNormTest().createModelExample(2));
     source.norms.add(new ProtocolNormTest().createModelExample(3));
     source.norms.get(1).whenever = source.norms.get(1).thenceforth;
-    assertCannotMerge(target, source, "norms[1].thenceforth", vertx, testContext);
+    assertCannotMerge(target, source, "norms[1].thenceforth", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -308,7 +310,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
@@ -316,7 +318,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final var target = this.createModelExample(1);
     target.id = "Target_Id";
     final var source = this.createModelExample(2);
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
       assertThat(merged).isEqualTo(source);
@@ -329,13 +331,14 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged).isSameAs(target));
 
   }
 
@@ -345,7 +348,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyLabel(final Vertx vertx, final VertxTestContext testContext) {
@@ -354,7 +357,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     target.id = "1";
     final var source = new SocialPractice();
     source.label = "NEW LABEL";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.label = "NEW LABEL";
       assertThat(merged).isEqualTo(target);
@@ -367,7 +370,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldMergeRemoveNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -376,7 +379,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     target.id = "19";
     final var source = new SocialPractice();
     source.norms = new ArrayList<>();
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.norms = new ArrayList<>();
       assertThat(merged).isEqualTo(target);
@@ -389,7 +392,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldMergeModifyANorm(final Vertx vertx, final VertxTestContext testContext) {
@@ -404,7 +407,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
 
     }
     source.norms.get(0).whenever = "New attribute";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.norms.get(0).whenever = "New attribute";
       assertThat(merged).isEqualTo(target);
@@ -417,7 +420,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldMergeUptadingRemovingAndAddingNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -429,7 +432,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     source.norms.add(new ProtocolNormTest().createModelExample(4));
     source.norms.add(new ProtocolNormTest().createModelExample(1));
     source.norms.get(1).whenever = "New attribute";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.norms.clear();
       target.norms.add(new ProtocolNormTest().createModelExample(4));
@@ -445,7 +448,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldMergeRemoveMaterials(final Vertx vertx, final VertxTestContext testContext) {
@@ -454,7 +457,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     target.id = "19";
     final var source = new SocialPractice();
     source.materials = new ArrayList<>();
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.materials = new ArrayList<>();
       assertThat(merged).isEqualTo(target);
@@ -467,7 +470,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldMergeModifyAMaterial(final Vertx vertx, final VertxTestContext testContext) {
@@ -482,7 +485,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
 
     }
     source.materials.get(0).description = "New Description";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.materials.get(0).description = "New Description";
       assertThat(merged).isEqualTo(target);
@@ -495,7 +498,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldMergeUptadingRemovingAndAddingMaterials(final Vertx vertx, final VertxTestContext testContext) {
@@ -509,7 +512,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     source.materials.get(1).name = target.materials.get(0).name;
     source.materials.get(1).classification = target.materials.get(0).classification;
     source.materials.get(1).description = "New Description";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.materials.clear();
       target.materials.add(new MaterialTest().createModelExample(4));
@@ -527,7 +530,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldMergeRemoveCompetences(final Vertx vertx, final VertxTestContext testContext) {
@@ -536,7 +539,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     target.id = "19";
     final var source = new SocialPractice();
     source.competences = new ArrayList<>();
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.competences = new ArrayList<>();
       assertThat(merged).isEqualTo(target);
@@ -549,7 +552,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldMergeModifyACompetence(final Vertx vertx, final VertxTestContext testContext) {
@@ -564,7 +567,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
 
     }
     source.competences.get(0).level = 0d;
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.competences.get(0).level = 0d;
       assertThat(merged).isEqualTo(target);
@@ -577,7 +580,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#merge(SocialPractice, String, Vertx)
+   * @see SocialPractice#merge(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldMergeUptadingRemovingAndAddingCompetences(final Vertx vertx, final VertxTestContext testContext) {
@@ -591,7 +594,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     source.competences.get(1).name = target.competences.get(0).name;
     source.competences.get(1).ontology = target.competences.get(0).ontology;
     source.competences.get(1).level = 0d;
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.competences.clear();
       target.competences.add(new CompetenceTest().createModelExample(4));
@@ -609,7 +612,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   * @see SocialPractice#update(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -621,7 +624,8 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     source.norms.add(new ProtocolNormTest().createModelExample(2));
     source.norms.add(new ProtocolNormTest().createModelExample(3));
     source.norms.get(1).whenever = source.norms.get(1).thenceforth;
-    assertCannotUpdate(target, source, "norms[1].thenceforth", vertx, testContext);
+    assertCannotUpdate(target, source, "norms[1].thenceforth", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -631,7 +635,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   * @see SocialPractice#update(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithABadMaterials(final Vertx vertx, final VertxTestContext testContext) {
@@ -643,7 +647,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     source.materials.add(new MaterialTest().createModelExample(2));
     source.materials.add(new MaterialTest().createModelExample(3));
     source.materials.get(1).name = null;
-    assertCannotUpdate(target, source, "materials[1].name", vertx, testContext);
+    assertCannotUpdate(target, source, "materials[1].name", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -653,7 +657,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   * @see SocialPractice#update(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithABadCompetences(final Vertx vertx, final VertxTestContext testContext) {
@@ -665,7 +669,8 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     source.competences.add(new CompetenceTest().createModelExample(2));
     source.competences.add(new CompetenceTest().createModelExample(3));
     source.competences.get(1).name = null;
-    assertCannotUpdate(target, source, "competences[1].name", vertx, testContext);
+    assertCannotUpdate(target, source, "competences[1].name", new WeNetValidateContext("codePrefix", vertx),
+        testContext);
 
   }
 
@@ -675,7 +680,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   * @see SocialPractice#update(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldUpdate(final Vertx vertx, final VertxTestContext testContext) {
@@ -683,7 +688,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     final var target = this.createModelExample(1);
     target.id = "Target_Id";
     final var source = this.createModelExample(2);
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
       assertThat(updated).isEqualTo(source);
@@ -696,13 +701,14 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   * @see SocialPractice#update(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanUpdate(target, null, vertx, testContext, updated -> assertThat(updated).isSameAs(target));
+    assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        updated -> assertThat(updated).isSameAs(target));
 
   }
 
@@ -712,7 +718,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   * @see SocialPractice#update(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyLabel(final Vertx vertx, final VertxTestContext testContext) {
@@ -721,7 +727,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     target.id = "1";
     final var source = new SocialPractice();
     source.label = "NEW LABEL";
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
       assertThat(updated).isEqualTo(source);
@@ -734,7 +740,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   * @see SocialPractice#update(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateRemoveNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -743,7 +749,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     target.id = "19";
     final var source = new SocialPractice();
     source.norms = new ArrayList<>();
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
       assertThat(updated).isEqualTo(source);
@@ -756,7 +762,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   * @see SocialPractice#update(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -771,7 +777,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
 
     }
     source.norms.get(0).whenever = "New attribute";
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
       assertThat(updated).isEqualTo(source);
@@ -784,7 +790,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   * @see SocialPractice#update(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateMaterials(final Vertx vertx, final VertxTestContext testContext) {
@@ -799,7 +805,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
 
     }
     source.materials.get(0).description = "New Description";
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
       assertThat(updated).isEqualTo(source);
@@ -812,7 +818,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   * @see SocialPractice#update(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateRemoveCompetences(final Vertx vertx, final VertxTestContext testContext) {
@@ -821,7 +827,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
     target.id = "19";
     final var source = new SocialPractice();
     source.competences = new ArrayList<>();
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
       assertThat(updated).isEqualTo(source);
@@ -834,7 +840,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialPractice#update(SocialPractice, String, Vertx)
+   * @see SocialPractice#update(SocialPractice, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateCompetences(final Vertx vertx, final VertxTestContext testContext) {
@@ -849,7 +855,7 @@ public class SocialPracticeTest extends ModelTestCase<SocialPractice> {
 
     }
     source.competences.get(0).level = 0d;
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
       assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
       source.id = target.id;
       assertThat(updated).isEqualTo(source);

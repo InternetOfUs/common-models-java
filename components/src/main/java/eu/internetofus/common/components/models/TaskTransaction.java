@@ -21,21 +21,16 @@
 package eu.internetofus.common.components.models;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.task_manager.WeNetTaskManager;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.CreateUpdateTsDetails;
 import eu.internetofus.common.model.JsonObjectDeserializer;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationErrorException;
-import eu.internetofus.common.model.Validations;
-import eu.internetofus.common.vertx.OpenAPIValidator;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import java.util.List;
 
@@ -45,7 +40,7 @@ import java.util.List;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "TaskTransaction", description = "Describe a transition to do over a task.")
-public class TaskTransaction extends CreateUpdateTsDetails implements Model, Validable {
+public class TaskTransaction extends CreateUpdateTsDetails implements Model, Validable<WeNetValidateContext> {
 
   /**
    * The name of the label used for the transaction that mark is the first when
@@ -95,93 +90,79 @@ public class TaskTransaction extends CreateUpdateTsDetails implements Model, Val
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
     if (this.actioneerId != null) {
 
-      future = Validations.composeValidateId(future, codePrefix, "actioneerId", this.actioneerId, true,
-          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
+      future = context.validateDefinedProfileIdField("actioneerId", this.actioneerId, future);
 
     }
 
-    if (this.label == null) {
+    this.label = context.validateStringField("label", this.label, promise);
+    if (CREATE_TASK_LABEL.equals(this.label)) {
 
-      promise.fail(new ValidationErrorException(codePrefix + ".label", "The transaction needs a label."));
+      if (this.attributes != null && !this.attributes.isEmpty()) {
 
-    } else if (CREATE_TASK_LABEL.equals(this.label)) {
-
-      if (this.attributes == null || this.attributes.isEmpty()) {
-
-        promise.complete();
-
-      } else {
-
-        promise.fail(new ValidationErrorException(codePrefix + ".attributes",
-            "The created transaction can not have attributes."));
+        return context.failField("attributes", "The created transaction can not have attributes.");
 
       }
 
     } else {
 
-      promise.complete();
-      future = future
-          .compose(empty -> WeNetTaskManager.createProxy(vertx).retrieveTask(this.taskId).transform(retrieveTask -> {
+      future = future.compose(empty -> context.validateDefinedTaskByIdField("taskId", this.taskId).transform(search -> {
 
-            if (retrieveTask.failed()) {
+        if (search.failed()) {
 
-              return Future.failedFuture(new ValidationErrorException(codePrefix + ".taskId",
-                  "The task '" + this.taskId + "' is not defined.", retrieveTask.cause()));
+          return Future.failedFuture(search.cause());
 
-            } else {
+        } else {
 
-              final var task = retrieveTask.result();
-              return WeNetTaskManager.createProxy(vertx).retrieveTaskType(task.taskTypeId)
-                  .transform(retrieveTaskType -> {
+          final var task = search.result();
+          return context.validateDefinedTaskTypeByIdField("taskId@taskTypeId", task.taskTypeId)
+              .transform(retrieveTaskType -> {
 
-                    if (retrieveTaskType.failed()) {
+                if (retrieveTaskType.failed()) {
 
-                      return Future.failedFuture(new ValidationErrorException(codePrefix + ".taskId",
-                          "The task type of the task '" + this.taskId + "' is not defined.", retrieveTaskType.cause()));
+                  return context.failField("taskId@taskTypeId",
+                      "The task type of the task '" + this.taskId + "' is not defined.", retrieveTaskType.cause());
+
+                } else {
+
+                  final var taskType = retrieveTaskType.result();
+                  if (taskType.transactions == null) {
+
+                    return context.failField("label", "The task type has not defined any transaction.");
+
+                  } else {
+
+                    final var labelDef = taskType.transactions.getJsonObject(this.label, null);
+                    if (labelDef == null) {
+
+                      return context.failField("label",
+                          "The label '" + this.label + "' is not defined on the type of the task.");
 
                     } else {
 
-                      final var taskType = retrieveTaskType.result();
-                      if (taskType.transactions == null) {
+                      return context.validateOpenAPIValueField("attributes", this.attributes, labelDef)
+                          .map(validAttributes -> {
 
-                        return Future.failedFuture(new ValidationErrorException(codePrefix + ".label",
-                            "The task type has not defined any transaction."));
-
-                      } else {
-
-                        final var labelDef = taskType.transactions.getJsonObject(this.label, null);
-                        if (labelDef == null) {
-
-                          return Future.failedFuture(new ValidationErrorException(codePrefix + ".label",
-                              "The label '" + this.label + "' is not defined on the type of the task."));
-
-                        } else {
-
-                          return OpenAPIValidator
-                              .validateValue(codePrefix + ".attributes", vertx, labelDef, this.attributes)
-                              .map(validAttributes -> {
-
-                                this.attributes = validAttributes;
-                                return null;
-
-                              });
-                        }
-                      }
+                            this.attributes = validAttributes;
+                            return null;
+                          });
                     }
+                  }
+                }
 
-                  });
+              });
 
-            }
+        }
 
-          }));
+      }));
     }
 
+    promise.tryComplete();
     return future;
   }
 

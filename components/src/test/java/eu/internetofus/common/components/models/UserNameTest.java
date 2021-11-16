@@ -24,6 +24,7 @@ import static eu.internetofus.common.model.MergeAsserts.assertCanMerge;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
@@ -66,14 +67,14 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#validate(String, Vertx)
+   * @see UserName#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsValid(model, vertx, testContext);
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -83,14 +84,15 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#validate(String, Vertx)
+   * @see UserName#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidAPrefixWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new UserName();
     model.prefix = "   1234567890   ";
-    assertIsValid(model, vertx, testContext, () -> assertThat(model.prefix).isEqualTo("1234567890"));
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext,
+        () -> assertThat(model.prefix).isEqualTo("1234567890"));
 
   }
 
@@ -100,14 +102,15 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#validate(String, Vertx)
+   * @see UserName#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidAFirstWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new UserName();
     model.first = "   First name 1234567890   ";
-    assertIsValid(model, vertx, testContext, () -> assertThat(model.first).isEqualTo("First name 1234567890"));
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext,
+        () -> assertThat(model.first).isEqualTo("First name 1234567890"));
 
   }
 
@@ -117,14 +120,15 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#validate(String, Vertx)
+   * @see UserName#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidAMiddleWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new UserName();
     model.middle = "   Middle name 1234567890   ";
-    assertIsValid(model, vertx, testContext, () -> assertThat(model.middle).isEqualTo("Middle name 1234567890"));
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext,
+        () -> assertThat(model.middle).isEqualTo("Middle name 1234567890"));
 
   }
 
@@ -134,14 +138,15 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#validate(String, Vertx)
+   * @see UserName#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidALastWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new UserName();
     model.last = "   Last name 1234567890   ";
-    assertIsValid(model, vertx, testContext, () -> assertThat(model.last).isEqualTo("Last name 1234567890"));
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext,
+        () -> assertThat(model.last).isEqualTo("Last name 1234567890"));
 
   }
 
@@ -151,14 +156,15 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#validate(String, Vertx)
+   * @see UserName#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidASuffixWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = new UserName();
     model.suffix = "   12345  67890   ";
-    assertIsValid(model, vertx, testContext, () -> assertThat(model.suffix).isEqualTo("12345  67890"));
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext,
+        () -> assertThat(model.suffix).isEqualTo("12345  67890"));
 
   }
 
@@ -168,7 +174,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#merge(UserName, String, Vertx)
+   * @see UserName#merge(UserName, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAPrefixWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
@@ -176,7 +182,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
     final var target = new UserName();
     final var source = new UserName();
     source.prefix = "   123 4567 890   ";
-    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.prefix).isEqualTo("123 4567 890"));
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged.prefix).isEqualTo("123 4567 890"));
 
   }
 
@@ -186,7 +193,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#merge(UserName, String, Vertx)
+   * @see UserName#merge(UserName, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAFirstWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
@@ -194,7 +201,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
     final var target = new UserName();
     final var source = new UserName();
     source.first = "   First name 1234567890   ";
-    assertCanMerge(target, source, vertx, testContext,
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
         merged -> assertThat(merged.first).isEqualTo("First name 1234567890"));
 
   }
@@ -205,7 +212,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#merge(UserName, String, Vertx)
+   * @see UserName#merge(UserName, WeNetValidateContext)
    */
   @Test
   public void shouldMergeAMiddleWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
@@ -213,7 +220,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
     final var target = new UserName();
     final var source = new UserName();
     source.middle = "   Middle name 1234567890   ";
-    assertCanMerge(target, source, vertx, testContext,
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
         merged -> assertThat(merged.middle).isEqualTo("Middle name 1234567890"));
 
   }
@@ -224,7 +231,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#merge(UserName, String, Vertx)
+   * @see UserName#merge(UserName, WeNetValidateContext)
    */
   @Test
   public void shouldMergeALastWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
@@ -232,7 +239,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
     final var target = new UserName();
     final var source = new UserName();
     source.last = "   Last name 1234567890   ";
-    assertCanMerge(target, source, vertx, testContext,
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
         merged -> assertThat(merged.last).isEqualTo("Last name 1234567890"));
 
   }
@@ -243,7 +250,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#merge(UserName, String, Vertx)
+   * @see UserName#merge(UserName, WeNetValidateContext)
    */
   @Test
   public void shouldMergeASuffixWithSpaces(final Vertx vertx, final VertxTestContext testContext) {
@@ -251,7 +258,8 @@ public class UserNameTest extends ModelTestCase<UserName> {
     final var target = new UserName();
     final var source = new UserName();
     source.suffix = "   12  345678 90   ";
-    assertCanMerge(target, source, vertx, testContext, merged -> assertThat(merged.suffix).isEqualTo("12  345678 90"));
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged.suffix).isEqualTo("12  345678 90"));
 
   }
 
@@ -261,14 +269,14 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#merge(UserName, String, Vertx)
+   * @see UserName#merge(UserName, WeNetValidateContext)
    */
   @Test
   public void shouldMerge(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
     final var source = this.createModelExample(23);
-    assertCanMerge(target, source, vertx, testContext,
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext,
         merged -> assertThat(merged).isNotEqualTo(target).isEqualTo(source));
 
   }
@@ -279,13 +287,14 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#merge(UserName, String, Vertx)
+   * @see UserName#merge(UserName, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged).isSameAs(target));
 
   }
 
@@ -295,7 +304,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#merge(UserName, String, Vertx)
+   * @see UserName#merge(UserName, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyPrefix(final Vertx vertx, final VertxTestContext testContext) {
@@ -303,7 +312,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
     final var target = this.createModelExample(1);
     final var source = new UserName();
     source.prefix = "NEW VALUE";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.prefix = "NEW VALUE";
       assertThat(merged).isEqualTo(target);
@@ -316,7 +325,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#merge(UserName, String, Vertx)
+   * @see UserName#merge(UserName, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyFirst(final Vertx vertx, final VertxTestContext testContext) {
@@ -324,7 +333,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
     final var target = this.createModelExample(1);
     final var source = new UserName();
     source.first = "NEW VALUE";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.first = "NEW VALUE";
       assertThat(merged).isEqualTo(target);
@@ -337,7 +346,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#merge(UserName, String, Vertx)
+   * @see UserName#merge(UserName, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyMiddle(final Vertx vertx, final VertxTestContext testContext) {
@@ -345,7 +354,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
     final var target = this.createModelExample(1);
     final var source = new UserName();
     source.middle = "NEW VALUE";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.middle = "NEW VALUE";
       assertThat(merged).isEqualTo(target);
@@ -358,7 +367,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#merge(UserName, String, Vertx)
+   * @see UserName#merge(UserName, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyLast(final Vertx vertx, final VertxTestContext testContext) {
@@ -366,7 +375,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
     final var target = this.createModelExample(1);
     final var source = new UserName();
     source.last = "NEW VALUE";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.last = "NEW VALUE";
       assertThat(merged).isEqualTo(target);
@@ -379,7 +388,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see UserName#merge(UserName, String, Vertx)
+   * @see UserName#merge(UserName, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlySuffix(final Vertx vertx, final VertxTestContext testContext) {
@@ -387,7 +396,7 @@ public class UserNameTest extends ModelTestCase<UserName> {
     final var target = this.createModelExample(1);
     final var source = new UserName();
     source.suffix = "NEW VALUE";
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
       assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
       target.suffix = "NEW VALUE";
       assertThat(merged).isEqualTo(target);

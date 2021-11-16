@@ -20,18 +20,14 @@
 
 package eu.internetofus.common.components.interaction_protocol_engine;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.components.interaction_protocol_engine.ProtocolAddress.Component;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationCache;
-import eu.internetofus.common.model.ValidationErrorException;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * An event that will happens on a protocol.
@@ -39,7 +35,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(name = "ProtocolEvent", description = "An event that will be fired on a protocol.")
-public class ProtocolEvent extends AbstractProtocolAction implements Model, Validable {
+public class ProtocolEvent extends AbstractProtocolAction implements Model, Validable<WeNetValidateContext> {
 
   /**
    * The identifier of the event.
@@ -63,29 +59,14 @@ public class ProtocolEvent extends AbstractProtocolAction implements Model, Vali
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx, final ValidationCache cache) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
-    var future = super.validate(codePrefix, vertx, cache).compose(empty -> promise.future());
-    try {
-
-      future = Validations.composeValidateId(future, codePrefix, "userId", this.userId, true,
-          WeNetProfileManager.createProxy(vertx)::retrieveProfile);
-
-      if (this.delay == null) {
-
-        promise.fail(new ValidationErrorException(codePrefix + ".delay", "You must to define a delay"));
-
-      } else {
-
-        promise.complete();
-
-      }
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
-    }
+    var future = promise.future();
+    future = future.compose(empty -> super.validate(context));
+    future = context.validateDefinedProfileIdField("userId", this.userId, future);
+    context.validateNumberOnRangeField("delay", this.delay, 0l, null, promise);
+    promise.tryComplete();
 
     return future;
 

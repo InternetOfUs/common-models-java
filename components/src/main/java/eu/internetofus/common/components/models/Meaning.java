@@ -20,16 +20,15 @@
 
 package eu.internetofus.common.components.models;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * A meaning necessary for do a social practice.
@@ -37,7 +36,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Meaning", description = "For defining more general purpose concepts.")
-public class Meaning extends ReflectionModel implements Model, Validable, Mergeable<Meaning>, Updateable<Meaning> {
+public class Meaning extends ReflectionModel implements Model, Validable<WeNetValidateContext>,
+    Mergeable<Meaning, WeNetValidateContext>, Updateable<Meaning, WeNetValidateContext> {
 
   /**
    * The name of the meaning.
@@ -61,25 +61,22 @@ public class Meaning extends ReflectionModel implements Model, Validable, Mergea
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
+    final var future = promise.future();
 
-    future = future.compose(empty -> Validations.validateStringField(codePrefix, "name", this.name).map(name -> {
-      this.name = name;
-      return null;
-    }));
-    future = future
-        .compose(empty -> Validations.validateStringField(codePrefix, "category", this.category).map(category -> {
-          this.category = category;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateNumberOnRange(codePrefix, "level", this.level, false, null, null));
-    promise.complete();
+    this.name = context.validateStringField("name", this.name, promise);
+    this.category = context.validateStringField("category", this.category, promise);
+    if (this.level == null) {
 
-    return future;
+      return context.failField("level", "You must to define a level");
+
+    } else {
+
+      promise.tryComplete();
+      return future;
+    }
 
   }
 
@@ -87,7 +84,7 @@ public class Meaning extends ReflectionModel implements Model, Validable, Mergea
    * {@inheritDoc}
    */
   @Override
-  public Future<Meaning> merge(final Meaning source, final String codePrefix, final Vertx vertx) {
+  public Future<Meaning> merge(final Meaning source, final WeNetValidateContext context) {
 
     final Promise<Meaning> promise = Promise.promise();
     var future = promise.future();
@@ -115,7 +112,7 @@ public class Meaning extends ReflectionModel implements Model, Validable, Mergea
       promise.complete(merged);
 
       // Validate the merged value
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 
@@ -128,7 +125,7 @@ public class Meaning extends ReflectionModel implements Model, Validable, Mergea
    * {@inheritDoc}
    */
   @Override
-  public Future<Meaning> update(final Meaning source, final String codePrefix, final Vertx vertx) {
+  public Future<Meaning> update(final Meaning source, final WeNetValidateContext context) {
 
     final Promise<Meaning> promise = Promise.promise();
     var future = promise.future();
@@ -142,13 +139,28 @@ public class Meaning extends ReflectionModel implements Model, Validable, Mergea
       promise.complete(updated);
 
       // Validate the updated value
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 
       promise.complete(this);
     }
     return future;
+  }
+
+  /**
+   * Check if two meanings are equivalent by its identifier fields.
+   *
+   * @param a first model to compare.
+   * @param b second model to compare.
+   *
+   * @return {@code true} if the meanings can be considered equals by its
+   *         identifier.
+   */
+  static boolean compareIds(final Meaning a, final Meaning b) {
+
+    return a != null && a.name != null && a.name.equals(b.name) && a.category != null && a.category.equals(b.category);
+
   }
 
 }

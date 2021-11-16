@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
@@ -86,14 +87,14 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#validate(String, Vertx)
+   * @see CommunityProfile#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldBasicExampleNotBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsNotValid(model, "appId", vertx, testContext);
+    assertIsNotValid(model, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -134,13 +135,14 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#validate(String, Vertx)
+   * @see CommunityProfile#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
   public void shouldExampleBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
-    this.createModelExample(index, vertx, testContext).onSuccess(model -> assertIsValid(model, vertx, testContext));
+    this.createModelExample(index, vertx, testContext)
+        .onSuccess(model -> assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext));
 
   }
 
@@ -151,7 +153,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#validate(String, Vertx)
+   * @see CommunityProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldExampleWithMultipleMembersBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -163,7 +165,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
 
           model.members.add(member2);
           model.members.add(member3);
-          assertIsValid(model, vertx, testContext);
+          assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
         });
       });
@@ -178,7 +180,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#validate(String, Vertx)
+   * @see CommunityProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldExampleWithMultipleNormsBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -188,7 +190,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       model.norms.add(new ProtocolNormTest().createModelExample(1));
       model.norms.add(new ProtocolNormTest().createModelExample(2));
       model.norms.add(new ProtocolNormTest().createModelExample(3));
-      assertIsValid(model, vertx, testContext);
+      assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -201,7 +203,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#validate(String, Vertx)
+   * @see CommunityProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldExampleWithMultipleSocialPracticesBeValid(final Vertx vertx, final VertxTestContext testContext) {
@@ -213,7 +215,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       model.socialPractices.add(new SocialPracticeTest().createModelExample(2));
       model.socialPractices.add(new SocialPracticeTest().createModelExample(3));
 
-      assertIsValid(model, vertx, testContext);
+      assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -225,7 +227,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#validate(String, Vertx)
+   * @see CommunityProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithADefinedId(final Vertx vertx, final VertxTestContext testContext) {
@@ -235,7 +237,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       StoreServices.storeCommunityExample(200, vertx, testContext).onSuccess(storedModel -> {
 
         model.id = storedModel.id;
-        assertIsNotValid(model, "id", vertx, testContext);
+        assertIsNotValid(model, "id", new WeNetValidateContext("codePrefix", vertx), testContext);
 
       });
     });
@@ -247,12 +249,12 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#validate(String, Vertx)
+   * @see CommunityProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldEmptyCommunityHasToBeValid(final Vertx vertx, final VertxTestContext testContext) {
 
-    assertIsValid(new CommunityProfile(), vertx, testContext);
+    assertIsValid(new CommunityProfile(), new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -262,7 +264,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#validate(String, Vertx)
+   * @see CommunityProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -270,7 +272,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.appId = "Undefined identifier";
-      assertIsNotValid(model, "appId", vertx, testContext);
+      assertIsNotValid(model, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
   }
@@ -281,7 +283,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#validate(String, Vertx)
+   * @see CommunityProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithInvalidMember(final Vertx vertx, final VertxTestContext testContext) {
@@ -289,7 +291,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.members.add(new CommunityMemberTest().createModelExample(2));
-      assertIsNotValid(model, "members[1].userId", vertx, testContext);
+      assertIsNotValid(model, "members[1].userId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
   }
@@ -300,7 +302,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#validate(String, Vertx)
+   * @see CommunityProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithInvalidSocialPractice(final Vertx vertx, final VertxTestContext testContext) {
@@ -311,7 +313,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       model.socialPractices.add(new SocialPracticeTest().createModelExample(1));
       model.socialPractices.add(new SocialPracticeTest().createModelExample(2));
       model.socialPractices.get(1).materials.get(0).name = null;
-      assertIsNotValid(model, "socialPractices[1].materials[0].name", vertx, testContext);
+      assertIsNotValid(model, "socialPractices[1].materials[0].name", new WeNetValidateContext("codePrefix", vertx),
+          testContext);
 
     });
   }
@@ -322,7 +325,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#validate(String, Vertx)
+   * @see CommunityProfile#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithInvalidNorm(final Vertx vertx, final VertxTestContext testContext) {
@@ -333,7 +336,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       model.norms.add(new ProtocolNormTest().createModelExample(1));
       model.norms.add(new ProtocolNormTest().createModelExample(2));
       model.norms.get(1).thenceforth = null;
-      assertIsNotValid(model, "norms[1].thenceforth", vertx, testContext);
+      assertIsNotValid(model, "norms[1].thenceforth", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
   }
@@ -344,14 +347,14 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#merge(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
-      assertCanMerge(target, null, vertx, testContext, merged -> {
+      assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
         assertThat(merged).isSameAs(target);
       });
     });
@@ -364,7 +367,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#merge(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeExamples(final Vertx vertx, final VertxTestContext testContext) {
@@ -374,7 +377,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       target._lastUpdateTs = TimeManager.now();
       this.createModelExample(2, vertx, testContext).onSuccess(source -> {
 
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
           assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
           source.id = target.id;
           source._creationTs = target._creationTs;
@@ -392,7 +395,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#merge(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -400,7 +403,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = new CommunityProfile();
       source.appId = "Undefined application id";
-      assertCannotMerge(target, source, "appId", vertx, testContext);
+      assertCannotMerge(target, source, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
 
   }
@@ -411,7 +414,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#merge(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
@@ -422,7 +425,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       source.socialPractices.add(new SocialPracticeTest().createModelExample(1));
       source.socialPractices.add(new SocialPracticeTest().createModelExample(2));
       source.socialPractices.get(1).materials.get(0).name = null;
-      assertCannotMerge(target, source, "socialPractices[1].materials[0].name", vertx, testContext);
+      assertCannotMerge(target, source, "socialPractices[1].materials[0].name",
+          new WeNetValidateContext("codePrefix", vertx), testContext);
     });
 
   }
@@ -433,7 +437,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#merge(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -445,7 +449,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       source.norms.add(new ProtocolNormTest().createModelExample(1));
       source.norms.add(new ProtocolNormTest().createModelExample(2));
       source.norms.get(1).whenever = null;
-      assertCannotMerge(target, source, "norms[1].whenever", vertx, testContext);
+      assertCannotMerge(target, source, "norms[1].whenever", new WeNetValidateContext("codePrefix", vertx),
+          testContext);
     });
 
   }
@@ -456,7 +461,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#merge(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#merge(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadMembers(final Vertx vertx, final VertxTestContext testContext) {
@@ -465,7 +470,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       final var source = new CommunityProfile();
       source.members = new ArrayList<>(target.members);
       source.members.add(new CommunityMemberTest().createModelExample(2));
-      assertCannotMerge(target, source, "members[1].userId", vertx, testContext);
+      assertCannotMerge(target, source, "members[1].userId", new WeNetValidateContext("codePrefix", vertx),
+          testContext);
     });
 
   }
@@ -476,7 +482,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
@@ -491,7 +497,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       source.socialPractices.add(new SocialPractice());
       source.socialPractices.add(new SocialPractice());
       source.socialPractices.get(1).id = "1";
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged.socialPractices).isNotEqualTo(target.socialPractices).isEqualTo(source.socialPractices);
         assertThat(merged.socialPractices.get(0).id).isNotEmpty();
@@ -508,14 +514,14 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#update(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
-      assertCanUpdate(target, null, vertx, testContext, updated -> {
+      assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
         assertThat(updated).isSameAs(target);
       });
     });
@@ -528,7 +534,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#update(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateExamples(final Vertx vertx, final VertxTestContext testContext) {
@@ -538,7 +544,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       target._lastUpdateTs = TimeManager.now();
       this.createModelExample(2, vertx, testContext).onSuccess(source -> {
 
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
           assertThat(updated).isNotEqualTo(target).isNotEqualTo(source);
           source.id = target.id;
           source._creationTs = target._creationTs;
@@ -556,7 +562,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#update(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -564,7 +570,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
       source.appId = "Undefined application id";
-      assertCannotUpdate(target, source, "appId", vertx, testContext);
+      assertCannotUpdate(target, source, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
 
   }
@@ -575,7 +581,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#update(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
@@ -586,7 +592,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       source.socialPractices.add(new SocialPracticeTest().createModelExample(1));
       source.socialPractices.add(new SocialPracticeTest().createModelExample(2));
       source.socialPractices.get(1).materials.get(0).name = null;
-      assertCannotUpdate(target, source, "socialPractices[1].materials[0].name", vertx, testContext);
+      assertCannotUpdate(target, source, "socialPractices[1].materials[0].name",
+          new WeNetValidateContext("codePrefix", vertx), testContext);
     });
 
   }
@@ -597,7 +604,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#update(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -609,7 +616,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       source.norms.add(new ProtocolNormTest().createModelExample(1));
       source.norms.add(new ProtocolNormTest().createModelExample(2));
       source.norms.get(1).thenceforth = null;
-      assertCannotUpdate(target, source, "norms[1].thenceforth", vertx, testContext);
+      assertCannotUpdate(target, source, "norms[1].thenceforth", new WeNetValidateContext("codePrefix", vertx),
+          testContext);
     });
 
   }
@@ -620,7 +628,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#update(CommunityProfile, String, Vertx)
+   * @see CommunityProfile#update(CommunityProfile, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadMembers(final Vertx vertx, final VertxTestContext testContext) {
@@ -629,7 +637,8 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       final var source = Model.fromJsonObject(target.toJsonObject(), CommunityProfile.class);
       source.members = new ArrayList<>(target.members);
       source.members.add(new CommunityMemberTest().createModelExample(2));
-      assertCannotUpdate(target, source, "members[1].userId", vertx, testContext);
+      assertCannotUpdate(target, source, "members[1].userId", new WeNetValidateContext("codePrefix", vertx),
+          testContext);
     });
 
   }
@@ -640,7 +649,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, String, Vertx)
+   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithSocialPractices(final Vertx vertx, final VertxTestContext testContext) {
@@ -655,7 +664,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       source.socialPractices.add(new SocialPractice());
       source.socialPractices.add(new SocialPractice());
       source.socialPractices.get(1).id = "1";
-      assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
         assertThat(updated.socialPractices).isNotEqualTo(target.socialPractices).isEqualTo(source.socialPractices);
         assertThat(updated.socialPractices.get(0).id).isNotEmpty();

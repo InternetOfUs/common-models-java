@@ -20,15 +20,14 @@
 
 package eu.internetofus.common.components.models;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * The information of an user name.
@@ -36,7 +35,8 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, description = "The information of an user name.")
-public class UserName extends ReflectionModel implements Model, Validable, Mergeable<UserName> {
+public class UserName extends ReflectionModel
+    implements Model, Validable<WeNetValidateContext>, Mergeable<UserName, WeNetValidateContext> {
 
   /**
    * The user name prefix.
@@ -79,46 +79,22 @@ public class UserName extends ReflectionModel implements Model, Validable, Merge
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
-    final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
+    this.prefix = context.normalizeString(this.prefix);
+    this.first = context.normalizeString(this.first);
+    this.middle = context.normalizeString(this.middle);
+    this.last = context.normalizeString(this.last);
+    this.suffix = context.normalizeString(this.suffix);
+    return Future.succeededFuture();
 
-    future = future
-        .compose(empty -> Validations.validateNullableStringField(codePrefix, "prefix", this.prefix).map(prefix -> {
-          this.prefix = prefix;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateNullableStringField(codePrefix, "first", this.first).map(first -> {
-          this.first = first;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateNullableStringField(codePrefix, "middle", this.middle).map(middle -> {
-          this.middle = middle;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateNullableStringField(codePrefix, "last", this.last).map(last -> {
-          this.last = last;
-          return null;
-        }));
-    future = future
-        .compose(empty -> Validations.validateNullableStringField(codePrefix, "suffix", this.suffix).map(suffix -> {
-          this.suffix = suffix;
-          return null;
-        }));
-    promise.complete();
-
-    return future;
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public Future<UserName> merge(final UserName source, final String codePrefix, final Vertx vertx) {
+  public Future<UserName> merge(final UserName source, final WeNetValidateContext context) {
 
     final Promise<UserName> promise = Promise.promise();
     var future = promise.future();
@@ -153,7 +129,7 @@ public class UserName extends ReflectionModel implements Model, Validable, Merge
 
       promise.complete(merged);
 
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
     } else {
 

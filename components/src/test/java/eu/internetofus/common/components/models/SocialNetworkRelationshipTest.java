@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
@@ -100,7 +101,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialNetworkRelationship#validate(String, Vertx)
+   * @see SocialNetworkRelationship#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
@@ -110,7 +111,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
     this.createModelExample(index, vertx, testContext).onSuccess(model -> {
 
       model.userId = model.userId;
-      assertIsValid(model, vertx, testContext);
+      assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -123,7 +124,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see SocialNetworkRelationship#validate(String, Vertx)
+   * @see SocialNetworkRelationship#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "Should not be valid  a SocialNetworkRelationship with an appId = {0}")
   @NullAndEmptySource
@@ -135,7 +136,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       model.appId = appId;
       model.type = SocialNetworkRelationshipType.colleague;
-      assertIsNotValid(model, "appId", vertx, testContext);
+      assertIsNotValid(model, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -148,7 +149,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see SocialNetworkRelationship#validate(String, Vertx)
+   * @see SocialNetworkRelationship#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "Should not be valid  a SocialNetworkRelationship with an userId = {0}")
   @NullAndEmptySource
@@ -160,7 +161,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       model.userId = userId;
       model.type = SocialNetworkRelationshipType.colleague;
-      assertIsNotValid(model, "userId", vertx, testContext);
+      assertIsNotValid(model, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -172,14 +173,14 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see SocialNetworkRelationship#validate(String, Vertx)
+   * @see SocialNetworkRelationship#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidModelWithoutType(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(0, vertx, testContext).onSuccess(model -> {
       model.type = null;
-      assertIsNotValid(model, "type", vertx, testContext);
+      assertIsNotValid(model, "type", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -191,7 +192,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see SocialNetworkRelationship#validate(String, Vertx)
+   * @see SocialNetworkRelationship#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidModelWithoutAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -200,7 +201,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       model.type = SocialNetworkRelationshipType.colleague;
       model.appId = null;
-      assertIsNotValid(model, "appId", vertx, testContext);
+      assertIsNotValid(model, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -212,7 +213,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see SocialNetworkRelationship#validate(String, Vertx)
+   * @see SocialNetworkRelationship#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidModelWithoutUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -221,7 +222,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       model.type = SocialNetworkRelationshipType.colleague;
       model.userId = null;
-      assertIsNotValid(model, "userId", vertx, testContext);
+      assertIsNotValid(model, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -234,7 +235,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see SocialNetworkRelationship#validate(String, Vertx)
+   * @see SocialNetworkRelationship#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "Should a social network relationship with a weight {0} not be valid")
   @ValueSource(doubles = { -0.00001d, 1.000001d, -23d, +23d })
@@ -244,7 +245,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.weight = weight;
-      assertIsNotValid(model, "weight", vertx, testContext);
+      assertIsNotValid(model, "weight", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -256,7 +257,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -266,7 +267,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
       StoreServices.storeApp(new App(), vertx, testContext).onSuccess(app -> {
         final var source = new SocialNetworkRelationship();
         source.appId = app.appId;
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
           assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
           target.appId = app.appId;
@@ -283,7 +284,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -293,7 +294,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
       StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(profile -> {
         final var source = new SocialNetworkRelationship();
         source.userId = profile.id;
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
           assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
           target.userId = profile.id;
@@ -310,7 +311,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldFailMergeUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -319,7 +320,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       final var source = new SocialNetworkRelationship();
       source.appId = "undefinedAppId";
-      assertCannotMerge(target, source, "appId", vertx, testContext);
+      assertCannotMerge(target, source, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -329,7 +330,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldFailMergeUndefinedUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -338,7 +339,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       final var source = new SocialNetworkRelationship();
       source.userId = "undefinedUserId";
-      assertCannotMerge(target, source, "userId", vertx, testContext);
+      assertCannotMerge(target, source, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -348,7 +349,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyType(final Vertx vertx, final VertxTestContext testContext) {
@@ -357,7 +358,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       final var source = new SocialNetworkRelationship();
       source.type = SocialNetworkRelationshipType.follower;
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
         target.type = SocialNetworkRelationshipType.follower;
@@ -373,7 +374,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeOnlyWeight(final Vertx vertx, final VertxTestContext testContext) {
@@ -388,7 +389,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       } while (weight == target.weight);
       source.weight = weight;
-      assertCanMerge(target, source, vertx, testContext, merged -> {
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
         assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
         target.weight = source.weight;
@@ -405,7 +406,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see SocialNetworkRelationship#validate(String, Vertx)
+   * @see SocialNetworkRelationship#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "Should not merge a social network relationship with a weight {0} ")
   @ValueSource(doubles = { -0.00001d, 1.000001d, -23d, +23d })
@@ -415,7 +416,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       final var source = new SocialNetworkRelationship();
       source.weight = weight;
-      assertCannotMerge(target, source, "weight", vertx, testContext);
+      assertCannotMerge(target, source, "weight", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
   }
@@ -426,14 +427,14 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#merge(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldMergeTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       this.createModelExample(2, vertx, testContext).onSuccess(source -> {
-        assertCanMerge(target, source, vertx, testContext, merged -> {
+        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
           assertThat(merged).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
         });
       });
@@ -447,14 +448,15 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialNetworkRelationship#merge(SocialNetworkRelationship, String,
-   *      Vertx)
+   * @see SocialNetworkRelationship#merge(SocialNetworkRelationship,
+   *      WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged).isSameAs(target));
   }
 
   /**
@@ -463,7 +465,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -473,7 +475,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
       StoreServices.storeApp(new App(), vertx, testContext).onSuccess(app -> {
         final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
         source.appId = app.appId;
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
           assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
 
@@ -488,7 +490,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -498,7 +500,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
       StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(profile -> {
         final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
         source.userId = profile.id;
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
           assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
 
@@ -513,7 +515,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldFailUpdateUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -522,7 +524,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
       source.appId = "undefinedAppId";
-      assertCannotUpdate(target, source, "appId", vertx, testContext);
+      assertCannotUpdate(target, source, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -532,7 +534,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldFailUpdateUndefinedUserId(final Vertx vertx, final VertxTestContext testContext) {
@@ -541,7 +543,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
       source.userId = "undefinedUserId";
-      assertCannotUpdate(target, source, "userId", vertx, testContext);
+      assertCannotUpdate(target, source, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -551,7 +553,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyType(final Vertx vertx, final VertxTestContext testContext) {
@@ -560,7 +562,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
       source.type = SocialNetworkRelationshipType.follower;
-      assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
         assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
 
@@ -574,7 +576,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateOnlyWeight(final Vertx vertx, final VertxTestContext testContext) {
@@ -589,7 +591,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       } while (weight == target.weight);
       source.weight = weight;
-      assertCanUpdate(target, source, vertx, testContext, updated -> {
+      assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
         assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
 
@@ -604,7 +606,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see SocialNetworkRelationship#validate(String, Vertx)
+   * @see SocialNetworkRelationship#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "Should not update a social network relationship with a weight {0} ")
   @ValueSource(doubles = { -0.00001d, 1.000001d, -23d, +23d })
@@ -614,7 +616,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
       final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
       source.weight = weight;
-      assertCannotUpdate(target, source, "weight", vertx, testContext);
+      assertCannotUpdate(target, source, "weight", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
   }
@@ -625,14 +627,14 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see RelevantLocation#update(RelevantLocation, String, Vertx)
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateTwoExamples(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
       this.createModelExample(2, vertx, testContext).onSuccess(source -> {
-        assertCanUpdate(target, source, vertx, testContext, updated -> {
+        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
           assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
         });
       });
@@ -645,13 +647,14 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @param vertx       event bus to use.
    * @param testContext test context to use.
    *
-   * @see SocialNetworkRelationship#update(SocialNetworkRelationship, String,
-   *      Vertx)
+   * @see SocialNetworkRelationship#update(SocialNetworkRelationship,
+   *      WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanUpdate(target, null, vertx, testContext, updated -> assertThat(updated).isSameAs(target));
+    assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        updated -> assertThat(updated).isSameAs(target));
   }
 }

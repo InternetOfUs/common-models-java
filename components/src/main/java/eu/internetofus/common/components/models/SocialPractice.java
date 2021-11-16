@@ -20,18 +20,17 @@
 
 package eu.internetofus.common.components.models;
 
-import eu.internetofus.common.components.MergeFieldLists;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
+import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,8 +40,8 @@ import java.util.UUID;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, description = "A social practice of an user.")
-public class SocialPractice extends ReflectionModel
-    implements Model, Validable, Mergeable<SocialPractice>, Updateable<SocialPractice> {
+public class SocialPractice extends ReflectionModel implements Model, Validable<WeNetValidateContext>,
+    Mergeable<SocialPractice, WeNetValidateContext>, Updateable<SocialPractice, WeNetValidateContext> {
 
   /**
    * The identifier of the social practice.
@@ -85,7 +84,7 @@ public class SocialPractice extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
@@ -93,19 +92,17 @@ public class SocialPractice extends ReflectionModel
     if (this.id == null) {
 
       this.id = UUID.randomUUID().toString();
+
+    } else {
+
+      this.id = context.normalizeString(this.id);
     }
-    future = future
-        .compose(empty -> Validations.validateNullableStringField(codePrefix, "label", this.label).map(label -> {
-          this.label = label;
-          return null;
-        }));
-    future = future.compose(Validations.validate(this.materials,
-        (a, b) -> a.name.equals(b.name) && a.classification.equals(b.classification), codePrefix + ".materials",
-        vertx));
-    future = future.compose(Validations.validate(this.competences,
-        (a, b) -> a.name.equals(b.name) && a.ontology.equals(b.ontology), codePrefix + ".competences", vertx));
-    future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
-    promise.complete();
+
+    this.label = context.normalizeString(this.label);
+    future = future.compose(context.validateListField("materials", this.materials, Material::compareIds));
+    future = future.compose(context.validateListField("competences", this.competences, Competence::compareIds));
+    future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
+    promise.tryComplete();
 
     return future;
 
@@ -115,7 +112,7 @@ public class SocialPractice extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<SocialPractice> merge(final SocialPractice source, final String codePrefix, final Vertx vertx) {
+  public Future<SocialPractice> merge(final SocialPractice source, final WeNetValidateContext context) {
 
     if (source != null) {
 
@@ -130,12 +127,12 @@ public class SocialPractice extends ReflectionModel
       final Promise<SocialPractice> promise = Promise.promise();
       promise.complete(merged);
       var future = promise.future();
-      future = future.compose(MergeFieldLists.mergeMaterials(this.materials, source.materials,
-          codePrefix + ".materials", vertx, (model, mergedMaterials) -> {
+      future = future.compose(Merges.mergeListField(context, "materials", this.materials, source.materials,
+          Material::compareIds, (model, mergedMaterials) -> {
             model.materials = mergedMaterials;
           }));
-      future = future.compose(MergeFieldLists.mergeCompetences(this.competences, source.competences,
-          codePrefix + ".competences", vertx, (model, mergedCompetences) -> {
+      future = future.compose(Merges.mergeListField(context, "competences", this.competences, source.competences,
+          Competence::compareIds, (model, mergedCompetences) -> {
             model.competences = mergedCompetences;
           }));
       merged.norms = source.norms;
@@ -144,7 +141,7 @@ public class SocialPractice extends ReflectionModel
         merged.norms = this.norms;
       }
 
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
       // When merged set the fixed field values
       future = future.map(mergedValidatedModel -> {
 
@@ -165,7 +162,7 @@ public class SocialPractice extends ReflectionModel
    * {@inheritDoc}
    */
   @Override
-  public Future<SocialPractice> update(final SocialPractice source, final String codePrefix, final Vertx vertx) {
+  public Future<SocialPractice> update(final SocialPractice source, final WeNetValidateContext context) {
 
     if (source != null) {
 
@@ -176,21 +173,31 @@ public class SocialPractice extends ReflectionModel
       updated.competences = source.competences;
       updated.norms = source.norms;
 
-      var future = updated.validate(codePrefix, vertx).map(empty -> updated);
-
-      // When updated set the fixed field values
-      future = future.map(updatedValidatedModel -> {
+      return Future.succeededFuture(updated).compose(context.chain()).map(updatedValidatedModel -> {
 
         updatedValidatedModel.id = this.id;
         return updatedValidatedModel;
       });
 
-      return future;
-
     } else {
 
       return Future.succeededFuture(this);
     }
+
+  }
+
+  /**
+   * Check if two social practices are equivalent by its identifier fields.
+   *
+   * @param a first model to compare.
+   * @param b second model to compare.
+   *
+   * @return {@code true} if the social practice can be considered equals by its
+   *         identifier.
+   */
+  static boolean compareIds(final SocialPractice a, final SocialPractice b) {
+
+    return a != null && a.id != null && a.id.equals(b.id);
 
   }
 

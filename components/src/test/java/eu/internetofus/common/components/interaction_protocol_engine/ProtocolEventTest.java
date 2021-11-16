@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.components.interaction_protocol_engine.ProtocolAddress.Component;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -87,14 +88,14 @@ public class ProtocolEventTest extends AbstractProtocolActionTestCase<ProtocolEv
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutDelay(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.delay = null;
-      assertIsNotValid(model, "delay", vertx, testContext);
+      assertIsNotValid(model, "delay", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -104,14 +105,14 @@ public class ProtocolEventTest extends AbstractProtocolActionTestCase<ProtocolEv
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutUserId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.userId = null;
-      assertIsNotValid(model, "userId", vertx, testContext);
+      assertIsNotValid(model, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -121,14 +122,14 @@ public class ProtocolEventTest extends AbstractProtocolActionTestCase<ProtocolEv
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(String, Vertx)
+   * @see ProtocolEvent#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithUndefinedUserId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
       model.userId = "undefined";
-      assertIsNotValid(model, "userId", vertx, testContext);
+      assertIsNotValid(model, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 

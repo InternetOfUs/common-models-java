@@ -21,18 +21,15 @@
 package eu.internetofus.common.components.models;
 
 import eu.internetofus.common.components.HumanDescriptionWithCreateUpdateTsDetails;
-import eu.internetofus.common.components.MergeFieldLists;
-import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
-import eu.internetofus.common.components.service.WeNetService;
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
+import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import java.util.List;
 
 /**
@@ -42,7 +39,8 @@ import java.util.List;
  */
 @Schema(hidden = true, name = "CommunityProfile", description = "A community of WeNet users.")
 public class CommunityProfile extends HumanDescriptionWithCreateUpdateTsDetails
-    implements Validable, Mergeable<CommunityProfile>, Updateable<CommunityProfile> {
+    implements Validable<WeNetValidateContext>, Mergeable<CommunityProfile, WeNetValidateContext>,
+    Updateable<CommunityProfile, WeNetValidateContext> {
 
   /**
    * The identifier of the community.
@@ -84,44 +82,32 @@ public class CommunityProfile extends HumanDescriptionWithCreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
 
     if (this.id != null) {
 
-      future = Validations.composeValidateId(future, codePrefix, "id", this.id, false,
-          WeNetProfileManager.createProxy(vertx)::retrieveCommunity);
+      future = context.validateNotDefinedCommunityIdField("id", this.id, future);
     }
     if (this.appId != null) {
 
-      future = Validations.composeValidateId(future, codePrefix, "appId", this.appId, true,
-          WeNetService.createProxy(vertx)::retrieveApp);
+      future = context.validateDefinedAppIdField("appId", this.appId, future);
     }
 
-    future = future
-        .compose(empty -> Validations.validateNullableStringField(codePrefix, "name", this.name).map(name -> {
-          this.name = name;
-          return null;
-        }));
-    future = future.compose(empty -> Validations
-        .validateNullableStringField(codePrefix, "description", this.description).map(description -> {
-          this.description = description;
-          return null;
-        }));
-    future = future.compose(
-        empty -> Validations.validateNullableListStringField(codePrefix, "keywords", this.keywords).map(keywords -> {
-          this.keywords = keywords;
-          return null;
-        }));
-    future = future.compose(
-        Validations.validate(this.members, (a, b) -> a.userId.equals(b.userId), codePrefix + ".members", vertx));
-    future = future.compose(
-        Validations.validate(this.socialPractices, (a, b) -> a.equals(b), codePrefix + ".socialPractices", vertx));
-    future = future.compose(Validations.validate(this.norms, (a, b) -> a.equals(b), codePrefix + ".norms", vertx));
+    this.name = context.normalizeString(this.name);
+    this.description = context.normalizeString(this.description);
+    this.keywords = context.validateNullableStringListField("keywords", this.keywords, promise);
 
-    promise.complete();
+    future = context.validateDefinedProfileIdsField("members", CommunityMember.idsIterable(this.members), future);
+    future = future
+        .compose(context.validateListField("socialPractices", this.socialPractices, SocialPractice::compareIds));
+    future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
+
+    future = context.validateDefinedTaskTypeIdsField("taskTypeIds", this.taskTypeIds, future);
+
+    promise.tryComplete();
 
     return future;
   }
@@ -130,7 +116,7 @@ public class CommunityProfile extends HumanDescriptionWithCreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<CommunityProfile> merge(final CommunityProfile source, final String codePrefix, final Vertx vertx) {
+  public Future<CommunityProfile> merge(final CommunityProfile source, final WeNetValidateContext context) {
 
     final Promise<CommunityProfile> promise = Promise.promise();
     var future = promise.future();
@@ -165,23 +151,20 @@ public class CommunityProfile extends HumanDescriptionWithCreateUpdateTsDetails
         merged.keywords = this.keywords;
       }
 
-      merged.norms = source.norms;
-      if (merged.norms == null) {
+      future = future.compose(Merges.mergeListField(context, "members", this.members, source.members,
+          CommunityMember::compareIds, (model, members) -> model.members = members));
+      future = future.compose(Merges.mergeListField(context, "socialPractices", this.socialPractices,
+          source.socialPractices, SocialPractice::compareIds, (model, practices) -> model.socialPractices = practices));
+      future = future.compose(Merges.mergeListField(context, "norms", this.norms, source.norms,
+          ProtocolNorm::compareIds, (model, norms) -> model.norms = norms));
 
-        merged.norms = this.norms;
+      merged.taskTypeIds = source.taskTypeIds;
+      if (merged.taskTypeIds == null) {
+
+        merged.taskTypeIds = this.taskTypeIds;
       }
 
-      future = future.compose(MergeFieldLists.mergeMembers(this.members, source.members, codePrefix + ".members", vertx,
-          (model, mergedMembers) -> {
-            model.members = mergedMembers;
-          }));
-
-      future = future.compose(MergeFieldLists.mergeSocialPractices(this.socialPractices, source.socialPractices,
-          codePrefix + ".socialPractices", vertx, (model, mergedSocialPractices) -> {
-            model.socialPractices = mergedSocialPractices;
-          }));
-
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
       // When merged set the fixed field values
       future = future.map(mergedValidatedModel -> {
@@ -204,7 +187,7 @@ public class CommunityProfile extends HumanDescriptionWithCreateUpdateTsDetails
    * {@inheritDoc}
    */
   @Override
-  public Future<CommunityProfile> update(final CommunityProfile source, final String codePrefix, final Vertx vertx) {
+  public Future<CommunityProfile> update(final CommunityProfile source, final WeNetValidateContext context) {
 
     final Promise<CommunityProfile> promise = Promise.promise();
     var future = promise.future();
@@ -221,8 +204,7 @@ public class CommunityProfile extends HumanDescriptionWithCreateUpdateTsDetails
       updated.members = source.members;
       updated.socialPractices = source.socialPractices;
       updated.norms = source.norms;
-
-      future = future.compose(Validations.validateChain(codePrefix, vertx));
+      future = future.compose(context.chain());
 
       // When merged set the fixed field values
       future = future.map(updatedValidatedModel -> {

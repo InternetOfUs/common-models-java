@@ -27,6 +27,7 @@ import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
@@ -76,7 +77,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
     model.category = "    category_" + index + "    ";
     model.level = (double) index;
 
-    assertIsValid(model, vertx, testContext, () -> {
+    assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
 
       final var expected = this.createModelExample(index);
       assertThat(model).isEqualTo(expected);
@@ -97,7 +98,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
 
     final var model = this.createModelExample(1);
     model.name = name;
-    assertIsNotValid(model, "name", vertx, testContext);
+    assertIsNotValid(model, "name", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -115,7 +116,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
 
     final var model = this.createModelExample(1);
     model.category = category;
-    assertIsNotValid(model, "category", vertx, testContext);
+    assertIsNotValid(model, "category", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -130,7 +131,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
 
     final var model = this.createModelExample(1);
     model.level = null;
-    assertIsNotValid(model, "level", vertx, testContext);
+    assertIsNotValid(model, "level", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
@@ -152,7 +153,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
 
     final var target = this.createModelExample(index - 1);
 
-    assertCanMerge(target, source, vertx, testContext, merged -> {
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
       final var expected = this.createModelExample(index);
       assertThat(merged).isEqualTo(expected);
@@ -170,7 +171,8 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   public void shouldMergeNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, null, vertx, testContext, merged -> assertThat(merged).isSameAs(target));
+    assertCanMerge(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
+        merged -> assertThat(merged).isSameAs(target));
 
   }
 
@@ -184,7 +186,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   public void shouldMergeEmpty(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanMerge(target, new Meaning(), vertx, testContext,
+    assertCanMerge(target, new Meaning(), new WeNetValidateContext("codePrefix", vertx), testContext,
         merged -> assertThat(merged).isNotSameAs(target).isEqualTo(target));
 
   }
@@ -207,7 +209,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
 
     final var target = this.createModelExample(index - 1);
 
-    assertCanUpdate(target, source, vertx, testContext, updated -> {
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
       final var expected = this.createModelExample(index);
       assertThat(updated).isEqualTo(expected);
@@ -225,7 +227,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   public void shouldUpdateNull(final Vertx vertx, final VertxTestContext testContext) {
 
     final var target = this.createModelExample(1);
-    assertCanUpdate(target, null, vertx, testContext, updated -> {
+    assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
       assertThat(updated).isSameAs(target);
     });
@@ -244,7 +246,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
     final var source = new Meaning();
     source.name = null;
     final var target = this.createModelExample(1);
-    assertCannotUpdate(target, source, "name", vertx, testContext);
+    assertCannotUpdate(target, source, "name", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 

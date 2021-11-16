@@ -20,14 +20,13 @@
 
 package eu.internetofus.common.components.models;
 
+import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.Validations;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 
 /**
  * The message on an {@link Incentive}
@@ -35,7 +34,7 @@ import io.vertx.core.Vertx;
  * @author UDT-IA, IIIA-CSIC
  */
 @Schema(hidden = true, name = "Message", description = "The message on an incentive.")
-public class IncentiveMessage extends ReflectionModel implements Model, Validable {
+public class IncentiveMessage extends ReflectionModel implements Model, Validable<WeNetValidateContext> {
 
   /**
    * The content of the message.
@@ -47,17 +46,12 @@ public class IncentiveMessage extends ReflectionModel implements Model, Validabl
    * {@inheritDoc}
    */
   @Override
-  public Future<Void> validate(final String codePrefix, final Vertx vertx) {
+  public Future<Void> validate(final WeNetValidateContext context) {
 
     final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
-
-    future = future
-        .compose(empty -> Validations.validateStringField(codePrefix, "content", this.content).map(content -> {
-          this.content = content;
-          return null;
-        }));
-    promise.complete();
+    final var future = promise.future();
+    this.content = context.validateStringField("content", this.content, promise);
+    promise.tryComplete();
 
     return future;
   }
