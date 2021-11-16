@@ -86,6 +86,24 @@ public interface ValidateContext<SELF extends ValidateContext<SELF>> {
   }
 
   /**
+   * Crate a failed future with a cause.
+   *
+   * @param cause the validation fails.
+   * @param <T>   type of expecting future.
+   *
+   * @return The failed future with the {@link ValidationErrorException} with the
+   *         cuse.
+   *
+   * @see #errorCode()
+   */
+  default <T> Future<T> fail(final Throwable cause) {
+
+    final var code = this.errorCode();
+    return Future.failedFuture(new ValidationErrorException(code, cause));
+
+  }
+
+  /**
    * Crate a failed future with the specified error message.
    *
    * @param field   name of the failed field.
@@ -101,6 +119,25 @@ public interface ValidateContext<SELF extends ValidateContext<SELF>> {
 
     final var code = this.fieldErrorCode(field);
     return this.fail(code, message);
+
+  }
+
+  /**
+   * Crate a failed future with the specified cause.
+   *
+   * @param field name of the failed field.
+   * @param cause the validation fails.
+   * @param <T>   type of expecting future.
+   *
+   * @return The failed future with the {@link ValidationErrorException} with the
+   *         cause.
+   *
+   * @see #errorCode()
+   */
+  default <T> Future<T> failField(final String field, final Throwable cause) {
+
+    final var code = this.fieldErrorCode(field);
+    return Future.failedFuture(new ValidationErrorException(code, cause));
 
   }
 
@@ -242,6 +279,8 @@ public interface ValidateContext<SELF extends ValidateContext<SELF>> {
    * @param value          to verify.
    * @param promise        to notify of any error.
    * @param possibleValues values that can have the value.
+   *
+   * @param <T>            type of possible values.
    */
   default <T> void validateEnumField(final String fieldName, final T value, final Promise<Void> promise,
       @SuppressWarnings("unchecked") final T... possibleValues) {

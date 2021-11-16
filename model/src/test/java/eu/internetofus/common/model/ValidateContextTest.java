@@ -113,6 +113,64 @@ public class ValidateContextTest {
   }
 
   /**
+   * Should create a fail future with a cause.
+   *
+   * @param testContext test context to use.
+   *
+   * @see ValidateContext#fail(Throwable)
+   */
+  @Test
+  public void shouldFailWithCause(final VertxTestContext testContext) {
+
+    doReturn("codeCause").when(this.context).errorCode();
+    final var cause = new Throwable("cause");
+    final var future = this.context.fail(cause);
+    testContext.assertFailure(future).onFailure(error -> {
+
+      testContext.verify(() -> {
+
+        assertThat(error).isInstanceOf(ValidationErrorException.class);
+        final var failedCause = (ValidationErrorException) error;
+        assertThat(failedCause.getCode()).isEqualTo("codeCause");
+        assertThat(failedCause.getMessage()).contains(cause.getMessage());
+        assertThat(failedCause.getCause()).isEqualTo(cause);
+
+      });
+      testContext.completeNow();
+    });
+
+  }
+
+  /**
+   * Should create a fail field future with a cause.
+   *
+   * @param testContext test context to use.
+   *
+   * @see ValidateContext#fail(Throwable)
+   */
+  @Test
+  public void shouldFailFieldWithCause(final VertxTestContext testContext) {
+
+    doReturn("codeCause").when(this.context).errorCode();
+    final var cause = new Throwable("cause");
+    final var future = this.context.failField("field", cause);
+    testContext.assertFailure(future).onFailure(error -> {
+
+      testContext.verify(() -> {
+
+        assertThat(error).isInstanceOf(ValidationErrorException.class);
+        final var failedCause = (ValidationErrorException) error;
+        assertThat(failedCause.getCode()).isEqualTo("codeCause.field");
+        assertThat(failedCause.getMessage()).contains(cause.getMessage());
+        assertThat(failedCause.getCause()).isEqualTo(cause);
+
+      });
+      testContext.completeNow();
+    });
+
+  }
+
+  /**
    * Should create a fail future for a field.
    *
    * @param testContext test context to use.

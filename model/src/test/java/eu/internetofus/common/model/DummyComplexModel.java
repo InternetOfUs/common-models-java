@@ -113,7 +113,7 @@ public class DummyComplexModel extends DummyModel implements Validable<DummyVali
       future = future.compose(context.validateField("other", this.other));
     }
 
-    promise.complete();
+    promise.tryComplete();
 
     return future;
   }

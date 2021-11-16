@@ -171,6 +171,8 @@ public interface Merges {
    * @param target value to merge.
    * @param source value to merge.
    *
+   * @param <T>    type of model to merge.
+   *
    * @return the merged value.
    */
   @SuppressWarnings("unchecked")
