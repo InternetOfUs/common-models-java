@@ -485,6 +485,7 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
    * @param name          of the field to validate.
    * @param value         to validate.
    * @param specification of the value.
+   * @param <T>           type of value to validate.
    *
    * @return the future with the validation result.
    */
@@ -531,6 +532,7 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
    * @param id     identifier of the model.
    * @param type   of model to search.
    * @param search function to get the model by its identifier.
+   * @param <T>    type of model to check if it is defined.
    *
    * @return the future with the validation result.
    */
