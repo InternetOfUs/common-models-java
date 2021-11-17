@@ -181,7 +181,7 @@ public class RelevantLocation extends ReflectionModel implements Model, Validabl
    * @return {@code true} if the relevant locations can be considered equals by
    *         its identifier.
    */
-  static boolean compareIds(final RelevantLocation a, final RelevantLocation b) {
+  public static boolean compareIds(final RelevantLocation a, final RelevantLocation b) {
 
     return a != null && a.id != null && a.id.equals(b.id);
 

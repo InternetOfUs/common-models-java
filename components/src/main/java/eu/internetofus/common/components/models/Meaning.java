@@ -157,7 +157,7 @@ public class Meaning extends ReflectionModel implements Model, Validable<WeNetVa
    * @return {@code true} if the meanings can be considered equals by its
    *         identifier.
    */
-  static boolean compareIds(final Meaning a, final Meaning b) {
+  public static boolean compareIds(final Meaning a, final Meaning b) {
 
     return a != null && a.name != null && a.name.equals(b.name) && a.category != null && a.category.equals(b.category);
 

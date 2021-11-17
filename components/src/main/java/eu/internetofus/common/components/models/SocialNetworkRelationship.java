@@ -178,7 +178,7 @@ public class SocialNetworkRelationship extends ReflectionModel
    * @return {@code true} if the social network relationships can be considered
    *         equals by its identifier.
    */
-  static boolean compareIds(final SocialNetworkRelationship a, final SocialNetworkRelationship b) {
+  public static boolean compareIds(final SocialNetworkRelationship a, final SocialNetworkRelationship b) {
 
     return a != null && a.type != null && a.type.equals(b.type) && a.appId != null && a.appId.equals(b.appId)
         && a.userId != null && a.userId.equals(b.userId);

@@ -172,7 +172,7 @@ public class Material extends ReflectionModel implements Model, Validable<WeNetV
    * @return {@code true} if the materials can be considered equals by its
    *         identifier.
    */
-  static boolean compareIds(final Material a, final Material b) {
+  public static boolean compareIds(final Material a, final Material b) {
 
     return a != null && a.name != null && a.name.equals(b.name) && a.classification != null
         && a.classification.equals(b.classification);

@@ -195,7 +195,7 @@ public class SocialPractice extends ReflectionModel implements Model, Validable<
    * @return {@code true} if the social practice can be considered equals by its
    *         identifier.
    */
-  static boolean compareIds(final SocialPractice a, final SocialPractice b) {
+  public static boolean compareIds(final SocialPractice a, final SocialPractice b) {
 
     return a != null && a.id != null && a.id.equals(b.id);
 

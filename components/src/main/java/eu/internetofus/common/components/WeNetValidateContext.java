@@ -526,6 +526,21 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
   }
 
   /**
+   * Validate that a field contains a defined profile.
+   *
+   * @param name      of the field to validate.
+   * @param profileId identifier of the profile .
+   *
+   * @return the future with the validation result.
+   */
+  public Future<WeNetUserProfile> validateDefinedProfileByIdField(final String name, final String profileId) {
+
+    return this.validateDefinedModelByIdField(name, profileId, WeNetUserProfile.class,
+        WeNetProfileManager.createProxy(this.vertx)::retrieveProfile);
+
+  }
+
+  /**
    * Validate that a field contains a defined model.
    *
    * @param name   of the field to validate.
@@ -564,6 +579,22 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
       return Future.succeededFuture(model);
 
     }
+  }
+
+  /**
+   * Validate that a field is a defined task type.
+   *
+   * @param name   of the field to validate.
+   * @param id     identifier of the model.
+   * @param future to compose if the task type is defined or not.
+   *
+   * @return the future with the validation result.
+   */
+  public Future<Void> validateDefinedTaskTypeIdField(final String name, final String id, final Future<Void> future) {
+
+    return this.validateDefinedIdField(name, id, TaskType.class,
+        WeNetTaskManager.createProxy(this.vertx)::isTaskTypeDefined, future);
+
   }
 
 }

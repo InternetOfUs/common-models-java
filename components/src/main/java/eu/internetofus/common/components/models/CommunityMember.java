@@ -136,7 +136,7 @@ public class CommunityMember extends CreateUpdateTsDetails implements Validable<
    * @return {@code true} if the community members can be considered equals by its
    *         identifier.
    */
-  static boolean compareIds(final CommunityMember a, final CommunityMember b) {
+  public static boolean compareIds(final CommunityMember a, final CommunityMember b) {
 
     return a != null && a.userId != null && a.userId.equals(b.userId);
 

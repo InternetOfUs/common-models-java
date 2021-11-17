@@ -155,7 +155,7 @@ public class Competence extends ReflectionModel implements Model, Validable<WeNe
    * @return {@code true} if the competences can be considered equals by its
    *         identifier.
    */
-  static boolean compareIds(final Competence a, final Competence b) {
+  public static boolean compareIds(final Competence a, final Competence b) {
 
     return a != null && a.name != null && a.name.equals(b.name) && a.ontology != null && a.ontology.equals(b.ontology);
 

@@ -165,7 +165,7 @@ public class ProtocolNorm extends ReflectionModel implements Model, Validable<We
    * @return {@code true} if the social practice can be considered equals by its
    *         identifier.
    */
-  static boolean compareIds(final ProtocolNorm a, final ProtocolNorm b) {
+  public static boolean compareIds(final ProtocolNorm a, final ProtocolNorm b) {
 
     return a != null && b != null && a.whenever != null && a.thenceforth != null && a.whenever.equals(b.whenever)
         && a.thenceforth.equals(b.thenceforth);

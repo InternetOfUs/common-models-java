@@ -215,7 +215,7 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
    * @return {@code true} if the planned activities can be considered equals by
    *         its identifier.
    */
-  static boolean compareIds(final PlannedActivity a, final PlannedActivity b) {
+  public static boolean compareIds(final PlannedActivity a, final PlannedActivity b) {
 
     return a != null && a.id != null && a.id.equals(b.id);
 

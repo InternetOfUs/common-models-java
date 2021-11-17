@@ -248,7 +248,7 @@ public class Routine extends ReflectionModel implements Model, Validable<WeNetVa
    * @return {@code true} if the routines can be considered equals by its
    *         identifier.
    */
-  static boolean compareIds(final Routine a, final Routine b) {
+  public static boolean compareIds(final Routine a, final Routine b) {
 
     return a != null && a.equals(b);
 

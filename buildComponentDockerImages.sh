@@ -4,7 +4,7 @@ if [ -f /.dockerenv ]; then
 else
 	DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 	pushd "$DIR" >/dev/null
-	declare -a ComponentArray=("profile-manager" "profile-diversity-manager" "task-manager" "interaction-protocol-engine")
+	declare -a ComponentArray=("profile-manager" "task-manager" "interaction-protocol-engine" "profile-diversity-manager")
 	for component in "${ComponentArray[@]}"; do
 		echo "* $component"
 		pushd "$DIR/../$component" > /dev/null
