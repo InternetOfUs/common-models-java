@@ -22,6 +22,7 @@ package eu.internetofus.common.components.models;
 
 import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
+import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
@@ -101,34 +102,15 @@ public class SocialNetworkRelationship extends ReflectionModel
     if (source != null) {
 
       final var merged = new SocialNetworkRelationship();
-      merged.appId = source.appId;
-      if (merged.appId == null) {
-
-        merged.appId = this.appId;
-      }
-
-      merged.userId = source.userId;
-      if (merged.userId == null) {
-
-        merged.userId = this.userId;
-      }
-
-      merged.type = source.type;
-      if (merged.type == null) {
-
-        merged.type = this.type;
-      }
-
-      merged.weight = source.weight;
-      if (merged.weight == null) {
-
-        merged.weight = this.weight;
-      }
-
-      promise.complete(merged);
+      merged.appId = Merges.mergeValues(this.appId, source.appId);
+      merged.userId = Merges.mergeValues(this.userId, source.userId);
+      merged.type = Merges.mergeValues(this.type, source.type);
+      merged.weight = Merges.mergeValues(this.weight, source.weight);
 
       // validate the merged value
       future = future.compose(context.chain());
+
+      promise.complete(merged);
 
     } else {
 
