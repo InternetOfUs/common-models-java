@@ -21,9 +21,7 @@
 package eu.internetofus.common.vertx;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 
 import eu.internetofus.common.test.WeNetComponentContainers;
 import io.vertx.core.Promise;
@@ -80,11 +78,11 @@ public class AbstractAPIVerticleTest {
    * @throws Exception If the verticle cannot be started/stopped.
    */
   @Test
-  public void shouldNotStartBacauseCannotMount(final Vertx vertx, final VertxTestContext testContext) throws Exception {
+  public void shouldNotStartBacauseNoResourcePath(final Vertx vertx, final VertxTestContext testContext)
+      throws Exception {
 
     doReturn(vertx).when(this.verticle).getVertx();
-    doReturn("wenet-basic-openapi.yaml").when(this.verticle).getOpenAPIResourcePath();
-    doThrow(new RuntimeException("Unexpected error")).when(this.verticle).mountServiceInterfaces(any());
+    doReturn(null).when(this.verticle).getOpenAPIResourcePath();
     final Promise<Void> startPromise = Promise.promise();
     this.verticle.start(startPromise);
     startPromise.future().onComplete(testContext.failing(error -> testContext.completeNow()));

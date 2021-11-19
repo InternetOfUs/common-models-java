@@ -20,23 +20,6 @@
 
 package eu.internetofus.common.vertx;
 
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.tinylog.Level;
-import org.tinylog.Logger;
-import org.tinylog.jul.JulTinylogBridge;
-import org.tinylog.provider.InternalLogger;
-
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -47,6 +30,23 @@ import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.tinylog.Level;
+import org.tinylog.Logger;
+import org.tinylog.jul.JulTinylogBridge;
+import org.tinylog.provider.InternalLogger;
 
 /**
  * The generic component to start the Module environment.
@@ -66,7 +66,8 @@ public abstract class AbstractMain {
   public static final String VERSION_OPTION = "v";
 
   /**
-   * The name of the option to define a directory where are the configuration files.
+   * The name of the option to define a directory where are the configuration
+   * files.
    */
   public static final String CONF_DIR_OPTION = "c";
 
@@ -81,12 +82,14 @@ public abstract class AbstractMain {
   protected ConfigRetrieverOptions retrieveOptions;
 
   /**
-   * The configuration property that define if has to store the effective configuration.
+   * The configuration property that define if has to store the effective
+   * configuration.
    */
   public static final String STORE_EFFECTIVE_CONFIGURATION = "store_effective_configuration";
 
   /**
-   * The configuration property that contains the path where the effective configuration has to be stored.
+   * The configuration property that contains the path where the effective
+   * configuration has to be stored.
    */
   public static final String EFFECTIVE_CONFIGURATION_PATH = "effective_configuration_path";
 
@@ -96,7 +99,8 @@ public abstract class AbstractMain {
   public static final String DEFAULT_EFFECTIVE_CONFIGURATION_PATH = "var/effective-conf.json";
 
   /**
-   * The maximum milliseconds that the system has to be open. If it is {0} or less the system is available for ever.
+   * The maximum milliseconds that the system has to be open. If it is {0} or less
+   * the system is available for ever.
    */
   protected long delay;
 
@@ -105,14 +109,15 @@ public abstract class AbstractMain {
    */
   public AbstractMain() {
 
-    this.retrieveOptions = new ConfigRetrieverOptions().addStore(new ConfigStoreOptions().setType("file").setFormat("json").setConfig(new JsonObject().put("path", this.getDefaultModuleConfigurationResurcePath())));
+    this.retrieveOptions = new ConfigRetrieverOptions().addStore(new ConfigStoreOptions().setType("file")
+        .setFormat("json").setConfig(new JsonObject().put("path", this.getDefaultModuleConfigurationResurcePath())));
     this.delay = -1l;
 
   }
 
   /**
-   * Return the resource path to the default configuration file of the module. It is calculated ad the module name plus
-   * ".configuration.json".
+   * Return the resource path to the default configuration file of the module. It
+   * is calculated ad the module name plus ".configuration.json".
    *
    * @return the resource path to the default configuration file.
    *
@@ -146,7 +151,8 @@ public abstract class AbstractMain {
         if (conf.getBoolean(STORE_EFFECTIVE_CONFIGURATION, Boolean.TRUE)) {
           try {
 
-            final var effectiveConf = FileSystems.getDefault().getPath(conf.getString(EFFECTIVE_CONFIGURATION_PATH, DEFAULT_EFFECTIVE_CONFIGURATION_PATH));
+            final var effectiveConf = FileSystems.getDefault()
+                .getPath(conf.getString(EFFECTIVE_CONFIGURATION_PATH, DEFAULT_EFFECTIVE_CONFIGURATION_PATH));
             Files.write(effectiveConf, conf.encodePrettily().getBytes());
             Logger.info("Stored effective configuration at '{}'", effectiveConf);
 
@@ -185,7 +191,8 @@ public abstract class AbstractMain {
   }
 
   /**
-   * Create the main verticle that will start the WeNet module components to deploy.
+   * Create the main verticle that will start the WeNet module components to
+   * deploy.
    *
    * @return an instance of the main verticle to deploy.
    */
@@ -209,10 +216,15 @@ public abstract class AbstractMain {
 
     final var l10n = ResourceBundle.getBundle(AbstractMain.class.getName().replaceAll("\\.", "/"));
     final var options = new Options();
-    options.addOption(HELP_OPTION, l10n.getString(HELP_OPTION + "_large"), false, l10n.getString(HELP_OPTION + "_description"));
-    options.addOption(VERSION_OPTION, l10n.getString(VERSION_OPTION + "_large"), false, l10n.getString(VERSION_OPTION + "_description"));
-    options.addOption(Option.builder(CONF_DIR_OPTION).longOpt(l10n.getString(CONF_DIR_OPTION + "_large")).numberOfArgs(1).argName(l10n.getString(CONF_DIR_OPTION + "_argName")).desc(l10n.getString(CONF_DIR_OPTION + "_description")).build());
-    options.addOption(Option.builder(PROPERTY_OPTION).longOpt(l10n.getString(PROPERTY_OPTION + "_large")).numberOfArgs(2).argName(l10n.getString(PROPERTY_OPTION + "_argName")).valueSeparator()
+    options.addOption(HELP_OPTION, l10n.getString(HELP_OPTION + "_large"), false,
+        l10n.getString(HELP_OPTION + "_description"));
+    options.addOption(VERSION_OPTION, l10n.getString(VERSION_OPTION + "_large"), false,
+        l10n.getString(VERSION_OPTION + "_description"));
+    options.addOption(Option.builder(CONF_DIR_OPTION).longOpt(l10n.getString(CONF_DIR_OPTION + "_large"))
+        .numberOfArgs(1).argName(l10n.getString(CONF_DIR_OPTION + "_argName"))
+        .desc(l10n.getString(CONF_DIR_OPTION + "_description")).build());
+    options.addOption(Option.builder(PROPERTY_OPTION).longOpt(l10n.getString(PROPERTY_OPTION + "_large"))
+        .numberOfArgs(2).argName(l10n.getString(PROPERTY_OPTION + "_argName")).valueSeparator()
         .desc(l10n.getString(CONF_DIR_OPTION + "_description")).build());
     return options;
 
@@ -330,7 +342,8 @@ public abstract class AbstractMain {
 
         format = "yaml";
       }
-      final var confFileOptions = new ConfigStoreOptions().setType("file").setFormat(format).setConfig(new JsonObject().put("path", confFilePath.toFile().getAbsolutePath()));
+      final var confFileOptions = new ConfigStoreOptions().setType("file").setFormat(format)
+          .setConfig(new JsonObject().put("path", confFilePath.toFile().getAbsolutePath()));
       this.retrieveOptions = this.retrieveOptions.addStore(confFileOptions);
 
     });
@@ -393,6 +406,25 @@ public abstract class AbstractMain {
 
     final var userPropertiesConf = new ConfigStoreOptions().setType("json").setConfig(userProperties);
     this.retrieveOptions = this.retrieveOptions.addStore(userPropertiesConf);
+
+  }
+
+  /**
+   * Print error log message informing that can not start the component.
+   *
+   * @param cause that explains why can not be started.
+   */
+  protected void printStartError(final Throwable cause) {
+
+    final var msg = new StringBuilder();
+    msg.append("Can not start the ");
+    msg.append(this.getModuleName());
+    msg.append("!\n");
+    final var writter = new StringWriter();
+    cause.printStackTrace(new PrintWriter(writter));
+    msg.append(writter.toString());
+    msg.append("\n Check the Logs to known more.");
+    InternalLogger.log(Level.ERROR, msg.toString());
 
   }
 

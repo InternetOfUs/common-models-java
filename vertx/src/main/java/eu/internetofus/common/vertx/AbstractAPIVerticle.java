@@ -21,6 +21,7 @@
 package eu.internetofus.common.vertx;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpHeaders;
@@ -32,7 +33,12 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.openapi.RouterBuilder;
+import java.nio.charset.Charset;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import javax.ws.rs.core.Response.Status;
+import org.apache.commons.io.IOUtils;
 import org.tinylog.Logger;
 
 /**
@@ -41,6 +47,17 @@ import org.tinylog.Logger;
  * @author UDT-IA, IIIA-CSIC
  */
 public abstract class AbstractAPIVerticle extends AbstractVerticle {
+
+  /**
+   * The configuration property that contains the path where the OpenAPI has to be
+   * stored.
+   */
+  public static final String OPENAPI_FILE_PATH_KEY = "openapi_path";
+
+  /**
+   * The default path where the OpenAPI will be stored.
+   */
+  public static final String DEFAULT_OPENAPI_FILE_PATH = "var/openapi.yaml";
 
   /**
    * The server that manage the HTTP requests.
@@ -53,9 +70,13 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
   @Override
   public void start(final Promise<Void> startPromise) throws Exception {
 
-    final var vertx = this.getVertx();
-    final var path = this.getClass().getClassLoader().getResource(this.getOpenAPIResourcePath()).toURI().toString();
-    RouterBuilder.create(vertx, path).onComplete(createRouterFactory -> {
+    this.getOpenAPIFilePath().compose(path -> {
+
+      final var vertx = this.getVertx();
+      return RouterBuilder.create(vertx, path);
+
+    }).onComplete(createRouterFactory -> {
+
       if (createRouterFactory.succeeded()) {
 
         try {
@@ -101,6 +122,34 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
         // not present on the path
         startPromise.fail(createRouterFactory.cause());
       }
+    });
+
+  }
+
+  /**
+   * Obtain the path to the file where the OpenAPI specification is stored.
+   *
+   * @return the path to the file with the OpenAPI specification.
+   */
+  protected Future<String> getOpenAPIFilePath() {
+
+    return this.getVertx().executeBlocking((Handler<Promise<String>>) promise -> {
+
+      try {
+
+        final var in = this.getClass().getClassLoader().getResourceAsStream(this.getOpenAPIResourcePath());
+        final var openapi = IOUtils.toString(in, Charset.defaultCharset());
+        final var apiConf = this.config().getJsonObject("api", new JsonObject());
+        final var path = FileSystems.getDefault()
+            .getPath(apiConf.getString(OPENAPI_FILE_PATH_KEY, DEFAULT_OPENAPI_FILE_PATH));
+        Files.writeString(path, openapi, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        promise.complete(path.toUri().toString());
+
+      } catch (final Throwable cause) {
+
+        promise.fail(cause);
+      }
+
     });
 
   }
