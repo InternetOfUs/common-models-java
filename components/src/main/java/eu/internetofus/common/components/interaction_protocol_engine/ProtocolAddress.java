@@ -91,24 +91,24 @@ public class ProtocolAddress extends ReflectionModel implements Model, Validable
   @Override
   public Future<Void> validate(final WeNetValidateContext context) {
 
-    final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
     if (this.component == null) {
 
       return context.failField("component", "You must to specify the component.");
 
     } else {
 
+      final Promise<Void> promise = Promise.promise();
+      var future = promise.future();
       if (this.userId != null) {
 
         future = context.validateDefinedProfileIdField("userId", this.userId, future);
 
       }
       promise.tryComplete();
+      return future;
 
     }
 
-    return future;
   }
 
 }

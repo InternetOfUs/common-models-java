@@ -739,7 +739,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.meanings = new ArrayList<>();
     model.meanings.add(new MeaningTest().createModelExample(1));
     model.meanings.add(new Meaning());
-    assertIsNotValid(model, "meanings[1].name", new WeNetValidateContext("codePrefix", vertx), testContext);
+    assertIsNotValid(model, "meanings[1].level", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 

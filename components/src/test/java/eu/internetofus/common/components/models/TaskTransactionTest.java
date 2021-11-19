@@ -194,11 +194,11 @@ public class TaskTransactionTest extends ModelTestCase<TaskTransaction> {
   public void shouldTaskTransactionBeNotValidWithUndefinedTaskType(final Vertx vertx,
       final VertxTestContext testContext) {
 
-    this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> WeNetTaskManager
-        .createProxy(vertx).retrieveTask(model.taskId)
-        .compose(task -> WeNetTaskManager.createProxy(vertx).deleteTaskType(task.taskTypeId))
-        .onComplete(testContext.succeeding(
-            empty -> assertIsNotValid(model, "taskId", new WeNetValidateContext("codePrefix", vertx), testContext)))));
+    this.createModelExample(1, vertx, testContext)
+        .onComplete(testContext.succeeding(model -> WeNetTaskManager.createProxy(vertx).retrieveTask(model.taskId)
+            .compose(task -> WeNetTaskManager.createProxy(vertx).deleteTaskType(task.taskTypeId))
+            .onComplete(testContext.succeeding(empty -> assertIsNotValid(model, "taskId@taskTypeId",
+                new WeNetValidateContext("codePrefix", vertx), testContext)))));
 
   }
 

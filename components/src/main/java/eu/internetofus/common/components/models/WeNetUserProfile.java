@@ -218,22 +218,48 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
     this.email = context.validateNullableEmailField("email", this.email, promise);
     this.locale = context.validateNullableLocaleField("locale", this.locale, promise);
     this.phoneNumber = context.validateNullableTelephoneField("phoneNumber", this.phoneNumber, this.locale, promise);
-    this.locale = context.validateNullableUrlField("avatar", this.avatar, promise);
+    this.avatar = context.validateNullableUrlField("avatar", this.avatar, promise);
     this.nationality = context.normalizeString(this.nationality);
     this.occupation = context.normalizeString(this.occupation);
 
-    future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
-    future = future
-        .compose(context.validateListField("plannedActivities", this.plannedActivities, PlannedActivity::compareIds));
-    future = future
-        .compose(context.validateListField("relevantLocations", this.relevantLocations, RelevantLocation::compareIds));
-    future = future
-        .compose(context.validateListField("relationships", this.relationships, SocialNetworkRelationship::compareIds));
-    future = future
-        .compose(context.validateListField("personalBehaviors", this.personalBehaviors, Routine::compareIds));
-    future = future.compose(context.validateListField("materials", this.materials, Material::compareIds));
-    future = future.compose(context.validateListField("competences", this.competences, Competence::compareIds));
-    future = future.compose(context.validateListField("meanings", this.meanings, Meaning::compareIds));
+    if (this.norms != null) {
+
+      future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
+
+    }
+    if (this.plannedActivities != null) {
+
+      future = future
+          .compose(context.validateListField("plannedActivities", this.plannedActivities, PlannedActivity::compareIds));
+    }
+    if (this.relevantLocations != null) {
+
+      future = future.compose(
+          context.validateListField("relevantLocations", this.relevantLocations, RelevantLocation::compareIds));
+
+    }
+    if (this.relationships != null) {
+
+      future = future.compose(
+          context.validateListField("relationships", this.relationships, SocialNetworkRelationship::compareIds));
+    }
+    if (this.personalBehaviors != null) {
+
+      future = future
+          .compose(context.validateListField("personalBehaviors", this.personalBehaviors, Routine::compareIds));
+    }
+    if (this.materials != null) {
+
+      future = future.compose(context.validateListField("materials", this.materials, Material::compareIds));
+    }
+    if (this.competences != null) {
+
+      future = future.compose(context.validateListField("competences", this.competences, Competence::compareIds));
+    }
+    if (this.meanings != null) {
+
+      future = future.compose(context.validateListField("meanings", this.meanings, Meaning::compareIds));
+    }
 
     promise.tryComplete();
 

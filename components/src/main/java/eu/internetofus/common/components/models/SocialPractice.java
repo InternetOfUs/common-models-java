@@ -99,9 +99,18 @@ public class SocialPractice extends ReflectionModel implements Model, Validable<
     }
 
     this.label = context.normalizeString(this.label);
-    future = future.compose(context.validateListField("materials", this.materials, Material::compareIds));
-    future = future.compose(context.validateListField("competences", this.competences, Competence::compareIds));
-    future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
+    if (this.materials != null) {
+
+      future = future.compose(context.validateListField("materials", this.materials, Material::compareIds));
+    }
+    if (this.competences != null) {
+
+      future = future.compose(context.validateListField("competences", this.competences, Competence::compareIds));
+    }
+    if (this.norms != null) {
+
+      future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
+    }
     promise.tryComplete();
 
     return future;
@@ -118,15 +127,8 @@ public class SocialPractice extends ReflectionModel implements Model, Validable<
 
       final var merged = new SocialPractice();
 
-      merged.label = source.label;
-      if (merged.label == null) {
-
-        merged.label = this.label;
-      }
-
-      final Promise<SocialPractice> promise = Promise.promise();
-      promise.complete(merged);
-      var future = promise.future();
+      merged.label = Merges.mergeValues(this.label, source.label);
+      var future = Future.succeededFuture(merged);
       future = future.compose(Merges.mergeListField(context, "materials", this.materials, source.materials,
           Material::compareIds, (model, mergedMaterials) -> {
             model.materials = mergedMaterials;
@@ -135,11 +137,10 @@ public class SocialPractice extends ReflectionModel implements Model, Validable<
           Competence::compareIds, (model, mergedCompetences) -> {
             model.competences = mergedCompetences;
           }));
-      merged.norms = source.norms;
-      if (merged.norms == null) {
-
-        merged.norms = this.norms;
-      }
+      future = future.compose(Merges.mergeListField(context, "norms", this.norms, source.norms,
+          ProtocolNorm::compareIds, (model, mergedNorms) -> {
+            model.norms = mergedNorms;
+          }));
 
       future = future.compose(context.chain());
       // When merged set the fixed field values

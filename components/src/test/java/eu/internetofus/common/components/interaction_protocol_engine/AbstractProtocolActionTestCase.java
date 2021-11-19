@@ -55,7 +55,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(eu.internetofus.common.components.WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(eu.internetofus.common.components.WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6 })
@@ -107,7 +107,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(WeNetValidateContext)
    */
   @ParameterizedTest(name = "The model example {0} has to be valid")
   @ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6 })
@@ -124,7 +124,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithoutAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -141,7 +141,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithUndefinedAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -158,7 +158,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithoutCommunityId(final Vertx vertx, final VertxTestContext testContext) {
@@ -175,7 +175,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithUndefinedCommunityId(final Vertx vertx, final VertxTestContext testContext) {
@@ -192,7 +192,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithoutTaskId(final Vertx vertx, final VertxTestContext testContext) {
@@ -210,7 +210,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithUndefinedTaskId(final Vertx vertx, final VertxTestContext testContext) {
@@ -227,7 +227,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldBeValidWithoutTransactionId(final Vertx vertx, final VertxTestContext testContext) {
@@ -244,7 +244,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithTransactionIdAndWithoutTask(final Vertx vertx, final VertxTestContext testContext) {
@@ -261,7 +261,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithUndefinedTransactionId(final Vertx vertx, final VertxTestContext testContext) {
@@ -278,7 +278,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutParticle(final Vertx vertx, final VertxTestContext testContext) {
@@ -295,7 +295,7 @@ public abstract class AbstractProtocolActionTestCase<T extends AbstractProtocolA
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see ProtocolEvent#validate(WeNetValidateContext)
+   * @see AbstractProtocolAction#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithoutContent(final Vertx vertx, final VertxTestContext testContext) {

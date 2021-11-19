@@ -156,6 +156,10 @@ public interface Merges {
         if (source != null) {
 
           setter.accept(merged, source);
+
+        } else {
+
+          setter.accept(merged, target);
         }
         return Future.succeededFuture(merged);
 

@@ -26,6 +26,7 @@ import eu.internetofus.common.model.Mergeable;
 import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Updateable;
 import eu.internetofus.common.model.Validable;
+import eu.internetofus.common.model.ValidationErrorException;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
@@ -100,12 +101,40 @@ public class CommunityProfile extends HumanDescriptionWithCreateUpdateTsDetails
     this.description = context.normalizeString(this.description);
     this.keywords = context.validateNullableStringListField("keywords", this.keywords, promise);
 
-    future = context.validateDefinedProfileIdsField("members", CommunityMember.idsIterable(this.members), future);
-    future = future
-        .compose(context.validateListField("socialPractices", this.socialPractices, SocialPractice::compareIds));
-    future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
+    if (this.members != null) {
 
-    future = context.validateDefinedTaskTypeIdsField("taskTypeIds", this.taskTypeIds, future);
+      future = context.validateDefinedProfileIdsField("members", CommunityMember.idsIterable(this.members), future)
+          .transform(check -> {
+
+            if (check.failed()) {
+
+              final var cause = (ValidationErrorException) check.cause();
+              final var code = cause.getCode();
+              if (code.contains("members[")) {
+
+                return Future
+                    .failedFuture(new ValidationErrorException(code + ".userId", cause.getMessage(), cause.getCause()));
+              }
+            }
+
+            return (Future<Void>) check;
+
+          });
+    }
+
+    if (this.socialPractices != null) {
+
+      future = future
+          .compose(context.validateListField("socialPractices", this.socialPractices, SocialPractice::compareIds));
+    }
+    if (this.norms != null) {
+
+      future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
+    }
+    if (this.taskTypeIds != null) {
+
+      future = context.validateDefinedTaskTypeIdsField("taskTypeIds", this.taskTypeIds, future);
+    }
 
     promise.tryComplete();
 

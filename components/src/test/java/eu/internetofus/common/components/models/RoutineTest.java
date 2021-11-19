@@ -287,7 +287,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
     this.createModelExample(1, vertx, testContext).onSuccess(model -> {
 
       model.label_distribution.put("bad_score_label",
-          new JsonArray().add(new ScoredLabelTest().createModelExample(1).toJsonObject()).add(new JsonObject()));
+          new JsonArray().add(new ScoredLabelTest().createModelExample(1).toJsonObject())
+              .add(new ScoredLabelTest().createModelExample(2).toJsonObject().putNull("label")));
       assertIsNotValid(model, "label_distribution.bad_score_label[1].label",
           new WeNetValidateContext("codePrefix", vertx), testContext);
 
@@ -513,7 +514,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = new Routine();
-      source.label_distribution = new JsonObject().put("bad_scored_label", new JsonArray().add(new JsonObject()));
+      source.label_distribution = new JsonObject().put("bad_scored_label",
+          new JsonArray().add(new ScoredLabelTest().createModelExample(1).toJsonObject().putNull("label")));
       assertCannotMerge(target, source, "label_distribution.bad_scored_label[0].label",
           new WeNetValidateContext("codePrefix", vertx), testContext);
 
@@ -761,7 +763,8 @@ public class RoutineTest extends ModelTestCase<Routine> {
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       final var source = Model.fromBuffer(target.toBuffer(), Routine.class);
-      source.label_distribution = new JsonObject().put("bad_scored_label", new JsonArray().add(new JsonObject()));
+      source.label_distribution = new JsonObject().put("bad_scored_label",
+          new JsonArray().add(new ScoredLabelTest().createModelExample(1).toJsonObject().putNull("label")));
       assertCannotUpdate(target, source, "label_distribution.bad_scored_label[0].label",
           new WeNetValidateContext("codePrefix", vertx), testContext);
 

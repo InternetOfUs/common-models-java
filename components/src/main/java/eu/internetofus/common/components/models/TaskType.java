@@ -96,16 +96,19 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
     this.name = context.normalizeString(this.name);
     this.description = context.normalizeString(this.description);
     this.keywords = context.validateNullableStringListField("keywords", this.keywords, promise);
-    future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
+    if (this.norms != null) {
+
+      future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
+    }
 
     if (this.callbacks != null) {
 
-      future = context.validateOpenAPISpecificationField("callbacks", this.callbacks, future);
+      future = context.validateComposedOpenAPISpecificationField("callbacks", this.callbacks, future);
     }
 
     if (this.transactions != null) {
 
-      future = context.validateOpenAPISpecificationField("transactions", this.transactions, future);
+      future = context.validateComposedOpenAPISpecificationField("transactions", this.transactions, future);
     }
 
     if (this.attributes != null) {
@@ -131,33 +134,13 @@ public class TaskType extends HumanDescriptionWithCreateUpdateTsDetails
       final var merged = new TaskType();
       merged._creationTs = this._creationTs;
       merged._lastUpdateTs = this._lastUpdateTs;
-
-      merged.name = source.name;
-      if (merged.name == null) {
-
-        merged.name = this.name;
-      }
-      merged.description = source.description;
-      if (merged.description == null) {
-
-        merged.description = this.description;
-      }
-
-      merged.keywords = source.keywords;
-      if (merged.keywords == null) {
-
-        merged.keywords = this.keywords;
-      }
-
+      merged.name = Merges.mergeValues(this.name, source.name);
+      merged.description = Merges.mergeValues(this.description, source.description);
+      merged.keywords = Merges.mergeValues(this.keywords, source.keywords);
       merged.attributes = Merges.mergeJsonObjects(this.attributes, source.attributes);
       merged.transactions = Merges.mergeJsonObjects(this.transactions, source.transactions);
       merged.callbacks = Merges.mergeJsonObjects(this.callbacks, source.callbacks);
-
-      merged.norms = source.norms;
-      if (merged.norms == null) {
-
-        merged.norms = this.norms;
-      }
+      merged.norms = Merges.mergeValues(this.norms, source.norms);
       future = future.compose(context.chain());
       promise.complete(merged);
       future = future.map(mergedValidatedModel -> {

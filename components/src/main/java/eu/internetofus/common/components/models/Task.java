@@ -135,38 +135,56 @@ public class Task extends CreateUpdateTsDetails implements Validable<WeNetValida
       this.goal.description = context.normalizeString(this.goal.description);
       this.goal.keywords = context.validateNullableStringListField("goal.keywords", this.goal.keywords, promise);
 
-      context.validateTimeStampField("closeTs", this.closeTs, promise);
-      if (this.closeTs != null && this.closeTs < this._creationTs) {
+      if (this.closeTs != null) {
 
-        return context.failField("closeTs", "The 'closeTs' has to be after the '_creationTs'.");
+        context.validateTimeStampField("closeTs", this.closeTs, promise);
+        if (this.closeTs < this._creationTs) {
 
-      } else {
+          return context.failField("closeTs", "The 'closeTs' has to be after the '_creationTs'.");
+        }
+      }
+
+      if (this.norms != null) {
 
         future = future.compose(context.validateListField("norms", this.norms, ProtocolNorm::compareIds));
+      }
 
-        future = future.compose(
-            empty -> context.validateDefinedTaskTypeByIdField("taskTypeId", this.taskTypeId).transform(search -> {
+      future = future.compose(
+          empty -> context.validateDefinedTaskTypeByIdField("taskTypeId", this.taskTypeId).transform(search -> {
 
-              if (search.failed()) {
+            if (search.failed()) {
 
-                return Future.failedFuture(search.cause());
+              return Future.failedFuture(search.cause());
+
+            } else {
+
+              final var taskType = search.result();
+              if (taskType.attributes == null) {
+
+                if (this.attributes == null || this.attributes.isEmpty()) {
+
+                  return Future.succeededFuture();
+
+                } else {
+
+                  return context.failField("attributes", "The task type does not allow to have attributes.");
+                }
 
               } else {
-                final var taskType = search.result();
+
                 return context.validateOpenAPIValueField("attributes", this.attributes, taskType.attributes)
                     .map(validAttributes -> {
 
                       this.attributes = validAttributes;
                       return null;
                     });
-
               }
+            }
 
-            }));
+          }));
 
-        promise.tryComplete();
+      promise.tryComplete();
 
-      }
     }
 
     return future;
@@ -187,72 +205,41 @@ public class Task extends CreateUpdateTsDetails implements Validable<WeNetValida
       merged._creationTs = this._creationTs;
       merged._lastUpdateTs = this._lastUpdateTs;
 
-      merged.taskTypeId = source.taskTypeId;
-      if (merged.taskTypeId == null) {
-
-        merged.taskTypeId = this.taskTypeId;
-      }
-
-      merged.requesterId = source.requesterId;
-      if (merged.requesterId == null) {
-
-        merged.requesterId = this.requesterId;
-      }
-
-      merged.appId = source.appId;
-      if (merged.appId == null) {
-
-        merged.appId = this.appId;
-      }
-
-      merged.communityId = source.communityId;
-      if (merged.communityId == null) {
-
-        merged.communityId = this.communityId;
-      }
-
-      merged.closeTs = source.closeTs;
-      if (merged.closeTs == null) {
-
-        merged.closeTs = this.closeTs;
-      }
-
+      merged.taskTypeId = Merges.mergeValues(this.taskTypeId, source.taskTypeId);
+      merged.requesterId = Merges.mergeValues(this.requesterId, source.requesterId);
+      merged.appId = Merges.mergeValues(this.appId, source.appId);
+      merged.communityId = Merges.mergeValues(this.communityId, source.communityId);
+      merged.closeTs = Merges.mergeValues(this.closeTs, source.closeTs);
       merged.attributes = Merges.mergeJsonObjects(this.attributes, source.attributes);
+      merged.transactions = Merges.mergeValues(this.transactions, source.transactions);
 
-      merged.transactions = source.transactions;
-      if (merged.transactions == null) {
+      if (this.goal != null) {
 
-        merged.transactions = this.transactions;
-      }
-
-      merged.goal = source.goal;
-      if (merged.goal == null) {
-
-        merged.goal = this.goal;
-
-      } else {
-
-        if (merged.goal.name == null) {
+        merged.goal = new HumanDescription();
+        if (source.goal == null) {
 
           merged.goal.name = this.goal.name;
-        }
-        if (merged.goal.description == null) {
-
           merged.goal.description = this.goal.description;
-        }
-
-        if (merged.goal.keywords == null) {
-
           merged.goal.keywords = this.goal.keywords;
+
+        } else {
+
+          merged.goal.name = Merges.mergeValues(this.goal.name, source.goal.name);
+          merged.goal.description = Merges.mergeValues(this.goal.description, source.goal.description);
+          merged.goal.keywords = Merges.mergeValues(this.goal.keywords, source.goal.keywords);
+
         }
 
+      } else if (source.goal != null) {
+
+        merged.goal = new HumanDescription();
+        merged.goal.name = source.goal.name;
+        merged.goal.description = source.goal.description;
+        merged.goal.keywords = source.goal.keywords;
+
       }
 
-      merged.norms = source.norms;
-      if (merged.norms == null) {
-
-        merged.norms = this.norms;
-      }
+      merged.norms = Merges.mergeValues(this.norms, source.norms);
 
       future = future.compose(context.chain());
 

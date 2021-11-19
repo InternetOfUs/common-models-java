@@ -27,7 +27,6 @@ import eu.internetofus.common.model.JsonObjectDeserializer;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Validable;
-import eu.internetofus.common.model.ValidationErrorException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -83,9 +82,19 @@ public class AbstractProtocolAction extends ReflectionModel implements Model, Va
   @Override
   public Future<Void> validate(final WeNetValidateContext context) {
 
-    final Promise<Void> promise = Promise.promise();
-    var future = promise.future();
-    try {
+    if (this.transactionId != null && this.taskId == null) {
+
+      return context.failField("transactionId",
+          "You must to define the task identifier ('taskId') where the transaction is associated.");
+
+    } else if (this.content == null) {
+
+      return context.failField("content", "You must to define a content");
+
+    } else {
+
+      final Promise<Void> promise = Promise.promise();
+      var future = promise.future();
 
       if (this.appId != null) {
 
@@ -139,28 +148,9 @@ public class AbstractProtocolAction extends ReflectionModel implements Model, Va
       }
 
       this.particle = context.validateStringField("particle", this.particle, promise);
-
-      if (this.transactionId != null && this.taskId == null) {
-
-        return context.fail("transactionId",
-            "You must to define the task identifier ('taskId') where the transaction is associated.");
-
-      } else if (this.content == null) {
-
-        return context.fail("content", "You must to define a content");
-
-      } else {
-
-        promise.tryComplete();
-
-      }
-
-    } catch (final ValidationErrorException validationError) {
-
-      promise.fail(validationError);
+      promise.tryComplete();
+      return future;
     }
-
-    return future;
 
   }
 

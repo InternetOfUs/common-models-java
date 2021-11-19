@@ -22,8 +22,6 @@ package eu.internetofus.wenet_dummy;
 
 import eu.internetofus.common.vertx.AbstractMain;
 import io.vertx.core.Verticle;
-import org.tinylog.Level;
-import org.tinylog.provider.InternalLogger;
 
 /**
  * The main class to provide the dummy services.
@@ -46,8 +44,7 @@ public class Main extends AbstractMain {
 
       if (!result.succeeded()) {
 
-        InternalLogger.log(Level.ERROR, result.cause(),
-            "Can not start the WeNet dummy!\n Check the Logs to known why.");
+        main.printStartError(result.cause());
       }
 
     });

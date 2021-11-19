@@ -63,9 +63,11 @@ public class CommunityMember extends CreateUpdateTsDetails implements Validable<
     final Promise<Void> promise = Promise.promise();
     var future = promise.future();
     this.userId = context.normalizeString(this.userId);
-    future = future.compose(context.validateField(this.userId, null));
     future = context.validateDefinedProfileIdField("userId", this.userId, future);
-    this.privileges = context.validateNullableStringListField("privileges", this.privileges, promise);
+    if (this.privileges != null) {
+
+      this.privileges = context.validateNullableStringListField("privileges", this.privileges, promise);
+    }
     promise.tryComplete();
     return future;
 

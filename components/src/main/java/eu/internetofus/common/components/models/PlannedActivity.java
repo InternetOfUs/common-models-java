@@ -22,6 +22,7 @@ package eu.internetofus.common.components.models;
 
 import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
+import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
@@ -104,11 +105,14 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
 
       this.id = context.normalizeString(this.id);
     }
-    this.endTime = context.validateNullableDateField("startTime", this.startTime, DateTimeFormatter.ISO_INSTANT,
+    this.startTime = context.validateNullableDateField("startTime", this.startTime, DateTimeFormatter.ISO_INSTANT,
         promise);
     this.endTime = context.validateNullableDateField("endTime", this.endTime, DateTimeFormatter.ISO_INSTANT, promise);
     this.description = context.normalizeString(this.description);
-    future = context.validateDefinedProfileIdsField("attendees", this.attendees, future);
+    if (this.attendees != null) {
+
+      future = context.validateDefinedProfileIdsField("attendees", this.attendees, future);
+    }
     promise.tryComplete();
 
     return future;
@@ -128,31 +132,11 @@ public class PlannedActivity extends ReflectionModel implements Model, Validable
       // merge the values
       final var merged = new PlannedActivity();
 
-      merged.startTime = source.startTime;
-      if (merged.startTime == null) {
-
-        merged.startTime = this.startTime;
-      }
-      merged.endTime = source.endTime;
-      if (merged.endTime == null) {
-
-        merged.endTime = this.endTime;
-      }
-      merged.description = source.description;
-      if (merged.description == null) {
-
-        merged.description = this.description;
-      }
-      merged.attendees = source.attendees;
-      if (merged.attendees == null) {
-
-        merged.attendees = this.attendees;
-      }
-      merged.status = source.status;
-      if (merged.status == null) {
-
-        merged.status = this.status;
-      }
+      merged.startTime = Merges.mergeValues(this.startTime, source.startTime);
+      merged.endTime = Merges.mergeValues(this.endTime, source.endTime);
+      merged.description = Merges.mergeValues(this.description, source.description);
+      merged.attendees = Merges.mergeValues(this.attendees, source.attendees);
+      merged.status = Merges.mergeValues(this.status, source.status);
       promise.complete(merged);
 
       // validate the merged value and set the id

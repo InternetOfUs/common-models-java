@@ -66,11 +66,11 @@ public class ValidableAsserts {
       final var code = ((ValidationErrorException) error).getCode();
       if (fieldName != null) {
 
-        assertThat(code).isEqualTo("codePrefix." + fieldName);
+        assertThat(code).isEqualTo(context.fieldErrorCode(fieldName));
 
       } else {
 
-        assertThat(code).startsWith("codePrefix");
+        assertThat(code).startsWith(context.errorCode());
       }
 
       testContext.completeNow();

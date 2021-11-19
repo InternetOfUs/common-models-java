@@ -244,6 +244,7 @@ public class MeaningTest extends ModelTestCase<Meaning> {
   public void shouldCannotUpdateWithABadName(final Vertx vertx, final VertxTestContext testContext) {
 
     final var source = new Meaning();
+    source.level = 1d;
     source.name = null;
     final var target = this.createModelExample(1);
     assertCannotUpdate(target, source, "name", new WeNetValidateContext("codePrefix", vertx), testContext);

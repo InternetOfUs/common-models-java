@@ -181,7 +181,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(WeNetValidateContext)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithAnExistingId(final Vertx vertx, final VertxTestContext testContext) {
@@ -363,7 +363,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#validate(WeNetValidateContext)
+   * @see Task#validate(WeNetValidateContext)
    */
   @Test
   public void shouldNotBeValidWithABadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -387,7 +387,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldMergeStoredModels(final Vertx vertx, final VertxTestContext testContext) {
@@ -421,7 +421,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
@@ -430,7 +430,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
-        StoreServices.storeTaskType(new TaskType(), vertx, testContext).onSuccess(taskType -> {
+        StoreServices.storeTaskTypeExample(1, vertx, testContext).onSuccess(taskType -> {
 
           final var source = new Task();
           source.taskTypeId = taskType.id;
@@ -449,12 +449,41 @@ public class TaskTest extends ModelTestCase<Task> {
   }
 
   /**
+   * Check that cannot merge if the new task type ot match the attirbutes of the
+   * task.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see Task#merge(Task, WeNetValidateContext)
+   */
+  @Test
+  public void shouldNotMergeIfNewTaskTypeIdNotMatchAttributes(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
+
+        StoreServices.storeTaskType(new TaskType(), vertx, testContext).onSuccess(taskType -> {
+
+          final var source = new Task();
+          source.taskTypeId = taskType.id;
+          assertCannotMerge(target, source, "attributes", new WeNetValidateContext("codePrefix", vertx), testContext);
+
+        });
+      });
+
+    });
+
+  }
+
+  /**
    * Check that can not merge when the {@link Task#taskTypeId} has a bas value.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
@@ -478,7 +507,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeRequesterId(final Vertx vertx, final VertxTestContext testContext) {
@@ -510,7 +539,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadRequesterId(final Vertx vertx, final VertxTestContext testContext) {
@@ -534,7 +563,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -566,7 +595,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -590,7 +619,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeGoal(final Vertx vertx, final VertxTestContext testContext) {
@@ -620,7 +649,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeGoalWithNullFields(final Vertx vertx, final VertxTestContext testContext) {
@@ -648,7 +677,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadTaskType(final Vertx vertx, final VertxTestContext testContext) {
@@ -673,7 +702,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeNewNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -705,7 +734,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeAddingNewNorm(final Vertx vertx, final VertxTestContext testContext) {
@@ -737,7 +766,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldNotMergeWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -763,7 +792,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#merge(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyMergeNewAttributes(final Vertx vertx, final VertxTestContext testContext) {
@@ -829,7 +858,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateStoredModels(final Vertx vertx, final VertxTestContext testContext) {
@@ -863,7 +892,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
@@ -872,7 +901,7 @@ public class TaskTest extends ModelTestCase<Task> {
 
       StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
 
-        StoreServices.storeTaskType(new TaskType(), vertx, testContext).onSuccess(taskType -> {
+        StoreServices.storeTaskTypeExample(1, vertx, testContext).onSuccess(taskType -> {
 
           final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
           source.taskTypeId = taskType.id;
@@ -891,12 +920,41 @@ public class TaskTest extends ModelTestCase<Task> {
   }
 
   /**
+   * Check that not update whit a task type that not match the task attributes.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see Task#update(Task, WeNetValidateContext)
+   */
+  @Test
+  public void shouldNotUpdateTaskTypeIdBecauseAttributesNotMatch(final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext).onSuccess(targetToStore -> {
+
+      StoreServices.storeTask(targetToStore, vertx, testContext).onSuccess(target -> {
+
+        StoreServices.storeTaskType(new TaskType(), vertx, testContext).onSuccess(taskType -> {
+
+          final var source = Model.fromJsonObject(target.toJsonObject(), Task.class);
+          source.taskTypeId = taskType.id;
+          assertCannotUpdate(target, source, "attributes", new WeNetValidateContext("codePrefix", vertx), testContext);
+
+        });
+      });
+
+    });
+
+  }
+
+  /**
    * Check that can not update when the {@link Task#taskTypeId} has a bas value.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadTaskTypeId(final Vertx vertx, final VertxTestContext testContext) {
@@ -920,7 +978,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateRequesterId(final Vertx vertx, final VertxTestContext testContext) {
@@ -953,7 +1011,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadRequesterId(final Vertx vertx, final VertxTestContext testContext) {
@@ -977,7 +1035,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -1010,7 +1068,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadAppId(final Vertx vertx, final VertxTestContext testContext) {
@@ -1034,7 +1092,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateGoal(final Vertx vertx, final VertxTestContext testContext) {
@@ -1064,7 +1122,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadGoal(final Vertx vertx, final VertxTestContext testContext) {
@@ -1089,7 +1147,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateNewNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -1118,7 +1176,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateAddingNewNorm(final Vertx vertx, final VertxTestContext testContext) {
@@ -1148,7 +1206,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldNotUpdateWithBadNorms(final Vertx vertx, final VertxTestContext testContext) {
@@ -1175,7 +1233,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see WeNetUserProfile#update(WeNetUserProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldOnlyUpdateNewAttributes(final Vertx vertx, final VertxTestContext testContext) {
@@ -1201,7 +1259,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#merge(CommunityProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldMergeWithNull(final Vertx vertx, final VertxTestContext testContext) {
@@ -1221,7 +1279,7 @@ public class TaskTest extends ModelTestCase<Task> {
    * @param vertx       event bus to use.
    * @param testContext context to test.
    *
-   * @see CommunityProfile#update(CommunityProfile, WeNetValidateContext)
+   * @see Task#update(Task, WeNetValidateContext)
    */
   @Test
   public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {

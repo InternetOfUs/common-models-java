@@ -95,7 +95,7 @@ public class UpdateAsserts {
   public static <C extends ValidateContext<C>, T extends Validable<C>> void assertCanUpdate(
       final Updateable<T, C> target, final T source, final C context, final VertxTestContext testContext) {
 
-    assertCanUpdate(target, source, context, testContext);
+    assertCanUpdate(target, source, context, testContext, null);
 
   }
 

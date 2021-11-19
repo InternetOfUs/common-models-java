@@ -20,6 +20,8 @@
 
 package eu.internetofus.common.components;
 
+import static org.junit.Assert.fail;
+
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerClient;
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulatorMocker;
 import eu.internetofus.common.components.interaction_protocol_engine.WeNetInteractionProtocolEngineClient;
@@ -47,6 +49,8 @@ import io.vertx.core.json.JsonObject;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
@@ -557,12 +561,17 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
     started.add(this.getProfileManagerApi() + "/help/info");
     started.add(this.getTaskManagerApi() + "/help/info");
     started.add(this.getInteractionProtocolEngineApi() + "/help/info");
+    final var max = Instant.now().plus(60, ChronoUnit.SECONDS).toEpochMilli();
     do {
+
+      try {
+        Thread.sleep(1000);
+      } catch (final InterruptedException ignored) {
+      }
 
       final var iter = started.iterator();
       while (iter.hasNext()) {
 
-        var active = false;
         try {
 
           final var url = iter.next();
@@ -571,25 +580,20 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
           if (info.getString("name", null) != null) {
 
             iter.remove();
-            active = true;
-
           }
 
         } catch (final Throwable ignored) {
 
         }
 
-        if (active) {
-
-          try {
-            Thread.sleep(1000);
-          } catch (final InterruptedException ignored) {
-          }
-        }
       }
 
-    } while (!started.isEmpty());
+    } while (!started.isEmpty() && System.currentTimeMillis() < max);
 
+    if (!started.isEmpty()) {
+
+      fail("Not started all the containers.");
+    }
     return this;
   }
 

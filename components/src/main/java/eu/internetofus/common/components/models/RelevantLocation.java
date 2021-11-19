@@ -22,6 +22,7 @@ package eu.internetofus.common.components.models;
 
 import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
+import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Updateable;
@@ -85,8 +86,14 @@ public class RelevantLocation extends ReflectionModel implements Model, Validabl
     }
 
     this.label = context.normalizeString(this.label);
-    context.validateNumberOnRangeField("latitude", this.latitude, -90.0d, 90.0d, promise);
-    context.validateNumberOnRangeField("longitude", this.longitude, -180.0d, 180.0d, promise);
+    if (this.latitude != null) {
+
+      context.validateNumberOnRangeField("latitude", this.latitude, -90.0d, 90.0d, promise);
+    }
+    if (this.longitude != null) {
+
+      context.validateNumberOnRangeField("longitude", this.longitude, -180.0d, 180.0d, promise);
+    }
 
     promise.tryComplete();
 
@@ -105,24 +112,9 @@ public class RelevantLocation extends ReflectionModel implements Model, Validabl
 
       final var merged = new RelevantLocation();
 
-      merged.label = source.label;
-      if (merged.label == null) {
-
-        merged.label = this.label;
-      }
-
-      merged.latitude = source.latitude;
-      if (merged.latitude == null) {
-
-        merged.latitude = this.latitude;
-      }
-      merged.longitude = source.longitude;
-      if (merged.longitude == null) {
-
-        merged.longitude = this.longitude;
-      }
-
-      promise.complete(merged);
+      merged.label = Merges.mergeValues(this.label, source.label);
+      merged.latitude = Merges.mergeValues(this.latitude, source.latitude);
+      merged.longitude = Merges.mergeValues(this.longitude, source.longitude);
 
       // Validate the merged value and set the id
       future = future.compose(context.chain()).map(mergedValidatedModel -> {
@@ -130,6 +122,8 @@ public class RelevantLocation extends ReflectionModel implements Model, Validabl
         mergedValidatedModel.id = this.id;
         return mergedValidatedModel;
       });
+
+      promise.complete(merged);
 
     } else {
 
@@ -155,14 +149,14 @@ public class RelevantLocation extends ReflectionModel implements Model, Validabl
       updated.latitude = source.latitude;
       updated.longitude = source.longitude;
 
-      promise.complete(updated);
-
       // Validate the updated value and set the id
       future = future.compose(context.chain()).map(updatedValidatedModel -> {
 
         updatedValidatedModel.id = this.id;
         return updatedValidatedModel;
       });
+
+      promise.complete(updated);
 
     } else {
 

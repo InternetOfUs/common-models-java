@@ -67,7 +67,7 @@ public class MainTest {
     stream.capture();
     Main.main("-undefined");
     final var data = stream.getCapturedData();
-    assertThat(data).contains("Can not start the WeNet dummy!");
+    assertThat(data).contains("Can not start the wenet-dummy!");
 
   }
 

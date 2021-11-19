@@ -384,31 +384,44 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
       final Function<String, Future<Boolean>> search, final Future<Void> future) {
 
     var composedFuture = future;
+    final var alreadyDefined = new HashMap<String, Integer>();
     final var iter = ids.iterator();
     for (var i = 0; iter.hasNext(); i++) {
 
       final var id = iter.next();
-      final var key = this.generateKey(id, type);
-      if (!this.idsCache.contains(key)) {
+      if (id == null) {
 
-        final var index = i;
-        composedFuture = future.compose(empty -> search.apply(id).transform(defined -> {
-          if (defined.failed()) {
+        iter.remove();
 
-            return this.failFieldElement(name, index, defined.cause());
+      } else if (alreadyDefined.containsKey(id)) {
 
-          } else if (defined.result() == true) {
+        final var index = alreadyDefined.get(id);
+        return this.failFieldElement(name, i, "The '" + id + "' is already defied at' " + index + "'.");
 
-            this.idsCache.add(key);
-            return Future.succeededFuture();
+      } else {
 
-          } else {
+        alreadyDefined.put(id, i);
+        final var key = this.generateKey(id, type);
+        if (!this.idsCache.contains(key)) {
 
-            return this.failFieldElement(name, index, "The '" + id + "' is not associated to any model.");
-          }
-        }));
+          final var index = i;
+          composedFuture = future.compose(empty -> search.apply(id).transform(defined -> {
+            if (defined.failed()) {
+
+              return this.failFieldElement(name, index, defined.cause());
+
+            } else if (defined.result() == true) {
+
+              this.idsCache.add(key);
+              return Future.succeededFuture();
+
+            } else {
+
+              return this.failFieldElement(name, index, "The '" + id + "' is not associated to any model.");
+            }
+          }));
+        }
       }
-
     }
 
     return composedFuture;
@@ -473,6 +486,22 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
    * @return the future with the validation result.
    */
   public Future<Void> validateOpenAPISpecificationField(final String name, final JsonObject specification,
+      final Future<Void> future) {
+
+    final var code = this.fieldErrorCode(name);
+    return future.compose(empty -> OpenAPIValidator.validateSpecification(code, this.vertx, specification));
+  }
+
+  /**
+   * Validate that a field is a valid composed OpenAPI specification.
+   *
+   * @param name          of the field to validate.
+   * @param specification to validate.
+   * @param future        to compose if the task type is defined or not.
+   *
+   * @return the future with the validation result.
+   */
+  public Future<Void> validateComposedOpenAPISpecificationField(final String name, final JsonObject specification,
       final Future<Void> future) {
 
     final var code = this.fieldErrorCode(name);
