@@ -35,6 +35,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -313,6 +314,50 @@ public class CommunityMemberTest extends ModelTestCase<CommunityMember> {
           assertThat(updated).isEqualTo(source);
         });
       });
+    });
+
+  }
+
+  /**
+   * Should iterate over identifiers.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityMember#update(CommunityMember, WeNetValidateContext)
+   */
+  @Test
+  public void shouldIterateByIds(final Vertx vertx, final VertxTestContext testContext) {
+
+    var future = Future.succeededFuture(Collections.synchronizedList(new ArrayList<CommunityMember>()));
+    for (var i = 0; i < 10; i++) {
+
+      final var index = i;
+      future = future.compose(models -> this.createModelExample(index, vertx, testContext).map(model -> {
+
+        models.add(model);
+        return models;
+      }));
+
+    }
+
+    testContext.assertComplete(future).onSuccess(models -> {
+
+      final var first = models.get(0);
+      final var second = models.get(1);
+      testContext.verify(() -> {
+        final var iterable = CommunityMember.idsIterable(models);
+        var iterator = iterable.iterator();
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next()).isSameAs(first.userId);
+        iterator.remove();
+        iterator = iterable.iterator();
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next()).isSameAs(second.userId);
+      });
+
+      testContext.completeNow();
+
     });
 
   }

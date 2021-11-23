@@ -161,39 +161,60 @@ public class CommunityMember extends CreateUpdateTsDetails implements Validable<
       @Override
       public Iterator<String> iterator() {
 
-        final var iter = members.iterator();
-        return new Iterator<String>() {
-
-          /**
-           * {@inheritDoc}
-           */
-          @Override
-          public boolean hasNext() {
-
-            return iter.hasNext();
-          }
-
-          /**
-           * {@inheritDoc}
-           */
-          @Override
-          public String next() {
-
-            return iter.next().userId;
-
-          }
-
-          /**
-           * {@inheritDoc}
-           */
-          @Override
-          public void remove() {
-
-            iter.remove();
-          }
-        };
+        return new IdIterator(members);
       }
     };
+
+  }
+
+  /**
+   * Iterator over the identifiers.
+   */
+  private static class IdIterator implements Iterator<String> {
+
+    /**
+     * The iterator that is mapping.
+     */
+    Iterator<CommunityMember> iter;
+
+    /**
+     * Create the iterator.
+     *
+     * @param members to get the identifiers.
+     */
+    public IdIterator(final Iterable<CommunityMember> members) {
+
+      this.iter = members.iterator();
+
+    };
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public synchronized boolean hasNext() {
+
+      return this.iter.hasNext();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public synchronized String next() {
+
+      return this.iter.next().userId;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public synchronized void remove() {
+
+      this.iter.remove();
+    }
 
   }
 

@@ -357,4 +357,25 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
 
   }
 
+  /**
+   * Should update with {@code null}.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see ProfileDate#update(ProfileDate, WeNetValidateContext)
+   */
+  @Test
+  public void shouldUpdateWithNull(final Vertx vertx, final VertxTestContext testContext) {
+
+    final ProfileDate target = this.createModelExample(1);
+    final ProfileDate source = null;
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
+
+      assertThat(updated).isSameAs(target);
+
+    });
+
+  }
+
 }

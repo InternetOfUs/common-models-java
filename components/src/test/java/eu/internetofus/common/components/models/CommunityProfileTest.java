@@ -113,26 +113,55 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
 
     final Promise<CommunityProfile> promise = Promise.promise();
     StoreServices.storeApp(new App(), vertx, testContext).onSuccess(storedApp -> {
-      StoreServices.storeTaskType(new TaskType(), vertx, testContext).onSuccess(storedTaskType -> {
-        testContext.assertComplete(new CommunityMemberTest().createModelExample(index, vertx, testContext))
-            .onSuccess(member -> {
+      testContext.assertComplete(new CommunityMemberTest().createModelExample(index, vertx, testContext))
+          .onSuccess(member -> {
 
-              final var model = this.createModelExample(index);
-              model.appId = storedApp.appId;
-              model.members.clear();
-              model.members.add(member);
-              model.norms = null;
-              model.socialPractices = null;
-              model.taskTypeIds = new ArrayList<>();
-              model.taskTypeIds.add(storedTaskType.id);
-              promise.complete(model);
+            final var model = this.createModelExample(index);
+            model.appId = storedApp.appId;
+            model.members.clear();
+            model.members.add(member);
+            model.norms = null;
+            model.socialPractices = null;
+            promise.complete(model);
 
-            });
-      });
+          });
 
     });
 
     return promise.future();
+
+  }
+
+  /**
+   * Create an example model that has the specified index.
+   *
+   * @param index       to use in the example.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the community profile.
+   */
+  public Future<CommunityProfile> createModelExampleWithTaskTypes(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    return this.createModelExample(index, vertx, testContext)
+        .compose(model -> StoreServices.storeTaskType(new TaskType(), vertx, testContext).map(storedTaskType -> {
+
+          model.taskTypeIds = new ArrayList<>();
+          model.taskTypeIds.add(storedTaskType.id);
+          return model;
+
+        })).compose(model -> StoreServices.storeTaskType(new TaskType(), vertx, testContext).map(storedTaskType -> {
+
+          model.taskTypeIds.add(storedTaskType.id);
+          return model;
+
+        })).compose(model -> StoreServices.storeTaskType(new TaskType(), vertx, testContext).map(storedTaskType -> {
+
+          model.taskTypeIds.add(storedTaskType.id);
+          return model;
+
+        }));
 
   }
 
@@ -683,4 +712,26 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
       });
     });
   }
+
+  /**
+   * Check that the
+   * {@link #createModelExampleWithTaskTypes(int, Vertx, VertxTestContext)} is
+   * valid.
+   *
+   * @param index       to verify
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see CommunityProfile#validate(WeNetValidateContext)
+   */
+  @ParameterizedTest(name = "The model example {0} has to be valid")
+  @ValueSource(ints = { 0, 1, 2, 3, 4, 5 })
+  public void shouldExampleBeValidWithTaskTypes(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    this.createModelExampleWithTaskTypes(index, vertx, testContext)
+        .onSuccess(model -> assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext));
+
+  }
+
 }
