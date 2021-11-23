@@ -93,7 +93,7 @@ public class Incentive extends ReflectionModel implements Model, Validable<WeNet
     }
 
     this.IncentiveType = context.validateStringField("IncentiveType", this.IncentiveType, promise);
-    this.IncentiveType = context.validateStringField("Issuer", this.Issuer, promise);
+    this.Issuer = context.validateStringField("Issuer", this.Issuer, promise);
 
     if (this.Message == null && this.Badge == null) {
 

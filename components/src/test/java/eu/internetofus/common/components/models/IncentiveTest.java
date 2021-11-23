@@ -22,6 +22,7 @@ package eu.internetofus.common.components.models;
 
 import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
@@ -181,6 +182,72 @@ public class IncentiveTest extends ModelTestCase<Incentive> {
       model.Message = null;
       model.Badge = null;
       assertIsNotValid(model, "Message", new WeNetValidateContext("codePrefix", vertx), testContext);
+    });
+
+  }
+
+  /**
+   * Check that not be valid with empty incentive type.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see Incentive#validate(WeNetValidateContext)
+   */
+  @Test
+  public void shouldNotBeValidWithEmptyIncentiveType(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
+
+      model.IncentiveType = " ";
+      assertIsNotValid(model, "IncentiveType", new WeNetValidateContext("codePrefix", vertx), testContext);
+    });
+
+  }
+
+  /**
+   * Check that not be valid with empty issuer.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see Incentive#validate(WeNetValidateContext)
+   */
+  @Test
+  public void shouldNotBeValidWithEmptyIssuer(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
+
+      model.Issuer = " ";
+      assertIsNotValid(model, "Issuer", new WeNetValidateContext("codePrefix", vertx), testContext);
+    });
+
+  }
+
+  /**
+   * Check that is valid with spaces on icentive an issuer.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see Incentive#validate(WeNetValidateContext)
+   */
+  @Test
+  public void shouldBeValidAnsTrimFields(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext).onSuccess(model -> {
+
+      final var expectedIcentiveType = model.IncentiveType;
+      model.IncentiveType = " " + model.IncentiveType + "  ";
+      final var expectedIssuer = model.Issuer;
+      model.Issuer = "    " + model.Issuer + "     ";
+      assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext, () -> testContext.verify(() -> {
+
+        assertThat(model.IncentiveType).isEqualTo(expectedIcentiveType);
+        assertThat(model.Issuer).isEqualTo(expectedIssuer);
+
+      }));
+
     });
 
   }
