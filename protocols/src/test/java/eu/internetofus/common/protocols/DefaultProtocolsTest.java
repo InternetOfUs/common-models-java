@@ -92,8 +92,22 @@ public class DefaultProtocolsTest {
   public void shouldProtocolsBeValid(final DefaultProtocols protocol, final Vertx vertx,
       final VertxTestContext testContext) {
 
-    protocol.load(vertx).compose(taskType -> taskType.validate(new WeNetValidateContext("root", vertx)))
-        .onComplete(testContext.succeeding(taskType -> testContext.completeNow()));
+    testContext.assertComplete(protocol.load(vertx)).onSuccess(taskType -> {
+
+      testContext.verify(() -> {
+
+        var id = taskType.id;
+        assertThat(id).isNotNull();
+        id = id.toLowerCase().replaceAll("_", "");
+        final var expected = protocol.name().toLowerCase().replaceAll("_", "");
+        assertThat(id).isEqualTo(expected);
+
+      });
+      taskType.id = null;
+      taskType.validate(new WeNetValidateContext("root", vertx))
+          .onComplete(testContext.succeeding(empty -> testContext.completeNow()));
+
+    });
 
   }
 }
