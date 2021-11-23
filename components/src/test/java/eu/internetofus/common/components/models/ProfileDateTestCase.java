@@ -22,6 +22,8 @@ package eu.internetofus.common.components.models;
 
 import static eu.internetofus.common.model.MergeAsserts.assertCanMerge;
 import static eu.internetofus.common.model.MergeAsserts.assertCannotMerge;
+import static eu.internetofus.common.model.UpdateAsserts.assertCanUpdate;
+import static eu.internetofus.common.model.UpdateAsserts.assertCannotUpdate;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsNotValid;
 import static eu.internetofus.common.model.ValidableAsserts.assertIsValid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -311,6 +313,45 @@ public abstract class ProfileDateTestCase<T extends ProfileDate> extends ModelTe
       assertThat(merged).isNotEqualTo(target);
       target.day--;
       assertThat(merged).isEqualTo(target);
+
+    });
+
+  }
+
+  /**
+   * Should not update with a bad day.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   */
+  @Test
+  public void shouldNotUpdateAnImposibleDate(final Vertx vertx, final VertxTestContext testContext) {
+
+    final ProfileDate target = this.createEmptyModel();
+    final ProfileDate source = this.createEmptyModel();
+    source.year = 2020;
+    source.month = 2;
+    source.day = 31;
+    assertCannotUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext);
+
+  }
+
+  /**
+   * Should update.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see ProfileDate#update(ProfileDate, WeNetValidateContext)
+   */
+  @Test
+  public void shouldUpdate(final Vertx vertx, final VertxTestContext testContext) {
+
+    final ProfileDate target = this.createModelExample(1);
+    final ProfileDate source = this.createModelExample(2);
+    assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
+
+      assertThat(updated).isNotEqualTo(target).isEqualTo(source);
 
     });
 

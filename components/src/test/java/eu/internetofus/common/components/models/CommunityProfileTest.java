@@ -36,6 +36,7 @@ import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
 import eu.internetofus.common.model.TimeManager;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
@@ -110,20 +111,28 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   public Future<CommunityProfile> createModelExample(final int index, final Vertx vertx,
       final VertxTestContext testContext) {
 
-    return testContext.assertComplete(StoreServices.storeApp(new App(), vertx, testContext).compose(storedApp -> {
+    final Promise<CommunityProfile> promise = Promise.promise();
+    StoreServices.storeApp(new App(), vertx, testContext).onSuccess(storedApp -> {
+      StoreServices.storeTaskType(new TaskType(), vertx, testContext).onSuccess(storedTaskType -> {
+        testContext.assertComplete(new CommunityMemberTest().createModelExample(index, vertx, testContext))
+            .onSuccess(member -> {
 
-      return new CommunityMemberTest().createModelExample(index, vertx, testContext).compose(member -> {
+              final var model = this.createModelExample(index);
+              model.appId = storedApp.appId;
+              model.members.clear();
+              model.members.add(member);
+              model.norms = null;
+              model.socialPractices = null;
+              model.taskTypeIds = new ArrayList<>();
+              model.taskTypeIds.add(storedTaskType.id);
+              promise.complete(model);
 
-        final var model = this.createModelExample(index);
-        model.appId = storedApp.appId;
-        model.members.clear();
-        model.members.add(member);
-        model.norms = null;
-        model.socialPractices = null;
-        return Future.succeededFuture(model);
-
+            });
       });
-    }));
+
+    });
+
+    return promise.future();
 
   }
 

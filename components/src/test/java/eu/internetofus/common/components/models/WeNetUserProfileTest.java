@@ -1208,6 +1208,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
             source.relationships.get(0).appId = relation.appId;
             source.relationships.get(0).userId = stored.id;
             source.relationships.get(0).type = SocialNetworkRelationshipType.family;
+            source.relationships.get(0).weight = 0d;
             assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
               assertThat(merged.relationships).isNotEqualTo(target.relationships).isEqualTo(source.relationships);

@@ -1293,4 +1293,62 @@ public class TaskTest extends ModelTestCase<Task> {
 
   }
 
+  /**
+   * Check that a task without attributes is valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(WeNetValidateContext)
+   */
+  @Test
+  public void shouldBeValidWithoutAttributes(final Vertx vertx, final VertxTestContext testContext) {
+
+    StoreServices.storeTaskType(new TaskType(), vertx, testContext).onSuccess(taskType -> {
+      StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
+
+        final var model = this.createModelExample(1);
+        model.transactions = null;
+        model.attributes = new JsonObject();
+        model.requesterId = community.members.get(0).userId;
+        model.taskTypeId = taskType.id;
+        model.appId = community.appId;
+        model.communityId = community.id;
+        assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
+
+      });
+
+    });
+
+  }
+
+  /**
+   * Check that a task with {@null} attributes is valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see Task#validate(WeNetValidateContext)
+   */
+  @Test
+  public void shouldBeValidWithNullAttributes(final Vertx vertx, final VertxTestContext testContext) {
+
+    StoreServices.storeTaskType(new TaskType(), vertx, testContext).onSuccess(taskType -> {
+      StoreServices.storeCommunityExample(1, vertx, testContext).onSuccess(community -> {
+
+        final var model = this.createModelExample(1);
+        model.transactions = null;
+        model.attributes = null;
+        model.requesterId = community.members.get(0).userId;
+        model.taskTypeId = taskType.id;
+        model.appId = community.appId;
+        model.communityId = community.id;
+        assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
+
+      });
+
+    });
+
+  }
+
 }

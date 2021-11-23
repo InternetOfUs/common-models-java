@@ -213,29 +213,18 @@ public class Task extends CreateUpdateTsDetails implements Validable<WeNetValida
       merged.attributes = Merges.mergeJsonObjects(this.attributes, source.attributes);
       merged.transactions = Merges.mergeValues(this.transactions, source.transactions);
 
-      if (this.goal != null) {
+      merged.goal = new HumanDescription();
+      if (source.goal == null) {
 
-        merged.goal = new HumanDescription();
-        if (source.goal == null) {
+        merged.goal.name = this.goal.name;
+        merged.goal.description = this.goal.description;
+        merged.goal.keywords = this.goal.keywords;
 
-          merged.goal.name = this.goal.name;
-          merged.goal.description = this.goal.description;
-          merged.goal.keywords = this.goal.keywords;
+      } else {
 
-        } else {
-
-          merged.goal.name = Merges.mergeValues(this.goal.name, source.goal.name);
-          merged.goal.description = Merges.mergeValues(this.goal.description, source.goal.description);
-          merged.goal.keywords = Merges.mergeValues(this.goal.keywords, source.goal.keywords);
-
-        }
-
-      } else if (source.goal != null) {
-
-        merged.goal = new HumanDescription();
-        merged.goal.name = source.goal.name;
-        merged.goal.description = source.goal.description;
-        merged.goal.keywords = source.goal.keywords;
+        merged.goal.name = Merges.mergeValues(this.goal.name, source.goal.name);
+        merged.goal.description = Merges.mergeValues(this.goal.description, source.goal.description);
+        merged.goal.keywords = Merges.mergeValues(this.goal.keywords, source.goal.keywords);
 
       }
 
