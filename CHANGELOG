@@ -3,9 +3,10 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
-## Version 0.17.0 (2021-11-)
+## Version 0.17.0 (2021-11-23)
 
- * Add cache over HTTP clients using Redis.
+ * Add cache when validate models.
+ * Allow to merge/update models if they are equals.
 
 
 ## Version 0.16.0 (2021-11-9)
