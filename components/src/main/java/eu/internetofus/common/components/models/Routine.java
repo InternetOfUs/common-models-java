@@ -101,8 +101,7 @@ public class Routine extends ReflectionModel implements Model, Validable<WeNetVa
 
           } else {
 
-            future = future.compose(
-                context.validateListField(scorePrefix, labels, (l1, l2) -> l1.label.name.equals(l2.label.name)));
+            future = future.compose(context.validateListField(scorePrefix, labels, ScoredLabel::compareIds));
           }
 
         } catch (final ClassCastException cause) {

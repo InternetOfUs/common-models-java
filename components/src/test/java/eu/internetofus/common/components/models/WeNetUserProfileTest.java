@@ -681,8 +681,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.personalBehaviors.add(new Routine());
     model.personalBehaviors.add(new Routine());
     model.personalBehaviors.add(new Routine());
-    assertIsNotValid(model, "personalBehaviors[0].label_distribution", new WeNetValidateContext("codePrefix", vertx),
-        testContext);
+    assertIsNotValid(model, "personalBehaviors[1]", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 

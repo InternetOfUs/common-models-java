@@ -21,6 +21,7 @@ package eu.internetofus.common.model;
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import java.net.URL;
@@ -723,7 +724,8 @@ public interface ValidateContext<SELF extends ValidateContext<SELF>> {
 
       } else {
 
-        Future<Void> future = Future.succeededFuture();
+        @SuppressWarnings("rawtypes")
+        final List<Future> futures = new ArrayList<>();
         final var iterator = value.listIterator();
         while (iterator.hasNext()) {
 
@@ -736,26 +738,21 @@ public interface ValidateContext<SELF extends ValidateContext<SELF>> {
 
             final var index = iterator.previousIndex();
             final var elementContext = this.createFieldElementContext(fieldName, index);
-            future = future.compose(empty2 -> model.validate(elementContext));
-            future = future.compose(empty2 -> {
+            for (var firstIndex = 0; firstIndex < index; firstIndex++) {
 
-              for (var firstIndex = 0; firstIndex < index; firstIndex++) {
+              final var element = value.get(firstIndex);
+              if (predicate.test(model, element)) {
 
-                final var element = value.get(firstIndex);
-                if (predicate.test(model, element)) {
+                return elementContext.fail("This model is already defined at '" + firstIndex + "'.");
 
-                  return elementContext.fail("This model is already defined at '" + firstIndex + "'.");
-
-                }
               }
+            }
+            futures.add(model.validate(elementContext));
 
-              return Future.succeededFuture();
-
-            });
           }
 
         }
-        return future;
+        return CompositeFuture.all(futures).map(any -> null);
 
       }
     };

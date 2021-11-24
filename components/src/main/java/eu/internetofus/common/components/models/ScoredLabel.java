@@ -108,4 +108,19 @@ public class ScoredLabel extends ReflectionModel
 
   }
 
+  /**
+   * Check if two score labels are equivalent by its identifier fields.
+   *
+   * @param a first model to compare.
+   * @param b second model to compare.
+   *
+   * @return {@code true} if the socre labels can be considered equals by its
+   *         identifier.
+   */
+  public static boolean compareIds(final ScoredLabel a, final ScoredLabel b) {
+
+    return a != null && b != null && Label.compareIds(a.label, b.label);
+
+  }
+
 }

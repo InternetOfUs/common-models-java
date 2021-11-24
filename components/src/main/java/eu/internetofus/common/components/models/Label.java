@@ -22,6 +22,7 @@ package eu.internetofus.common.components.models;
 
 import eu.internetofus.common.components.WeNetValidateContext;
 import eu.internetofus.common.model.Mergeable;
+import eu.internetofus.common.model.Merges;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ReflectionModel;
 import eu.internetofus.common.model.Validable;
@@ -97,29 +98,10 @@ public class Label extends ReflectionModel
     if (source != null) {
 
       final var merged = new Label();
-      merged.name = source.name;
-      if (merged.name == null) {
-
-        merged.name = this.name;
-      }
-      merged.semantic_class = source.semantic_class;
-      if (merged.semantic_class == null) {
-
-        merged.semantic_class = this.semantic_class;
-      }
-
-      merged.latitude = source.latitude;
-      if (merged.latitude == null) {
-
-        merged.latitude = this.latitude;
-      }
-
-      merged.longitude = source.longitude;
-      if (merged.longitude == null) {
-
-        merged.longitude = this.longitude;
-      }
-
+      merged.name = Merges.mergeValues(this.name, source.name);
+      merged.semantic_class = Merges.mergeValues(this.semantic_class, source.semantic_class);
+      merged.latitude = Merges.mergeValues(this.latitude, source.latitude);
+      merged.longitude = Merges.mergeValues(this.longitude, source.longitude);
       promise.complete(merged);
 
       // validate the merged value and set the id
@@ -131,6 +113,21 @@ public class Label extends ReflectionModel
 
     }
     return future;
+
+  }
+
+  /**
+   * Check if two labels are equivalent by its identifier fields.
+   *
+   * @param a first model to compare.
+   * @param b second model to compare.
+   *
+   * @return {@code true} if the labels can be considered equals by its
+   *         identifier.
+   */
+  public static boolean compareIds(final Label a, final Label b) {
+
+    return a != null && b != null && a.name.equals(b.name);
 
   }
 

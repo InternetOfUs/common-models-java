@@ -1269,7 +1269,6 @@ public class ValidateContextTest {
     model.add(element3);
     doReturn(Future.succeededFuture()).when(element1).validate(context1);
     doReturn(Future.succeededFuture()).when(element2).validate(context2);
-    doReturn(Future.succeededFuture()).when(element3).validate(context3);
     final Future<Void> future = Future.succeededFuture()
         .compose(this.context.validateListField("list", model, (a, b) -> a == element3));
     testContext.assertFailure(future).onFailure(error -> {
