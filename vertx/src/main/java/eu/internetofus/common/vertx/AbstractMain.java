@@ -421,7 +421,7 @@ public abstract class AbstractMain {
     msg.append("Can not start the ");
     msg.append(this.getModuleName());
     msg.append("!\n");
-    if (!(cause instanceof ParseException)) {
+    if (cause != null && !(cause instanceof ParseException)) {
 
       final var writter = new StringWriter();
       cause.printStackTrace(new PrintWriter(writter));
