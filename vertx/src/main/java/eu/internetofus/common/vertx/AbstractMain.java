@@ -43,6 +43,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.tinylog.Level;
 import org.tinylog.Logger;
 import org.tinylog.jul.JulTinylogBridge;
@@ -420,10 +421,13 @@ public abstract class AbstractMain {
     msg.append("Can not start the ");
     msg.append(this.getModuleName());
     msg.append("!\n");
-    final var writter = new StringWriter();
-    cause.printStackTrace(new PrintWriter(writter));
-    msg.append(writter.toString());
-    msg.append("\n Check the Logs to known more.");
+    if (!(cause instanceof ParseException)) {
+
+      final var writter = new StringWriter();
+      cause.printStackTrace(new PrintWriter(writter));
+      msg.append(writter.toString());
+      msg.append("\n Check the Logs to known more.");
+    }
     InternalLogger.log(Level.ERROR, msg.toString());
 
   }
