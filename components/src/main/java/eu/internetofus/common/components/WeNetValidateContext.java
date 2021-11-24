@@ -29,12 +29,15 @@ import eu.internetofus.common.components.service.WeNetService;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.model.ValidateContext;
 import eu.internetofus.common.vertx.OpenAPIValidator;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -383,7 +386,8 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
   public Future<Void> validateDefinedIdsField(final String name, final Iterable<String> ids, final Class<?> type,
       final Function<String, Future<Boolean>> search, final Future<Void> future) {
 
-    var composedFuture = future;
+    @SuppressWarnings("rawtypes")
+    final List<Future> futures = new ArrayList<>();
     final var alreadyDefined = new HashMap<String, Integer>();
     final var iter = ids.iterator();
     for (var i = 0; iter.hasNext(); i++) {
@@ -405,7 +409,7 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
         if (!this.idsCache.contains(key)) {
 
           final var index = i;
-          composedFuture = future.compose(empty -> search.apply(id).transform(defined -> {
+          futures.add(search.apply(id).transform(defined -> {
             if (defined.failed()) {
 
               return this.failFieldElement(name, index, defined.cause());
@@ -424,7 +428,15 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
       }
     }
 
-    return composedFuture;
+    if (futures.isEmpty()) {
+
+      return future;
+
+    } else {
+
+      futures.add(0, future);
+      return CompositeFuture.all(futures).map(any -> null);
+    }
 
   }
 

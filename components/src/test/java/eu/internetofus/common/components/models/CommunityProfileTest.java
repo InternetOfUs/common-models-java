@@ -95,7 +95,7 @@ public class CommunityProfileTest extends ModelTestCase<CommunityProfile> {
   public void shouldBasicExampleNotBeValid(final int index, final Vertx vertx, final VertxTestContext testContext) {
 
     final var model = this.createModelExample(index);
-    assertIsNotValid(model, "appId", new WeNetValidateContext("codePrefix", vertx), testContext);
+    assertIsNotValid(model, "members[0].userId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
   }
 
