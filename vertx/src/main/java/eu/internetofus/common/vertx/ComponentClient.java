@@ -700,8 +700,20 @@ public class ComponentClient {
    */
   protected Future<Boolean> head(@NotNull final Object... paths) {
 
-    final Promise<Boolean> promise = Promise.promise();
     final var url = this.createAbsoluteUrlWith(paths);
+    return this.headWithAbsolute(url);
+  }
+
+  /**
+   * Check if the head is defined.
+   *
+   * @param url to do the head request.
+   *
+   * @return the future with the response object.
+   */
+  protected Future<Boolean> headWithAbsolute(final String url) {
+
+    final Promise<Boolean> promise = Promise.promise();
     final var actionId = this.createActionId(HttpMethod.HEAD, url);
     Logger.trace("{} with {} STARTED", actionId);
     try {

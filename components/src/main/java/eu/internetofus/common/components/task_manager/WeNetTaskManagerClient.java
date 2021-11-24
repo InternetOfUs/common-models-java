@@ -20,7 +20,7 @@
 
 package eu.internetofus.common.components.task_manager;
 
-import eu.internetofus.common.vertx.ComponentClient;
+import eu.internetofus.common.vertx.ComponentClientWithCache;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
@@ -36,7 +36,7 @@ import javax.validation.constraints.NotNull;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetTaskManagerClient extends ComponentClient implements WeNetTaskManager {
+public class WeNetTaskManagerClient extends ComponentClientWithCache implements WeNetTaskManager {
 
   /**
    * The default URL to bind the client.
@@ -57,7 +57,7 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
    */
   public WeNetTaskManagerClient(final WebClient client, final JsonObject conf) {
 
-    super(client, conf.getString(TASK_MANAGER_CONF_KEY, DEFAULT_TASK_MANAGER_API_URL));
+    super(client, conf, TASK_MANAGER_CONF_KEY, DEFAULT_TASK_MANAGER_API_URL);
 
   }
 
@@ -297,7 +297,7 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
   @Override
   public void isTaskDefined(final String id, @NotNull final Handler<AsyncResult<Boolean>> handler) {
 
-    this.head("/tasks", id).onComplete(handler);
+    this.headWithCache("/tasks", id).onComplete(handler);
   }
 
   /**
@@ -306,7 +306,7 @@ public class WeNetTaskManagerClient extends ComponentClient implements WeNetTask
   @Override
   public void isTaskTypeDefined(final String id, @NotNull final Handler<AsyncResult<Boolean>> handler) {
 
-    this.head("/taskTypes", id).onComplete(handler);
+    this.headWithCache("/taskTypes", id).onComplete(handler);
   }
 
 }

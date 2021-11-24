@@ -20,7 +20,7 @@
 
 package eu.internetofus.common.components.service;
 
-import eu.internetofus.common.vertx.ComponentClient;
+import eu.internetofus.common.vertx.ComponentClientWithCache;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -36,7 +36,7 @@ import javax.validation.constraints.NotNull;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetServiceClient extends ComponentClient implements WeNetService {
+public class WeNetServiceClient extends ComponentClientWithCache implements WeNetService {
 
   /**
    * The default URL to bind the client.
@@ -57,7 +57,7 @@ public class WeNetServiceClient extends ComponentClient implements WeNetService 
    */
   public WeNetServiceClient(final WebClient client, final JsonObject conf) {
 
-    super(client, conf.getString(SERVICE_CONF_KEY, DEFAULT_SERVICE_API_URL));
+    super(client, conf, SERVICE_CONF_KEY, DEFAULT_SERVICE_API_URL);
 
   }
 
@@ -87,7 +87,27 @@ public class WeNetServiceClient extends ComponentClient implements WeNetService 
   @Override
   public void isAppDefined(final String id, @NotNull final Handler<AsyncResult<Boolean>> handler) {
 
-    this.retrieveApp(id, retrieve -> handler.handle(Future.succeededFuture(retrieve.result() != null)));
+    final var key = "isAppDefined:" + id;
+    final var value = this.cache.getIfPresent(key);
+    if (value != null) {
+
+      handler.handle(Future.succeededFuture(true));
+
+    } else {
+
+      this.retrieveApp(id, retrieve -> {
+
+        final var found = retrieve.result() != null;
+        if (found) {
+
+          this.cache.put(key, "");
+        }
+
+        handler.handle(Future.succeededFuture(found));
+
+      });
+
+    }
   }
 
 }

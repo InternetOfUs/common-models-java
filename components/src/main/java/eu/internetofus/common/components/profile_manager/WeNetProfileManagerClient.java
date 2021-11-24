@@ -20,7 +20,7 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import eu.internetofus.common.vertx.ComponentClient;
+import eu.internetofus.common.vertx.ComponentClientWithCache;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
@@ -35,7 +35,7 @@ import javax.validation.constraints.NotNull;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class WeNetProfileManagerClient extends ComponentClient implements WeNetProfileManager {
+public class WeNetProfileManagerClient extends ComponentClientWithCache implements WeNetProfileManager {
 
   /**
    * The default URL to bind the client.
@@ -56,7 +56,7 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
    */
   public WeNetProfileManagerClient(final WebClient client, final JsonObject conf) {
 
-    super(client, conf.getString(PROFILE_MANAGER_CONF_KEY, DEFAULT_PROFILE_MANAGER_API_URL));
+    super(client, conf, PROFILE_MANAGER_CONF_KEY, DEFAULT_PROFILE_MANAGER_API_URL);
 
   }
 
@@ -220,7 +220,7 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
   @Override
   public void isProfileDefined(final String id, @NotNull final Handler<AsyncResult<Boolean>> handler) {
 
-    this.head("/profiles", id).onComplete(handler);
+    this.headWithCache("/profiles", id).onComplete(handler);
   }
 
   /**
@@ -229,7 +229,7 @@ public class WeNetProfileManagerClient extends ComponentClient implements WeNetP
   @Override
   public void isCommunityDefined(final String id, @NotNull final Handler<AsyncResult<Boolean>> handler) {
 
-    this.head("/communities", id).onComplete(handler);
+    this.headWithCache("/communities", id).onComplete(handler);
   }
 
 }

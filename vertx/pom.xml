@@ -74,6 +74,11 @@
    <version>${commons-cli-version}</version>
   </dependency>
   <dependency>
+   <groupId>com.google.guava</groupId>
+   <artifactId>guava</artifactId>
+   <version>${com.google.guava-version}</version>
+  </dependency>
+  <dependency>
    <groupId>eu.internetofus</groupId>
    <artifactId>common-test</artifactId>
    <version>${project.version}</version>

@@ -3,9 +3,10 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
-## Version 0.17.0 (2021-11-23)
+## Version 0.17.0 (2021-11-24)
 
  * Add cache when validate models.
+ * Add cache on client when check if component exist by its identifier.
  * Allow to merge/update models if they are equals.
 
 

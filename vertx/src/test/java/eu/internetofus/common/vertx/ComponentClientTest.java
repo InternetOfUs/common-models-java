@@ -893,6 +893,37 @@ public class ComponentClientTest {
       final var service = new ComponentClient(client, "http://localhost:" + server.actualPort() + "/api");
       service.head().onComplete(testContext.succeeding(content -> testContext.verify(() -> {
 
+        assertThat(content).isTrue();
+        server.close();
+        testContext.completeNow();
+
+      })));
+
+    }));
+
+  }
+
+  /**
+   * Verify that can get a head response.
+   *
+   * @param vertx       platform that manage the event bus.
+   * @param client      to use.
+   * @param testContext context that manage the test.
+   */
+  @Test
+  public void shouldHeadFail(final Vertx vertx, final WebClient client, final VertxTestContext testContext) {
+
+    vertx.createHttpServer().requestHandler(request -> {
+      final var response = request.response();
+      response.setStatusCode(404);
+      response.putHeader("content-type", "application/json");
+      response.end();
+    }).listen(0, "localhost", testContext.succeeding(server -> {
+
+      final var service = new ComponentClient(client, "http://localhost:" + server.actualPort() + "/api");
+      service.head().onComplete(testContext.succeeding(content -> testContext.verify(() -> {
+
+        assertThat(content).isFalse();
         server.close();
         testContext.completeNow();
 
