@@ -3,6 +3,11 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
+## Version 0.18.0 (202--)
+
+ * Extract diversity calculus from ontolgy
+
+
 ## Version 0.17.0 (2021-11-24)
 
  * Add cache when validate models.
