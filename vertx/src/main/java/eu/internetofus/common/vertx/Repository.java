@@ -422,16 +422,17 @@ public class Repository {
    * Migrate the documents of a collection to the current schema.
    *
    * @param collectionName name of the collection to migrate.
-   * @param type           of the documents on the collection. {@code null} use
-   *                       the found element.
+   * @param type           of the documents on the collection.
+   * @param version        of the documents to migrate.
    *
    * @param <T>            type of the documents.
    *
    * @return the future that will inform if has migrated or not the documents.
    */
-  protected <T extends Model> Future<Void> migrateCollection(final String collectionName, final Class<T> type) {
+  protected <T extends Model> Future<Void> migrateCollection(final String collectionName, final Class<T> type,
+      final String version) {
 
-    final var query = this.createQueryToReturnDocumentsWithAVersionLessThan(this.schemaVersion);
+    final var query = this.createQueryToReturnDocumentsWithAVersionLessThan(version);
     return this.pool.count(collectionName, query).compose(maxDocuments -> {
 
       if (maxDocuments > 0) {
@@ -564,29 +565,32 @@ public class Repository {
   /**
    * Create a the update query for set the schema version.
    *
+   * @param version to set.
+   *
    * @return the query to update the schema version of the components.
    *
    * @see #schemaVersion
    */
-  protected JsonObject createUpdateForSchemaVersion() {
+  protected JsonObject createUpdateForSchemaVersion(final String version) {
 
-    return new JsonObject().put("$set", new JsonObject().put(SCHEMA_VERSION, this.schemaVersion));
+    return new JsonObject().put("$set", new JsonObject().put(SCHEMA_VERSION, version));
 
   }
 
   /**
    * Update all the document of a collection to have the current schema version.
    *
+   * @param version        to set.
    * @param collectionName name of the collection to update.
    *
    * @return a future that inform if the documents of the collections are updated
    *         or not.
    *
    */
-  protected Future<Void> updateSchemaVersionOnCollection(final String collectionName) {
+  protected Future<Void> migrateSchemaVersionOnCollectionTo(final String version, final String collectionName) {
 
-    final var query = this.createQueryToReturnDocumentsWithAVersionLessThan(this.schemaVersion);
-    final var update = this.createUpdateForSchemaVersion();
+    final var query = this.createQueryToReturnDocumentsWithAVersionLessThan(version);
+    final var update = this.createUpdateForSchemaVersion(version);
     return this.updateCollection(collectionName, query, update);
 
   }

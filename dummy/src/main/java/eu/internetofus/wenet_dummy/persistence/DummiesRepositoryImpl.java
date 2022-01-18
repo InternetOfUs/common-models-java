@@ -62,7 +62,7 @@ public class DummiesRepositoryImpl extends Repository implements DummiesReposito
    */
   public Future<Void> migrateDocumentsToCurrentVersions() {
 
-    return this.migrateCollection(DUMMIES_COLLECTION, Dummy.class);
+    return this.migrateCollection(DUMMIES_COLLECTION, Dummy.class, this.schemaVersion);
 
   }
 

@@ -238,9 +238,15 @@ public class Ask4HelpV2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2Proto
       for (var i = 0; i < max; i++) {
 
         final var element = value.getValue(i);
-        if (!copy.remove(element)) {
+        for (var j = 0; j < copy.size(); j++) {
 
-          return false;
+          final var expectedElement = copy.getValue(j);
+          if (this.compareUserValues(expectedElement, element)) {
+
+            copy.remove(j);
+            break;
+          }
+
         }
       }
 
@@ -253,13 +259,39 @@ public class Ask4HelpV2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2Proto
 
         final var element = value.getValue(i);
         final var expectedElement = expected.getValue(i);
-        if (!expectedElement.equals(element)) {
+        if (!this.compareUserValues(expectedElement, element)) {
 
           return false;
         }
       }
 
       return true;
+    }
+
+  }
+
+  /**
+   * Compare users values.
+   *
+   * @param a first value to compare.
+   * @param b second value to compare.
+   *
+   * @return {2code true} if the values are equals.
+   */
+  private boolean compareUserValues(final Object a, final Object b) {
+
+    if (a instanceof JsonObject) {
+
+      final var source = (JsonObject) a;
+      final var target = (JsonObject) b;
+
+      return source.getString("userId", "").equals(target.getString("userId"))
+          && Math.abs(source.getDouble("value", -1d) - target.getDouble("value", -2d)) < 0.0000001d;
+
+    } else {
+
+      return a == b || a != null && a.equals(b);
+
     }
 
   }

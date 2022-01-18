@@ -674,7 +674,7 @@ public class RepositoryIT {
   public void shouldMigrateCollectionWhenItIsEmpty(final Vertx vertx, final VertxTestContext testContext) {
 
     final var repository = new Repository(vertx, pool, "schemaVersion");
-    repository.migrateCollection(EMPTY_COLLECTION, DummyModel.class)
+    repository.migrateCollection(EMPTY_COLLECTION, DummyModel.class, "schemaVersion")
         .onComplete(testContext.succeeding(migrated -> testContext.completeNow()));
 
   }
@@ -700,7 +700,7 @@ public class RepositoryIT {
       }
 
     };
-    testContext.assertFailure(repository.migrateCollection(EMPTY_COLLECTION, DummyModel.class))
+    testContext.assertFailure(repository.migrateCollection(EMPTY_COLLECTION, DummyModel.class, "schemaVersion"))
         .onFailure(error -> testContext.completeNow());
 
   }
@@ -852,7 +852,7 @@ public class RepositoryIT {
         final var options = new FindOptions();
         options.setLimit(10000);
         options.getSort().put("index", 1);
-        repository.migrateCollection(collection, DummyModel.class)
+        repository.migrateCollection(collection, DummyModel.class, "2")
             .onComplete(testContext.succeeding(migrated -> pool.findWithOptions(collection, new JsonObject(), options,
                 testContext.succeeding(values -> testContext.verify(() -> {
 
@@ -892,7 +892,7 @@ public class RepositoryIT {
         final var options = new FindOptions();
         options.setLimit(10000);
         options.getSort().put("index", 1);
-        repository.migrateCollection(collection, DummyComplexModel.class)
+        repository.migrateCollection(collection, DummyComplexModel.class, version)
             .onComplete(testContext.succeeding(migrated -> pool.findWithOptions(collection, new JsonObject(), options,
                 testContext.succeeding(values -> testContext.verify(() -> {
 
@@ -974,7 +974,7 @@ public class RepositoryIT {
 
         final var version = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
         final var repository = new Repository(vertx, pool, version);
-        repository.updateSchemaVersionOnCollection(collection).onComplete(testContext.succeeding(empty -> {
+        repository.migrateSchemaVersionOnCollectionTo(version, collection).onComplete(testContext.succeeding(empty -> {
 
           final var options = new FindOptions();
           options.setLimit(10000);
@@ -1027,27 +1027,28 @@ public class RepositoryIT {
       }
 
     };
-    repository.updateSchemaVersionOnCollection(TEN_DUMMY_COLLECTION).onComplete(testContext.failing(empty -> {
+    repository.migrateSchemaVersionOnCollectionTo(version, TEN_DUMMY_COLLECTION)
+        .onComplete(testContext.failing(empty -> {
 
-      final var options = new FindOptions();
-      options.setLimit(10000);
-      options.getSort().put("index", 1);
-      pool.findWithOptions(TEN_DUMMY_COLLECTION, new JsonObject(), options,
-          testContext.succeeding(values -> testContext.verify(() -> {
+          final var options = new FindOptions();
+          options.setLimit(10000);
+          options.getSort().put("index", 1);
+          pool.findWithOptions(TEN_DUMMY_COLLECTION, new JsonObject(), options,
+              testContext.succeeding(values -> testContext.verify(() -> {
 
-            assertThat(values).isNotEmpty().hasSize(10);
-            for (var i = 0; i < 10; i++) {
+                assertThat(values).isNotEmpty().hasSize(10);
+                for (var i = 0; i < 10; i++) {
 
-              final var value = values.get(i);
-              final var expected = new JsonObject().put("_id", value.getString("_id")).put("index", i);
-              assertThat(value).isEqualTo(expected);
-            }
+                  final var value = values.get(i);
+                  final var expected = new JsonObject().put("_id", value.getString("_id")).put("index", i);
+                  assertThat(value).isEqualTo(expected);
+                }
 
-            testContext.completeNow();
+                testContext.completeNow();
 
-          })));
+              })));
 
-    }));
+        }));
 
   }
 
