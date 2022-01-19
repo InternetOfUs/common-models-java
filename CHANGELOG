@@ -3,7 +3,7 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
-## Version 0.18.0 (202--)
+## Version 0.18.0 (2022-01-19)
 
  * Update vertx.
  * Extract diversity calculus from ontolgy.
