@@ -1,5 +1,5 @@
-[![Build and Test](https://github.com/InternetOfUs/common-models-java/actions/workflows/branch-build-and-test.yml/badge.svg?branch=develop)](https://github.com/InternetOfUs/common-models-java/actions/workflows/branch-build-and-test.yml) [![Dev Build and Test](https://github.com/InternetOfUs/common-models-java/actions/workflows/branch-build-and-test.yml/badge.svg?branch=develop)](https://github.com/InternetOfUs/common-models-java/actions/workflows/branch-build-and-test.yml)
-![Coverage](.github/badges/jacoco.svg) ![Branches](.github/badges/branches.svg) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Build and Test](https://github.com/InternetOfUs/common-models-java/actions/workflows/branch-build-and-test.yml/badge.svg?branch=master)](https://github.com/InternetOfUs/common-models-java/actions/workflows/branch-build-and-test.yml) [![Dev Build and Test](https://github.com/InternetOfUs/common-models-java/actions/workflows/branch-build-and-test.yml/badge.svg?branch=develop)](https://github.com/InternetOfUs/common-models-java/actions/workflows/branch-build-and-test.yml)
+[Coverage](.github/badges/jacoco.svg) [Branches](.github/badges/branches.svg) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # Internet of us - Common models java
 
