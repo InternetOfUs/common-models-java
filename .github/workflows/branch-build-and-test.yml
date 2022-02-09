@@ -37,3 +37,15 @@ jobs:
       uses: cicirello/jacoco-badge-generator@v2
       with:
         generate-branches-badge: true
+        jacoco-csv-file: >
+          test/target/site/jacoco/jacoco.csv
+          model/target/site/jacoco/jacoco.csv
+          vertx/target/site/jacoco/jacoco.csv
+          components/target/site/jacoco/jacoco.csv
+          protocols/target/site/jacoco/jacoco.csv
+          dummy/target/site/jacoco/jacoco.csv
+          
+    - name: Log coverage percentage
+      run: |
+        echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
+        echo "branch coverage = ${{ steps.jacoco.outputs.branches }}"
