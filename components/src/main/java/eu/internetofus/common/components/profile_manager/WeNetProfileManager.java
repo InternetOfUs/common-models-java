@@ -22,6 +22,7 @@ package eu.internetofus.common.components.profile_manager;
 
 import eu.internetofus.common.components.WeNetComponent;
 import eu.internetofus.common.components.models.CommunityProfile;
+import eu.internetofus.common.components.models.SocialNetworkRelationship;
 import eu.internetofus.common.components.models.WeNetUserProfile;
 import eu.internetofus.common.model.Model;
 import io.vertx.codegen.annotations.GenIgnore;
@@ -31,9 +32,11 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -477,5 +480,104 @@ public interface WeNetProfileManager extends WeNetComponent {
    * @param handler to manage if the community exist or not.
    */
   void isCommunityDefined(final String id, @NotNull Handler<AsyncResult<Boolean>> handler);
+
+  /**
+   * Return the relationships that match arguments.
+   *
+   * @param appId    application identifier to match in the relationships to
+   *                 return.
+   * @param sourceId user identifier to match the source of the relationships to
+   *                 return.
+   * @param targetId user identifier to match the target of the relationships to
+   *                 return.
+   * @param type     to match in the relationships to return.
+   * @param order    in with the relationships has to be sort.
+   * @param offset   index of the first relationship to return.
+   * @param limit    number maximum of relationships to return.
+   * @param handler  to the relationships page.
+   */
+  void retrieveSocialNetworkRelationshipsPage(String appId, String sourceId, String targetId, String type, String order,
+      int offset, int limit, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Return the found relationships.
+   *
+   * @param appId    application identifier to match in the relationships to
+   *                 return.
+   * @param sourceId user identifier to match the source of the relationships to
+   *                 return.
+   * @param targetId user identifier to match the target of the relationships to
+   *                 return.
+   * @param type     to match in the relationships to return.
+   * @param order    in with the communities has to be sort.
+   * @param offset   index of the first community to return.
+   * @param limit    number maximum of communities to return.
+   *
+   * @return the future with the relationships page.
+   */
+  @GenIgnore
+  default Future<SocialNetworkRelationshipsPage> retrieveSocialNetworkRelationshipsPage(final String appId,
+      final String sourceId, final String targetId, final String type, final String order, final int offset,
+      final int limit) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.retrieveSocialNetworkRelationshipsPage(appId, sourceId, targetId, type, order, offset, limit, promise);
+    return Model.fromFutureJsonObject(promise.future(), SocialNetworkRelationshipsPage.class);
+
+  }
+
+  /**
+   * Add or update a {@link SocialNetworkRelationship} in Json format.
+   *
+   * @param relationship to add or update.
+   *
+   * @param handler      of the add or update relationship.
+   */
+  void addOrUpdateSocialNetworkRelationship(@NotNull JsonObject relationship,
+      @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Add or update a relationship.
+   *
+   * @param relationship to add or update.
+   *
+   * @return the future with the add or update relationship.
+   */
+  @GenIgnore
+  default Future<SocialNetworkRelationship> addOrUpdateSocialNetworkRelationship(
+      @NotNull final SocialNetworkRelationship relationship) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.addOrUpdateSocialNetworkRelationship(relationship.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), SocialNetworkRelationship.class);
+
+  }
+
+  /**
+   * Add or update some {@link SocialNetworkRelationship}s in Json format.
+   *
+   * @param relationships to add or update.
+   *
+   * @param handler       of the add or update relationships.
+   */
+  void addOrUpdateSocialNetworkRelationships(@NotNull JsonArray relationships,
+      @NotNull Handler<AsyncResult<JsonArray>> handler);
+
+  /**
+   * Add or update a relationship.
+   *
+   * @param relationships to add or update.
+   *
+   * @return the future with the add or update relationship.
+   */
+  @GenIgnore
+  default Future<List<SocialNetworkRelationship>> addOrUpdateSocialNetworkRelationships(
+      @NotNull final Iterable<SocialNetworkRelationship> relationships) {
+
+    final Promise<JsonArray> promise = Promise.promise();
+    this.addOrUpdateSocialNetworkRelationships(Model.toJsonArray(relationships), promise);
+    return Model.fromFutureJsonArray(promise.future(), SocialNetworkRelationship.class);
+
+  }
 
 }

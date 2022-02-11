@@ -23,6 +23,7 @@ package eu.internetofus.common.components.profile_manager;
 import eu.internetofus.common.vertx.ComponentClientWithCache;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import java.util.LinkedHashMap;
@@ -230,6 +231,62 @@ public class WeNetProfileManagerClient extends ComponentClientWithCache implemen
   public void isCommunityDefined(final String id, @NotNull final Handler<AsyncResult<Boolean>> handler) {
 
     this.headWithCache("/communities", id).onComplete(handler);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void retrieveSocialNetworkRelationshipsPage(final String appId, final String sourceId, final String targetId,
+      final String type, final String order, final int offset, final int limit,
+      final Handler<AsyncResult<JsonObject>> handler) {
+
+    final var params = new LinkedHashMap<String, String>();
+    if (appId != null) {
+
+      params.put("appId", appId);
+    }
+    if (sourceId != null) {
+
+      params.put("sourceId", sourceId);
+    }
+    if (targetId != null) {
+
+      params.put("targetId", targetId);
+    }
+    if (type != null) {
+
+      params.put("type", type);
+    }
+    if (order != null) {
+
+      params.put("order", order);
+    }
+    params.put("offset", String.valueOf(offset));
+    params.put("limit", String.valueOf(limit));
+    this.getJsonObject(params, "/relationships").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void addOrUpdateSocialNetworkRelationship(@NotNull final JsonObject relationship,
+      @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.put(relationship, "/relationships").onComplete(handler);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void addOrUpdateSocialNetworkRelationships(@NotNull final JsonArray relationships,
+      @NotNull final Handler<AsyncResult<JsonArray>> handler) {
+
+    this.put(relationships, "/relationships/batch").onComplete(handler);
+
   }
 
 }
