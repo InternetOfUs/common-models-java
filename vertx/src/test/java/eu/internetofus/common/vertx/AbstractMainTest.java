@@ -544,7 +544,7 @@ public class AbstractMainTest {
   public void shouldPrintStartError(final Capturable stream) {
 
     stream.capture();
-    final var message = "Canot start server.";
+    final var message = "Cannot start server.";
     this.main.printStartError(new Throwable(message));
     final var data = stream.getCapturedData();
     assertThat(data).contains(Level.ERROR.name(), message, this.main.getModuleName());
