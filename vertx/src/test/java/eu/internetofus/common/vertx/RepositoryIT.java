@@ -461,6 +461,54 @@ public class RepositoryIT {
   }
 
   /**
+   * Should upsert document.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context for the test.
+   */
+  @Test
+  public void shouldUsertDocument(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var repository = new Repository(vertx, pool, "schemaVersion");
+    final var query = new JsonObject().put("identifier", UUID.randomUUID().toString());
+    final var newDoc = new JsonObject().put("index", 100).putNull("key1").put("key3", true);
+    testContext.assertComplete(repository.upsertOneDocument(TEST_COLLECTION, query, newDoc, true).compose(id -> {
+
+      newDoc.put("_id", id);
+      return pool.find(TEST_COLLECTION, new JsonObject().put("_id", id));
+
+    }).onSuccess(value -> testContext.verify(() -> {
+
+      assertThat(value).isNotEmpty().hasSize(1);
+      final var element = value.get(0);
+      newDoc.mergeIn(query);
+      newDoc.put(Repository.SCHEMA_VERSION, "schemaVersion");
+      newDoc.remove("key1");
+      assertThat(element).isEqualTo(newDoc);
+      testContext.completeNow();
+
+    })));
+
+  }
+
+  /**
+   * Should fail upsert document.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context for the test.
+   */
+  @Test
+  public void shouldFailUsertDocument(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var repository = new Repository(vertx, pool, "schemaVersion");
+    final var query = new JsonObject().put("identifier", UUID.randomUUID().toString());
+    final var newDoc = new JsonObject().put("index", 100).putNull("key1").put("key3", true);
+    testContext.assertFailure(repository.upsertOneDocument(TEST_COLLECTION, query, newDoc, false))
+        .onFailure(error -> testContext.completeNow());
+
+  }
+
+  /**
    * Should not store with defined id.
    *
    * @param vertx       event bus to use.

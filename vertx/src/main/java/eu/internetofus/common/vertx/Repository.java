@@ -184,7 +184,8 @@ public class Repository {
   protected Future<Void> updateOneDocument(@NotNull final String collectionName, @NotNull final JsonObject query,
       final JsonObject updateModel) {
 
-    return this.upsertOneDocument(collectionName, query, updateModel, false);
+    return this.upsertOneDocument(collectionName, query, updateModel, false).map(any -> null);
+
   }
 
   /**
@@ -195,9 +196,10 @@ public class Repository {
    * @param updateModel    the new values of the model.
    * @param upsert         is {@code true} if has to add if not defined.
    *
-   * @return the future result of the update action.
+   * @return the future result of the update action with a {@code null} value if
+   *         the model is updated or with the identifier of the added model.
    */
-  protected Future<Void> upsertOneDocument(@NotNull final String collectionName, @NotNull final JsonObject query,
+  protected Future<String> upsertOneDocument(@NotNull final String collectionName, @NotNull final JsonObject query,
       final JsonObject updateModel, final boolean upsert) {
 
     if (updateModel == null) {
@@ -239,7 +241,28 @@ public class Repository {
 
         if (result.getDocModified() != 1) {
 
-          return Future.failedFuture("Not found document to update");
+          if (upsert) {
+
+            String _id = null;
+            final var id = result.getDocUpsertedId();
+            if (id != null) {
+
+              _id = id.getString("_id");
+            }
+
+            if (_id == null) {
+
+              return Future.failedFuture("Not added document");
+
+            } else {
+
+              return Future.succeededFuture(_id);
+            }
+
+          } else {
+
+            return Future.failedFuture("Not found document to update");
+          }
 
         } else {
 
