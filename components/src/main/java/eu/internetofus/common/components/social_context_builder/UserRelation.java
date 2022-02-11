@@ -72,7 +72,8 @@ public class UserRelation extends ReflectionModel implements Model {
   public SocialNetworkRelationship toSocialNetworkRelationship() {
 
     final var relationship = new SocialNetworkRelationship();
-    relationship.userId = this.UserID2;
+    relationship.sourceId = this.UserID1;
+    relationship.targetId = this.UserID2;
     relationship.type = SocialNetworkRelationshipType.acquaintance;
     return relationship;
   }

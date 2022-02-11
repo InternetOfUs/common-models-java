@@ -22,6 +22,8 @@ package eu.internetofus.common.components;
 
 import eu.internetofus.common.components.models.CommunityProfile;
 import eu.internetofus.common.components.models.CommunityProfileTest;
+import eu.internetofus.common.components.models.SocialNetworkRelationship;
+import eu.internetofus.common.components.models.SocialNetworkRelationshipTest;
 import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTest;
 import eu.internetofus.common.components.models.TaskType;
@@ -297,4 +299,40 @@ public interface StoreServices {
         }));
 
   }
+
+  /**
+   * Store a social network relationship.
+   *
+   * @param SocialNetworkRelationship to store.
+   * @param vertx                     event bus to use.
+   * @param testContext               test context to use.
+   *
+   * @return the stored profile.
+   */
+  static Future<SocialNetworkRelationship> storeSocialNetworkRelationship(
+      final SocialNetworkRelationship SocialNetworkRelationship, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    return testContext.assertComplete(
+        WeNetProfileManager.createProxy(vertx).addOrUpdateSocialNetworkRelationship(SocialNetworkRelationship));
+
+  }
+
+  /**
+   * Store a social network relationship example.
+   *
+   * @param index       of the example to store.
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @return the stored profile.
+   */
+  static Future<SocialNetworkRelationship> storeSocialNetworkRelationshipExample(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    return testContext.assertComplete(new SocialNetworkRelationshipTest().createModelExample(index, vertx, testContext)
+        .compose(example -> storeSocialNetworkRelationship(example, vertx, testContext)));
+
+  }
+
 }

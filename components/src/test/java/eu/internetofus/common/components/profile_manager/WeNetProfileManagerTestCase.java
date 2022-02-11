@@ -471,4 +471,34 @@ public abstract class WeNetProfileManagerTestCase extends WeNetComponentTestCase
         });
   }
 
+  /**
+   * Should return an empty profiles page.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldReturnEmptySocialNetworkRelationshipsPage(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var appId = UUID.randomUUID().toString();
+    testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveSocialNetworkRelationshipsPage(appId,
+        null, null, null, null, 0, 100)).onSuccess(page -> testContext.verify(() -> {
+
+          assertThat(page).isNotNull();
+          assertThat(page.offset).isEqualTo(0);
+          assertThat(page.total).isEqualTo(0);
+          assertThat(page.relationships).isNull();
+
+          testContext.assertComplete(WeNetProfileManager.createProxy(vertx)
+              .retrieveSocialNetworkRelationshipsPage(appId, "sourceId", "targetId", "type", "type", 0, 100))
+              .onSuccess(page2 -> testContext.verify(() -> {
+
+                assertThat(page).isEqualTo(page2);
+                testContext.completeNow();
+
+              }));
+        }));
+
+  }
+
 }

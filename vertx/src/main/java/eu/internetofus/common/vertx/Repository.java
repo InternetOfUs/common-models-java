@@ -148,6 +148,31 @@ public class Repository {
   }
 
   /**
+   * Delete some document.
+   *
+   * @param collectionName of the collections that contains the model to delete.
+   * @param query          to to match the documents to delete.
+   *
+   * @return the future result of the delete action.
+   */
+  protected Future<Void> deleteDocuments(final String collectionName, final JsonObject query) {
+
+    return this.pool.removeDocuments(collectionName, query).compose(result -> {
+
+      if (result.getRemovedCount() < 1) {
+
+        return Future.failedFuture("Not found document to delete");
+
+      } else {
+
+        return Future.succeededFuture();
+      }
+
+    });
+
+  }
+
+  /**
    * Update one document.
    *
    * @param collectionName of the collections that contains the model to update.
@@ -158,6 +183,22 @@ public class Repository {
    */
   protected Future<Void> updateOneDocument(@NotNull final String collectionName, @NotNull final JsonObject query,
       final JsonObject updateModel) {
+
+    return this.upsertOneDocument(collectionName, query, updateModel, false);
+  }
+
+  /**
+   * Add or update one document.
+   *
+   * @param collectionName of the collections that contains the model to update.
+   * @param query          to to match the document to update.
+   * @param updateModel    the new values of the model.
+   * @param upsert         is {@code true} if has to add if not defined.
+   *
+   * @return the future result of the update action.
+   */
+  protected Future<Void> upsertOneDocument(@NotNull final String collectionName, @NotNull final JsonObject query,
+      final JsonObject updateModel, final boolean upsert) {
 
     if (updateModel == null) {
 
@@ -193,7 +234,7 @@ public class Repository {
 
       }
 
-      final var options = new UpdateOptions().setMulti(false);
+      final var options = new UpdateOptions().setMulti(false).setUpsert(upsert);
       return this.pool.updateCollectionWithOptions(collectionName, query, updateQuery, options).compose(result -> {
 
         if (result.getDocModified() != 1) {

@@ -31,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
 import eu.internetofus.common.components.WeNetValidateContext;
-import eu.internetofus.common.components.service.App;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
@@ -139,7 +138,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.plannedActivities.add(new PlannedActivityTest().createModelExample(index));
     model.relevantLocations = new ArrayList<>();
     model.relevantLocations.add(new RelevantLocationTest().createModelExample(index));
-    model.relationships = null;
     model.personalBehaviors = null;
     model.materials = this.createAnswerMaterials(index);
     model.competences = this.createAnswerCompetences(index);
@@ -278,29 +276,18 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     return testContext
         .assertComplete(StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(stored1 ->
 
-        StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(stored2 -> {
+        StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).map(stored2 -> {
 
           final var profile = this.createModelExample(index);
-
           final var activity = new PlannedActivityTest().createModelExample(index);
           activity.attendees = new ArrayList<>();
           activity.attendees.add(stored1.id);
           activity.attendees.add(stored2.id);
           profile.plannedActivities.add(activity);
-          profile.relationships = new ArrayList<>();
-          profile.relationships.add(new SocialNetworkRelationshipTest().createModelExample(index));
-          profile.relationships.get(0).userId = stored1.id;
-          profile.relationships.add(new SocialNetworkRelationshipTest().createModelExample(index + 1));
-          profile.relationships.get(1).userId = stored2.id;
           profile.personalBehaviors = new ArrayList<>();
           profile.personalBehaviors.add(new RoutineTest().createModelExample(index));
           profile.personalBehaviors.get(0).user_id = stored2.id;
-          return StoreServices.storeApp(new App(), vertx, testContext).map(app -> {
-
-            profile.relationships.get(0).appId = app.appId;
-            profile.relationships.get(1).appId = app.appId;
-            return profile;
-          });
+          return profile;
 
         })));
 
@@ -587,81 +574,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.relevantLocations.get(1).latitude = 1988d;
     assertIsNotValid(model, "relevantLocations[1].latitude", new WeNetValidateContext("codePrefix", vertx),
         testContext);
-
-  }
-
-  /**
-   * Check that not accept profiles with bad relationships.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(WeNetValidateContext)
-   */
-  @Test
-  public void shouldNotBeValidWithABadRelationships(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var model = new WeNetUserProfile();
-    model.relationships = new ArrayList<>();
-    model.relationships.add(new SocialNetworkRelationship());
-    assertIsNotValid(model, "relationships[0].type", new WeNetValidateContext("codePrefix", vertx), testContext);
-
-  }
-
-  /**
-   * Check that not accept profiles with duplicated relationships.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
-   */
-  @Test
-  public void shouldNotBeValidWithADuplicatedRelationships(final Vertx vertx, final VertxTestContext testContext) {
-
-    StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(stored -> {
-
-      new SocialNetworkRelationshipTest().createModelExample(0, vertx, testContext)
-          .onComplete(testContext.succeeding(relation -> {
-
-            final var model = new WeNetUserProfile();
-            model.relationships = new ArrayList<>();
-            model.relationships.add(relation);
-            model.relationships.add(Model.fromJsonObject(relation.toJsonObject(), SocialNetworkRelationship.class));
-            assertIsNotValid(model, "relationships[1]", new WeNetValidateContext("codePrefix", vertx), testContext);
-
-          }));
-
-    });
-
-  }
-
-  /**
-   * Check that is valid with some relationships.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
-   */
-  @Test
-  public void shouldBeValidWithSomeRelationships(final Vertx vertx, final VertxTestContext testContext) {
-
-    StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(stored -> {
-
-      new SocialNetworkRelationshipTest().createModelExample(0, vertx, testContext)
-          .onComplete(testContext.succeeding(relation -> {
-
-            final var model = new WeNetUserProfile();
-            model.relationships = new ArrayList<>();
-            model.relationships.add(relation);
-            model.relationships.add(
-                Model.fromJsonObject(relation.toJsonObject().put("type", "family"), SocialNetworkRelationship.class));
-            assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
-
-          }));
-
-    });
 
   }
 
@@ -1124,97 +1036,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       assertThat(merged.relevantLocations.get(1).id).isEqualTo("1");
       assertThat(merged.relevantLocations.get(2).id).isNotEmpty();
 
-    });
-
-  }
-
-  /**
-   * Check that not accept profiles with bad planned activities.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
-   */
-  @Test
-  public void shouldNotMergeWithABadRelationships(final Vertx vertx, final VertxTestContext testContext) {
-
-    final var source = new WeNetUserProfile();
-    source.relationships = new ArrayList<>();
-    source.relationships.add(new SocialNetworkRelationship());
-    assertCannotMerge(new WeNetUserProfile(), source, "relationships[0].type",
-        new WeNetValidateContext("codePrefix", vertx), testContext);
-
-  }
-
-  /**
-   * Check that not merge with duplicated relationships.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
-   */
-  @Test
-  public void shouldNotMergeWithDuplicatedRelationships(final Vertx vertx, final VertxTestContext testContext) {
-
-    StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(stored -> {
-
-      new SocialNetworkRelationshipTest().createModelExample(0, vertx, testContext)
-          .onComplete(testContext.succeeding(relation -> {
-            final var source = new WeNetUserProfile();
-
-            source.relationships = new ArrayList<>();
-            source.relationships.add(relation);
-            source.relationships.add(Model.fromJsonObject(relation.toJsonObject(), SocialNetworkRelationship.class));
-            assertCannotMerge(new WeNetUserProfile(), source, "relationships[1]",
-                new WeNetValidateContext("codePrefix", vertx), testContext);
-
-          }));
-
-    });
-
-  }
-
-  /**
-   * Check that merge some relationships.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
-   */
-  @Test
-  public void shouldMergeRelationships(final Vertx vertx, final VertxTestContext testContext) {
-
-    StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(stored -> {
-
-      new SocialNetworkRelationshipTest().createModelExample(0, vertx, testContext)
-          .onComplete(testContext.succeeding(relation -> {
-
-            final var target = new WeNetUserProfile();
-            target.relationships = new ArrayList<>();
-            target.relationships.add(new SocialNetworkRelationship());
-            target.relationships.get(0).appId = relation.appId;
-            target.relationships.get(0).userId = stored.id;
-            target.relationships.get(0).type = SocialNetworkRelationshipType.friend;
-            target.relationships.get(0).weight = 0.5;
-
-            final var source = new WeNetUserProfile();
-            source.relationships = new ArrayList<>();
-            source.relationships.add(new SocialNetworkRelationship());
-            source.relationships.add(relation);
-            source.relationships.get(0).appId = relation.appId;
-            source.relationships.get(0).userId = stored.id;
-            source.relationships.get(0).type = SocialNetworkRelationshipType.family;
-            source.relationships.get(0).weight = 0d;
-            assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
-
-              assertThat(merged.relationships).isNotEqualTo(target.relationships).isEqualTo(source.relationships);
-
-            });
-
-          }));
     });
 
   }
@@ -2492,29 +2313,6 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
                           assertThat(updated).isNotEqualTo(target).isEqualTo(source);
 
                         })))));
-
-  }
-
-  /**
-   * Check that not allow two social relationships with the same used and type.
-   *
-   * @param vertx       event bus to use.
-   * @param testContext context to test.
-   *
-   * @see WeNetUserProfile#validate(WeNetValidateContext)
-   */
-  @Test
-  public void shouldNotBeValidWithRelationWithTheSameUserAndType(final Vertx vertx,
-      final VertxTestContext testContext) {
-
-    this.createModelExample(1, vertx, testContext).onComplete(testContext.succeeding(model -> {
-
-      final var copy = Model.fromJsonObject(model.relationships.get(0).toJsonObject(), SocialNetworkRelationship.class);
-      copy.weight += 0.1d;
-      model.relationships.add(copy);
-      assertIsNotValid(model, "relationships[2]", new WeNetValidateContext("codePrefix", vertx), testContext);
-
-    }));
 
   }
 

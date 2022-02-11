@@ -20,6 +20,7 @@
 package eu.internetofus.common.components;
 
 import eu.internetofus.common.components.models.CommunityProfile;
+import eu.internetofus.common.components.models.SocialNetworkRelationshipType;
 import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskType;
 import eu.internetofus.common.components.models.WeNetUserProfile;
@@ -636,6 +637,51 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
     return this.validateDefinedIdField(name, id, TaskType.class,
         WeNetTaskManager.createProxy(this.vertx)::isTaskTypeDefined, future);
 
+  }
+
+  /**
+   * Check that exist a social network relationship between some users.
+   *
+   * @param name     of the field to validate.
+   * @param appId    application identifier to match in the relationships to
+   *                 return.
+   * @param sourceId user identifier to match the source of the relationships to
+   *                 return.
+   * @param targetId user identifier to match the target of the relationships to
+   *                 return.
+   * @param type     to match in the relationships to return.
+   * @param future   to compose if the social network relationship exist.
+   *
+   * @return the future with the validation result.
+   */
+  public Future<Void> validateExistSocialNetworkRelationshipField(final String name, final String appId,
+      final String sourceId, final String targetId, final SocialNetworkRelationshipType type,
+      final Future<Void> future) {
+
+    return future.compose(empty -> {
+
+      String typeName = null;
+      if (type != null) {
+
+        typeName = type.name();
+      }
+      return WeNetProfileManager.createProxy(this.vertx)
+          .retrieveSocialNetworkRelationshipsPage(appId, sourceId, targetId, sourceId, typeName, 0, 0)
+          .transform(page -> {
+
+            if (page.failed() || page.result().total != 1) {
+
+              return this.failField(name, "The '" + type + "' is not defined on the '" + appId
+                  + "' by the source user '" + sourceId + "' with the target user '" + targetId + "'.");
+
+            } else {
+
+              return Future.succeededFuture();
+            }
+
+          });
+
+    });
   }
 
 }

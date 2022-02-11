@@ -156,12 +156,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
   public List<RelevantLocation> relevantLocations;
 
   /**
-   * The user relationships.
-   */
-  @ArraySchema(schema = @Schema(implementation = SocialNetworkRelationship.class), arraySchema = @Schema(description = "The user relationships with other WeNet users.", nullable = true))
-  public List<SocialNetworkRelationship> relationships;
-
-  /**
    * The user routines.
    */
   @ArraySchema(schema = @Schema(implementation = Routine.class), arraySchema = @Schema(description = "The user routines", nullable = true))
@@ -238,11 +232,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
           context.validateListField("relevantLocations", this.relevantLocations, RelevantLocation::compareIds));
 
     }
-    if (this.relationships != null) {
-
-      future = future.compose(
-          context.validateListField("relationships", this.relationships, SocialNetworkRelationship::compareIds));
-    }
     if (this.personalBehaviors != null) {
 
       future = future
@@ -310,9 +299,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
           .compose(Merges.mergeListField(context, "personalBehaviors", this.personalBehaviors, source.personalBehaviors,
               Routine::compareIds, (model, mergedValue) -> model.personalBehaviors = mergedValue));
 
-      future = future.compose(Merges.mergeListField(context, "relationships", this.relationships, source.relationships,
-          SocialNetworkRelationship::compareIds, (model, mergedValue) -> model.relationships = mergedValue));
-
       future = future.compose(Merges.mergeListField(context, "materials", this.materials, source.materials,
           Material::compareIds, (model, mergedValue) -> model.materials = mergedValue));
 
@@ -362,7 +348,6 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
       updated.nationality = source.nationality;
       updated.occupation = source.occupation;
       updated.hasLocations = source.hasLocations;
-      updated.relationships = source.relationships;
       updated.name = source.name;
       updated.dateOfBirth = source.dateOfBirth;
       updated.norms = source.norms;

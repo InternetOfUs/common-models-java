@@ -22,9 +22,9 @@ package eu.internetofus.common.components.social_context_builder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
 import eu.internetofus.common.components.models.SocialNetworkRelationshipType;
 import eu.internetofus.common.model.ModelTestCase;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test the {@link UserRelation}.
@@ -58,7 +58,8 @@ public class UserRelationTest extends ModelTestCase<UserRelation> {
     final var model = this.createModelExample(1);
     final var relation = model.toSocialNetworkRelationship();
     assertThat(relation).isNotNull();
-    assertThat(relation.userId).isEqualTo(model.UserID2);
+    assertThat(relation.sourceId).isEqualTo(model.UserID1);
+    assertThat(relation.targetId).isEqualTo(model.UserID2);
     assertThat(relation.type).isEqualTo(SocialNetworkRelationshipType.acquaintance);
 
   }

@@ -129,25 +129,23 @@ public class Ask4HelpV2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2Proto
 
     this.assertLastSuccessfulTestWas(5, testContext);
 
-    final var profile = this.users.get(0);
-    profile.relationships = new ArrayList<>();
+    final var sourceId = this.users.get(0).id;
+    final var relationships = new ArrayList<SocialNetworkRelationship>();
     final var max = this.users.size();
     for (var i = 1; i < max; i++) {
 
       final var relationship = new SocialNetworkRelationship();
       relationship.appId = this.app.appId;
       relationship.type = SocialNetworkRelationshipType.values()[i % SocialNetworkRelationshipType.values().length];
-      relationship.userId = this.users.get(i).id;
+      relationship.sourceId = sourceId;
+      relationship.targetId = this.users.get(i).id;
       relationship.weight = 0.1 * i;
-      profile.relationships.add(relationship);
+      relationships.add(relationship);
 
     }
 
-    WeNetProfileManager.createProxy(vertx).updateProfile(profile).map(updated -> {
-      this.users.remove(0);
-      this.users.add(0, updated);
-      return null;
-    }).onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
+    WeNetProfileManager.createProxy(vertx).addOrUpdateSocialNetworkRelationships(relationships)
+        .onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
