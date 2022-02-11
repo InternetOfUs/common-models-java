@@ -61,7 +61,8 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
     final var model = new SocialNetworkRelationship();
     model.appId = "app_of_" + index;
-    model.userId = "user_of_" + index;
+    model.sourceId = "source_of_" + index;
+    model.targetId = "target_of_" + index;
     model.type = SocialNetworkRelationshipType.values()[index % SocialNetworkRelationshipType.values().length];
     model.weight = index % 1000 / 1000.0;
     return model;
@@ -80,15 +81,18 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
   public Future<SocialNetworkRelationship> createModelExample(final int index, final Vertx vertx,
       final VertxTestContext testContext) {
 
-    return StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(profile -> {
+    return StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(source -> {
 
-      final var relation = this.createModelExample(index);
-      relation.userId = profile.id;
-      return StoreServices.storeApp(new App(), vertx, testContext).map(app -> {
-        relation.appId = app.appId;
-        return relation;
+      return StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(target -> {
+
+        final var relation = this.createModelExample(index);
+        relation.sourceId = source.id;
+        relation.targetId = target.id;
+        return StoreServices.storeApp(new App(), vertx, testContext).map(app -> {
+          relation.appId = app.appId;
+          return relation;
+        });
       });
-
     });
 
   }
@@ -110,7 +114,6 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
 
     this.createModelExample(index, vertx, testContext).onSuccess(model -> {
 
-      model.userId = model.userId;
       assertIsValid(model, new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
@@ -143,7 +146,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
   }
 
   /**
-   * Check that a model is not valid with an undefined user id.
+   * Check that a model is not valid with an undefined source id.
    *
    * @param userId      that is not valid.
    * @param vertx       event bus to use.
@@ -151,17 +154,42 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    *
    * @see SocialNetworkRelationship#validate(WeNetValidateContext)
    */
-  @ParameterizedTest(name = "Should not be valid  a SocialNetworkRelationship with an userId = {0}")
+  @ParameterizedTest(name = "Should not be valid  a SocialNetworkRelationship with an sourceId = {0}")
   @NullAndEmptySource
   @ValueSource(strings = { "undefined value ", "9bec40b8-8209-4e28-b64b-1de52595ca6d" })
-  public void shouldNotBeValidWithBadUserIdentifier(final String userId, final Vertx vertx,
+  public void shouldNotBeValidWithBadSourceIdentifier(final String userId, final Vertx vertx,
       final VertxTestContext testContext) {
 
     this.createModelExample(0, vertx, testContext).onSuccess(model -> {
 
-      model.userId = userId;
+      model.sourceId = userId;
       model.type = SocialNetworkRelationshipType.colleague;
-      assertIsNotValid(model, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
+      assertIsNotValid(model, "sourceId", new WeNetValidateContext("codePrefix", vertx), testContext);
+
+    });
+
+  }
+
+  /**
+   * Check that a model is not valid with an undefined target id.
+   *
+   * @param userId      that is not valid.
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see SocialNetworkRelationship#validate(WeNetValidateContext)
+   */
+  @ParameterizedTest(name = "Should not be valid  a SocialNetworkRelationship with an targetId = {0}")
+  @NullAndEmptySource
+  @ValueSource(strings = { "undefined value ", "9bec40b8-8209-4e28-b64b-1de52595ca6d" })
+  public void shouldNotBeValidWithBadTargetIdentifier(final String userId, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    this.createModelExample(0, vertx, testContext).onSuccess(model -> {
+
+      model.targetId = userId;
+      model.type = SocialNetworkRelationshipType.colleague;
+      assertIsNotValid(model, "targetId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -208,7 +236,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
   }
 
   /**
-   * Check that a model is not valid without an user id.
+   * Check that a model is not valid without a source id.
    *
    * @param vertx       event bus to use.
    * @param testContext context to test.
@@ -216,13 +244,34 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @see SocialNetworkRelationship#validate(WeNetValidateContext)
    */
   @Test
-  public void shouldNotBeValidModelWithoutUserId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldNotBeValidModelWithoutSourceId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(0, vertx, testContext).onSuccess(model -> {
 
       model.type = SocialNetworkRelationshipType.colleague;
-      model.userId = null;
-      assertIsNotValid(model, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
+      model.sourceId = null;
+      assertIsNotValid(model, "sourceId", new WeNetValidateContext("codePrefix", vertx), testContext);
+
+    });
+
+  }
+
+  /**
+   * Check that a model is not valid without a target id.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see SocialNetworkRelationship#validate(WeNetValidateContext)
+   */
+  @Test
+  public void shouldNotBeValidModelWithoutTargetId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(0, vertx, testContext).onSuccess(model -> {
+
+      model.type = SocialNetworkRelationshipType.colleague;
+      model.targetId = null;
+      assertIsNotValid(model, "targetId", new WeNetValidateContext("codePrefix", vertx), testContext);
 
     });
 
@@ -279,7 +328,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
   }
 
   /**
-   * Check that merge only the user identifier.
+   * Check that merge only the source identifier.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -287,17 +336,44 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
-  public void shouldMergeOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldMergeOnlySourceId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(profile -> {
-        final var source = new SocialNetworkRelationship();
-        source.userId = profile.id;
-        assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
+        final var newModel = new SocialNetworkRelationship();
+        newModel.sourceId = profile.id;
+        assertCanMerge(target, newModel, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
 
-          assertThat(merged).isNotEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
-          target.userId = profile.id;
+          assertThat(merged).isNotEqualTo(newModel).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(newModel);
+          target.sourceId = profile.id;
+          assertThat(merged).isEqualTo(target);
+
+        });
+      });
+    });
+  }
+
+  /**
+   * Check that merge only the target identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
+   */
+  @Test
+  public void shouldMergeOnlyTargetId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
+
+      StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(profile -> {
+        final var newModel = new SocialNetworkRelationship();
+        newModel.targetId = profile.id;
+        assertCanMerge(target, newModel, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
+
+          assertThat(merged).isNotEqualTo(newModel).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(newModel);
+          target.targetId = profile.id;
           assertThat(merged).isEqualTo(target);
 
         });
@@ -325,7 +401,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
   }
 
   /**
-   * Check that not merge undefined user identifier.
+   * Check that not merge undefined source identifier.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -333,13 +409,32 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
    */
   @Test
-  public void shouldFailMergeUndefinedUserId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldFailMergeUndefinedSourceId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
-      final var source = new SocialNetworkRelationship();
-      source.userId = "undefinedUserId";
-      assertCannotMerge(target, source, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
+      final var newModel = new SocialNetworkRelationship();
+      newModel.sourceId = "undefinedUserId";
+      assertCannotMerge(target, newModel, "sourceId", new WeNetValidateContext("codePrefix", vertx), testContext);
+    });
+  }
+
+  /**
+   * Check that not merge undefined target identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#merge(RelevantLocation, WeNetValidateContext)
+   */
+  @Test
+  public void shouldFailMergeUndefinedTargetId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
+
+      final var newModel = new SocialNetworkRelationship();
+      newModel.targetId = "undefinedUserId";
+      assertCannotMerge(target, newModel, "targetId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 
@@ -485,7 +580,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
   }
 
   /**
-   * Check that update only the user identifier.
+   * Check that update only the source identifier.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -493,16 +588,41 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
-  public void shouldUpdateOnlyUserId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldUpdateOnlySourceId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
       StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(profile -> {
-        final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
-        source.userId = profile.id;
-        assertCanUpdate(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
+        final var newModel = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
+        newModel.sourceId = profile.id;
+        assertCanUpdate(target, newModel, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
 
-          assertThat(updated).isEqualTo(source).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(source);
+          assertThat(updated).isEqualTo(newModel).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(newModel);
+
+        });
+      });
+    });
+  }
+
+  /**
+   * Check that update only the target identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
+   */
+  @Test
+  public void shouldUpdateOnlyTargetId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
+
+      StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).onSuccess(profile -> {
+        final var newModel = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
+        newModel.targetId = profile.id;
+        assertCanUpdate(target, newModel, new WeNetValidateContext("codePrefix", vertx), testContext, updated -> {
+
+          assertThat(updated).isEqualTo(newModel).isNotEqualTo(target).isNotSameAs(target).isNotSameAs(newModel);
 
         });
       });
@@ -529,7 +649,7 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
   }
 
   /**
-   * Check that not update undefined user identifier.
+   * Check that not update undefined source identifier.
    *
    * @param vertx       event bus to use.
    * @param testContext test context to use.
@@ -537,13 +657,32 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
    * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
    */
   @Test
-  public void shouldFailUpdateUndefinedUserId(final Vertx vertx, final VertxTestContext testContext) {
+  public void shouldFailUpdateUndefinedSourceId(final Vertx vertx, final VertxTestContext testContext) {
 
     this.createModelExample(1, vertx, testContext).onSuccess(target -> {
 
-      final var source = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
-      source.userId = "undefinedUserId";
-      assertCannotUpdate(target, source, "userId", new WeNetValidateContext("codePrefix", vertx), testContext);
+      final var newModel = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
+      newModel.sourceId = "undefinedUserId";
+      assertCannotUpdate(target, newModel, "sourceId", new WeNetValidateContext("codePrefix", vertx), testContext);
+    });
+  }
+
+  /**
+   * Check that not update undefined target identifier.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext test context to use.
+   *
+   * @see RelevantLocation#update(RelevantLocation, WeNetValidateContext)
+   */
+  @Test
+  public void shouldFailUpdateUndefinedTargetId(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.createModelExample(1, vertx, testContext).onSuccess(target -> {
+
+      final var newModel = Model.fromBuffer(target.toBuffer(), SocialNetworkRelationship.class);
+      newModel.targetId = "undefinedUserId";
+      assertCannotUpdate(target, newModel, "targetId", new WeNetValidateContext("codePrefix", vertx), testContext);
     });
   }
 

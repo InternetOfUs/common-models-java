@@ -36,7 +36,7 @@ import io.vertx.core.Promise;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(hidden = true, description = "A social relationship with another WeNet user.")
+@Schema(hidden = true, description = "A social relationship between two WeNet user.")
 public class SocialNetworkRelationship extends ReflectionModel
     implements Model, Validable<WeNetValidateContext>, Mergeable<SocialNetworkRelationship, WeNetValidateContext>,
     Updateable<SocialNetworkRelationship, WeNetValidateContext> {
@@ -44,14 +44,20 @@ public class SocialNetworkRelationship extends ReflectionModel
   /**
    * The identifier of the application where the relation happens.
    */
-  @Schema(description = "The identifier of the application where the relation happens", example = "4c51ee0b-b7ec-4577-9b21-ae6832656e33", nullable = true)
+  @Schema(description = "The identifier of the application where the relation happens", example = "4c51ee0b", nullable = true)
   public String appId;
 
   /**
-   * The identifier of the WeNet user the relationship is related to.
+   * The identifier of the WeNet user that is the source of the relationship.
    */
-  @Schema(description = "The identifier of the WeNet user the relationship is related to", example = "4c51ee0b-b7ec-4577-9b21-ae6832656e33", nullable = true)
-  public String userId;
+  @Schema(description = "The identifier of the WeNet user that is the source of the relationship", example = "1", nullable = true)
+  public String sourceId;
+
+  /**
+   * The identifier of the WeNet user the relationship is related to the source.
+   */
+  @Schema(description = "The identifier of the WeNet user the relationship is related to the source", example = "2", nullable = true)
+  public String targetId;
 
   /**
    * The relationship type.
@@ -81,7 +87,8 @@ public class SocialNetworkRelationship extends ReflectionModel
     } else {
 
       future = context.validateDefinedAppIdField("appId", this.appId, future);
-      future = context.validateDefinedProfileIdField("userId", this.userId, future);
+      future = context.validateDefinedProfileIdField("sourceId", this.sourceId, future);
+      future = context.validateDefinedProfileIdField("targetId", this.targetId, future);
       context.validateNumberOnRangeField("weight", this.weight, 0.0d, 1.0d, promise);
       promise.tryComplete();
     }
@@ -103,7 +110,8 @@ public class SocialNetworkRelationship extends ReflectionModel
 
       final var merged = new SocialNetworkRelationship();
       merged.appId = Merges.mergeValues(this.appId, source.appId);
-      merged.userId = Merges.mergeValues(this.userId, source.userId);
+      merged.sourceId = Merges.mergeValues(this.sourceId, source.sourceId);
+      merged.targetId = Merges.mergeValues(this.targetId, source.targetId);
       merged.type = Merges.mergeValues(this.type, source.type);
       merged.weight = Merges.mergeValues(this.weight, source.weight);
 
@@ -133,7 +141,8 @@ public class SocialNetworkRelationship extends ReflectionModel
 
       final var updated = new SocialNetworkRelationship();
       updated.appId = source.appId;
-      updated.userId = source.userId;
+      updated.sourceId = source.sourceId;
+      updated.targetId = source.targetId;
       updated.type = source.type;
       updated.weight = source.weight;
 
@@ -163,7 +172,7 @@ public class SocialNetworkRelationship extends ReflectionModel
   public static boolean compareIds(final SocialNetworkRelationship a, final SocialNetworkRelationship b) {
 
     return a != null && a.type != null && a.type.equals(b.type) && a.appId != null && a.appId.equals(b.appId)
-        && a.userId != null && a.userId.equals(b.userId);
+        && a.sourceId != null && a.sourceId.equals(b.sourceId) && a.targetId != null && a.targetId.equals(b.targetId);
 
   }
 
