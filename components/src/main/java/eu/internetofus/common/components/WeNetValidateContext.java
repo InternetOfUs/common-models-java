@@ -666,12 +666,11 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
         typeName = type.name();
       }
       return WeNetProfileManager.createProxy(this.vertx)
-          .retrieveSocialNetworkRelationshipsPage(appId, sourceId, targetId, sourceId, typeName, 0, 0)
-          .transform(page -> {
+          .retrieveSocialNetworkRelationshipsPage(appId, sourceId, targetId, typeName, null, 0, 0).transform(page -> {
 
             if (page.failed() || page.result().total != 1) {
 
-              return this.failField(name, "The '" + type + "' is not defined on the '" + appId
+              return this.failField(name, "The '" + type + "' is not defined on the app '" + appId
                   + "' by the source user '" + sourceId + "' with the target user '" + targetId + "'.");
 
             } else {
