@@ -250,7 +250,7 @@ public class Repository {
               _id = id.getString("_id");
             }
 
-            if (_id == null) {
+            if (_id == null && result.getDocMatched() != 1) {
 
               return Future.failedFuture("Not added document");
 
