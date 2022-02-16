@@ -1168,4 +1168,50 @@ public interface ModelResources {
 
   }
 
+  /**
+   * Return the model described in a JSON array.
+   *
+   * @param value   of the model to obtain.
+   * @param type    of the models.
+   * @param context of the request.
+   * @param success component to call when has obtained the model.
+   *
+   * @param <T>     type of model to obtain form the JSON.
+   */
+  static public <T> void toModel(final JsonArray value, @NotNull final Class<T> type,
+      @NotNull final ServiceContext context, @NotNull final Consumer<List<T>> success) {
+
+    if (value == null) {
+
+      final var name = type.getSimpleName();
+      Logger.trace("The NULL JSON does not represents a {}.\n{}", () -> name, () -> context);
+      ServiceResponseHandlers.responseWithErrorMessage(context.resultHandler, Status.BAD_REQUEST, "bad_" + name,
+          "No JSON provided for a " + name + ".");
+
+    } else {
+
+      Model.fromFutureJsonArray(Future.succeededFuture(value), type).onComplete(parsed -> {
+
+        if (parsed.failed()) {
+
+          final var name = type.getSimpleName();
+          final var cause = parsed.cause();
+          Logger.trace(cause, "The JSON does not represents a {}.\n{}\n{}", () -> name, () -> value.encodePrettily(),
+              () -> context);
+          ServiceResponseHandlers.responseWithErrorMessage(context.resultHandler, Status.BAD_REQUEST, "bad_" + name,
+              "The JSON does not represents a " + name + ", because "
+                  + cause.getMessage().replaceAll("\\([^\\(]*\\w(\\.\\w)*[^\\(]*\\)", ""));
+
+        } else {
+
+          final var model = parsed.result();
+          Logger.trace("Obtain model {}.\n{}", model, context);
+          success.accept(model);
+        }
+
+      });
+
+    }
+  }
+
 }
