@@ -127,7 +127,7 @@ public class Label extends ReflectionModel
    */
   public static boolean compareIds(final Label a, final Label b) {
 
-    return a != null && b != null && a.name.equals(b.name);
+    return a != null && b != null && a.name != null && a.name.equals(b.name);
 
   }
 

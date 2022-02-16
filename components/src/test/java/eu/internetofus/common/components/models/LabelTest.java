@@ -339,4 +339,26 @@ public class LabelTest extends ModelTestCase<Label> {
     assertCannotMerge(target, source, "longitude", new WeNetValidateContext("codePrefix", vertx), testContext);
   }
 
+  /**
+   * Check that compare some label by their identifiers.
+   *
+   * @see Label#compareIds(Label, Label)
+   */
+  @Test
+  public void shouldCompareIds() {
+
+    assertThat(Label.compareIds(null, null)).isFalse();
+    final var source = new Label();
+    assertThat(Label.compareIds(source, null)).isFalse();
+    final var target = new Label();
+    assertThat(Label.compareIds(null, target)).isFalse();
+    assertThat(Label.compareIds(source, target)).isFalse();
+    source.name = "name";
+    assertThat(Label.compareIds(source, target)).isFalse();
+    target.name = "name2";
+    assertThat(Label.compareIds(source, target)).isFalse();
+    target.name = "name";
+    assertThat(Label.compareIds(source, target)).isTrue();
+  }
+
 }

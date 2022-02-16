@@ -171,8 +171,9 @@ public class SocialNetworkRelationship extends ReflectionModel
    */
   public static boolean compareIds(final SocialNetworkRelationship a, final SocialNetworkRelationship b) {
 
-    return a != null && a.type != null && a.type.equals(b.type) && a.appId != null && a.appId.equals(b.appId)
-        && a.sourceId != null && a.sourceId.equals(b.sourceId) && a.targetId != null && a.targetId.equals(b.targetId);
+    return a != null && b != null && a.type != null && a.type.equals(b.type) && a.appId != null
+        && a.appId.equals(b.appId) && a.sourceId != null && a.sourceId.equals(b.sourceId) && a.targetId != null
+        && a.targetId.equals(b.targetId);
 
   }
 

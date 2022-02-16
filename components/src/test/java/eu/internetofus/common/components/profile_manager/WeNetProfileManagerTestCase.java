@@ -26,11 +26,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetComponentTestCase;
 import eu.internetofus.common.components.models.CommunityProfileTest;
+import eu.internetofus.common.components.models.SocialNetworkRelationship;
+import eu.internetofus.common.components.models.SocialNetworkRelationshipTest;
 import eu.internetofus.common.components.models.WeNetUserProfileTest;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.serviceproxy.ServiceException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.ws.rs.core.Response.Status;
 import org.junit.jupiter.api.Test;
@@ -498,6 +502,80 @@ public abstract class WeNetProfileManagerTestCase extends WeNetComponentTestCase
 
               }));
         }));
+
+  }
+
+  /**
+   * Should not add or update bad social network relationship.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldFailAddOrUpdateSocialNetworkRelationship(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var relationship = new SocialNetworkRelationshipTest().createModelExample(0);
+    testContext.assertFailure(WeNetProfileManager.createProxy(vertx).addOrUpdateSocialNetworkRelationship(relationship))
+        .onFailure(any -> testContext.completeNow());
+
+  }
+
+  /**
+   * Should add or update bad social network relationship.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldAddOrUpdateSocialNetworkRelationship(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(new SocialNetworkRelationshipTest().createModelExample(0, vertx, testContext))
+        .onSuccess(relationship -> testContext
+            .assertComplete(WeNetProfileManager.createProxy(vertx).addOrUpdateSocialNetworkRelationship(relationship))
+            .onSuccess(any -> testContext.completeNow()));
+
+  }
+
+  /**
+   * Should not add or update bad social network relationships.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldFailAddOrUpdateSocialNetworkRelationships(final Vertx vertx, final VertxTestContext testContext) {
+
+    final List<SocialNetworkRelationship> relationships = new ArrayList<>();
+    relationships.add(new SocialNetworkRelationshipTest().createModelExample(0));
+    relationships.add(new SocialNetworkRelationshipTest().createModelExample(1));
+    testContext
+        .assertFailure(WeNetProfileManager.createProxy(vertx).addOrUpdateSocialNetworkRelationships(relationships))
+        .onFailure(any -> testContext.completeNow());
+
+  }
+
+  /**
+   * Should add or update bad social network relationships.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldAddOrUpdateSocialNetworkRelationships(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(new SocialNetworkRelationshipTest().createModelExample(0, vertx, testContext))
+        .onSuccess(relationship1 -> testContext
+            .assertComplete(new SocialNetworkRelationshipTest().createModelExample(1, vertx, testContext))
+            .onSuccess(relationship2 -> {
+              final List<SocialNetworkRelationship> relationships = new ArrayList<>();
+              relationships.add(relationship1);
+              relationships.add(relationship2);
+              testContext
+                  .assertComplete(
+                      WeNetProfileManager.createProxy(vertx).addOrUpdateSocialNetworkRelationships(relationships))
+                  .onSuccess(any -> testContext.completeNow());
+
+            }));
 
   }
 

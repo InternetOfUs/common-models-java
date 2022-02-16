@@ -796,4 +796,46 @@ public class SocialNetworkRelationshipTest extends ModelTestCase<SocialNetworkRe
     assertCanUpdate(target, null, new WeNetValidateContext("codePrefix", vertx), testContext,
         updated -> assertThat(updated).isSameAs(target));
   }
+
+  /**
+   * Check that compare some relations by their identifiers.
+   *
+   * @see SocialNetworkRelationship#compareIds(SocialNetworkRelationship,
+   *      SocialNetworkRelationship)
+   */
+  @Test
+  public void shouldCompareIds() {
+
+    assertThat(SocialNetworkRelationship.compareIds(null, null)).isFalse();
+    final var source = new SocialNetworkRelationship();
+    assertThat(SocialNetworkRelationship.compareIds(source, null)).isFalse();
+    final var target = new SocialNetworkRelationship();
+    assertThat(SocialNetworkRelationship.compareIds(null, target)).isFalse();
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isFalse();
+    source.type = SocialNetworkRelationshipType.acquaintance;
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isFalse();
+    target.type = SocialNetworkRelationshipType.colleague;
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isFalse();
+    target.type = SocialNetworkRelationshipType.acquaintance;
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isFalse();
+    source.appId = "appId";
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isFalse();
+    target.appId = "appId2";
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isFalse();
+    target.appId = "appId";
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isFalse();
+    source.sourceId = "sourceId";
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isFalse();
+    target.sourceId = "sourceId2";
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isFalse();
+    target.sourceId = "sourceId";
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isFalse();
+    source.targetId = "targetId";
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isFalse();
+    target.targetId = "targetId2";
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isFalse();
+    target.targetId = "targetId";
+    assertThat(SocialNetworkRelationship.compareIds(source, target)).isTrue();
+  }
+
 }

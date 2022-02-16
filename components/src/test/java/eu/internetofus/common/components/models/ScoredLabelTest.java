@@ -197,4 +197,31 @@ public class ScoredLabelTest extends ModelTestCase<ScoredLabel> {
       assertThat(merged).isEqualTo(target);
     });
   }
+
+  /**
+   * Check that compare some scored labels by id.
+   *
+   * @see ScoredLabel#compareIds
+   */
+  @Test
+  public void shouldCompareIds() {
+
+    assertThat(ScoredLabel.compareIds(null, null)).isFalse();
+    final var source = new ScoredLabel();
+    assertThat(ScoredLabel.compareIds(source, null)).isFalse();
+    final var target = new ScoredLabel();
+    assertThat(ScoredLabel.compareIds(null, target)).isFalse();
+    assertThat(ScoredLabel.compareIds(source, target)).isFalse();
+    source.label = new Label();
+    assertThat(ScoredLabel.compareIds(source, target)).isFalse();
+    target.label = new Label();
+    assertThat(ScoredLabel.compareIds(source, target)).isFalse();
+    source.label.name = "name";
+    assertThat(ScoredLabel.compareIds(source, target)).isFalse();
+    target.label.name = "name2";
+    assertThat(ScoredLabel.compareIds(source, target)).isFalse();
+    target.label.name = "name";
+    assertThat(ScoredLabel.compareIds(source, target)).isTrue();
+  }
+
 }
