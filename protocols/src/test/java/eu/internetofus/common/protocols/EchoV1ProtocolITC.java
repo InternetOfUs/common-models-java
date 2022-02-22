@@ -122,7 +122,7 @@ public class EchoV1ProtocolITC extends AbstractDefaultProtocolITC {
     final var checkMessages = new ArrayList<Predicate<Message>>();
     final var checkMessage = MessagePredicates.labelIs("echo")
         .and(MessagePredicates.receiverIs(transaction.actioneerId))
-        .and(MessagePredicates.attributesAre(transaction.attributes));
+        .and(MessagePredicates.attributesAre(new JsonObject().put("message", message).put("taskId", this.task.id)));
     checkMessages.add(checkMessage);
     final var checkTask = TaskPredicates.transactionSizeIs(2)
         .and(TaskPredicates.transactionAt(1,
