@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import eu.internetofus.common.components.StoreServices;
 import eu.internetofus.common.components.WeNetIntegrationExtension;
 import eu.internetofus.common.components.WeNetValidateContext;
+import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ModelTestCase;
 import io.vertx.core.Future;
@@ -274,9 +275,9 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       final VertxTestContext testContext) {
 
     return testContext
-        .assertComplete(StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).compose(stored1 ->
+        .assertComplete(WeNetProfileManager.createProxy(vertx).createProfile(new WeNetUserProfile()).compose(stored1 ->
 
-        StoreServices.storeProfile(new WeNetUserProfile(), vertx, testContext).map(stored2 -> {
+        WeNetProfileManager.createProxy(vertx).createProfile(new WeNetUserProfile()).map(stored2 -> {
 
           final var profile = this.createModelExample(index);
           final var activity = new PlannedActivityTest().createModelExample(index);
