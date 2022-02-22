@@ -30,13 +30,13 @@ You will need to add the below to your **pom.xml** file.
  </properties>
  <repositories>
  ...
-        <repository>
-          <id>github</id>
-          <url>https://maven.pkg.github.com/InternetOfUs/common-models-java</url>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </repository>
+   <repository>
+	<id>github</id>
+	<url>https://maven.pkg.github.com/InternetOfUs/common-models-java</url>
+	<snapshots>
+	 <enabled>true</enabled>
+	</snapshots>
+   </repository>
   ...
   </repositories>
   ...
