@@ -484,44 +484,54 @@ public interface WeNetProfileManager extends WeNetComponent {
   /**
    * Return the relationships that match arguments.
    *
-   * @param appId    application identifier to match in the relationships to
-   *                 return.
-   * @param sourceId user identifier to match the source of the relationships to
-   *                 return.
-   * @param targetId user identifier to match the target of the relationships to
-   *                 return.
-   * @param type     to match in the relationships to return.
-   * @param order    in with the relationships has to be sort.
-   * @param offset   index of the first relationship to return.
-   * @param limit    number maximum of relationships to return.
-   * @param handler  to the relationships page.
+   * @param appId      application identifier to match in the relationships to
+   *                   return.
+   * @param sourceId   user identifier to match the source of the relationships to
+   *                   return.
+   * @param targetId   user identifier to match the target of the relationships to
+   *                   return.
+   * @param type       to match in the relationships to return.
+   * @param weightFrom the minimum, inclusive, weight of the relationships to
+   *                   return.
+   * @param weightTo   the maximum, inclusive, weight of the relationships to
+   *                   return.
+   * @param order      in with the relationships has to be sort.
+   * @param offset     index of the first relationship to return.
+   * @param limit      number maximum of relationships to return.
+   * @param handler    to the relationships page.
    */
-  void retrieveSocialNetworkRelationshipsPage(String appId, String sourceId, String targetId, String type, String order,
-      int offset, int limit, @NotNull Handler<AsyncResult<JsonObject>> handler);
+  void retrieveSocialNetworkRelationshipsPage(String appId, String sourceId, String targetId, String type,
+      final Double weightFrom, final Double weightTo, String order, int offset, int limit,
+      @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * Return the found relationships.
    *
-   * @param appId    application identifier to match in the relationships to
-   *                 return.
-   * @param sourceId user identifier to match the source of the relationships to
-   *                 return.
-   * @param targetId user identifier to match the target of the relationships to
-   *                 return.
-   * @param type     to match in the relationships to return.
-   * @param order    in with the communities has to be sort.
-   * @param offset   index of the first community to return.
-   * @param limit    number maximum of communities to return.
+   * @param appId      application identifier to match in the relationships to
+   *                   return.
+   * @param sourceId   user identifier to match the source of the relationships to
+   *                   return.
+   * @param targetId   user identifier to match the target of the relationships to
+   *                   return.
+   * @param type       to match in the relationships to return.
+   * @param weightFrom the minimum, inclusive, weight of the relationships to
+   *                   return.
+   * @param weightTo   the maximum, inclusive, weight of the relationships to
+   *                   return.
+   * @param order      in with the communities has to be sort.
+   * @param offset     index of the first community to return.
+   * @param limit      number maximum of communities to return.
    *
    * @return the future with the relationships page.
    */
   @GenIgnore
   default Future<SocialNetworkRelationshipsPage> retrieveSocialNetworkRelationshipsPage(final String appId,
-      final String sourceId, final String targetId, final String type, final String order, final int offset,
-      final int limit) {
+      final String sourceId, final String targetId, final String type, final Double weightFrom, final Double weightTo,
+      final String order, final int offset, final int limit) {
 
     final Promise<JsonObject> promise = Promise.promise();
-    this.retrieveSocialNetworkRelationshipsPage(appId, sourceId, targetId, type, order, offset, limit, promise);
+    this.retrieveSocialNetworkRelationshipsPage(appId, sourceId, targetId, type, weightFrom, weightTo, order, offset,
+        limit, promise);
     return Model.fromFutureJsonObject(promise.future(), SocialNetworkRelationshipsPage.class);
 
   }

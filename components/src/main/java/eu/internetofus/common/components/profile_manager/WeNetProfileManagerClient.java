@@ -238,8 +238,8 @@ public class WeNetProfileManagerClient extends ComponentClientWithCache implemen
    */
   @Override
   public void retrieveSocialNetworkRelationshipsPage(final String appId, final String sourceId, final String targetId,
-      final String type, final String order, final int offset, final int limit,
-      final Handler<AsyncResult<JsonObject>> handler) {
+      final String type, final Double weightFrom, final Double weightTo, final String order, final int offset,
+      final int limit, final Handler<AsyncResult<JsonObject>> handler) {
 
     final var params = new LinkedHashMap<String, String>();
     if (appId != null) {
@@ -261,6 +261,14 @@ public class WeNetProfileManagerClient extends ComponentClientWithCache implemen
     if (order != null) {
 
       params.put("order", order);
+    }
+    if (weightFrom != null) {
+
+      params.put("weightFrom", String.valueOf(weightFrom));
+    }
+    if (weightTo != null) {
+
+      params.put("weightTo", String.valueOf(weightTo));
     }
     params.put("offset", String.valueOf(offset));
     params.put("limit", String.valueOf(limit));

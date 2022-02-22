@@ -486,15 +486,16 @@ public abstract class WeNetProfileManagerTestCase extends WeNetComponentTestCase
 
     final var appId = UUID.randomUUID().toString();
     testContext.assertComplete(WeNetProfileManager.createProxy(vertx).retrieveSocialNetworkRelationshipsPage(appId,
-        null, null, null, null, 0, 100)).onSuccess(page -> testContext.verify(() -> {
+        null, null, null, null, null, null, 0, 100)).onSuccess(page -> testContext.verify(() -> {
 
           assertThat(page).isNotNull();
           assertThat(page.offset).isEqualTo(0);
           assertThat(page.total).isEqualTo(0);
           assertThat(page.relationships).isNull();
 
-          testContext.assertComplete(WeNetProfileManager.createProxy(vertx)
-              .retrieveSocialNetworkRelationshipsPage(appId, "sourceId", "targetId", "type", "type", 0, 100))
+          testContext
+              .assertComplete(WeNetProfileManager.createProxy(vertx).retrieveSocialNetworkRelationshipsPage(appId,
+                  "sourceId", "targetId", "type", 0.3d, 0.8d, "type", 0, 100))
               .onSuccess(page2 -> testContext.verify(() -> {
 
                 assertThat(page).isEqualTo(page2);

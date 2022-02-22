@@ -666,7 +666,8 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
         typeName = type.name();
       }
       return WeNetProfileManager.createProxy(this.vertx)
-          .retrieveSocialNetworkRelationshipsPage(appId, sourceId, targetId, typeName, null, 0, 0).transform(page -> {
+          .retrieveSocialNetworkRelationshipsPage(appId, sourceId, targetId, typeName, null, null, null, 0, 0)
+          .transform(page -> {
 
             if (page.failed() || page.result().total != 1) {
 
