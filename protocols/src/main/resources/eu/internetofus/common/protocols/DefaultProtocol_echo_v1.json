@@ -43,7 +43,7 @@
 			"thenceforth": "add_message_transaction() and send_message(Me,'echo',Content)"
 		},
 		{
-			"whenever": "is_received(_,'echo',Content) and get_task_id(TaskId) and get_attribute(Message,message,@null,Content)",
+			"whenever": "is_received(_,'echo',Content) and get_task_id(TaskId) and get_attribute(Message,message,@(null),Content)",
 			"thenceforth": "send_user_message('echo',json([taskId=TaskId,message=Message]))"
 		}
 	]
