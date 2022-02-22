@@ -43,6 +43,7 @@ import eu.internetofus.common.components.social_context_builder.UserMessage;
 import eu.internetofus.common.components.social_context_builder.WeNetSocialContextBuilderSimulator;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import eu.internetofus.common.model.Model;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -166,22 +167,21 @@ public abstract class AbstractProtocolITC {
 
     this.assertLastSuccessfulTestWas(0, testContext);
 
-    final Promise<Void> promise = Promise.promise();
+    @SuppressWarnings("rawtypes")
+    final List<Future> futures = new ArrayList<>();
     final var max = this.numberOfUsersToCreate();
     for (var i = 0; i < max; i++) {
 
-      final var index = i;
-      StoreServices.storeProfileExample(index, vertx, testContext).onComplete(testContext.succeeding(createdUser -> {
+      futures.add(StoreServices.storeProfileExample(i, vertx, testContext).map(createdUser -> {
 
         this.users.add(createdUser);
-        if (this.users.size() >= max) {
-
-          promise.complete();
-        }
+        return null;
       }));
+
     }
 
-    promise.future().onComplete(testContext.succeeding(empty -> this.assertSuccessfulCompleted(testContext)));
+    CompositeFuture.all(futures).onFailure(error -> testContext.failNow(error))
+        .onSuccess(any -> this.assertSuccessfulCompleted(testContext));
 
   }
 
