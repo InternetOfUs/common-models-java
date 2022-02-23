@@ -52,6 +52,7 @@ public abstract class AbstractAsk4HelpV2ProtocolITC extends AbstractDefaultProto
   protected Task createTaskForProtocol() {
 
     final var taskToCreate = super.createTaskForProtocol();
+    taskToCreate.goal.name = "Any of you do you known what mean \u0631 \u06AF\u0631\u0648\u0647 \u0627\u0632 \u062F\u06CC\u06AF\u0631\u0627\u0646 \u0628\u067E\u0631\u0633\u06CC\u061F ?";
     taskToCreate.attributes = new JsonObject().put("domain", "varia_misc").put("domainInterest", "indifferent")
         .put("beliefsAndValues", "indifferent").put("sensitive", false).put("anonymous", false)
         .put("socialCloseness", "indifferent").put("positionOfAnswerer", "anywhere").put("maxUsers", 5);
