@@ -3,7 +3,7 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
-## Version 1.0.0 (2022-02-23)
+## Version 1.0.0 (2022-02-25)
 
  * Upgrade vertx.
  * Extract relationships from the profile.

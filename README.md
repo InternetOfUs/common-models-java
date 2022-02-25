@@ -1,6 +1,3 @@
-[![Build and Test](https://github.com/InternetOfUs/common-models-java/actions/workflows/branch-build-and-test.yml/badge.svg?branch=develop)](https://github.com/InternetOfUs/common-models-java/actions/workflows/branch-build-and-test.yml)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
 # Internet of us - Common models java
 
 This project contains some common java code that can be used by the components.
@@ -8,10 +5,10 @@ It is formed by the next modules:
 
  * __common-bom__  Bill of materials of the project. This contains all the modules of the project.
  * __common-test__  Project with the utilities and dependencies to do tests.
- * __common-model__  Basic classes used to define teh internet of us data model.
+ * __common-model__  Basic classes used to define data models.
  * __common-vertx__  Utility classes to define microservices to provide the component web services.
- * __common-components__  The clients to interact with the platform components.
- * __common-protocols__  Define some protocols that describe the used interactions on the pilot tasks.
+ * __common-components__  The HTTP clients to request the platform components.
+ * __common-protocols__  Define some protocols that describe the user interactions on the pilot tasks.
  * __common-dummy__  Dummy implementations to test the modules.
 
 
@@ -60,7 +57,7 @@ You will need to add the below to your **pom.xml** file.
 ## Development
 
 First of all, you must install [docker](https://docs.docker.com/install/).
-After that you can start a development environment with the script
+After that, you can start a development environment with the script
 **startDevelopmentEnvironment.sh**. It creates a docker image with
 the software to compile and test the project.
 
@@ -82,7 +79,7 @@ with the script **stopDevelopmentEnvironment.sh**.
 This project is automatically deployed every time you create a tag on the repository.
 If you want you can manually deploy with the command `mvn deploy`,
 but before you must set the deploy token into the maven settings. The next steps
-explains how to do it.
+explain how to do it.
 
  * Go to [Github tokens](https://github.com/settings/tokens)
  * Generate new token, with the privilege __write:packages__.
