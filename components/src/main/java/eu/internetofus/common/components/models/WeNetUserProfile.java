@@ -180,6 +180,12 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
   public List<Meaning> meanings;
 
   /**
+   * The relationships of the user.
+   */
+  @ArraySchema(schema = @Schema(implementation = DeprecatedSocialNetworkRelationship.class), arraySchema = @Schema(description = "The relationships of the user", nullable = true))
+  public List<DeprecatedSocialNetworkRelationship> relationships;
+
+  /**
    * {@inheritDoc}
    */
   @Override
