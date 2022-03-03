@@ -297,4 +297,40 @@ public class WeNetProfileManagerClient extends ComponentClientWithCache implemen
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteSocialNetworkRelationships(final String appId, final String sourceId, final String targetId,
+      final String type, final Double weightFrom, final Double weightTo, final Handler<AsyncResult<Void>> handler) {
+
+    final var params = new LinkedHashMap<String, String>();
+    if (appId != null) {
+
+      params.put("appId", appId);
+    }
+    if (sourceId != null) {
+
+      params.put("sourceId", sourceId);
+    }
+    if (targetId != null) {
+
+      params.put("targetId", targetId);
+    }
+    if (type != null) {
+
+      params.put("type", type);
+    }
+    if (weightFrom != null) {
+
+      params.put("weightFrom", String.valueOf(weightFrom));
+    }
+    if (weightTo != null) {
+
+      params.put("weightTo", String.valueOf(weightTo));
+    }
+    this.delete(params, "/relationships").onComplete(handler);
+
+  }
+
 }

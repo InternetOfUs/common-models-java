@@ -28,6 +28,7 @@ import eu.internetofus.common.components.WeNetComponentTestCase;
 import eu.internetofus.common.components.models.CommunityProfileTest;
 import eu.internetofus.common.components.models.SocialNetworkRelationship;
 import eu.internetofus.common.components.models.SocialNetworkRelationshipTest;
+import eu.internetofus.common.components.models.SocialNetworkRelationshipType;
 import eu.internetofus.common.components.models.WeNetUserProfileTest;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -577,6 +578,57 @@ public abstract class WeNetProfileManagerTestCase extends WeNetComponentTestCase
                   .onSuccess(any -> testContext.completeNow());
 
             }));
+
+  }
+
+  /**
+   * Should Add get delete and get social network relationships.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldAddGetDeleteGetSocialNetworkRelationships(final Vertx vertx, final VertxTestContext testContext) {
+
+    testContext.assertComplete(new SocialNetworkRelationshipTest().createModelExample(0, vertx, testContext))
+        .onSuccess(relationship -> {
+
+          final List<SocialNetworkRelationship> relationships = new ArrayList<>();
+          relationships.add(relationship);
+          final var relationship2 = new SocialNetworkRelationship();
+          relationship2.appId = relationship.appId;
+          relationship2.sourceId = relationship.sourceId;
+          relationship2.targetId = relationship.targetId;
+          var i = 0;
+          relationship2.type = SocialNetworkRelationshipType.values()[i];
+          while (relationship2.type == relationship.type) {
+            i++;
+            relationship2.type = SocialNetworkRelationshipType.values()[i];
+          }
+          relationships.add(relationship2);
+          testContext.assertComplete(WeNetProfileManager.createProxy(vertx)
+              .addOrUpdateSocialNetworkRelationships(relationships)
+              .compose(any -> WeNetProfileManager.createProxy(vertx).retrieveSocialNetworkRelationshipsPage(
+                  relationship.appId, relationship.sourceId, relationship.targetId, null, null, null, null, 0, 100)))
+              .onSuccess(page -> {
+
+                testContext.verify(() -> assertThat(page.relationships).isNotEmpty().hasSize(2)
+                    .contains(relationships.toArray(new SocialNetworkRelationship[0])));
+                testContext.assertComplete(WeNetProfileManager.createProxy(vertx)
+                    .deleteSocialNetworkRelationships(relationship.appId, relationship.sourceId, relationship.targetId,
+                        null, null, null)
+                    .compose(any -> WeNetProfileManager.createProxy(vertx).retrieveSocialNetworkRelationshipsPage(
+                        relationship.appId, relationship.sourceId, relationship.targetId, null, null, null, null, 0,
+                        100)))
+                    .onSuccess(page2 -> {
+
+                      testContext.verify(() -> assertThat(page2.relationships).isNullOrEmpty());
+                      testContext.completeNow();
+                    });
+
+              });
+
+        });
 
   }
 

@@ -590,4 +590,50 @@ public interface WeNetProfileManager extends WeNetComponent {
 
   }
 
+  /**
+   * Delete some relationships that match arguments.
+   *
+   * @param appId      application identifier to match in the relationships to
+   *                   return.
+   * @param sourceId   user identifier to match the source of the relationships to
+   *                   return.
+   * @param targetId   user identifier to match the target of the relationships to
+   *                   return.
+   * @param type       to match in the relationships to return.
+   * @param weightFrom the minimum, inclusive, weight of the relationships to
+   *                   return.
+   * @param weightTo   the maximum, inclusive, weight of the relationships to
+   *                   return.
+   * @param handler    to the deleted result.
+   */
+  void deleteSocialNetworkRelationships(String appId, String sourceId, String targetId, String type,
+      final Double weightFrom, final Double weightTo, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Delete some relationships.
+   *
+   * @param appId      application identifier to match in the relationships to
+   *                   return.
+   * @param sourceId   user identifier to match the source of the relationships to
+   *                   return.
+   * @param targetId   user identifier to match the target of the relationships to
+   *                   return.
+   * @param type       to match in the relationships to return.
+   * @param weightFrom the minimum, inclusive, weight of the relationships to
+   *                   return.
+   * @param weightTo   the maximum, inclusive, weight of the relationships to
+   *                   return.
+   *
+   * @return the future that inform if the relationships has deleted.
+   */
+  @GenIgnore
+  default Future<Void> deleteSocialNetworkRelationships(final String appId, final String sourceId,
+      final String targetId, final String type, final Double weightFrom, final Double weightTo) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.deleteSocialNetworkRelationships(appId, sourceId, targetId, type, weightFrom, weightTo, promise);
+    return promise.future();
+
+  }
+
 }
