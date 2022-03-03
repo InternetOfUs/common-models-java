@@ -599,6 +599,7 @@ public abstract class WeNetProfileManagerTestCase extends WeNetComponentTestCase
           relationship2.appId = relationship.appId;
           relationship2.sourceId = relationship.sourceId;
           relationship2.targetId = relationship.targetId;
+          relationship2.weight = Math.random();
           var i = 0;
           relationship2.type = SocialNetworkRelationshipType.values()[i];
           while (relationship2.type == relationship.type) {
