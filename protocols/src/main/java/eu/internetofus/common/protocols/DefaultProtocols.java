@@ -50,6 +50,12 @@ public enum DefaultProtocols implements DefaultProtocol {
   ASK_4_HELP_V2("ask4help_v2"),
 
   /**
+   * The new version of the second version of the protocol to ask for help where
+   * do to have social closeness or position to answer.
+   */
+  ASK_4_HELP_V2_2("ask4help_v2_2"),
+
+  /**
    * The second version of the protocol to ask for help. This use the new
    * automatic predicates that notify the incentive server.
    */

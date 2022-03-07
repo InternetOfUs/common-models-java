@@ -194,7 +194,7 @@
 		"specification": {
 			"type": "array",
 			"items": {
-				
+
 			},
 			"default": "{}"
 		},
@@ -324,7 +324,7 @@
 				"type": "integer"
 			},
 			"uniqueItems": {
-				
+
 			}
 		},
 		"codePrefix": "uniqueItems"
@@ -435,7 +435,7 @@
 		"specification": {
 			"type": "array",
 			"items": {
-				
+
 			},
 			"minItems": "Two"
 		},
@@ -445,7 +445,7 @@
 		"specification": {
 			"type": "array",
 			"items": {
-				
+
 			},
 			"minItems": -1
 		},
@@ -462,7 +462,7 @@
 		"specification": {
 			"type": "array",
 			"items": {
-				
+
 			},
 			"maxItems": "Two"
 		},
@@ -472,7 +472,7 @@
 		"specification": {
 			"type": "array",
 			"items": {
-				
+
 			},
 			"minItems": 2,
 			"maxItems": 1
@@ -484,7 +484,7 @@
 			"type": "object",
 			"additionalProperties": true,
 			"properties": {
-				
+
 			}
 		},
 		"codePrefix": "additionalProperties"
@@ -505,7 +505,7 @@
 				"type": "string"
 			},
 			"properties": {
-				
+
 			}
 		},
 		"codePrefix": "additionalProperties"
@@ -528,7 +528,7 @@
 		"specification": {
 			"type": "array",
 			"items": {
-				
+
 			},
 			"minLength": 10
 		},
@@ -538,7 +538,7 @@
 		"specification": {
 			"type": "array",
 			"items": {
-				
+
 			},
 			"maxLength": 10
 		},
@@ -745,7 +745,7 @@
 		"specification": {
 			"allOf": [
 				{
-					
+
 				},
 				{
 					"type": "undefined"
@@ -1003,7 +1003,7 @@
 			"title": "Bad properties all elemenets has to be JsonObjects",
 			"properties": {
 				"one": {
-					
+
 				},
 				"two": 2
 			}
@@ -1023,5 +1023,31 @@
 			]
 		},
 		"codePrefix": "enum[3]"
+	},
+	"127": {
+		"specification": {
+			"type": "object",
+			"properties": {
+				"domain": {
+					"description": "The chosen domain of the question",
+					"type": "string",
+					"nullable": false,
+					"enum": {
+						"0": "studying_career",
+						"1": "local_university",
+						"2": "local_things",
+						"3": "physical_activity",
+						"4": "cultural_interests",
+						"5": "food_and_cooking",
+						"6": "cinema_theatre",
+						"7": "music",
+						"8": "arts_and_crafts",
+						"9": "life_ponders",
+						"10": "varia_misc"
+					}
+				}
+			}
+		},
+		"codePrefix": "properties.domain.enum"
 	}
 }
