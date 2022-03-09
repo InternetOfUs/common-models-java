@@ -70,7 +70,7 @@
 		<org.assertj-version>3.21.0</org.assertj-version>
 		<org.itsallcode-junit5-system-extensions-version>1.2.0</org.itsallcode-junit5-system-extensions-version>
 		<org.mockito-version>4.0.0</org.mockito-version>
-		<org.testcontainers-version>1.15.3</org.testcontainers-version>
+		<org.testcontainers-version>1.16.3</org.testcontainers-version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>

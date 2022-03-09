@@ -40,7 +40,7 @@ public class MongoContainer<SELF extends MongoContainer<SELF>> {
   /**
    * The name of the mongo docker container to use.
    */
-  public static final String MONGO_DOCKER_NAME = "mongo:5.0.3";
+  public static final String MONGO_DOCKER_NAME = "mongo:5.0.6";
 
   /**
    * The port for the MongoDB that has to be exported.
