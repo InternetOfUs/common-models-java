@@ -45,7 +45,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class Ask4HelpV2_2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2ProtocolITC {
+public class Ask4HelpV2_2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2_2ProtocolITC {
 
   /**
    * The number maximum users to ask.

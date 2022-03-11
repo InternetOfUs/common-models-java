@@ -54,7 +54,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class Ask4HelpV2_2ProtocolITC extends AbstractAsk4HelpV2ProtocolITC {
+public class Ask4HelpV2_2ProtocolITC extends AbstractAsk4HelpV2_2ProtocolITC {
 
   /**
    * The identifier of the users that has notify the question.
@@ -131,17 +131,14 @@ public class Ask4HelpV2_2ProtocolITC extends AbstractAsk4HelpV2ProtocolITC {
         return UserMessagePredicates.senderId(this.task.requesterId).test(msg);
 
       }).and(UserMessagePredicates.transactionId("0"))
-          .and(
-              UserMessagePredicates
-                  .message(
-                      this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionToAnswerMessage"))
-                          .and(msg -> this.participants.contains(msg.receiverId))
-                          .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("question", source.goal.name)
-                              .put("userId", source.requesterId).put("sensitive", false).put("anonymous", false)
-                              .put("positionOfAnswerer", "anywhere")))
-                          .and(MessagePredicates.attributesAre(target -> {
-                            return this.task.id.equals(target.getString("taskId"));
-                          })))));
+          .and(UserMessagePredicates
+              .message(this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionToAnswerMessage"))
+                  .and(msg -> this.participants.contains(msg.receiverId))
+                  .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("question", source.goal.name)
+                      .put("userId", source.requesterId).put("sensitive", false).put("anonymous", false)))
+                  .and(MessagePredicates.attributesAre(target -> {
+                    return this.task.id.equals(target.getString("taskId"));
+                  })))));
 
       checkInteractions.add(this.createInteractionPredicate().and(InteractionPredicates.senderIs(source.requesterId))
           .and(InteractionPredicates.transactionLabelIs(TaskTransaction.CREATE_TASK_LABEL))
@@ -322,24 +319,23 @@ public class Ask4HelpV2_2ProtocolITC extends AbstractAsk4HelpV2ProtocolITC {
             this.participants.add(msg.receiverId);
             return true;
 
-          }).and(MessagePredicates.attributesSimilarTo(new JsonObject().put("question", this.task.goal.name)
-              .put("taskId", this.task.id).put("userId", this.task.requesterId).put("sensitive", false)
-              .put("anonymous", false).put("positionOfAnswerer", "anywhere"))));
+          }).and(MessagePredicates
+              .attributesSimilarTo(new JsonObject().put("question", this.task.goal.name).put("taskId", this.task.id)
+                  .put("userId", this.task.requesterId).put("sensitive", false).put("anonymous", false))));
 
       checkIncentiveTransactionStatus.add(this.createIncentiveServerTaskTransactionStatusPredicate()
           .and(TaskTransactionStatusBodyPredicates.labelIs("QuestionToAnswerMessage"))
           .and(transaction -> this.participants.contains(transaction.user_id))
           .and(TaskTransactionStatusBodyPredicates.countIs(1)));
       checkSocialNotification
-          .add(
-              this.createSocialNotificationPredicate().and(UserMessagePredicates.senderId(this.task.requesterId))
-                  .and(UserMessagePredicates.transactionId(transactionId))
-                  .and(UserMessagePredicates.message(this.createMessagePredicate()
-                      .and(MessagePredicates.labelIs("QuestionToAnswerMessage"))
+          .add(this.createSocialNotificationPredicate().and(UserMessagePredicates.senderId(this.task.requesterId))
+              .and(UserMessagePredicates.transactionId(transactionId))
+              .and(UserMessagePredicates
+                  .message(this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionToAnswerMessage"))
                       .and(msg -> this.participants.contains(msg.receiverId))
                       .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("taskId", this.task.id)
                           .put("question", this.task.goal.name).put("userId", this.task.requesterId)
-                          .put("sensitive", false).put("anonymous", false).put("positionOfAnswerer", "anywhere"))))));
+                          .put("sensitive", false).put("anonymous", false))))));
 
       checkInteractions.add(this.createInteractionPredicate().and(InteractionPredicates.senderIs(this.task.requesterId))
           .and(InteractionPredicates.transactionLabelIs("moreAnswerTransaction"))
