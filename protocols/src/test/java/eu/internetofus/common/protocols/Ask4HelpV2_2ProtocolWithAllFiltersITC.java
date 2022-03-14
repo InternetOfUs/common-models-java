@@ -50,7 +50,7 @@ public class Ask4HelpV2_2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2_2P
   /**
    * The number maximum users to ask.
    */
-  private static final int MAX_USERS = 7;
+  private static final int MAX_USERS = 2;
 
   /**
    * The expected state after the action is done.
@@ -60,12 +60,12 @@ public class Ask4HelpV2_2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2_2P
   /**
    * {@inheritDoc}
    *
-   * @return {@code 10} in any case.
+   * @return {@code 5} in any case.
    */
   @Override
   protected int numberOfUsersToCreate() {
 
-    return 10;
+    return 5;
   }
 
   /**
@@ -109,7 +109,6 @@ public class Ask4HelpV2_2ProtocolWithAllFiltersITC extends AbstractAsk4HelpV2_2P
     for (var i = 1; i < max; i++) {
 
       final var user = this.users.get(i);
-
       final var beliefValue = 1.0 - Math.abs(requester.meanings.get(0).level - user.meanings.get(0).level) / 2.0;
       final var domainValue = 1.0 - Math.abs(requester.competences.get(0).level - user.competences.get(0).level) / 2.0;
       final var total = beliefValue * domainValue;

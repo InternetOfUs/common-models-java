@@ -25,6 +25,8 @@ import static org.junit.Assert.fail;
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerClient;
 import eu.internetofus.common.components.incentive_server.WeNetIncentiveServerSimulatorMocker;
 import eu.internetofus.common.components.interaction_protocol_engine.WeNetInteractionProtocolEngineClient;
+import eu.internetofus.common.components.models.TaskType;
+import eu.internetofus.common.components.models.WeNetUserProfile;
 import eu.internetofus.common.components.personal_context_builder.WeNetPersonalContextBuilderClient;
 import eu.internetofus.common.components.personal_context_builder.WeNetPersonalContextBuilderSimulatorMocker;
 import eu.internetofus.common.components.profile_diversity_manager.WeNetProfileDiversityManagerClient;
@@ -45,7 +47,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
@@ -53,6 +57,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import org.apache.commons.io.IOUtils;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -413,6 +418,44 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   }
 
   /**
+   * Wait until can create a profile.
+   */
+  public void waitUntilProfileManagerCanCreateProfile() {
+
+    try {
+
+      final var options = new VertxOptions();
+      final var client = new WeNetProfileManagerClient(WebClient.create(Vertx.vertx(options)),
+          this.getProfileManagerClientConf());
+      final var semaphore = new Semaphore(0);
+      final var profile = new WeNetUserProfile();
+      for (var i = 0; i < 10 && profile.id == null; i++) {
+
+        client.createProfile(profile).onFailure(error -> {
+
+          try {
+
+            Thread.sleep(1000);
+            semaphore.release();
+
+          } catch (final Throwable ignored) {
+          }
+
+        }).onSuccess(added -> {
+
+          profile.id = added.id;
+          semaphore.release();
+        });
+        semaphore.acquire();
+
+      }
+
+    } catch (final Throwable t) {
+    }
+
+  }
+
+  /**
    * Start the profile diversity manager container if it is not started yet.
    *
    * @return this containers instance.
@@ -453,6 +496,44 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
     }
 
     return this;
+  }
+
+  /**
+   * Wait until can create a task type.
+   */
+  public void waitUntilTaskManagerCanCreateTaskType() {
+
+    try {
+
+      final var options = new VertxOptions();
+      final var client = new WeNetTaskManagerClient(WebClient.create(Vertx.vertx(options)),
+          this.getProfileManagerClientConf());
+      final var semaphore = new Semaphore(0);
+      final var taskType = new TaskType();
+      for (var i = 0; i < 10 && taskType.id == null; i++) {
+
+        client.createTaskType(taskType).onFailure(error -> {
+
+          try {
+
+            Thread.sleep(1000);
+            semaphore.release();
+
+          } catch (final Throwable ignored) {
+          }
+
+        }).onSuccess(added -> {
+
+          taskType.id = added.id;
+          semaphore.release();
+        });
+        semaphore.acquire();
+
+      }
+
+    } catch (final Throwable t) {
+    }
+
   }
 
   /**
@@ -556,10 +637,12 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
     this.startTaskManagerContainer();
     this.startInteractionProtocolEngineContainer();
 
+    this.waitUntilProfileManagerCanCreateProfile();
+    this.waitUntilTaskManagerCanCreateTaskType();
+
     // Wait until they has been started
     final List<String> started = new ArrayList<>();
-    started.add(this.getProfileManagerApi() + "/help/info");
-    started.add(this.getTaskManagerApi() + "/help/info");
+    started.add(this.getProfileDiversityManagerApi() + "/help/info");
     started.add(this.getInteractionProtocolEngineApi() + "/help/info");
     final var max = Instant.now().plus(60, ChronoUnit.SECONDS).toEpochMilli();
     do {
