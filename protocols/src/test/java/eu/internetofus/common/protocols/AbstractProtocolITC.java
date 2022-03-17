@@ -156,6 +156,21 @@ public abstract class AbstractProtocolITC {
   protected abstract int numberOfUsersToCreate();
 
   /**
+   * Create the user at the specified position.
+   *
+   * @param index       of the profile to create.
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   *
+   * @return the future created profile.
+   */
+  protected Future<WeNetUserProfile> createProfileFor(final int index, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    return StoreServices.storeProfileExample(index, vertx, testContext);
+  }
+
+  /**
    * Create the users that will be used on the tests.
    *
    * @param vertx       event bus to use.
@@ -172,9 +187,11 @@ public abstract class AbstractProtocolITC {
     final var max = this.numberOfUsersToCreate();
     for (var i = 0; i < max; i++) {
 
-      futures.add(StoreServices.storeProfileExample(i, vertx, testContext).map(createdUser -> {
+      this.users.add(new WeNetUserProfile());
+      final var index = i;
+      futures.add(this.createProfileFor(index, vertx, testContext).map(createdUser -> {
 
-        this.users.add(createdUser);
+        this.users.set(index, createdUser);
         return null;
       }));
 

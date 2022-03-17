@@ -78,17 +78,17 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   /**
    * The name of the WeNet profile manager docker container to use.
    */
-  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:1.1.0";
+  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:1.1.1";
 
   /**
    * The name of the WeNet task manager docker container to use.
    */
-  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:1.0.1";
+  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:1.0.2";
 
   /**
    * The name of the WeNet interaction manager docker container to use.
    */
-  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:1.0.1";
+  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:1.1.0";
 
   /**
    * The name of the WeNet profile manager extension wordnetsim docker container
@@ -683,7 +683,7 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   /**
    * Create the main arguments to start a component.
    */
-  protected class MainStartArgumentBuilder {
+  protected static class MainStartArgumentBuilder {
 
   }
 
