@@ -9,7 +9,13 @@ else
 		echo "* $component"
 		pushd "$DIR/../$component" > /dev/null
 		./buildDockerImage.sh $@
-		popd >/dev/null
+		if [ $? -eq 0 ]; then
+			popd >/dev/null
+			popd >/dev/null
+			exit 1
+		else
+			popd >/dev/null
+		fi
 	done
 	popd >/dev/null
 fi
