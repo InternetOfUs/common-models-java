@@ -3,9 +3,10 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
-## Version 1.2.0 (2022-03-07)
+## Version 1.2.0 (2022-03-17)
 
  * Add new ask4help protocol without location and social closeness.
+ * Update components versions.
 
 
 ## Version 1.1.0 (2022-03-03)
