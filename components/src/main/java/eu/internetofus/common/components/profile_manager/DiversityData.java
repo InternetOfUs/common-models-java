@@ -36,13 +36,13 @@ public class DiversityData extends ReflectionModel implements Model {
   /**
    * The identifiers of the users to calculate the diversity.
    */
-  @ArraySchema(schema = @Schema(implementation = String.class, example = "[\"1\",\"2\"]"), arraySchema = @Schema(description = "The user profile identifiers of calculate the diversity"))
+  @ArraySchema(schema = @Schema(implementation = String.class), arraySchema = @Schema(description = "The user profile identifiers of calculate the diversity", example = "[\"1\",\"2\"]"))
   public Set<String> userIds;
 
   /**
    * The name of the attributes of the profile to calculate the diversity.
    */
-  @ArraySchema(schema = @Schema(implementation = String.class, example = "[\"gender\",\"nationality\"]"), arraySchema = @Schema(description = "The name of the profile attributes to calculate the diversity"))
+  @ArraySchema(schema = @Schema(implementation = String.class), arraySchema = @Schema(description = "The name of the profile attributes to calculate the diversity", example = "[\"gender\",\"nationality\",\"meanings.extraversion\"]"))
   public Set<String> attributes;
 
 }

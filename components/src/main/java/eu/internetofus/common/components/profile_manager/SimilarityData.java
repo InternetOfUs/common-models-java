@@ -35,13 +35,13 @@ public class SimilarityData extends ReflectionModel implements Model {
   /**
    * The identifier of the user to calculate the similarity of its attributes.
    */
-  @Schema(description = "The identifier of the user to calculate the similarity of its attributes.", example = "\"1\"", nullable = false)
+  @Schema(description = "The identifier of the user to calculate the similarity of its attributes.", example = "1", nullable = false)
   public String userId;
 
   /**
    * The text to compare the profile attributes.
    */
-  @Schema(description = "The text to compare the profile attributes.", example = "\"Where to buy the best pizza?\"", nullable = false)
+  @Schema(description = "The text to compare the profile attributes.", example = "Where to buy the best pizza?", nullable = false)
   public String source;
 
 }
