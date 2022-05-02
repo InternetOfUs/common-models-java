@@ -5,7 +5,7 @@
   <groupId>eu.internetofus</groupId>
   <artifactId>common-parent</artifactId>
   <relativePath>../pom.xml</relativePath>
-  <version>1.2.1</version>
+  <version>1.3.0</version>
  </parent>
  <artifactId>common-protocols</artifactId>
  <packaging>jar</packaging>

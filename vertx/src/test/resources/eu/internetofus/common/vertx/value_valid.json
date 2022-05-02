@@ -1451,7 +1451,7 @@
 	},
 	"85": {
 		"specification": {
-			"$ref":"https://raw.githubusercontent.com/InternetOfUs/components-documentation/MODELS_2.2.0/sources/wenet-models-openapi.yaml#/components/schemas/Task"
+			"$ref":"https://raw.githubusercontent.com/InternetOfUs/components-documentation/MODELS_2.3.0/sources/wenet-models-openapi.yaml#/components/schemas/Task"
 		},
 		"value": {
 		},
