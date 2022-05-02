@@ -64,6 +64,12 @@ public class ProtocolNorm extends ReflectionModel implements Model, Validable<We
   public String ontology;
 
   /**
+   * The priority that define in witch order the norm has to be evaluated.
+   */
+  @Schema(description = "The order that the norm has to be evaluated. The high value represents the highest priority.", type = "integer", nullable = true, example = "1001")
+  public Integer priority;
+
+  /**
    * {@inheritDoc}
    */
   @Override
