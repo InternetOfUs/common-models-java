@@ -56,6 +56,12 @@ public enum DefaultProtocols implements DefaultProtocol {
   ASK_4_HELP_V2_2("ask4help_v2_2"),
 
   /**
+   * The second version of the protocol to ask for help. This add new attributes
+   * to expire the task.
+   */
+  ASK_4_HELP_V3("ask4help_v3"),
+
+  /**
    * The second version of the protocol to ask for help. This use the new
    * automatic predicates that notify the incentive server.
    */

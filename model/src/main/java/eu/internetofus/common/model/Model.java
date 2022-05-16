@@ -28,7 +28,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.jackson.DatabindCodec;
-import io.vertx.core.shareddata.impl.ClusterSerializable;
+import io.vertx.core.shareddata.ClusterSerializable;
 import io.vertx.ext.web.client.HttpResponse;
 import java.nio.charset.Charset;
 import java.util.ArrayList;

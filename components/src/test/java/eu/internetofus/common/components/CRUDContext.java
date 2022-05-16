@@ -299,7 +299,7 @@ public class CRUDContext {
 
     try {
 
-      final var newValue = ctx.getBodyAsJson();
+      final var newValue = ctx.body().asJsonObject();
       if (newValue != null) {
 
         final var model = Json.decodeValue(newValue.toBuffer(), type);

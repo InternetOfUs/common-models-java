@@ -292,7 +292,7 @@ public class WeNetServiceSimulatorMocker extends AbstractComponentMocker {
 
     return (ctx, index) -> {
 
-      final var message = ctx.getBodyAsJson();
+      final var message = ctx.body().asJsonObject();
       if (message == null) {
 
         final var response = ctx.response();
@@ -355,7 +355,7 @@ public class WeNetServiceSimulatorMocker extends AbstractComponentMocker {
 
     return (ctx, index) -> {
 
-      final var users = ctx.getBodyAsJsonArray();
+      final var users = ctx.body().asJsonArray();
       if (users == null) {
 
         final var response = ctx.response();
@@ -436,7 +436,7 @@ public class WeNetServiceSimulatorMocker extends AbstractComponentMocker {
 
     return ctx -> {
 
-      final var app = Model.fromBuffer(ctx.getBody(), App.class);
+      final var app = Model.fromBuffer(ctx.body().buffer(), App.class);
       if (app == null) {
 
         final var response = ctx.response();

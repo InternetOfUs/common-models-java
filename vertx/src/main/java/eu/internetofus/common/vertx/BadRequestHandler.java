@@ -91,7 +91,7 @@ public class BadRequestHandler implements Handler<RoutingContext> {
     }
     final var error = new ErrorMessage(code.toString(), message);
     Logger.debug("Bad request {} {} with {} because {}", () -> event.request().method(), () -> event.mountPoint(),
-        () -> event.getBodyAsString(), () -> error.toJsonString());
+        () -> event.body().asString(), () -> error.toJsonString());
     response.end(error.toJsonString());
 
   }

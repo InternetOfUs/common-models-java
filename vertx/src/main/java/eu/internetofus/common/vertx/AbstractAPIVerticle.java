@@ -31,6 +31,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.openapi.RouterBuilder;
 import java.nio.charset.Charset;
@@ -82,12 +83,15 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
         try {
 
           final var routerFactory = createRouterFactory.result();
+          routerFactory.bodyHandler(null);
+          routerFactory.rootHandler(this.createCORSHandler());
+          routerFactory.rootHandler(BodyHandler.create());
 
           this.mountServiceInterfaces(routerFactory);
-          routerFactory.rootHandler(this.createCORSHandler());
 
           // bind the ERROR handlers
           final var router = routerFactory.createRouter();
+
           router.errorHandler(Status.NOT_FOUND.getStatusCode(), NotFoundHandler.build());
           router.errorHandler(Status.BAD_REQUEST.getStatusCode(), BadRequestHandler.build());
           router.errorHandler(Status.INTERNAL_SERVER_ERROR.getStatusCode(), InternalServerErrorHandler.build());

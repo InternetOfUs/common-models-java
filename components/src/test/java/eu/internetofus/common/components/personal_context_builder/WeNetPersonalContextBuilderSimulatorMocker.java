@@ -103,7 +103,7 @@ public class WeNetPersonalContextBuilderSimulatorMocker extends AbstractComponen
 
     return ctx -> {
 
-      final var body = Model.fromJsonObject(ctx.getBodyAsJson(), Users.class);
+      final var body = Model.fromJsonObject(ctx.body().asJsonObject(), Users.class);
       if (body == null) {
 
         final var response = ctx.response();
@@ -148,7 +148,7 @@ public class WeNetPersonalContextBuilderSimulatorMocker extends AbstractComponen
     return ctx -> {
 
       final var id = ctx.pathParam("id");
-      final var body = Model.fromJsonObject(ctx.getBodyAsJson(), UserLocation.class);
+      final var body = Model.fromJsonObject(ctx.body().asJsonObject(), UserLocation.class);
       if (body == null || id == null) {
 
         final var response = ctx.response();

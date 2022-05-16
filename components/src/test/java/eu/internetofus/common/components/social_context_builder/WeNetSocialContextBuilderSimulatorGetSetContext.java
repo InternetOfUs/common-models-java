@@ -24,9 +24,7 @@ import eu.internetofus.common.components.GetSetContext;
 import eu.internetofus.common.model.ErrorMessage;
 import eu.internetofus.common.model.Model;
 import io.vertx.core.Handler;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import javax.ws.rs.core.Response.Status;
 
@@ -51,8 +49,7 @@ public class WeNetSocialContextBuilderSimulatorGetSetContext extends GetSetConte
       try {
 
         final var id = this.getIdFrom(ctx, "SOCIAL_PREFERENCES_ANSWERS", "userId", "taskId");
-        final var body = ctx.getBody();
-        final var value = (JsonObject) Json.decodeValue(body);
+        final var value = ctx.body().asJsonObject();
         this.values.put(id, value);
         response.setStatusCode(Status.CREATED.getStatusCode());
         response.end(value.getJsonArray("data").toBuffer());
@@ -96,7 +93,7 @@ public class WeNetSocialContextBuilderSimulatorGetSetContext extends GetSetConte
       final var response = ctx.response();
       try {
 
-        final var value = ctx.getBodyAsJson();
+        final var value = ctx.body().asJsonObject();
         final var state = Model.fromJsonObject(value, UserMessage.class);
         if (state == null) {
 

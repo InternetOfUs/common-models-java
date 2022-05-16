@@ -88,7 +88,7 @@ public class WeNetIncentiveServerSimulatorMocker extends AbstractComponentMocker
 
     router.post("/Tasks/TaskTransactionStatus").handler(ctx -> {
 
-      final var value = ctx.getBodyAsJson();
+      final var value = ctx.body().asJsonObject();
       final var state = Model.fromJsonObject(value, TaskTransactionStatusBody.class);
       if (state == null) {
 
@@ -122,7 +122,7 @@ public class WeNetIncentiveServerSimulatorMocker extends AbstractComponentMocker
 
     router.post("/Tasks/TaskTypeStatus").handler(ctx -> {
 
-      final var value = ctx.getBodyAsJson();
+      final var value = ctx.body().asJsonObject();
       final var state = Model.fromJsonObject(value, TaskTypeStatusBody.class);
       if (state == null) {
 

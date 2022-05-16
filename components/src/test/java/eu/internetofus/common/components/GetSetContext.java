@@ -26,7 +26,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.impl.ClusterSerializable;
+import io.vertx.core.shareddata.ClusterSerializable;
 import io.vertx.ext.web.RoutingContext;
 import java.util.HashMap;
 import java.util.Map;
@@ -148,7 +148,7 @@ public class GetSetContext {
       try {
 
         final var id = this.getIdFrom(ctx, prefix, params);
-        final var body = ctx.getBody();
+        final var body = ctx.body().buffer();
         final var value = (ClusterSerializable) Json.decodeValue(body);
         this.values.put(id, value);
         response.setStatusCode(Status.CREATED.getStatusCode());
