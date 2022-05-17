@@ -500,11 +500,6 @@
                "type":"string",
                "nullable":false
             },
-            "userId":{
-               "description":"The id of the user who proposed the question",
-               "type":"string",
-               "nullable":false
-            },
             "listOfTransactionIds":{
                "description":"The ids of the transactions associated to the answer",
                "type":"array",
@@ -655,8 +650,8 @@
       },
       {
          "description":"Notify user of the expiration message",
-         "whenever":"is_received_event('notifyQuestionExpirationMessage',_) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and get_task_id(TaskId) and get_task_requester_id(Requester) and get_task_goal_name(Question)",
-         "thenceforth":"send_user_message('QuestionExpirationMessage',json([taskId=TaskId,question=Question,userId=Requester,listOfTransactionIds=AnswersTransactionIds]))"
+         "whenever":"is_received_event('notifyQuestionExpirationMessage',_) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and get_task_id(TaskId) and get_task_goal_name(Question)",
+         "thenceforth":"send_user_message('QuestionExpirationMessage',json([taskId=TaskId,question=Question,listOfTransactionIds=AnswersTransactionIds]))"
       }
    ]
 }

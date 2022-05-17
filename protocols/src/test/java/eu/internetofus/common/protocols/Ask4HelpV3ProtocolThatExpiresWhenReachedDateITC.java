@@ -101,9 +101,8 @@ public class Ask4HelpV3ProtocolThatExpiresWhenReachedDateITC extends AbstractAsk
     final var checkMessages = new ArrayList<Predicate<Message>>();
     final var checkMessage = this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionExpirationMessage"))
         .and(MessagePredicates.receiverIs(this.task.requesterId))
-        .and(MessagePredicates
-            .attributesSimilarTo(new JsonObject().put("taskId", this.task.id).put("question", this.task.goal.name)
-                .put("userId", this.task.requesterId).put("listOfTransactionIds", new JsonArray())));
+        .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("taskId", this.task.id)
+            .put("question", this.task.goal.name).put("listOfTransactionIds", new JsonArray())));
     checkMessages.add(checkMessage);
 
     final var future = this.waitUntilCallbacks(vertx, testContext, checkMessages);

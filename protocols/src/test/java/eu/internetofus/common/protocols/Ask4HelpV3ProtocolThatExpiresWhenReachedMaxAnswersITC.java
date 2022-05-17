@@ -134,9 +134,8 @@ public class Ask4HelpV3ProtocolThatExpiresWhenReachedMaxAnswersITC extends Abstr
 
     final var checkMessage = this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionExpirationMessage"))
         .and(MessagePredicates.receiverIs(this.task.requesterId))
-        .and(MessagePredicates
-            .attributesSimilarTo(new JsonObject().put("taskId", this.task.id).put("question", this.task.goal.name)
-                .put("userId", this.task.requesterId).put("listOfTransactionIds", new JsonArray().add("1").add("2"))));
+        .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("taskId", this.task.id)
+            .put("question", this.task.goal.name).put("listOfTransactionIds", new JsonArray().add("1").add("2"))));
     checkMessages.add(checkMessage);
 
     future = future.compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
