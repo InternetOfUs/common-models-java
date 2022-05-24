@@ -1,0 +1,50 @@
+{
+	"id": "flood_v1",
+	"name": "Flood",
+	"description": "This tasks send to all the app user the received messages",
+	"keywords": [
+		"example",
+		"test"
+	],
+	"transactions": {
+		"flood": {
+			"type": "object",
+			"description": "Send a message to all the application users",
+			"properties": {
+				"content": {
+					"type": "string",
+					"description": "The content of the message to flood"
+				}
+			}
+		}
+	},
+	"callbacks": {
+		"message": {
+			"type": "object",
+			"properties": {
+				"taskId": {
+					"type": "string",
+					"description": "The identifier of the task"
+				},
+				"content": {
+					"type": "string",
+					"description": "The message content"
+				}
+			}
+		}
+	},
+	"norms": [
+		{
+			"whenever": "is_received_created_task() and get_app_users_except_me(Users)",
+			"thenceforth": "add_created_transaction() and send_messages(Users,'notifyMessage',json([content='Task created']))"
+		},
+		{
+			"whenever": "is_received_do_transaction('flood',Content) and get_app_users_except_me(Users)",
+			"thenceforth": "add_message_transaction() and send_messages(Users,'notifyMessage',Content)"
+		},
+		{
+			"whenever": "is_received(_,'notifyMessage',Attributes) and get_task_id(TaskId) and get_attribute(Content,content,Attributes)",
+			"thenceforth": "send_user_message('message',json([taskId=TaskId,content=Content]))"
+		}
+	]
+}

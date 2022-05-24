@@ -62,10 +62,14 @@ public enum DefaultProtocols implements DefaultProtocol {
   ASK_4_HELP_V3("ask4help_v3"),
 
   /**
-   * The second version of the protocol to ask for help. This use the new
-   * automatic predicates that notify the incentive server.
+   * The protocol that echo any received message.
    */
-  ECHO_V1("echo_v1");
+  ECHO_V1("echo_v1"),
+
+  /**
+   * The protocol that send to all the application users (flood) all transactions.
+   */
+  FLOOD_V1("flood_v1");
 
   /**
    * The default identifier associated to the protocol.
