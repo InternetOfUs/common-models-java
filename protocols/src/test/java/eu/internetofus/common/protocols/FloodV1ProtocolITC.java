@@ -94,7 +94,7 @@ public class FloodV1ProtocolITC extends AbstractDefaultProtocolITC {
         .and(TaskPredicates.transactionSizeIs(1))
         .and(TaskPredicates.transactionAt(0,
             this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(createTransaction))
-                .and(TaskTransactionPredicates.messagesSizeIs(this.users.size() - 1))
+                .and(TaskTransactionPredicates.messagesSizeIs(checkMessages.size()))
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))));
 
     final Future<?> future = this.waitUntilTaskCreated(source, vertx, testContext, checkTask)

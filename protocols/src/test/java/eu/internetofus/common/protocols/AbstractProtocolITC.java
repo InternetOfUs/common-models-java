@@ -951,40 +951,42 @@ public abstract class AbstractProtocolITC {
   protected Future<InteractionsPage> waitUntilInteractions(@NotNull final Vertx vertx,
       @NotNull final VertxTestContext testContext, @NotNull final List<Predicate<Interaction>> checkInteractions) {
 
-    return this
-        .waitUntil(vertx, testContext, () -> WeNetInteractionProtocolEngine.createProxy(vertx).getInteractionsPage(null,
-            null, null, null, null, null, null, null, null, null, null, null, null, null, null, 0, 100), page -> {
+    return this.waitUntil(vertx, testContext,
+        () -> WeNetInteractionProtocolEngine.createProxy(vertx).getInteractionsPage(this.app.appId, this.community.id,
+            this.taskType.id, this.task.id, null, null, null, null, null, null, null, null, null, null,
+            "-messageTs,-transactionTs", 0, 100),
+        page -> {
 
-              if (page.interactions == null || page.interactions.isEmpty()) {
+          if (page.interactions == null || page.interactions.isEmpty()) {
 
-                return false;
+            return false;
 
-              } else {
+          } else {
 
-                final List<Predicate<Interaction>> copy = new ArrayList<>(checkInteractions);
-                final var interactionsIter = page.interactions.iterator();
-                while (interactionsIter.hasNext()) {
+            final List<Predicate<Interaction>> copy = new ArrayList<>(checkInteractions);
+            final var interactionsIter = page.interactions.iterator();
+            while (interactionsIter.hasNext()) {
 
-                  final var interaction = interactionsIter.next();
-                  if (interaction != null) {
+              final var interaction = interactionsIter.next();
+              if (interaction != null) {
 
-                    final var iter = copy.iterator();
-                    while (iter.hasNext()) {
-                      final var checkInteraction = iter.next();
-                      if (checkInteraction.test(interaction)) {
+                final var iter = copy.iterator();
+                while (iter.hasNext()) {
+                  final var checkInteraction = iter.next();
+                  if (checkInteraction.test(interaction)) {
 
-                        iter.remove();
-                        break;
-                      }
-                    }
+                    iter.remove();
+                    break;
                   }
-                  interactionsIter.remove();
                 }
-
-                return copy.isEmpty();
               }
+              interactionsIter.remove();
+            }
 
-            })
+            return copy.isEmpty();
+          }
+
+        })
         .compose(page -> WeNetInteractionProtocolEngine.createProxy(vertx)
             .deleteInteractions(this.app.appId, this.community.id, this.taskType.id, this.task.id, null, null, null,
                 null, null, null, null, null, null, null)

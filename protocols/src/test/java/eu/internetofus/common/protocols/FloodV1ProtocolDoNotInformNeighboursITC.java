@@ -63,7 +63,7 @@ public class FloodV1ProtocolDoNotInformNeighboursITC extends FloodV1ProtocolITC 
       final var user = this.users.get(i);
       user.norms = new ArrayList<>();
       var previous = i - 1;
-      if (i == 0) {
+      if (previous < 0) {
         previous = this.users.size() - 1;
       }
       final var previousNorm = new ProtocolNorm();
@@ -116,7 +116,15 @@ public class FloodV1ProtocolDoNotInformNeighboursITC extends FloodV1ProtocolITC 
         }
 
         // ignore next
-        i++;
+        if (i == this.users.size() - 1) {
+
+          userIds.remove(0);
+
+        } else {
+
+          i++;
+
+        }
 
       } else {
 
