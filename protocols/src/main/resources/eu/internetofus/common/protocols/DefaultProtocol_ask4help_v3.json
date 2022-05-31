@@ -502,8 +502,8 @@
       },
       {
          "description":"Notify the questioneer about the answer",
-         "whenever":"is_received(SenderId,'notifyAnswerTransaction',Attributes) and get_task_attribute_value(ExpirationDate,'expirationDate') and is_now_less_than(ExpirationDate) and get_task_state_attribute(AnswersCount,'answersCount',0) and get_task_attribute_value(MaxAnswers,'maxAnswers') and <(AnswersCount,MaxAnswers) and get_attribute(Answer,answer,Attributes) and get_attribute(Anonymous,anonymous,Attributes) and get_task_goal_name(Question) and get_task_id(TaskId) and get_transaction_id(TransactionId) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and get_transaction_id(TransactionId)",
-         "thenceforth":"send_user_message('AnsweredQuestionMessage',json([taskId=TaskId,question=Question,transactionId=TransactionId,answer=Answer,userId=SenderId,anonymous=Anonymous])) and wenet_math(NewAnswersCount,AnswersCount+1) and put_task_state_attribute('answersCount',NewAnswersCount) and wenet_add(NewAnswersTransactionIds,TransactionId,AnswersTransactionIds) and put_task_state_attribute('answersTransactionIds',NewAnswersTransactionIds)"
+         "whenever":"is_received(SenderId,'notifyAnswerTransaction',Attributes) and get_task_attribute_value(ExpirationDate,'expirationDate') and is_now_less_than(ExpirationDate) and get_task_attribute_value(MaxAnswers,'maxAnswers') and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and length(AnswersTransactionIds,AnswersCount) and <(AnswersCount,MaxAnswers) and get_attribute(Answer,answer,Attributes) and get_attribute(Anonymous,anonymous,Attributes) and get_task_goal_name(Question) and get_task_id(TaskId) and get_transaction_id(TransactionId) and get_transaction_id(TransactionId)",
+         "thenceforth":"send_user_message('AnsweredQuestionMessage',json([taskId=TaskId,question=Question,transactionId=TransactionId,answer=Answer,userId=SenderId,anonymous=Anonymous])) and wenet_add(NewAnswersTransactionIds,TransactionId,AnswersTransactionIds) and put_task_state_attribute('answersTransactionIds',NewAnswersTransactionIds) and send_event(_,1,'checkMaxAnswers',json([]))"
       },
       {
          "description":"Nothing to do with this transaction only store it",
@@ -527,7 +527,7 @@
       },
       {
          "description":"Ask more users",
-         "whenever":"is_received_do_transaction('moreAnswerTransaction',Attributes) and get_profile_id(Me) and get_task_requester_id(Me) and not(is_task_closed()) and who_to_ask(Users) and get_task_attribute_value(ExpirationDate,'expirationDate') and is_now_less_than(ExpirationDate) and get_task_state_attribute(AnswersCount,'answersCount',0) and get_task_attribute_value(MaxAnswers,'maxAnswers') and <(AnswersCount,MaxAnswers) and get_attribute(NewExpirationDate,expirationDate,Attributes)",
+         "whenever":"is_received_do_transaction('moreAnswerTransaction',Attributes) and get_profile_id(Me) and get_task_requester_id(Me) and not(is_task_closed()) and who_to_ask(Users) and get_task_attribute_value(ExpirationDate,'expirationDate') and is_now_less_than(ExpirationDate) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and length(AnswersTransactionIds,AnswersCount) and get_task_attribute_value(MaxAnswers,'maxAnswers') and <(AnswersCount,MaxAnswers) and get_attribute(NewExpirationDate,expirationDate,Attributes)",
          "thenceforth":"add_message_transaction() and send_messages(Users,'notifyNewQuestionAndAnswer',json([])) and cancel_expiration_event()  and put_task_attribute('expirationDate',NewExpirationDate) and send_expiration_event()",
          "ontology":":- dynamic cancel_expiration_event/0. cancel_expiration_event() :-  get_task_state_attribute(TimerId,'timerId',''), ( TimerId = '' -> wenet_log_error('No previous event to cancel'); ( wenet_interaction_protocol_engine_delete_event(TimerId) -> true ; wenet_log_error('Cannot cancel previous event')))."
       },
@@ -538,7 +538,7 @@
       },
       {
          "description":"Send expiration message if received max answers",
-         "whenever":"is_received(_,'notifyAnswerTransaction',_) and get_task_attribute_value(ExpirationDate,'expirationDate') and is_now_less_than(ExpirationDate) and get_task_state_attribute(AnswersCount,'answersCount',0) and get_task_attribute_value(MaxAnswers,'maxAnswers') and wenet_math(MaxAnswers,AnswersCount+1)",
+         "whenever":"is_received(_,'checkMaxAnswers',_) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and length(AnswersTransactionIds,AnswersCount) and get_task_attribute_value(MaxAnswers,'maxAnswers') and =<(MaxAnswers,AnswersCount)",
          "thenceforth":"send_event(_,1,'notifyQuestionExpirationMessage',json([]))"
       },
       {

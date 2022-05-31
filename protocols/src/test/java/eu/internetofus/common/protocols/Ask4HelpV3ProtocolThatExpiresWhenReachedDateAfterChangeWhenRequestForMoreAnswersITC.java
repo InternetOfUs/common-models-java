@@ -19,6 +19,8 @@
  */
 package eu.internetofus.common.protocols;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import eu.internetofus.common.components.models.Message;
 import eu.internetofus.common.components.models.TaskTransaction;
 import eu.internetofus.common.components.service.MessagePredicates;
@@ -61,12 +63,12 @@ public class Ask4HelpV3ProtocolThatExpiresWhenReachedDateAfterChangeWhenRequestF
   /**
    * {@inheritDoc}
    *
-   * @return {@code 5} in any case.
+   * @return {@code 4} in any case.
    */
   @Override
   public int maxUsers() {
 
-    return 5;
+    return 6;
   }
 
   /**
@@ -88,7 +90,7 @@ public class Ask4HelpV3ProtocolThatExpiresWhenReachedDateAfterChangeWhenRequestF
   @Override
   public long expirationDate() {
 
-    return TimeManager.now() + Duration.ofMinutes(10).toSeconds();
+    return TimeManager.now() + Duration.ofDays(10).toSeconds();
 
   }
 
@@ -123,13 +125,17 @@ public class Ask4HelpV3ProtocolThatExpiresWhenReachedDateAfterChangeWhenRequestF
     moreAnswerTransaction.taskId = this.task.id;
     moreAnswerTransaction.actioneerId = this.task.requesterId;
     moreAnswerTransaction.label = "moreAnswerTransaction";
-    moreAnswerTransaction.attributes = new JsonObject().put("expirationDate",
-        TimeManager.now() + Duration.ofSeconds(10).toSeconds());
+    final var expirationDate = TimeManager.now() + 15;
+    moreAnswerTransaction.attributes = new JsonObject().put("expirationDate", expirationDate);
+
     final var checkTask = this.createTaskPredicate()
-        .and(TaskPredicates.lastTransactionIs(
+        .and(TaskPredicates.transactionAt(1,
             this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(moreAnswerTransaction))
                 .and(TaskTransactionPredicates.messagesSizeIs(checkMessages.size()))
-                .and(TaskTransactionPredicates.containsMessages(checkMessages))));
+                .and(TaskTransactionPredicates.containsMessages(checkMessages))))
+        .and(target -> {
+          return expirationDate == target.attributes.getLong("expirationDate", -1L);
+        });
 
     final Future<?> future = WeNetTaskManager.createProxy(vertx).doTaskTransaction(moreAnswerTransaction)
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
@@ -157,7 +163,16 @@ public class Ask4HelpV3ProtocolThatExpiresWhenReachedDateAfterChangeWhenRequestF
             .put("question", this.task.goal.name).put("listOfTransactionIds", new JsonArray())));
     checkMessages.add(checkMessage);
 
-    final var future = this.waitUntilCallbacks(vertx, testContext, checkMessages);
+    final var future = this.waitUntilCallbacks(vertx, testContext, checkMessages).map(any -> {
+
+      testContext.verify(() -> {
+
+        final var expirationDate = this.task.attributes.getLong("expirationDate");
+        assertThat(TimeManager.now()).isGreaterThanOrEqualTo(expirationDate);
+
+      });
+      return null;
+    });
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }

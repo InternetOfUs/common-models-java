@@ -19,6 +19,8 @@
  */
 package eu.internetofus.common.protocols;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import eu.internetofus.common.components.models.Message;
 import eu.internetofus.common.components.service.MessagePredicates;
 import eu.internetofus.common.model.TimeManager;
@@ -105,7 +107,16 @@ public class Ask4HelpV3ProtocolThatExpiresWhenReachedDateITC extends AbstractAsk
             .put("question", this.task.goal.name).put("listOfTransactionIds", new JsonArray())));
     checkMessages.add(checkMessage);
 
-    final var future = this.waitUntilCallbacks(vertx, testContext, checkMessages);
+    final var future = this.waitUntilCallbacks(vertx, testContext, checkMessages).map(any -> {
+
+      testContext.verify(() -> {
+
+        final var expirationDate = this.task.attributes.getLong("expirationDate");
+        assertThat(TimeManager.now()).isGreaterThanOrEqualTo(expirationDate);
+
+      });
+      return null;
+    });
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }

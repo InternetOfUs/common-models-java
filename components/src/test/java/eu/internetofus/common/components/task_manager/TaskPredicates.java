@@ -83,7 +83,7 @@ public interface TaskPredicates {
 
     return target -> {
 
-      return target.transactions != null && target.transactions.size() >= index
+      return target.transactions != null && target.transactions.size() > index
           && checkTransaction.test(target.transactions.get(index));
 
     };

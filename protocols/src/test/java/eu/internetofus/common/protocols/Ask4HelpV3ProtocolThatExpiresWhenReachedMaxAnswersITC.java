@@ -49,12 +49,12 @@ public class Ask4HelpV3ProtocolThatExpiresWhenReachedMaxAnswersITC extends Abstr
   /**
    * {@inheritDoc}
    *
-   * @return {@code 5} in any case.
+   * @return {@code 10} in any case.
    */
   @Override
   protected int numberOfUsersToCreate() {
 
-    return 5;
+    return 10;
   }
 
   /**
@@ -76,7 +76,7 @@ public class Ask4HelpV3ProtocolThatExpiresWhenReachedMaxAnswersITC extends Abstr
   @Override
   public int maxAnswers() {
 
-    return 2;
+    return 5;
   }
 
   /**
@@ -103,10 +103,14 @@ public class Ask4HelpV3ProtocolThatExpiresWhenReachedMaxAnswersITC extends Abstr
 
     this.assertLastSuccessfulTestWas(5, testContext);
 
+    var checkTransactions = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(this.maxAnswers() + 1));
+
     final var checkMessages = new ArrayList<Predicate<Message>>();
+    final var listOfTransactionIds = new JsonArray();
     Future<?> future = Future.succeededFuture();
     for (var i = 1; i < this.maxAnswers() + 1; i++) {
 
+      listOfTransactionIds.add(String.valueOf(i));
       final var user = this.users.get(i);
       final var transaction = new TaskTransaction();
       transaction.actioneerId = user.id;
@@ -122,23 +126,47 @@ public class Ask4HelpV3ProtocolThatExpiresWhenReachedMaxAnswersITC extends Abstr
               .put("userId", transaction.actioneerId).put("anonymous", false)));
       checkMessages.add(checkMessage);
 
-      final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(i + 1))
-          .and(TaskPredicates.transactionAt(i,
-              this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))
-                  .and(TaskTransactionPredicates.messagesSizeIs(1))
-                  .and(TaskTransactionPredicates.messageAt(0, checkMessage))));
+      if (i == this.maxAnswers()) {
 
-      future = future.compose(ignored -> WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction))
-          .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
+        final var checkMessage2 = this.createMessagePredicate()
+            .and(MessagePredicates.labelIs("QuestionExpirationMessage"))
+            .and(MessagePredicates.receiverIs(this.task.requesterId))
+            .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("taskId", this.task.id)
+                .put("question", this.task.goal.name).put("listOfTransactionIds", listOfTransactionIds)));
+        checkMessages.add(checkMessage2);
+
+        final var transactionCheck = TaskPredicates.transactionAt(i,
+            this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))
+                .and(TaskTransactionPredicates.messagesSizeIs(2))
+                .and(TaskTransactionPredicates.messageAt(0, checkMessage))
+                .and(TaskTransactionPredicates.messageAt(1, checkMessage2)));
+        checkTransactions = checkTransactions.and(transactionCheck);
+        final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(i + 1))
+            .and(transactionCheck);
+        future = future.compose(ignored -> WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction))
+            .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
+
+      } else {
+
+        final var transactionCheck = TaskPredicates.transactionAt(i,
+            this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))
+                .and(TaskTransactionPredicates.messagesSizeIs(1))
+                .and(TaskTransactionPredicates.messageAt(0, checkMessage)));
+        checkTransactions = checkTransactions.and(transactionCheck);
+
+        final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(i + 1))
+            .and(transactionCheck);
+        future = future.compose(ignored -> WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction))
+            .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
+
+      }
+
     }
 
-    final var checkMessage = this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionExpirationMessage"))
-        .and(MessagePredicates.receiverIs(this.task.requesterId))
-        .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("taskId", this.task.id)
-            .put("question", this.task.goal.name).put("listOfTransactionIds", new JsonArray().add("1").add("2"))));
-    checkMessages.add(checkMessage);
-
-    future = future.compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
+    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(this.maxAnswers() + 1))
+        .and(checkTransactions);
+    future = future.compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
+        .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages));
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
