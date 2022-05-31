@@ -83,7 +83,6 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
         try {
 
           final var routerFactory = createRouterFactory.result();
-          routerFactory.bodyHandler(null);
           routerFactory.rootHandler(this.createCORSHandler());
           routerFactory.rootHandler(BodyHandler.create());
 
