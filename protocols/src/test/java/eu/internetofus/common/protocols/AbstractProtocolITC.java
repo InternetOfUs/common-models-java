@@ -50,11 +50,13 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.junit5.VertxTestContext;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
-import javax.validation.constraints.NotNull;
+import org.apache.commons.io.IOUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -269,6 +271,37 @@ public abstract class AbstractProtocolITC {
    * @return the future with the task type to use.
    */
   protected abstract Future<TaskType> createTaskTypeForProtocol(final Vertx vertx, final VertxTestContext testContext);
+
+  /**
+   * Load a task type from a JSON file.
+   *
+   * @param resourcePath the path to the resource with the file with the task
+   *                     type.
+   * @param vertx        event bus to use.
+   * @param testContext  context to do the test.
+   *
+   * @return the future with the loaded task.
+   */
+  protected Future<TaskType> loadTaskTypeForProtocol(final String resourcePath, final Vertx vertx,
+      final VertxTestContext testContext) {
+
+    return vertx.executeBlocking(promise -> {
+
+      try {
+
+        final var input = this.getClass().getClassLoader().getResourceAsStream(resourcePath);
+        final var content = IOUtils.toString(input, Charset.defaultCharset());
+        final var taskType = Model.fromString(content, TaskType.class);
+        promise.complete(taskType);
+
+      } catch (final Throwable cause) {
+
+        testContext.failNow(cause);
+      }
+
+    });
+
+  }
 
   /**
    * Create a new instance of the task type to test.
