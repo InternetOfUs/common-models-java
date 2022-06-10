@@ -2,7 +2,7 @@
 
 All notable changes to `wenet-common` will be documented in this file
 
-## Version 1.3.0 (2022-05-16)
+## Version 1.3.0 (2022-06-10)
 
  * Upgrade vertx version.
  * Fix OpenAPI errors.
