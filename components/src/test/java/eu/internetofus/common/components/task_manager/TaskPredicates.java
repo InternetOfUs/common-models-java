@@ -24,6 +24,7 @@ import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTransaction;
 import io.vertx.core.json.JsonObject;
 import java.util.function.Predicate;
+import org.tinylog.Logger;
 
 /**
  * Generic predicates that can be done over a task.
@@ -45,22 +46,27 @@ public interface TaskPredicates {
 
       if (source.taskTypeId != null && !source.taskTypeId.equals(target.taskTypeId)) {
 
+        Logger.trace("Task with a different task type: {} != {}", source.taskTypeId, target.taskTypeId);
         return false;
       }
 
       if (source.appId != null && !source.appId.equals(target.appId)) {
 
+        Logger.trace("Task with a different app: {} != {}", source.appId, target.appId);
         return false;
       }
 
       if (source.communityId != null && !source.communityId.equals(target.communityId)) {
 
+        Logger.trace("Task with a different community: {} != {}", source.communityId, target.communityId);
         return false;
       }
 
       if (source.requesterId != null && !source.requesterId.equals(target.requesterId)) {
 
+        Logger.trace("Task with a different requester: {} != {}", source.requesterId, target.requesterId);
         return false;
+
       }
 
       return true;
@@ -83,9 +89,10 @@ public interface TaskPredicates {
 
     return target -> {
 
-      return target.transactions != null && target.transactions.size() > index
+      final var result = target.transactions != null && target.transactions.size() > index
           && checkTransaction.test(target.transactions.get(index));
-
+      Logger.trace("transactionAt({}) => {}", index, result);
+      return result;
     };
   }
 
@@ -100,8 +107,10 @@ public interface TaskPredicates {
 
     return target -> {
 
-      return target.transactions != null && target.transactions.size() > 0
+      final var result = target.transactions != null && target.transactions.size() > 0
           && checkTransaction.test(target.transactions.get(target.transactions.size() - 1));
+      Logger.trace("lastTransactionIs() => {}", result);
+      return result;
 
     };
   }
@@ -118,7 +127,9 @@ public interface TaskPredicates {
 
     return target -> {
 
-      return target.transactions != null && target.transactions.size() == size;
+      final var result = target.transactions != null && target.transactions.size() == size;
+      Logger.trace("transactionSizeIs({}) => {}", size, result);
+      return result;
 
     };
 
@@ -150,6 +161,7 @@ public interface TaskPredicates {
 
       }
 
+      Logger.trace("Task not contains transaction");
       return false;
 
     };
@@ -164,7 +176,13 @@ public interface TaskPredicates {
    */
   static Predicate<Task> attributesAre(final JsonObject source) {
 
-    return attributesAre(target -> target.equals(source));
+    return attributesAre(target -> {
+
+      final var result = target.equals(source);
+      Logger.trace("Task attributes {} ?= {}", source, target);
+      return result;
+
+    });
 
   }
 
@@ -199,6 +217,7 @@ public interface TaskPredicates {
 
       if (target.attributes == null) {
 
+        Logger.trace("attributesSimilarTo({}) => false", source);
         return false;
       }
       for (final var key : source.fieldNames()) {
@@ -207,6 +226,7 @@ public interface TaskPredicates {
         final var targetValue = target.attributes.getValue(key);
         if (value != targetValue && (value == null || !value.equals(targetValue))) {
 
+          Logger.trace("Task attribute {} not similar: {} != {}", key, source, targetValue);
           return false;
         }
       }
@@ -226,7 +246,9 @@ public interface TaskPredicates {
 
     return target -> {
 
-      return target.closeTs != null;
+      final var result = target.closeTs != null;
+      Logger.trace("Task closed => {}", result);
+      return result;
 
     };
 

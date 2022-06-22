@@ -62,6 +62,12 @@ public enum DefaultProtocols implements DefaultProtocol {
   ASK_4_HELP_V3("ask4help_v3"),
 
   /**
+   * The second version of the protocol to ask for help. This add new attributes
+   * to expire the task.
+   */
+  ASK_4_HELP_V3_1("ask4help_v3_1"),
+
+  /**
    * The protocol that echo any received message.
    */
   ECHO_V1("echo_v1"),

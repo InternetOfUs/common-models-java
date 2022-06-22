@@ -2,6 +2,11 @@
 
 All notable changes to `wenet-common` will be documented in this file
 
+## Version 1.4.0 (2022-06-22)
+
+ * Add Ask for Help v3.1
+
+
 ## Version 1.3.0 (2022-06-10)
 
  * Upgrade vertx version.

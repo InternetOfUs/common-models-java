@@ -25,6 +25,7 @@ import eu.internetofus.common.components.models.TaskTransaction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import org.tinylog.Logger;
 
 /**
  * Generic predicates that can be done over a task transaction.
@@ -80,7 +81,9 @@ public interface TaskTransactionPredicates {
 
     return target -> {
 
-      return target.messages == null || target.messages.isEmpty();
+      final var result = target.messages == null || target.messages.isEmpty();
+      Logger.trace("Task transaction withoutMessages() => {}", result);
+      return result;
 
     };
   }
@@ -97,7 +100,9 @@ public interface TaskTransactionPredicates {
 
     return target -> {
 
-      return target.messages != null && target.messages.size() == size;
+      final var result = target.messages != null && target.messages.size() == size;
+      Logger.trace("Task transaction messagesSizeIs({}) => {}", size, result);
+      return result;
 
     };
 
@@ -117,8 +122,10 @@ public interface TaskTransactionPredicates {
 
     return target -> {
 
-      return target.messages != null && target.messages.size() >= index
+      final var result = target.messages != null && target.messages.size() >= index
           && checkMessage.test(target.messages.get(index));
+      Logger.trace("Task transaction messageAt({}) => {}", index, result);
+      return result;
 
     };
   }
@@ -149,6 +156,7 @@ public interface TaskTransactionPredicates {
 
       }
 
+      Logger.trace("Task transaction no contains message");
       return false;
 
     };
@@ -186,6 +194,7 @@ public interface TaskTransactionPredicates {
 
         }
 
+        Logger.trace("Task transaction containsMessages() => {}", copy.isEmpty());
         return copy.isEmpty();
 
       } else {

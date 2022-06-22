@@ -23,6 +23,7 @@ package eu.internetofus.common.components.service;
 import eu.internetofus.common.components.models.Message;
 import io.vertx.core.json.JsonObject;
 import java.util.function.Predicate;
+import org.tinylog.Logger;
 
 /**
  * Component to create predicates to check a message.
@@ -42,7 +43,12 @@ public interface MessagePredicates {
 
     return msg -> {
 
-      return msg.label.equals(label);
+      final var result = msg.label.equals(label);
+      if (!result) {
+
+        Logger.trace("Message label is not equals: {} != {}", label, msg.label);
+      }
+      return result;
 
     };
   }
@@ -58,7 +64,12 @@ public interface MessagePredicates {
 
     return msg -> {
 
-      return msg.receiverId.equals(receiver);
+      final var result = msg.receiverId.equals(receiver);
+      if (!result) {
+
+        Logger.trace("Message receiver is not equals: {} != {}", receiver, msg.receiverId);
+      }
+      return result;
 
     };
   }
@@ -74,7 +85,12 @@ public interface MessagePredicates {
 
     return msg -> {
 
-      return msg.appId.equals(app);
+      final var result = msg.appId.equals(app);
+      if (!result) {
+
+        Logger.trace("Message app is not equals: {} != {}", app, msg.appId);
+      }
+      return result;
 
     };
   }
@@ -90,7 +106,12 @@ public interface MessagePredicates {
 
     return msg -> {
 
-      return msg.attributes.equals(attributes);
+      final var result = msg.attributes.equals(attributes);
+      if (!result) {
+
+        Logger.trace("Message attribute are NOT equal: {} != {}", attributes, msg.attributes);
+      }
+      return result;
 
     };
   }
@@ -107,7 +128,12 @@ public interface MessagePredicates {
 
     return target -> {
 
-      return target.attributes != null && checkAttributes.test(target.attributes);
+      final var result = target.attributes != null && checkAttributes.test(target.attributes);
+      if (!result) {
+
+        Logger.trace("Unexpected message attribute: {}", target.attributes);
+      }
+      return result;
 
     };
 
@@ -127,6 +153,7 @@ public interface MessagePredicates {
 
       if (target.attributes == null) {
 
+        Logger.trace("Message attributes are null, so can not check if are similar to {}", source);
         return false;
       }
       for (final var key : source.fieldNames()) {
@@ -135,6 +162,7 @@ public interface MessagePredicates {
         final var targetValue = target.attributes.getValue(key);
         if (value != targetValue && (value == null || !value.equals(targetValue))) {
 
+          Logger.trace("Message attributes are not similar: {} != {}", value, targetValue);
           return false;
         }
       }
