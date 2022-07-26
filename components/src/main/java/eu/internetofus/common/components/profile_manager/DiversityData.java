@@ -45,4 +45,28 @@ public class DiversityData extends ReflectionModel implements Model {
   @ArraySchema(schema = @Schema(implementation = String.class), arraySchema = @Schema(description = "The name of the profile attributes to calculate the diversity", example = "[\"gender\",\"nationality\",\"meanings.extraversion\"]"))
   public Set<String> attributes;
 
+  /**
+   * The number minimum of attributes of the profile to allow to calculate the
+   * diversity.
+   */
+  @Schema(description = "The name of the profile attributes to calculate the diversity", example = "AT_LEAST_ONE", defaultValue = "ALL")
+  public MatchType match;
+
+  /**
+   * The type of match for calculate the diversity.
+   */
+  public enum MatchType {
+
+    /**
+     * Calculate the diversity if they have at least one common attribute.
+     */
+    AT_LEAST_ONE,
+
+    /**
+     * Calculate the diversity only if all the attributes are defined.
+     */
+    ALL;
+
+  }
+
 }
