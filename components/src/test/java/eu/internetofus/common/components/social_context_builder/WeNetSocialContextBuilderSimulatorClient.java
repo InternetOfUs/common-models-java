@@ -84,10 +84,11 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
    * {@inheritDoc}
    */
   @Override
-  public void getPreferencesForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
+  public void getSocialPreferencesForUserOnTask(@NotNull final String userId, @NotNull final String taskId,
       @NotNull final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.getJsonArray("/social/preferences", userId, taskId, "/").onComplete(handler);
+    this.getJsonObject("/social/preferences", userId, taskId, "/")
+        .map(body -> body.getJsonArray("users_IDs", new JsonArray())).onComplete(handler);
 
   }
 

@@ -120,7 +120,7 @@ public interface WeNetSocialContextBuilderSimulator {
    * @param taskId  identifier of the task
    * @param handler for the user preferences on task.
    */
-  void getPreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId,
+  void getSocialPreferencesForUserOnTask(@NotNull String userId, @NotNull String taskId,
       @NotNull Handler<AsyncResult<JsonArray>> handler);
 
   /**
@@ -135,7 +135,7 @@ public interface WeNetSocialContextBuilderSimulator {
   default Future<List<String>> getPreferencesForUserOnTask(@NotNull final String userId, @NotNull final String taskId) {
 
     final Promise<JsonArray> promise = Promise.promise();
-    this.getPreferencesForUserOnTask(userId, taskId, promise);
+    this.getSocialPreferencesForUserOnTask(userId, taskId, promise);
     return Model.fromFutureJsonArray(promise.future(), String.class);
 
   }

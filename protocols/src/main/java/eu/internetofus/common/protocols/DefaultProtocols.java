@@ -75,7 +75,27 @@ public enum DefaultProtocols implements DefaultProtocol {
   /**
    * The protocol that send to all the application users (flood) all transactions.
    */
-  FLOOD_V1("flood_v1");
+  FLOOD_V1("flood_v1"),
+
+  /**
+   * The protocol for the pilot M46 at London School of Economics (LSE).
+   */
+  PILOT_M46_LSE("pilot_m46_lse"),
+
+  /**
+   * The protocol for the pilot M46 at Pilot at Aalborg University (AAU).
+   */
+  PILOT_M46_AAU("pilot_m46_aau"),
+
+  /**
+   * The protocol for the pilot M46 at National University of Mongolia (NUM).
+   */
+  PILOT_M46_NUM("pilot_m46_num"),
+
+  /**
+   * The protocol for the pilot M46 Pilot at Universitad Católica (UC).
+   */
+  PILOT_M46_UC("pilot_m46_uc");
 
   /**
    * The default identifier associated to the protocol.

@@ -68,7 +68,12 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
   public void postSocialPreferencesForUserOnTask(final String userId, final String taskId, final JsonArray volunteers,
       final Handler<AsyncResult<JsonArray>> handler) {
 
-    this.post(volunteers, "/social/preferences", userId, taskId, "/").onComplete(handler);
+    this.post(new JsonObject().put("users_IDs", volunteers), response -> {
+
+      final var body = response.bodyAsJsonObject();
+      return body.getJsonArray("users_IDs", new JsonArray());
+
+    }, "/social/preferences", userId, taskId, "/").onComplete(handler);
 
   }
 
