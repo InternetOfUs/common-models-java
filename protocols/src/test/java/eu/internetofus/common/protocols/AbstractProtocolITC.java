@@ -76,7 +76,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 public abstract class AbstractProtocolITC {
 
   /**
-   * The value of the last successfuk test.
+   * The value of the last successful test.
    */
   public int lastSuccessfulTest;
 
