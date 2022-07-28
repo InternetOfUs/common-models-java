@@ -944,12 +944,13 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
     final var answer = "Response question with ";
     transaction.attributes = new JsonObject().put("answer", answer).put("anonymous", this.anonymous());
 
+    final var transactionIndex = 1;
     final var checkAnswerMessage = this.createMessagePredicate()
         .and(MessagePredicates.labelIs("AnsweredQuestionMessage"))
         .and(MessagePredicates.receiverIs(this.task.requesterId))
         .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("answer", answer).put("taskId", this.task.id)
-            .put("question", this.task.goal.name).put("transactionId", String.valueOf(2)).put("answer", answer)
-            .put("userId", transaction.actioneerId).put("anonymous", this.anonymous())));
+            .put("question", this.task.goal.name).put("transactionId", String.valueOf(transactionIndex))
+            .put("answer", answer).put("userId", transaction.actioneerId).put("anonymous", this.anonymous())));
     final var checkMessages = new ArrayList<Predicate<Message>>();
     checkMessages.add(checkAnswerMessage);
 
@@ -958,13 +959,12 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
             .attributesAre(new JsonObject().put("title", this.explanationTitle()).put("text", this.explanationText())));
     checkMessages.add(checkExplanationMessage);
 
-    final var checkTransactions = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(2))
-        .and(TaskPredicates.transactionAt(2,
+    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(2))
+        .and(TaskPredicates.transactionAt(transactionIndex,
             this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))
                 .and(TaskTransactionPredicates.messagesSizeIs(checkMessages.size()))
                 .and(TaskTransactionPredicates.messageAt(0, checkAnswerMessage))
                 .and(TaskTransactionPredicates.messageAt(1, checkExplanationMessage))));
-    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(2)).and(checkTransactions);
 
     WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
