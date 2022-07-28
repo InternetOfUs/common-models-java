@@ -19,7 +19,7 @@
  */
 package eu.internetofus.common.protocols;
 
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Test the calculus when uses ‘academic skills’ domain.
@@ -34,7 +34,7 @@ public class PilotM46LSEProtocolWithAcademicSkillsDomainITC extends AbstractPilo
   @Override
   protected String domain() {
 
-    return "academic_skills";
+    return Domain.ACADEMIC_SKILLS.toAsk4HelpV3();
   }
 
   /**
@@ -68,9 +68,18 @@ public class PilotM46LSEProtocolWithAcademicSkillsDomainITC extends AbstractPilo
    * {@inheritDoc}
    */
   @Override
-  protected boolean validMatchUsers(final JsonArray matchUsers) {
+  protected boolean validMatchUsers(final JsonObject state) {
 
     return true;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected String explanationText() {
+
+    return ".";
   }
 
 }

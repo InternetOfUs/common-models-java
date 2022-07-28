@@ -33,6 +33,7 @@ import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
 import eu.internetofus.common.components.service.MessagePredicates;
 import eu.internetofus.common.components.task_manager.TaskPredicates;
 import eu.internetofus.common.components.task_manager.TaskTransactionPredicates;
+import eu.internetofus.common.components.task_manager.WeNetTaskManager;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -106,14 +107,10 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
     final var taskToCreate = super.createTaskForProtocol();
     taskToCreate.goal.name = "Where to buy the best pizza?";
     taskToCreate.attributes = new JsonObject().put("domain", this.domain()).put("domainInterest", this.domainInterest())
-        .put("beliefsAndValues", this.beliefsAndValues()).put("sensitive", this.sensitive())
-        .put("anonymous", this.anonymous()).put("socialCloseness", this.socialCloseness())
-        .put("maxUsers", this.maxUsers()).put("maxAnswers", this.maxAnswers())
+        .put("beliefsAndValues", this.beliefsAndValues()).put("positionOfAnswerer", this.positionOfAnswerer())
+        .put("socialCloseness", this.socialCloseness()).put("sensitive", this.sensitive())
+        .put("anonymous", this.anonymous()).put("maxUsers", this.maxUsers()).put("maxAnswers", this.maxAnswers())
         .put("expirationDate", this.expirationDate());
-    if (this.useGeolocation()) {
-
-      taskToCreate.attributes = taskToCreate.attributes.put("positionOfAnswerer", this.positionOfAnswerer());
-    }
     return taskToCreate;
 
   }
@@ -159,16 +156,6 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
    * @return the social closeness of the task
    */
   protected abstract String socialCloseness();
-
-  /**
-   * Check if has to use the user location.
-   *
-   * @return {@code true} if the
-   */
-  protected boolean useGeolocation() {
-
-    return this.positionOfAnswerer() != null;
-  }
 
   /**
    * Return the position of answerer of the task.
@@ -290,27 +277,21 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
     this.assertLastSuccessfulTestWas(5, testContext);
 
-    if (this.useGeolocation()) {
+    @SuppressWarnings("rawtypes")
+    final List<Future> added = new ArrayList<>();
+    for (var i = 0; i < this.users.size(); i++) {
 
-      @SuppressWarnings("rawtypes")
-      final List<Future> added = new ArrayList<>();
-      for (var i = 0; i < this.users.size(); i++) {
+      final var location = new UserLocation();
+      location.userId = this.users.get(i).id;
+      location.latitude = 0.0;
+      location.longitude = i * 0.0007;
+      added.add(WeNetPersonalContextBuilderSimulator.createProxy(vertx).addUserLocation(location));
 
-        final var location = new UserLocation();
-        location.userId = this.users.get(i).id;
-        location.latitude = 0.0;
-        location.longitude = i * 0.0007;
-        added.add(WeNetPersonalContextBuilderSimulator.createProxy(vertx).addUserLocation(location));
-
-      }
-
-      CompositeFuture.all(added)
-          .onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
-
-    } else {
-
-      this.assertSuccessfulCompleted(testContext);
     }
+
+    CompositeFuture.all(added)
+        .onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
+
   }
 
   /**
@@ -349,19 +330,21 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
     final var createTransaction = new TaskTransaction();
     createTransaction.label = TaskTransaction.CREATE_TASK_LABEL;
     createTransaction.actioneerId = source.requesterId;
-    final var checkTask = this.createTaskPredicate().and(TaskPredicates.similarTo(source))
-        .and(TaskPredicates.transactionSizeIs(1))
+    final var checkCreateTask = this.createTaskPredicate().and(TaskPredicates.similarTo(source))
+        .and(TaskPredicates.transactionSizeIs(1)).and(TaskPredicates.transactionAt(0,
+            this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(createTransaction))));
+    final var checkTask = this.createTaskPredicate()
         .and(TaskPredicates.transactionAt(0,
-            this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(createTransaction))
-                .and(TaskTransactionPredicates.messagesSizeIs(maxMessages))
+            this.createTaskTransactionPredicate().and(TaskTransactionPredicates.messagesSizeIs(maxMessages))
                 .and(TaskTransactionPredicates.containsMessages(checkMessages))));
 
     final var taskState = this.createTaskUserStatePredicate(source.requesterId)
         .and(StatePredicates.attributesAre(this::validTaskUserStateAfterCreation));
 
-    final Future<?> future = this.waitUntilTaskCreated(source, vertx, testContext, checkTask)
+    final Future<?> future = this.waitUntilTaskCreated(source, vertx, testContext, checkCreateTask)
+        .compose(ignored -> this.waitUntilUserTaskState(source.requesterId, vertx, testContext, taskState))
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
-        .compose(ignored -> this.waitUntilUserTaskState(source.requesterId, vertx, testContext, taskState));
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask));
     future.onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
   }
 
@@ -376,6 +359,16 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   }
 
   /**
+   * Check if the use has selected to ask to users that are nearby.
+   *
+   * @return {@code true} if the position to answers is nearby.
+   */
+  protected boolean isNearbySelected() {
+
+    return "nearby".equals(this.positionOfAnswerer());
+  }
+
+  /**
    * Check that the task has the expected state.
    *
    * @param state to check.
@@ -384,36 +377,79 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
    */
   protected boolean validTaskUserStateAfterCreation(final JsonObject state) {
 
-    final var appUsers = state.getJsonArray("appUsers", new JsonArray());
-    final var closenessUsers = state.getJsonArray("closenessUsers", new JsonArray());
-    final var socialClosenessUsers = state.getJsonArray("socialClosenessUsers", new JsonArray());
-    final var beliefsAndValuesUsers = state.getJsonArray("beliefsAndValuesUsers", new JsonArray());
-    final var domainInterestUsers = state.getJsonArray("domainInterestUsers", new JsonArray());
-    final var matchUsers = state.getJsonArray("matchUsers", new JsonArray());
-    final var rankedUsers = state.getJsonArray("rankedUsers", new JsonArray());
-    final var unaskedUserIds = state.getJsonArray("unaskedUserIds", new JsonArray());
+    if (!state.containsKey("appUsers")) {
 
-    return this.validAppUsers(appUsers) && this.validClosenessUsersUsers(closenessUsers)
-        && this.validSocialClosenessUsers(socialClosenessUsers)
-        && this.validBeliefsAndValuesUsers(beliefsAndValuesUsers) && this.validDomainInterestUsers(domainInterestUsers)
-        && this.validMatchUsers(matchUsers) && this.validRankedUsers(matchUsers, rankedUsers)
-        && this.validUnaskedUsers(rankedUsers, unaskedUserIds);
+      Logger.warn("Not appUsers is not defined on the state.");
+      return false;
+    }
+    if (!state.containsKey("closenessUsers") && this.isNearbySelected()) {
+
+      Logger.warn("Not closenessUsers is not defined on the state.");
+      return false;
+    }
+    if (!state.containsKey("socialClosenessUsers")) {
+
+      Logger.warn("Not socialClosenessUsers is not defined on the state.");
+      return false;
+    }
+    if (!state.containsKey("beliefsAndValuesUsers")) {
+
+      Logger.warn("Not beliefsAndValuesUsers is not defined on the state.");
+      return false;
+    }
+    if (!state.containsKey("domainInterestUsers")) {
+
+      Logger.warn("Not domainInterestUsers is not defined on the state.");
+      return false;
+    }
+    if (!state.containsKey("matchUsers")) {
+
+      Logger.warn("Not matchUsers is not defined on the state.");
+      return false;
+    }
+    if (!state.containsKey("rankedUsers")) {
+
+      Logger.warn("Not rankedUsers is not defined on the state.");
+      return false;
+    }
+    if (!state.containsKey("unaskedUserIds")) {
+
+      Logger.warn("Not unaskedUserIds is not defined on the state.");
+      return false;
+    }
+
+    return this.validAppUsers(state) && this.validClosenessUsers(state) && this.validSocialClosenessUsers(state)
+        && this.validBeliefsAndValuesUsers(state) && this.validDomainInterestUsers(state) && this.validMatchUsers(state)
+        && this.validRankedUsers(state) && this.validUnaskedUsersIds(state);
   }
 
   /**
    * Check that the appUsers is valid.
    *
-   * @param appUsers to check.
+   * @param state where is the users to check.
    *
    * @return {@code true} if the appUsers is the expected after the task is
    *         created.
    */
-  protected boolean validAppUsers(final JsonArray appUsers) {
+  protected boolean validAppUsers(final JsonObject state) {
 
-    for (final var user : this.users) {
+    final var appUsers = state.getJsonArray("appUsers", new JsonArray());
+    for (var i = 1; i < this.users.size(); i++) {
 
-      if (!appUsers.contains(user.id)) {
+      final var userId = this.users.get(i).id;
+      var found = false;
+      for (var j = 0; j < appUsers.size(); j++) {
+
+        final var appUserId = appUsers.getString(j);
+        if (userId.equals(appUserId)) {
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
         // Not found user
+        Logger.warn("Not found app user {}.", userId);
         return false;
       }
     }
@@ -422,16 +458,43 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   }
 
   /**
+   * Check if two double values are similar.
+   *
+   * @param source value to compare.
+   * @param target value to compare.
+   *
+   * @return {@code true} if the two double values are similar.
+   */
+  protected boolean areSimilar(final Double source, final Double target) {
+
+    if (source == null) {
+
+      return target == null;
+
+    } else if (target == null) {
+
+      return false;
+
+    } else {
+
+      return Math.abs(source - target) < Double.MIN_NORMAL;
+    }
+
+  }
+
+  /**
    * Check that the closenessUsers is valid.
    *
-   * @param closenessUsers to check.
+   * @param state where is the users to check.
    *
    * @return {@code true} if the closenessUsers is the expected after the task is
    *         created.
    */
-  protected boolean validClosenessUsersUsers(final JsonArray closenessUsers) {
+  protected boolean validClosenessUsers(final JsonObject state) {
 
-    if (!this.useGeolocation()) {
+    final var closenessUsers = state.getJsonArray("", new JsonArray());
+
+    if (!"nearby".equals(this.positionOfAnswerer())) {
 
       return closenessUsers.isEmpty();
     }
@@ -455,7 +518,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
         }
 
         final var distance = Math.max(0.0, (this.maxDistance() - this.distanceTo(i)) / this.maxDistance());
-        if (Math.abs(distance - closenessUser.getDouble("value")) < Double.MIN_NORMAL) {
+        if (!this.areSimilar(distance, closenessUser.getDouble("value"))) {
 
           Logger.warn("Unexpected closenessUsers user at {}, {} is not {}.", i, distance, closenessUser);
           return false;
@@ -471,13 +534,14 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   /**
    * Check that the socialClosenessUsers is valid.
    *
-   * @param socialClosenessUsers to check.
+   * @param state where is the users to check.
    *
    * @return {@code true} if the socialClosenessUsers is the expected after the
    *         task is created.
    */
-  protected boolean validSocialClosenessUsers(final JsonArray socialClosenessUsers) {
+  protected boolean validSocialClosenessUsers(final JsonObject state) {
 
+    final var socialClosenessUsers = state.getJsonArray("socialClosenessUsers", new JsonArray());
     if (this.users.size() - 1 != socialClosenessUsers.size()) {
       // Unexpected size
       Logger.warn("Unexpected socialClosenessUsers user size.");
@@ -500,7 +564,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
         }
 
         final var weight = this.socialClosenessTo(i);
-        if (Math.abs(weight - userValueObject.getDouble("value")) < Double.MIN_NORMAL) {
+        if (!this.areSimilar(weight, userValueObject.getDouble("value"))) {
 
           Logger.warn("Unexpected socialClosenessUsers user at {}, {} is not {}.", i, weight, userValueObject);
           return false;
@@ -523,7 +587,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
         }
 
         final var weight = 1.0 - this.socialClosenessTo(i);
-        if (Math.abs(weight - userValueObject.getDouble("value")) < Double.MIN_NORMAL) {
+        if (!this.areSimilar(weight, userValueObject.getDouble("value"))) {
 
           Logger.warn("Unexpected socialClosenessUsers user at {}, {} is not {}.", i, weight, userValueObject);
           return false;
@@ -538,6 +602,13 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
     return true;
   }
+
+  /**
+   * The value when the dimension is indifferent.
+   *
+   * @return the expected value when is indifferent.
+   */
+  protected abstract Double indifferentValue();
 
   /**
    * Check that the user values list is indifferent.
@@ -569,9 +640,11 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
         Logger.warn("Unexpected {} user at {} is not defined {}.", type, i, userValueObject);
       }
 
-      if (Math.abs(1.0 - userValueObject.getDouble("value")) < Double.MIN_NORMAL) {
+      final var indifferentValue = this.indifferentValue();
+      final var userValue = userValueObject.getDouble("value");
+      if (!this.areSimilar(indifferentValue, userValue)) {
 
-        Logger.warn("Unexpected {} user at {}, 1.0 is not {}.", type, i, userValueObject);
+        Logger.warn("Unexpected {} user value at {}, expecting {} but it is {}.", type, i, indifferentValue, userValue);
         return false;
       }
 
@@ -597,13 +670,14 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   /**
    * Check that the beliefsAndValuesUsers is valid.
    *
-   * @param beliefsAndValuesUsers to check.
+   * @param state where is the users to check.
    *
    * @return {@code true} if the beliefsAndValuesUsers is the expected after the
    *         task is created.
    */
-  protected boolean validBeliefsAndValuesUsers(final JsonArray beliefsAndValuesUsers) {
+  protected boolean validBeliefsAndValuesUsers(final JsonObject state) {
 
+    final var beliefsAndValuesUsers = state.getJsonArray("beliefsAndValuesUsers", new JsonArray());
     if (this.users.size() - 1 != beliefsAndValuesUsers.size()) {
       // Unexpected size
       Logger.warn("Unexpected beliefsAndValuesUsers user size.");
@@ -626,7 +700,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
         }
 
         final var weight = this.beliefsAndValuesTo(i);
-        if (Math.abs(weight - userValueObject.getDouble("value")) < Double.MIN_NORMAL) {
+        if (!this.areSimilar(weight, userValueObject.getDouble("value"))) {
 
           Logger.warn("Unexpected beliefsAndValues user at {}, {} is not {}.", i, weight, userValueObject);
           return false;
@@ -649,7 +723,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
         }
 
         final var weight = 1.0 - this.beliefsAndValuesTo(i);
-        if (Math.abs(weight - userValueObject.getDouble("value")) < Double.MIN_NORMAL) {
+        if (!this.areSimilar(weight, userValueObject.getDouble("value"))) {
 
           Logger.warn("Unexpected beliefsAndValues user at {}, {} is not {}.", i, weight, userValueObject);
           return false;
@@ -682,16 +756,17 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   /**
    * Check that the domainInterestUsers is valid.
    *
-   * @param domainInterestUsers to check.
+   * @param state where is the users to check.
    *
    * @return {@code true} if the domainInterestUsers is the expected after the
    *         task is created.
    */
-  protected boolean validDomainInterestUsers(final JsonArray domainInterestUsers) {
+  protected boolean validDomainInterestUsers(final JsonObject state) {
 
+    final var domainInterestUsers = state.getJsonArray("domainInterestUsers", new JsonArray());
     if (this.users.size() - 1 != domainInterestUsers.size()) {
       // Unexpected size
-      Logger.warn("Unexpected domainInterestUsers user size.");
+      Logger.warn("Unexpected domainInterest user size.");
       return false;
     }
 
@@ -711,7 +786,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
         }
 
         final var weight = this.domainInterestTo(i);
-        if (Math.abs(weight - userValueObject.getDouble("value")) < Double.MIN_NORMAL) {
+        if (!this.areSimilar(weight, userValueObject.getDouble("value"))) {
 
           Logger.warn("Unexpected domainInterest user at {}, {} is not {}.", i, weight, userValueObject);
           return false;
@@ -734,7 +809,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
         }
 
         final var weight = 1.0 - this.domainInterestTo(i);
-        if (Math.abs(weight - userValueObject.getDouble("value")) < Double.MIN_NORMAL) {
+        if (!this.areSimilar(weight, userValueObject.getDouble("value"))) {
 
           Logger.warn("Unexpected domainInterest user at {}, {} is not {}.", i, weight, userValueObject);
           return false;
@@ -753,28 +828,31 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   /**
    * Check that the matchUsers is valid.
    *
-   * @param matchUsers to check.
+   * @param state where are the match users.
    *
    * @return {@code true} if the matchUsers is the expected after the task is
    *         created.
    */
-  protected abstract boolean validMatchUsers(final JsonArray matchUsers);
+  protected abstract boolean validMatchUsers(JsonObject state);
 
   /**
    * Check that the rankedUsers is valid.
    *
-   * @param matchUsers  that has been found.
-   * @param rankedUsers to check.
+   * @param state where is the users to check.
    *
    * @return {@code true} if the rankedUsers is the expected after the task is
    *         created.
    */
-  protected boolean validRankedUsers(final JsonArray matchUsers, final JsonArray rankedUsers) {
+  protected boolean validRankedUsers(final JsonObject state) {
+
+    final var matchUsers = state.getJsonArray("matchUsers", new JsonArray());
+    final var rankedUsers = state.getJsonArray("rankedUsers", new JsonArray());
 
     final var max = matchUsers.size();
-    if (max != rankedUsers.size()) {
+    final var rankedSize = rankedUsers.size();
+    if (max != rankedSize) {
       // Unexpected size
-      Logger.warn("Unexpected rankedUsers user size.");
+      Logger.warn("Unexpected ranked user size, {} != {}.", max, rankedSize);
       return false;
     }
 
@@ -783,9 +861,9 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       final var matchUser = matchUsers.getJsonObject(i);
       final var matchUserId = matchUser.getString("userId");
       final var rankedUserId = rankedUsers.getString(i);
-      if (matchUserId.equals(rankedUserId)) {
+      if (!matchUserId.equals(rankedUserId)) {
         // Unexpected user id
-        Logger.warn("Unexpected user at {} , {} is not equals to {} ", i, matchUserId, rankedUserId);
+        Logger.warn("Unexpected match user at {} , {} is not equals to {} ", i, matchUserId, rankedUserId);
         return false;
       }
     }
@@ -796,34 +874,103 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   /**
    * Check that the unaskedUsers is valid.
    *
-   * @param rankedUsers  that has been found.
-   * @param unaskedUsers to check.
+   * @param state where is the users to check.
    *
    * @return {@code true} if the unaskedUsers is the expected after the task is
    *         created.
    */
-  protected boolean validUnaskedUsers(final JsonArray rankedUsers, final JsonArray unaskedUsers) {
+  protected boolean validUnaskedUsersIds(final JsonObject state) {
 
+    final var rankedUsers = state.getJsonArray("rankedUsers", new JsonArray());
+    final var unaskedUsers = state.getJsonArray("unaskedUserIds", new JsonArray());
     final var start = this.maxMessagesOnCreation();
-    final var max = rankedUsers.size();
-    if (max != unaskedUsers.size() + start) {
+    final var expectedUnaskedSixe = rankedUsers.size() - start;
+    final var unaskedSize = unaskedUsers.size();
+    if (expectedUnaskedSixe != unaskedSize) {
       // Unexpected size
-      Logger.warn("Unexpected unaskedUsers user size.");
+      Logger.warn("Unexpected unasked users size, {} != {}.", expectedUnaskedSixe, unaskedSize);
       return false;
     }
 
-    for (var i = start; i < max; i++) {
+    for (var i = 0; i < unaskedSize; i++) {
 
-      final var rankedUserId = rankedUsers.getString(i);
+      final var rankedUserId = rankedUsers.getString(start + i);
       final var unaskedUserId = unaskedUsers.getString(i);
-      if (unaskedUserId.equals(rankedUserId)) {
+      if (!unaskedUserId.equals(rankedUserId)) {
         // Unexpected user id
-        Logger.warn("Unexpected user at {} , {} is not equals to {} ", i, rankedUserId, unaskedUserId);
+        Logger.warn("Unexpected unasked user at {} , {} is not equals to {} ", i, rankedUserId, unaskedUserId);
         return false;
       }
     }
 
     return true;
+  }
+
+  /**
+   * Return the explanation title for an answer.
+   *
+   * @return the explanation title.
+   */
+  protected String explanationTitle() {
+
+    return "Why is this user chosen?";
+
+  }
+
+  /**
+   * Return the explanation text for an answer.
+   *
+   * @return the explanation text.
+   */
+  protected abstract String explanationText();
+
+  /**
+   * Check that receive an explanation when receive the answer.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @Test
+  @Order(8)
+  public void shouldReceiveExplanationWithAnswer(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(7, testContext);
+
+    final var user = this.users.get(2);
+    final var transaction = new TaskTransaction();
+    transaction.actioneerId = user.id;
+    transaction.taskId = this.task.id;
+    transaction.label = "answerTransaction";
+    final var answer = "Response question with ";
+    transaction.attributes = new JsonObject().put("answer", answer).put("anonymous", this.anonymous());
+
+    final var checkAnswerMessage = this.createMessagePredicate()
+        .and(MessagePredicates.labelIs("AnsweredQuestionMessage"))
+        .and(MessagePredicates.receiverIs(this.task.requesterId))
+        .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("answer", answer).put("taskId", this.task.id)
+            .put("question", this.task.goal.name).put("transactionId", String.valueOf(2)).put("answer", answer)
+            .put("userId", transaction.actioneerId).put("anonymous", this.anonymous())));
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    checkMessages.add(checkAnswerMessage);
+
+    final var checkExplanationMessage = this.createMessagePredicate().and(MessagePredicates.labelIs("TextualMessage"))
+        .and(MessagePredicates.receiverIs(this.task.requesterId)).and(MessagePredicates
+            .attributesAre(new JsonObject().put("title", this.explanationTitle()).put("text", this.explanationText())));
+    checkMessages.add(checkExplanationMessage);
+
+    final var checkTransactions = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(2))
+        .and(TaskPredicates.transactionAt(2,
+            this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))
+                .and(TaskTransactionPredicates.messagesSizeIs(checkMessages.size()))
+                .and(TaskTransactionPredicates.messageAt(0, checkAnswerMessage))
+                .and(TaskTransactionPredicates.messageAt(1, checkExplanationMessage))));
+    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(2)).and(checkTransactions);
+
+    WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
+        .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
+
   }
 
 }

@@ -809,7 +809,7 @@ public abstract class AbstractProtocolITC {
 
         return false;
       }
-      if (this.community != null && !this.community.id.equals(state.communityId)) {
+      if (state.communityId != null) {
 
         return false;
       }

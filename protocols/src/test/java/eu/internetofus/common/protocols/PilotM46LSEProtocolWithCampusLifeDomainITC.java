@@ -19,7 +19,7 @@
  */
 package eu.internetofus.common.protocols;
 
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Test the calculus when uses ‘campus life’ domain.
@@ -34,7 +34,7 @@ public class PilotM46LSEProtocolWithCampusLifeDomainITC extends AbstractPilotM46
   @Override
   protected String domain() {
 
-    return "campus_life";
+    return Domain.CAMPUS_LIFE.toAsk4HelpV3();
   }
 
   /**
@@ -68,9 +68,18 @@ public class PilotM46LSEProtocolWithCampusLifeDomainITC extends AbstractPilotM46
    * {@inheritDoc}
    */
   @Override
-  protected boolean validMatchUsers(final JsonArray matchUsers) {
+  protected boolean validMatchUsers(final JsonObject state) {
 
     return true;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected String explanationText() {
+
+    return "Recall that no requirements were set w.r.t domains, values and social closeness. Nevertheless, we tried to increase the gender diversity of selected users.";
   }
 
 }

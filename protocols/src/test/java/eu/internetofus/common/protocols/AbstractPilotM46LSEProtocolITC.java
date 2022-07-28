@@ -20,7 +20,7 @@
 package eu.internetofus.common.protocols;
 
 import eu.internetofus.common.model.TimeManager;
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import java.time.Duration;
 
 /**
@@ -29,6 +29,83 @@ import java.time.Duration;
  * @author UDT-IA, IIIA-CSIC
  */
 public abstract class AbstractPilotM46LSEProtocolITC extends AbstractPilotM46ProtocolITC {
+
+  /**
+   * The domains of the LSE.
+   */
+  public enum Domain {
+
+    /**
+     * The basic needs domain.
+     */
+    BASIC_NEEDS,
+    /**
+     * The campus life domain.
+     */
+    CAMPUS_LIFE,
+    /**
+     * The academic skills domain.
+     */
+    ACADEMIC_SKILLS,
+    /**
+     * The appreciating culture domain.
+     */
+    APPRECIATING_CULTURE,
+    /**
+     * The performing/producing culture domain.
+     */
+    PERFORMING_PRODUCING_CULTURE,
+    /**
+     * The physical activities/sport domain.
+     */
+    PHYSICAL_ACTIVITIES_SPORTS,
+    /**
+     * The things to do about town domain.
+     */
+    THINGS_TO_DO_ABOUT_TOWN,
+    /**
+     * The random thoughts domain.
+     */
+    RANDOM_THOUGHTS,
+    /**
+     * The sensitive issue domain.
+     */
+    SENSITIVE_ISSUES;
+
+    /**
+     * Return the name associated of this domain on the ask4Help v3 possible
+     * domains.
+     *
+     * @return the domain to use.
+     */
+    public String toAsk4HelpV3() {
+
+      switch (this) {
+
+      case BASIC_NEEDS:
+        return "food_and_cooking";
+      case CAMPUS_LIFE:
+        return "local_university";
+      case ACADEMIC_SKILLS:
+        return "studying_career";
+      case APPRECIATING_CULTURE:
+        return "cultural_interests";
+      case PERFORMING_PRODUCING_CULTURE:
+        return "arts_and_crafts";
+      case PHYSICAL_ACTIVITIES_SPORTS:
+        return "physical_activity";
+      case THINGS_TO_DO_ABOUT_TOWN:
+        return "local_things";
+      case RANDOM_THOUGHTS:
+        return "varia_misc";
+      default:
+        // SENSITIVE_ISSUES:
+        return "life_ponders";
+      }
+
+    }
+
+  }
 
   /**
    * {@inheritDoc}
@@ -92,15 +169,24 @@ public abstract class AbstractPilotM46LSEProtocolITC extends AbstractPilotM46Pro
   @Override
   protected String positionOfAnswerer() {
 
-    return null;
+    return "anywhere";
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  protected boolean validClosenessUsersUsers(final JsonArray closenessUsers) {
+  protected boolean validClosenessUsers(final JsonObject state) {
 
-    return closenessUsers.isEmpty();
+    return !state.containsKey("closenessUsers");
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected Double indifferentValue() {
+
+    return null;
   }
 }

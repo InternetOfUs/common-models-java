@@ -19,29 +19,24 @@
  */
 package eu.internetofus.common.protocols;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.util.Random;
+import org.tinylog.Logger;
 
 /**
- * Test the calculus when uses domain is ‘random thoughts’ or ‘sensitive
- * issues’.
+ * Test the calculus when uses ‘academic skills’ domain.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class PilotM46LSEProtocolWithRandomThroughtdOrSenditiveIssuesDomainslITC extends AbstractPilotM46LSEProtocolITC {
+public class PilotM46LSEProtocolWithAllIndifferentDimensionsITC extends AbstractPilotM46LSEProtocolITC {
 
   /**
-   * The possible domains for the test.
-   */
-  public static final Domain[] POSSIBLE_DOMAINS = { Domain.RANDOM_THOUGHTS, Domain.SENSITIVE_ISSUES };
-
-  /**
-   * {@inheritDoc} ‘random thoughts’ or ‘sensitive issues’
+   * {@inheritDoc} ‘academic skills’
    */
   @Override
   protected String domain() {
 
-    return POSSIBLE_DOMAINS[new Random().nextInt(POSSIBLE_DOMAINS.length)].toAsk4HelpV3();
+    return Domain.ACADEMIC_SKILLS.toAsk4HelpV3();
   }
 
   /**
@@ -50,7 +45,7 @@ public class PilotM46LSEProtocolWithRandomThroughtdOrSenditiveIssuesDomainslITC 
   @Override
   protected String domainInterest() {
 
-    return "different";
+    return "indifferent";
   }
 
   /**
@@ -59,7 +54,7 @@ public class PilotM46LSEProtocolWithRandomThroughtdOrSenditiveIssuesDomainslITC 
   @Override
   protected String beliefsAndValues() {
 
-    return "different";
+    return "indifferent";
   }
 
   /**
@@ -68,7 +63,7 @@ public class PilotM46LSEProtocolWithRandomThroughtdOrSenditiveIssuesDomainslITC 
   @Override
   protected String socialCloseness() {
 
-    return "different";
+    return "indifferent";
   }
 
   /**
@@ -77,7 +72,44 @@ public class PilotM46LSEProtocolWithRandomThroughtdOrSenditiveIssuesDomainslITC 
   @Override
   protected boolean validMatchUsers(final JsonObject state) {
 
+    final var appUsers = state.getJsonArray("appUsers", new JsonArray());
+    final var matchUsers = state.getJsonArray("matchUsers", new JsonArray());
+    if (appUsers.size() != matchUsers.size()) {
+      // Unexpected size
+      Logger.warn("Unexpected matchUsers user size.");
+      return false;
+    }
+
+    for (var i = 0; i < appUsers.size(); i++) {
+
+      final var appUserId = appUsers.getString(i);
+      final var matchUser = matchUsers.getJsonObject(i);
+      final var matchUserId = matchUser.getString("userId");
+      if (!appUserId.equals(matchUserId)) {
+
+        Logger.warn("Unexpected matchUser user at {}, {} is not {}.", i, appUserId, matchUserId);
+        return false;
+      }
+
+      final var matchUserValue = matchUser.getDouble("value");
+      if (!this.areSimilar(1.0, matchUserValue)) {
+
+        Logger.warn("Unexpected matchUser user at {}, 1.0 is not {}.", i, matchUserValue);
+        return false;
+      }
+
+    }
+
     return true;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected Double indifferentValue() {
+
+    return null;
   }
 
   /**

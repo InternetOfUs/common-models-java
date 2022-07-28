@@ -19,7 +19,7 @@
  */
 package eu.internetofus.common.protocols;
 
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import java.util.Random;
 
 /**
@@ -34,8 +34,8 @@ public class PilotM46LSEProtocolWithOtherDomainsITC extends AbstractPilotM46LSEP
   /**
    * The possible domains for the test.
    */
-  public static final String[] POSSIBLE_DOMAINS = { "basic_needs", "appreciating_culture",
-      "performing_producing_culture", "physical_activities_sports", "things_to_do_about_town" };
+  public static final Domain[] POSSIBLE_DOMAINS = { Domain.BASIC_NEEDS, Domain.APPRECIATING_CULTURE,
+      Domain.PERFORMING_PRODUCING_CULTURE, Domain.PHYSICAL_ACTIVITIES_SPORTS, Domain.THINGS_TO_DO_ABOUT_TOWN };
 
   /**
    * {@inheritDoc} ‘random thoughts’ or ‘sensitive issues’
@@ -43,7 +43,7 @@ public class PilotM46LSEProtocolWithOtherDomainsITC extends AbstractPilotM46LSEP
   @Override
   protected String domain() {
 
-    return POSSIBLE_DOMAINS[new Random().nextInt(POSSIBLE_DOMAINS.length)];
+    return POSSIBLE_DOMAINS[new Random().nextInt(POSSIBLE_DOMAINS.length)].toAsk4HelpV3();
   }
 
   /**
@@ -77,9 +77,18 @@ public class PilotM46LSEProtocolWithOtherDomainsITC extends AbstractPilotM46LSEP
    * {@inheritDoc}
    */
   @Override
-  protected boolean validMatchUsers(final JsonArray matchUsers) {
+  protected boolean validMatchUsers(final JsonObject state) {
 
     return true;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected String explanationText() {
+
+    return ".";
   }
 
 }
