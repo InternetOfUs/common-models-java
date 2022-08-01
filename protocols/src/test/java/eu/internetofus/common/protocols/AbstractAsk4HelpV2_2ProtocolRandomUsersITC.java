@@ -106,7 +106,7 @@ public class AbstractAsk4HelpV2_2ProtocolRandomUsersITC extends AbstractAsk4Help
       checkMessages
           .add(this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionToAnswerMessage")).and(msg -> {
 
-            if (this.getUserbyId(msg.receiverId) == null) {
+            if (this.getUserById(msg.receiverId) == null) {
               // Undefined user
               return false;
             }

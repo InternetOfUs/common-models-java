@@ -526,4 +526,51 @@ public interface WeNetSocialContextBuilderSimulator {
     return promise.future();
 
   }
+
+  /**
+   * Shuffle a set of user using the learned social diversity.
+   *
+   * @param userIds identifiers of the users to shuffle.
+   * @param handler for the shuffled user identifiers.
+   */
+  void socialShuffle(JsonObject userIds, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Shuffle a set of user using the learned social diversity.
+   *
+   * @param userIds identifiers of the users to shuffle.
+   *
+   * @return the an ordered list of Users based on diversity attributes.
+   */
+  @GenIgnore
+  default Future<UserIds> socialShuffle(@NotNull final UserIds userIds) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    final var data = userIds.toJsonObject();
+    this.socialShuffle(data, promise);
+    return Model.fromFutureJsonObject(promise.future(), UserIds.class);
+
+  }
+
+  /**
+   * Get the last shuffle a set of user using the learned social diversity.
+   *
+   * @param handler for the shuffled user identifiers.
+   */
+  void getSocialShuffle(@NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Get the last shuffle a set of user using the learned social diversity.
+   *
+   * @return the an ordered list of Users based on diversity attributes.
+   */
+  @GenIgnore
+  default Future<UserIds> getSocialShuffle() {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.getSocialShuffle(promise);
+    return Model.fromFutureJsonObject(promise.future(), UserIds.class);
+
+  }
+
 }

@@ -160,4 +160,13 @@ public class WeNetSocialContextBuilderClient extends ComponentClient implements 
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void socialShuffle(final JsonObject userIds, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(userIds, this.createObjectExtractor(), "/social/shuffle").onComplete(handler);
+  }
+
 }

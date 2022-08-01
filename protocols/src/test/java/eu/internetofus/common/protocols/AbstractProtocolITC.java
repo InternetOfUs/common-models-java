@@ -921,7 +921,7 @@ public abstract class AbstractProtocolITC {
    * @return the user associated to the identifier of {@code null} if it is not
    *         defined.
    */
-  protected WeNetUserProfile getUserbyId(final String userId) {
+  protected WeNetUserProfile getUserById(final String userId) {
 
     for (final var user : this.users) {
 
@@ -1044,6 +1044,30 @@ public abstract class AbstractProtocolITC {
         () -> WeNetInteractionProtocolEngine.createProxy(vertx).retrieveTaskUserState(this.task.id, userId),
         checkState::test);
 
+  }
+
+  /**
+   * Return the index of the profile associated to the specified identifier.
+   *
+   * @param id identifier of the profile that is looking for.
+   *
+   * @return the index where the profile is defined.
+   *
+   * @throws AssertionError if no created profile has the specified identifier.
+   */
+  protected int indexOfCreatedProfileWithId(final String id) {
+
+    for (var i = 0; i < this.users.size(); i++) {
+
+      final var user = this.users.get(i);
+      if (user.id.equals(id)) {
+
+        return i;
+      }
+    }
+
+    fail("Any created profile matches the identifier " + id);
+    return -1;
   }
 
 }

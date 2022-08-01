@@ -196,11 +196,6 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   }
 
   /**
-   * The maximum number of user that has a social closeness.
-   */
-  private static final int MAX_SOCIAL_CLOSENESS_INDEX = 8;
-
-  /**
    * Return the distance between the requester and the user at the specified
    * position.
    *
@@ -208,17 +203,29 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
    *
    * @return the distance in km to the user of the specified position.
    */
-  public double socialClosenessTo(final int index) {
+  public Double socialClosenessTo(final int index) {
 
-    if (index < MAX_SOCIAL_CLOSENESS_INDEX) {
+    if (this.hasSocialClosenessTo(index)) {
 
-      return Math.max(0, 1.0 - (index + 0.5));
+      return Math.max(0d, 0.6d - index * 0.01d);
 
     } else {
 
-      return 0.5;
+      return this.indifferentValue();
     }
 
+  }
+
+  /**
+   * Check if a user has asocial closeness.
+   *
+   * @param index of the user to check.
+   *
+   * @return {@code true} if the user at the index has a social closeness.
+   */
+  protected boolean hasSocialClosenessTo(final int index) {
+
+    return index < this.users.size() - 1;
   }
 
   /**
@@ -235,16 +242,19 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
     @SuppressWarnings("rawtypes")
     final List<Future> added = new ArrayList<>();
-    for (var i = 1; i < MAX_SOCIAL_CLOSENESS_INDEX; i++) {
+    for (var i = 1; i < this.users.size() - 1; i++) {
 
-      final var relationship = new SocialNetworkRelationship();
-      relationship.appId = this.app.appId;
-      relationship.sourceId = this.users.get(0).id;
-      relationship.targetId = this.users.get(i).id;
-      relationship.weight = this.socialClosenessTo(i);
-      relationship.type = SocialNetworkRelationshipType.values()[i
-          % (SocialNetworkRelationshipType.values().length - 1)];
-      added.add(WeNetProfileManager.createProxy(vertx).addOrUpdateSocialNetworkRelationship(relationship));
+      if (this.hasSocialClosenessTo(i)) {
+
+        final var relationship = new SocialNetworkRelationship();
+        relationship.appId = this.app.appId;
+        relationship.sourceId = this.users.get(0).id;
+        relationship.targetId = this.users.get(i).id;
+        relationship.weight = this.socialClosenessTo(i);
+        relationship.type = SocialNetworkRelationshipType.values()[i
+            % (SocialNetworkRelationshipType.values().length - 1)];
+        added.add(WeNetProfileManager.createProxy(vertx).addOrUpdateSocialNetworkRelationship(relationship));
+      }
     }
 
     CompositeFuture.all(added)
@@ -434,22 +444,20 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   protected boolean validAppUsers(final JsonObject state) {
 
     final var appUsers = state.getJsonArray("appUsers", new JsonArray());
-    for (var i = 1; i < this.users.size(); i++) {
+    final var appUsersSize = appUsers.size();
+    final var usersSize = this.users.size();
+    if (appUsersSize != usersSize - 1) {
+      // Unexpected size
+      Logger.warn("Unexpected app users size, {} != {}", usersSize, appUsersSize);
+      return false;
+    }
 
-      final var userId = this.users.get(i).id;
-      var found = false;
-      for (var j = 0; j < appUsers.size(); j++) {
+    for (var i = 0; i < appUsersSize; i++) {
 
-        final var appUserId = appUsers.getString(j);
-        if (userId.equals(appUserId)) {
-          found = true;
-          break;
-        }
-      }
+      final var appUser = appUsers.getString(i);
+      if (this.getUserById(appUser) == null) {
 
-      if (!found) {
-        // Not found user
-        Logger.warn("Not found app user {}.", userId);
+        Logger.warn("The app user {} at {} is not a defined user.", appUser, i);
         return false;
       }
     }
@@ -499,28 +507,34 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       return closenessUsers.isEmpty();
     }
 
-    if (this.users.size() - 1 != closenessUsers.size()) {
+    final var appUsers = state.getJsonArray("appUsers", new JsonArray());
+    final var appUsersSize = appUsers.size();
+    final var closenessUsersSize = closenessUsers.size();
+    if (appUsersSize != closenessUsersSize) {
       // Unexpected size
-      Logger.warn("Unexpected closenessUsers user size.");
+      Logger.warn("Unexpected closeness user size, {} != {}.", appUsersSize, closenessUsersSize);
       return false;
     }
 
     if ("nearby".equals(this.positionOfAnswerer())) {
 
-      for (var i = 1; i < this.users.size(); i++) {
+      for (var i = 0; i < appUsersSize; i++) {
 
-        final var user = this.users.get(i);
-        final var closenessUser = closenessUsers.getJsonObject(i - 1);
-        if (!user.id.equals(closenessUser.getString("userId"))) {
+        final var appUser = appUsers.getString(i);
+        final var closenessUser = closenessUsers.getJsonObject(i);
+        final var closenessUserId = closenessUser.getString("userId");
+        if (!appUser.equals(closenessUserId)) {
 
-          Logger.warn("Unexpected closenessUsers user at {}, {} is not {}.", i, user.id, closenessUser);
+          Logger.warn("Unexpected closeness user at {}, {} is not {}.", i, appUser, closenessUser);
           return false;
         }
 
-        final var distance = Math.max(0.0, (this.maxDistance() - this.distanceTo(i)) / this.maxDistance());
-        if (!this.areSimilar(distance, closenessUser.getDouble("value"))) {
+        final var index = this.indexOfCreatedProfileWithId(appUser);
+        final var distance = Math.max(0.0, (this.maxDistance() - this.distanceTo(index)) / this.maxDistance());
+        final var closenessValue = closenessUser.getDouble("value");
+        if (!this.areSimilar(distance, closenessValue)) {
 
-          Logger.warn("Unexpected closenessUsers user at {}, {} is not {}.", i, distance, closenessUser);
+          Logger.warn("Unexpected closeness user value at {}, {} is not {}.", i, distance, closenessValue);
           return false;
         }
 
@@ -542,62 +556,50 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   protected boolean validSocialClosenessUsers(final JsonObject state) {
 
     final var socialClosenessUsers = state.getJsonArray("socialClosenessUsers", new JsonArray());
-    if (this.users.size() - 1 != socialClosenessUsers.size()) {
+    final var socialClosenessSize = socialClosenessUsers.size();
+    final var appUsers = state.getJsonArray("appUsers", new JsonArray());
+    final var appUsersSize = appUsers.size();
+    if (appUsersSize != socialClosenessSize) {
       // Unexpected size
-      Logger.warn("Unexpected socialClosenessUsers user size.");
+      Logger.warn("Unexpected socialCloseness user size, {} != {}.", appUsersSize, socialClosenessSize);
       return false;
     }
 
     final var type = this.socialCloseness();
-    if ("similar".equals(type)) {
+    for (var i = 0; i < appUsersSize; i++) {
 
-      for (var i = 1; i < this.users.size(); i++) {
+      final var appUser = appUsers.getString(i);
+      final var socialClosenessUser = socialClosenessUsers.getJsonObject(i);
+      final var socialClosenessUserId = socialClosenessUser.getString("userId");
+      if (!appUser.equals(socialClosenessUserId)) {
 
-        final var user = this.users.get(i);
-        final var userValueObject = socialClosenessUsers.getJsonObject(i - 1);
-        if (i < MAX_SOCIAL_CLOSENESS_INDEX) {
-          if (!user.id.equals(userValueObject.getString("userId"))) {
-
-            Logger.warn("Unexpected socialClosenessUsers user at {}, {} is not {}.", i, user.id, userValueObject);
-            return false;
-          }
-        }
-
-        final var weight = this.socialClosenessTo(i);
-        if (!this.areSimilar(weight, userValueObject.getDouble("value"))) {
-
-          Logger.warn("Unexpected socialClosenessUsers user at {}, {} is not {}.", i, weight, userValueObject);
-          return false;
-        }
-
+        Logger.warn("Unexpected  socialCloseness user at {}, {} is not {}.", i, appUser, socialClosenessUser);
+        return false;
       }
 
-    } else if ("different".equals(type)) {
+      final var socialClosenessValue = socialClosenessUser.getDouble("value");
+      Double expectedSocialClosenessValue = null;
+      if ("similar".equals(type)) {
 
-      for (var i = 1; i < this.users.size(); i++) {
+        final var index = this.indexOfCreatedProfileWithId(appUser);
+        expectedSocialClosenessValue = this.socialClosenessTo(index);
 
-        final var user = this.users.get(i);
-        final var userValueObject = socialClosenessUsers.getJsonObject(socialClosenessUsers.size() - i - 1);
-        if (i < MAX_SOCIAL_CLOSENESS_INDEX) {
-          if (!user.id.equals(userValueObject.getString("userId"))) {
+      } else if ("different".equals(type)) {
 
-            Logger.warn("Unexpected socialClosenessUsers user at {}, {} is not {}.", i, user.id, userValueObject);
-            return false;
-          }
-        }
+        final var index = this.indexOfCreatedProfileWithId(appUser);
+        expectedSocialClosenessValue = 1.0d - this.socialClosenessTo(index);
 
-        final var weight = 1.0 - this.socialClosenessTo(i);
-        if (!this.areSimilar(weight, userValueObject.getDouble("value"))) {
+      } else {
 
-          Logger.warn("Unexpected socialClosenessUsers user at {}, {} is not {}.", i, weight, userValueObject);
-          return false;
-        }
+        expectedSocialClosenessValue = this.indifferentValue();
+      }
+      if (!this.areSimilar(expectedSocialClosenessValue, socialClosenessValue)) {
 
+        Logger.warn("Unexpected  socialCloseness user value at {}, {} is not {}.", i, expectedSocialClosenessValue,
+            socialClosenessValue);
+        return false;
       }
 
-    } else {
-
-      return this.validIndifferent("socialCloseness", socialClosenessUsers);
     }
 
     return true;
@@ -611,40 +613,80 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   protected abstract Double indifferentValue();
 
   /**
-   * Check that the user values list is indifferent.
+   * Return the believe and values between the requester and the user at the
+   * specified position.
    *
-   * @param type       of array.
-   * @param userValues that is indifferent.
+   * @param index of the user to calculate the distance.
    *
-   * @return {@code true} if array contains the indifferent values.
+   * @return the believe and values similarity.
    */
-  protected boolean validIndifferent(final String type, final JsonArray userValues) {
+  public Double beliefsAndValuesTo(final int index) {
 
-    for (var i = 0; i < userValues.size(); i++) {
+    if (this.isEmptyProfile(index)) {
 
-      final var userValueObject = userValues.getJsonObject(i);
+      return this.indifferentValue();
 
-      var found = false;
-      for (var j = 1; j < this.users.size(); j++) {
+    } else {
 
-        final var user = this.users.get(j);
-        if (user.id.equals(userValueObject.getString("userId"))) {
+      return 1.0
+          - Math.abs(this.users.get(0).meanings.get(0).level - this.users.get(index).meanings.get(0).level) / 2.0;
 
-          found = true;
-          break;
-        }
+    }
 
+  }
+
+  /**
+   * Check that the beliefsAndValuesUsers is valid.
+   *
+   * @param state where is the users to check.
+   *
+   * @return {@code true} if the beliefsAndValuesUsers is the expected after the
+   *         task is created.
+   */
+  protected boolean validBeliefsAndValuesUsers(final JsonObject state) {
+
+    final var beliefsAndValuesUsers = state.getJsonArray("beliefsAndValuesUsers", new JsonArray());
+    final var beliefsAndValuesSize = beliefsAndValuesUsers.size();
+    final var appUsers = state.getJsonArray("appUsers", new JsonArray());
+    final var appUsersSize = appUsers.size();
+    if (appUsersSize != beliefsAndValuesSize) {
+      // Unexpected size
+      Logger.warn("Unexpected beliefsAndValues user size, {} != {}.", appUsersSize, beliefsAndValuesSize);
+      return false;
+    }
+
+    final var type = this.beliefsAndValues();
+    for (var i = 0; i < appUsersSize; i++) {
+
+      final var appUser = appUsers.getString(i);
+      final var beliefsAndValuesUser = beliefsAndValuesUsers.getJsonObject(i);
+      final var beliefsAndValuesUserId = beliefsAndValuesUser.getString("userId");
+      if (!appUser.equals(beliefsAndValuesUserId)) {
+
+        Logger.warn("Unexpected  beliefsAndValues user at {}, {} is not {}.", i, appUser, beliefsAndValuesUser);
+        return false;
       }
-      if (!found) {
 
-        Logger.warn("Unexpected {} user at {} is not defined {}.", type, i, userValueObject);
+      final var beliefsAndValuesValue = beliefsAndValuesUser.getDouble("value");
+      Double expectedBeliefsAndValuesValue = null;
+      if ("similar".equals(type)) {
+
+        final var index = this.indexOfCreatedProfileWithId(appUser);
+        expectedBeliefsAndValuesValue = this.beliefsAndValuesTo(index);
+
+      } else if ("different".equals(type)) {
+
+        final var index = this.indexOfCreatedProfileWithId(appUser);
+        expectedBeliefsAndValuesValue = 1.0d - this.beliefsAndValuesTo(index);
+
+      } else {
+
+        expectedBeliefsAndValuesValue = this.indifferentValue();
       }
+      if (!this.areSimilar(expectedBeliefsAndValuesValue, beliefsAndValuesValue)) {
 
-      final var indifferentValue = this.indifferentValue();
-      final var userValue = userValueObject.getDouble("value");
-      if (!this.areSimilar(indifferentValue, userValue)) {
-
-        Logger.warn("Unexpected {} user value at {}, expecting {} but it is {}.", type, i, indifferentValue, userValue);
+        Logger.warn("Unexpected  beliefsAndValues user value at {}, {} is not {}.", i, expectedBeliefsAndValuesValue,
+            beliefsAndValuesValue);
         return false;
       }
 
@@ -661,95 +703,18 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
    *
    * @return the believe and values similarity.
    */
-  public double beliefsAndValuesTo(final int index) {
+  public Double domainInterestTo(final int index) {
 
-    return 0.08 * index;
+    if (this.isEmptyProfile(index)) {
 
-  }
-
-  /**
-   * Check that the beliefsAndValuesUsers is valid.
-   *
-   * @param state where is the users to check.
-   *
-   * @return {@code true} if the beliefsAndValuesUsers is the expected after the
-   *         task is created.
-   */
-  protected boolean validBeliefsAndValuesUsers(final JsonObject state) {
-
-    final var beliefsAndValuesUsers = state.getJsonArray("beliefsAndValuesUsers", new JsonArray());
-    if (this.users.size() - 1 != beliefsAndValuesUsers.size()) {
-      // Unexpected size
-      Logger.warn("Unexpected beliefsAndValuesUsers user size.");
-      return false;
-    }
-
-    final var type = this.beliefsAndValues();
-    if ("similar".equals(type)) {
-
-      for (var i = 1; i < this.users.size(); i++) {
-
-        final var user = this.users.get(i);
-        final var userValueObject = beliefsAndValuesUsers.getJsonObject(i - 1);
-        if (i < MAX_SOCIAL_CLOSENESS_INDEX) {
-          if (!user.id.equals(userValueObject.getString("userId"))) {
-
-            Logger.warn("Unexpected beliefsAndValues user at {}, {} is not {}.", i, user.id, userValueObject);
-            return false;
-          }
-        }
-
-        final var weight = this.beliefsAndValuesTo(i);
-        if (!this.areSimilar(weight, userValueObject.getDouble("value"))) {
-
-          Logger.warn("Unexpected beliefsAndValues user at {}, {} is not {}.", i, weight, userValueObject);
-          return false;
-        }
-
-      }
-
-    } else if ("different".equals(type)) {
-
-      for (var i = 1; i < this.users.size(); i++) {
-
-        final var user = this.users.get(i);
-        final var userValueObject = beliefsAndValuesUsers.getJsonObject(beliefsAndValuesUsers.size() - i - 1);
-        if (i < MAX_SOCIAL_CLOSENESS_INDEX) {
-          if (!user.id.equals(userValueObject.getString("userId"))) {
-
-            Logger.warn("Unexpected beliefsAndValues user at {}, {} is not {}.", i, user.id, userValueObject);
-            return false;
-          }
-        }
-
-        final var weight = 1.0 - this.beliefsAndValuesTo(i);
-        if (!this.areSimilar(weight, userValueObject.getDouble("value"))) {
-
-          Logger.warn("Unexpected beliefsAndValues user at {}, {} is not {}.", i, weight, userValueObject);
-          return false;
-        }
-
-      }
+      return this.indifferentValue();
 
     } else {
 
-      return this.validIndifferent("beliefsAndValues", beliefsAndValuesUsers);
+      return 1.0
+          - Math.abs(this.users.get(0).competences.get(0).level - this.users.get(index).competences.get(0).level) / 2.0;
+
     }
-
-    return true;
-  }
-
-  /**
-   * Return the believe and values between the requester and the user at the
-   * specified position.
-   *
-   * @param index of the user to calculate the distance.
-   *
-   * @return the believe and values similarity.
-   */
-  public double domainInterestTo(final int index) {
-
-    return 0.08 * index;
 
   }
 
@@ -764,62 +729,50 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   protected boolean validDomainInterestUsers(final JsonObject state) {
 
     final var domainInterestUsers = state.getJsonArray("domainInterestUsers", new JsonArray());
-    if (this.users.size() - 1 != domainInterestUsers.size()) {
+    final var domainInterestSize = domainInterestUsers.size();
+    final var appUsers = state.getJsonArray("appUsers", new JsonArray());
+    final var appUsersSize = appUsers.size();
+    if (appUsersSize != domainInterestSize) {
       // Unexpected size
-      Logger.warn("Unexpected domainInterest user size.");
+      Logger.warn("Unexpected domainInterest user size, {} != {}.", appUsersSize, domainInterestSize);
       return false;
     }
 
     final var type = this.domainInterest();
-    if ("similar".equals(type)) {
+    for (var i = 0; i < appUsersSize; i++) {
 
-      for (var i = 1; i < this.users.size(); i++) {
+      final var appUser = appUsers.getString(i);
+      final var domainInterestUser = domainInterestUsers.getJsonObject(i);
+      final var domainInterestUserId = domainInterestUser.getString("userId");
+      if (!appUser.equals(domainInterestUserId)) {
 
-        final var user = this.users.get(i);
-        final var userValueObject = domainInterestUsers.getJsonObject(i - 1);
-        if (i < MAX_SOCIAL_CLOSENESS_INDEX) {
-          if (!user.id.equals(userValueObject.getString("userId"))) {
-
-            Logger.warn("Unexpected domainInterest user at {}, {} is not {}.", i, user.id, userValueObject);
-            return false;
-          }
-        }
-
-        final var weight = this.domainInterestTo(i);
-        if (!this.areSimilar(weight, userValueObject.getDouble("value"))) {
-
-          Logger.warn("Unexpected domainInterest user at {}, {} is not {}.", i, weight, userValueObject);
-          return false;
-        }
-
+        Logger.warn("Unexpected  domainInterest user at {}, {} is not {}.", i, appUser, domainInterestUser);
+        return false;
       }
 
-    } else if ("different".equals(type)) {
+      final var domainInterestValue = domainInterestUser.getDouble("value");
+      Double expectedDomainInterestValue = null;
+      if ("similar".equals(type)) {
 
-      for (var i = 1; i < this.users.size(); i++) {
+        final var index = this.indexOfCreatedProfileWithId(appUser);
+        expectedDomainInterestValue = this.domainInterestTo(index);
 
-        final var user = this.users.get(i);
-        final var userValueObject = domainInterestUsers.getJsonObject(domainInterestUsers.size() - i - 1);
-        if (i < MAX_SOCIAL_CLOSENESS_INDEX) {
-          if (!user.id.equals(userValueObject.getString("userId"))) {
+      } else if ("different".equals(type)) {
 
-            Logger.warn("Unexpected domainInterest user at {}, {} is not {}.", i, user.id, userValueObject);
-            return false;
-          }
-        }
+        final var index = this.indexOfCreatedProfileWithId(appUser);
+        expectedDomainInterestValue = 1.0d - this.domainInterestTo(index);
 
-        final var weight = 1.0 - this.domainInterestTo(i);
-        if (!this.areSimilar(weight, userValueObject.getDouble("value"))) {
+      } else {
 
-          Logger.warn("Unexpected domainInterest user at {}, {} is not {}.", i, weight, userValueObject);
-          return false;
-        }
+        expectedDomainInterestValue = this.indifferentValue();
+      }
+      if (!this.areSimilar(expectedDomainInterestValue, domainInterestValue)) {
 
+        Logger.warn("Unexpected  domainInterest user value at {}, {} is not {}.", i, expectedDomainInterestValue,
+            domainInterestValue);
+        return false;
       }
 
-    } else {
-
-      return this.validIndifferent("domainInterest", domainInterestUsers);
     }
 
     return true;
@@ -970,6 +923,77 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
         .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
         .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
         .onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
+
+  }
+
+  /**
+   * Validate that to user-value list are equals.
+   *
+   * @param source array to check.
+   * @param target array to check.
+   *
+   * @return {@code true} if the array are equals.
+   */
+  protected boolean validateThatUserValueListAreEquals(final JsonArray source, final JsonArray target) {
+
+    final var sourceSize = source.size();
+    final var targetSize = target.size();
+    if (sourceSize != targetSize) {
+      // Unexpected size
+      Logger.warn("Unexpected user-value array sizes, {} != {}", sourceSize, targetSize);
+      return false;
+    }
+
+    for (var i = 0; i < sourceSize; i++) {
+
+      final var sourceObject = source.getJsonObject(i);
+      final var targetObject = target.getJsonObject(i);
+      final var sourceUserId = sourceObject.getString("userId");
+      final var targetUserId = targetObject.getString("userId");
+      if (sourceUserId != targetUserId && (sourceUserId == null || !sourceUserId.equals(targetUserId))) {
+
+        Logger.warn("Unexpected user id at {}, {} != {}", i, sourceUserId, targetUserId);
+        return false;
+
+      }
+
+      final var sourceValue = sourceObject.getDouble("value");
+      final var targetValue = targetObject.getDouble("value");
+      if (!this.areSimilar(sourceValue, targetValue)) {
+
+        Logger.warn("Unexpected user id at {}, {} != {}", i, sourceValue, targetValue);
+        return false;
+
+      }
+    }
+
+    return true;
+
+  }
+
+  /**
+   * Return the value associated to a user-value array for a specific user.
+   *
+   * @param source array to get the value.
+   * @param userId identifier of the user to get the value.
+   *
+   * @return the value of the user or {@code null} if not found it.
+   */
+  protected Double getUserValueIn(final JsonArray source, final String userId) {
+
+    final var sourceSize = source.size();
+    for (var i = 0; i < sourceSize; i++) {
+
+      final var sourceObject = source.getJsonObject(i);
+      final var sourceUserId = sourceObject.getString("userId");
+      if (sourceUserId == userId || sourceUserId != null && sourceUserId.equals(userId)) {
+
+        return sourceObject.getDouble("value");
+
+      }
+    }
+
+    return null;
 
   }
 

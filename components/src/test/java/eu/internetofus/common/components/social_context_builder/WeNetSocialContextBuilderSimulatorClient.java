@@ -22,6 +22,7 @@ package eu.internetofus.common.components.social_context_builder;
 
 import eu.internetofus.common.components.models.WeNetUserProfile;
 import eu.internetofus.common.model.Model;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -241,6 +242,33 @@ public class WeNetSocialContextBuilderSimulatorClient extends WeNetSocialContext
 
     this.delete("/social/notification/profileUpdate", userId).onComplete(handler);
 
+  }
+
+  /**
+   * Shuffle a set of user using the learned social diversity.
+   *
+   * @param userIds identifiers of the users to shuffle.
+   *
+   * @return the an ordered list of Users based on diversity attributes.
+   */
+  @Override
+  @GenIgnore
+  public Future<UserIds> socialShuffle(@NotNull final UserIds userIds) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    final var data = userIds.toJsonObject();
+    this.socialShuffle(data, promise);
+    return Model.fromFutureJsonObject(promise.future(), UserIds.class);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void getSocialShuffle(@NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.getJsonObject("/social/shuffle").onComplete(handler);
   }
 
 }
