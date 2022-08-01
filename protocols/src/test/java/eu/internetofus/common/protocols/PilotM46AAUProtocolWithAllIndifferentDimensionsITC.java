@@ -118,7 +118,7 @@ public class PilotM46AAUProtocolWithAllIndifferentDimensionsITC extends Abstract
   @Override
   protected String explanationText() {
 
-    return "Recall that no requirements were set w.r.t domains, values and social closeness. Nevertheless, we tried to increase the gender diversity of selected users.";
+    return "Recall that there were no requirements set w.r.t domains, values, social or physical closeness. Nevertheless, we tried to increase the gender diversity of selected users.";
   }
 
 }
