@@ -37,4 +37,13 @@ public class PilotM46LSEProtocolWithSensitiveIssuesDomainITC
     return Domain.SENSITIVE_ISSUES.toTaskTypeDomain();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected String domainInterest() {
+
+    return "similar";
+  }
+
 }

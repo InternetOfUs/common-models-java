@@ -37,4 +37,13 @@ public class PilotM46LSEProtocolWithRandomThroughtsDomainITC
     return Domain.RANDOM_THOUGHTS.toTaskTypeDomain();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected String domainInterest() {
+
+    return "different";
+  }
+
 }
