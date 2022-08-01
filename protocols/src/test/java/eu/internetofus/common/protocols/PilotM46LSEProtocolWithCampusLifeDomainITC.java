@@ -44,6 +44,57 @@ public class PilotM46LSEProtocolWithCampusLifeDomainITC extends AbstractPilotM46
    * {@inheritDoc}
    */
   @Override
+  public Double domainInterestTo(final int index) {
+
+    final var source = this.degreeProgramme(0);
+    final var target = this.degreeProgramme(index);
+    if (source == null || target == null) {
+
+      return null;
+
+    } else if (source.equals(target)) {
+
+      return 1.0d;
+
+    } else {
+
+      return 0d;
+    }
+  }
+
+  /**
+   * Return the degree programme of an user.
+   *
+   * @param index of the user.
+   *
+   * @return the degree programme or {@code null} if not found it.
+   */
+  public String degreeProgramme(final int index) {
+
+    final String description = null;
+
+    final var materials = this.users.get(index).materials;
+    if (materials != null) {
+
+      for (final var material : materials) {
+
+        if ("degree_programme".equals(material.name)) {
+
+          return material.description;
+        }
+
+      }
+
+    }
+
+    return description;
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   protected String domainInterest() {
 
     return "different";
@@ -115,7 +166,7 @@ public class PilotM46LSEProtocolWithCampusLifeDomainITC extends AbstractPilotM46
         if (socialCloseness != null) {
 
           z = 1d;
-          mdSC = 1.0d - socialCloseness;
+          mdSC = socialCloseness;
         }
         if (beliefsAndValues != null) {
 
@@ -125,7 +176,7 @@ public class PilotM46LSEProtocolWithCampusLifeDomainITC extends AbstractPilotM46
         if (domainInterest != null) {
 
           x = 1d;
-          mdX = 1.0d - domainInterest;
+          mdX = domainInterest;
         }
         var value = 0d;
         if (!this.areSimilar(x, 0d) || !this.areSimilar(y, 0d) || !this.areSimilar(z, 0d)) {

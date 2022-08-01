@@ -587,7 +587,11 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       } else if ("different".equals(type)) {
 
         final var index = this.indexOfCreatedProfileWithId(appUser);
-        expectedSocialClosenessValue = 1.0d - this.socialClosenessTo(index);
+        expectedSocialClosenessValue = this.socialClosenessTo(index);
+        if (expectedSocialClosenessValue != null) {
+
+          expectedSocialClosenessValue = 1.0d - expectedSocialClosenessValue;
+        }
 
       } else {
 
@@ -677,7 +681,11 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       } else if ("different".equals(type)) {
 
         final var index = this.indexOfCreatedProfileWithId(appUser);
-        expectedBeliefsAndValuesValue = 1.0d - this.beliefsAndValuesTo(index);
+        expectedBeliefsAndValuesValue = this.beliefsAndValuesTo(index);
+        if (expectedBeliefsAndValuesValue != null) {
+
+          expectedBeliefsAndValuesValue = 1.0d - expectedBeliefsAndValuesValue;
+        }
 
       } else {
 
@@ -760,7 +768,12 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       } else if ("different".equals(type)) {
 
         final var index = this.indexOfCreatedProfileWithId(appUser);
-        expectedDomainInterestValue = 1.0d - this.domainInterestTo(index);
+        expectedDomainInterestValue = this.domainInterestTo(index);
+        if (expectedDomainInterestValue != null) {
+
+          expectedDomainInterestValue = 1.0d - expectedDomainInterestValue;
+
+        }
 
       } else {
 

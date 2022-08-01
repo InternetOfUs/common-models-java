@@ -19,21 +19,14 @@
  */
 package eu.internetofus.common.protocols;
 
-import io.vertx.core.json.JsonObject;
-import java.util.Random;
-
 /**
  * Test the calculus when uses domain is ‘random thoughts’ or ‘sensitive
  * issues’.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class PilotM46LSEProtocolWithRandomThroughtdOrSenditiveIssuesDomainslITC extends AbstractPilotM46LSEProtocolITC {
-
-  /**
-   * The possible domains for the test.
-   */
-  public static final Domain[] POSSIBLE_DOMAINS = { Domain.RANDOM_THOUGHTS, Domain.SENSITIVE_ISSUES };
+public class PilotM46LSEProtocolWithSensitiveIssuesDomainITC
+    extends AbstractPilotM46LSEProtocolWithRandomThroughtsOrSenditiveIssuesDomainsITC {
 
   /**
    * {@inheritDoc} ‘random thoughts’ or ‘sensitive issues’
@@ -41,52 +34,7 @@ public class PilotM46LSEProtocolWithRandomThroughtdOrSenditiveIssuesDomainslITC 
   @Override
   protected String domain() {
 
-    return POSSIBLE_DOMAINS[new Random().nextInt(POSSIBLE_DOMAINS.length)].toTaskTypeDomain();
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected String domainInterest() {
-
-    return "different";
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected String beliefsAndValues() {
-
-    return "different";
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected String socialCloseness() {
-
-    return "different";
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected boolean validMatchUsers(final JsonObject state) {
-
-    return true;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected String explanationText() {
-
-    return ".";
+    return Domain.SENSITIVE_ISSUES.toTaskTypeDomain();
   }
 
 }
