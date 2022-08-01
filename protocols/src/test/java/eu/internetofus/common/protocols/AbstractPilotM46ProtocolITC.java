@@ -34,12 +34,14 @@ import eu.internetofus.common.components.service.MessagePredicates;
 import eu.internetofus.common.components.task_manager.TaskPredicates;
 import eu.internetofus.common.components.task_manager.TaskTransactionPredicates;
 import eu.internetofus.common.components.task_manager.WeNetTaskManager;
+import eu.internetofus.common.model.TimeManager;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -54,6 +56,61 @@ import org.tinylog.Logger;
  * @author UDT-IA, IIIA-CSIC
  */
 public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtocolITC {
+
+  /**
+   * The domains of the Pilot.
+   */
+  public enum Domain {
+
+    /**
+     * The basic needs domain.
+     */
+    BASIC_NEEDS,
+    /**
+     * The campus life domain.
+     */
+    CAMPUS_LIFE,
+    /**
+     * The academic skills domain.
+     */
+    ACADEMIC_SKILLS,
+    /**
+     * The appreciating culture domain.
+     */
+    APPRECIATING_CULTURE,
+    /**
+     * The performing/producing culture domain.
+     */
+    PERFORMING_PRODUCING_CULTURE,
+    /**
+     * The physical activities/sport domain.
+     */
+    PHYSICAL_ACTIVITIES_SPORTS,
+    /**
+     * The things to do about town domain.
+     */
+    THINGS_TO_DO_ABOUT_TOWN,
+    /**
+     * The random thoughts domain.
+     */
+    RANDOM_THOUGHTS,
+    /**
+     * The sensitive issue domain.
+     */
+    SENSITIVE_ISSUES;
+
+    /**
+     * Return the value that can be used on the task type.
+     *
+     * @return the domain used on the task type for the domain.
+     */
+    public String toTaskTypeDomain() {
+
+      return this.name().toLowerCase();
+
+    }
+
+  }
 
   /**
    * The identifier of the users that has asked to participate.
@@ -139,16 +196,23 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   /**
    * Return if the question is sensitive of the task.
    *
-   * @return {@code true} if the question of the task is sensitive.
+   * @return {@code false} in any case.
    */
-  protected abstract boolean sensitive();
+  protected boolean sensitive() {
+
+    return false;
+  }
 
   /**
    * Return if the question is anonymous of the task.
    *
-   * @return {@code true} if the question of the task is anonymous.
+   * @return {@code false} in any case.
    */
-  protected abstract boolean anonymous();
+  protected boolean anonymous() {
+
+    return false;
+
+  }
 
   /**
    * Return the social closeness of the task.
@@ -167,33 +231,39 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   /**
    * Return the number of maximum users to ask.
    *
-   * @return the maximum answers before expire the task.
+   * @return {@code 5} in any case.
    */
-  public abstract int maxUsers();
+  public int maxUsers() {
+
+    return 5;
+  }
 
   /**
    * Return the number of answers that it is expecting.
    *
-   * @return the number of answers to expire the task.
+   * @return {@code 7} in any case.
    */
-  public abstract int maxAnswers();
+  public int maxAnswers() {
+
+    return 7;
+  }
 
   /**
    * Return the expiration date.
    *
-   * @return to expiration date.
+   * @return to expiration date one day after now.
    */
-  public abstract long expirationDate();
+  public long expirationDate() {
+
+    return TimeManager.now() + Duration.ofDays(1).toSeconds();
+  }
 
   /**
    * Return the maximum distance between users.
    *
-   * @return {@code 500} in any case
+   * @return the maximum distance in meters.
    */
-  public double maxDistance() {
-
-    return 500;
-  }
+  public abstract double maxDistance();
 
   /**
    * Return the distance between the requester and the user at the specified
@@ -211,7 +281,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
     } else {
 
-      return this.indifferentValue();
+      return null;
     }
 
   }
@@ -392,9 +462,9 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       Logger.warn("Not appUsers is not defined on the state.");
       return false;
     }
-    if (!state.containsKey("closenessUsers") && this.isNearbySelected()) {
+    if (!state.containsKey("physicalClosenessUsers") && this.isNearbySelected()) {
 
-      Logger.warn("Not closenessUsers is not defined on the state.");
+      Logger.warn("Not physicalClosenessUsers is not defined on the state.");
       return false;
     }
     if (!state.containsKey("socialClosenessUsers")) {
@@ -428,7 +498,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       return false;
     }
 
-    return this.validAppUsers(state) && this.validClosenessUsers(state) && this.validSocialClosenessUsers(state)
+    return this.validAppUsers(state) && this.validPhysicalClosenessUsers(state) && this.validSocialClosenessUsers(state)
         && this.validBeliefsAndValuesUsers(state) && this.validDomainInterestUsers(state) && this.validMatchUsers(state)
         && this.validRankedUsers(state) && this.validUnaskedUsersIds(state);
   }
@@ -491,53 +561,55 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   }
 
   /**
-   * Check that the closenessUsers is valid.
+   * Check that the physicalClosenessUsers is valid.
    *
    * @param state where is the users to check.
    *
-   * @return {@code true} if the closenessUsers is the expected after the task is
-   *         created.
+   * @return {@code true} if the physicalClosenessUsers is the expected after the
+   *         task is created.
    */
-  protected boolean validClosenessUsers(final JsonObject state) {
+  protected boolean validPhysicalClosenessUsers(final JsonObject state) {
 
-    final var closenessUsers = state.getJsonArray("", new JsonArray());
+    final var physicalClosenessUsers = state.getJsonArray("physicalClosenessUsers", new JsonArray());
 
-    if (!"nearby".equals(this.positionOfAnswerer())) {
+    final var isNearby = "nearby".equals(this.positionOfAnswerer());
+    if (!isNearby && physicalClosenessUsers.isEmpty()) {
 
-      return closenessUsers.isEmpty();
+      return true;
     }
 
     final var appUsers = state.getJsonArray("appUsers", new JsonArray());
     final var appUsersSize = appUsers.size();
-    final var closenessUsersSize = closenessUsers.size();
-    if (appUsersSize != closenessUsersSize) {
+    final var physicalClosenessUsersSize = physicalClosenessUsers.size();
+    if (appUsersSize != physicalClosenessUsersSize) {
       // Unexpected size
-      Logger.warn("Unexpected closeness user size, {} != {}.", appUsersSize, closenessUsersSize);
+      Logger.warn("Unexpected physical closeness user size, {} != {}.", appUsersSize, physicalClosenessUsersSize);
       return false;
     }
 
-    if ("nearby".equals(this.positionOfAnswerer())) {
+    for (var i = 0; i < appUsersSize; i++) {
 
-      for (var i = 0; i < appUsersSize; i++) {
+      final var appUser = appUsers.getString(i);
+      final var physicalClosenessUser = physicalClosenessUsers.getJsonObject(i);
+      final var physicalClosenessUserId = physicalClosenessUser.getString("userId");
+      if (!appUser.equals(physicalClosenessUserId)) {
 
-        final var appUser = appUsers.getString(i);
-        final var closenessUser = closenessUsers.getJsonObject(i);
-        final var closenessUserId = closenessUser.getString("userId");
-        if (!appUser.equals(closenessUserId)) {
+        Logger.warn("Unexpected physical closeness user at {}, {} is not {}.", i, appUser, physicalClosenessUser);
+        return false;
+      }
 
-          Logger.warn("Unexpected closeness user at {}, {} is not {}.", i, appUser, closenessUser);
-          return false;
-        }
+      final var index = this.indexOfCreatedProfileWithId(appUser);
+      Double distance = null;
+      if (isNearby) {
 
-        final var index = this.indexOfCreatedProfileWithId(appUser);
-        final var distance = Math.max(0.0, (this.maxDistance() - this.distanceTo(index)) / this.maxDistance());
-        final var closenessValue = closenessUser.getDouble("value");
-        if (!this.areSimilar(distance, closenessValue)) {
+        distance = Math.max(0.0, (this.maxDistance() - this.distanceTo(index)) / this.maxDistance());
+      }
+      final var physicalClosenessValue = physicalClosenessUser.getDouble("value");
+      if (!this.areSimilar(distance, physicalClosenessValue)) {
 
-          Logger.warn("Unexpected closeness user value at {}, {} is not {}.", i, distance, closenessValue);
-          return false;
-        }
-
+        Logger.warn("Unexpected physical closeness user value at {}, {} is not {}.", i, distance,
+            physicalClosenessValue);
+        return false;
       }
 
     }
@@ -595,7 +667,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
       } else {
 
-        expectedSocialClosenessValue = this.indifferentValue();
+        expectedSocialClosenessValue = null;
       }
       if (!this.areSimilar(expectedSocialClosenessValue, socialClosenessValue)) {
 
@@ -610,13 +682,6 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   }
 
   /**
-   * The value when the dimension is indifferent.
-   *
-   * @return the expected value when is indifferent.
-   */
-  protected abstract Double indifferentValue();
-
-  /**
    * Return the believe and values between the requester and the user at the
    * specified position.
    *
@@ -628,7 +693,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
     if (this.isEmptyProfile(index)) {
 
-      return this.indifferentValue();
+      return null;
 
     } else {
 
@@ -689,7 +754,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
       } else {
 
-        expectedBeliefsAndValuesValue = this.indifferentValue();
+        expectedBeliefsAndValuesValue = null;
       }
       if (!this.areSimilar(expectedBeliefsAndValuesValue, beliefsAndValuesValue)) {
 
@@ -715,7 +780,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
     if (this.isEmptyProfile(index)) {
 
-      return this.indifferentValue();
+      return null;
 
     } else {
 
@@ -777,7 +842,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
       } else {
 
-        expectedDomainInterestValue = this.indifferentValue();
+        expectedDomainInterestValue = null;
       }
       if (!this.areSimilar(expectedDomainInterestValue, domainInterestValue)) {
 

@@ -28,7 +28,7 @@ import org.tinylog.Logger;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class PilotM46LSEProtocolWithAllIndifferentDimensionsITC extends AbstractPilotM46LSEProtocolITC {
+public class PilotM46AAUProtocolWithAllIndifferentDimensionsITC extends AbstractPilotM46AAUProtocolITC {
 
   /**
    * {@inheritDoc} ‘academic skills’
@@ -64,6 +64,15 @@ public class PilotM46LSEProtocolWithAllIndifferentDimensionsITC extends Abstract
   protected String socialCloseness() {
 
     return "indifferent";
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected String positionOfAnswerer() {
+
+    return "anywhere";
   }
 
   /**

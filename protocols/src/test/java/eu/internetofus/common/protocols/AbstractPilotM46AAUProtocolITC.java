@@ -19,53 +19,33 @@
  */
 package eu.internetofus.common.protocols;
 
-import io.vertx.core.json.JsonObject;
-
 /**
- * Test the pilot M46 at LSE.
+ * Test the pilot M46 at AAU.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class AbstractPilotM46LSEProtocolITC extends AbstractPilotM46ProtocolITC {
+public abstract class AbstractPilotM46AAUProtocolITC extends AbstractPilotM46ProtocolITC {
 
   /**
    * {@inheritDoc}
    *
-   * @see DefaultProtocols#PILOT_M46_LSE
+   * @see DefaultProtocols#PILOT_M46_AAU
    */
   @Override
   protected DefaultProtocols getDefaultProtocolsToUse() {
 
-    return DefaultProtocols.PILOT_M46_LSE;
+    return DefaultProtocols.PILOT_M46_AAU;
   }
 
   /**
    * {@inheritDoc}
    *
-   * @return {@code 0} in any case
+   * @return {@code 500} in any case
    */
   @Override
   public double maxDistance() {
 
-    return 0;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected String positionOfAnswerer() {
-
-    return "anywhere";
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected boolean validPhysicalClosenessUsers(final JsonObject state) {
-
-    return !state.containsKey("physicalClosenessUsers");
+    return 500;
   }
 
 }

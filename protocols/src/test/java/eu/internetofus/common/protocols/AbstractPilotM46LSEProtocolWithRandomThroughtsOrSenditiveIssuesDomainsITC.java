@@ -79,7 +79,7 @@ public abstract class AbstractPilotM46LSEProtocolWithRandomThroughtsOrSenditiveI
       }
 
       final var domainInterestValue = domainInterestUser.getDouble("value");
-      final var expectedDomainInterestValue = this.indifferentValue();
+      final Double expectedDomainInterestValue = null;
       if (!this.areSimilar(expectedDomainInterestValue, domainInterestValue)) {
 
         Logger.warn("Unexpected  domainInterest user value at {}, {} is not {}.", i, expectedDomainInterestValue,
