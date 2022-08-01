@@ -19,67 +19,21 @@
  */
 package eu.internetofus.common.protocols;
 
-import io.vertx.core.json.JsonObject;
-
 /**
- * Test the calculus when uses ‘academic skills’ domain.
+ * Test the calculus when uses ‘things to do about town’ domain.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class PilotM46LSEProtocolWithAcademicSkillsDomainITC extends AbstractPilotM46LSEProtocolITC {
+public class PilotM46LSEProtocolWithThingsToDoAboutTownDomainITC
+    extends AbstractPilotM46LSEProtocolWithBasicNeedsOrOtherDomainsITC {
 
   /**
-   * {@inheritDoc} ‘academic skills’
+   * {@inheritDoc} ‘random thoughts’ or ‘sensitive issues’
    */
   @Override
   protected String domain() {
 
-    return Domain.ACADEMIC_SKILLS.toTaskTypeDomain();
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected String domainInterest() {
-
-    return "different";
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected String beliefsAndValues() {
-
-    return "different";
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected String socialCloseness() {
-
-    return "different";
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected boolean validMatchUsers(final JsonObject state) {
-
-    return true;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected String explanationText() {
-
-    return ".";
+    return Domain.THINGS_TO_DO_ABOUT_TOWN.toTaskTypeDomain();
   }
 
 }

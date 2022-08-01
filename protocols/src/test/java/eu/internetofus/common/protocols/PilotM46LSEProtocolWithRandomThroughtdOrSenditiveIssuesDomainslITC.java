@@ -41,7 +41,7 @@ public class PilotM46LSEProtocolWithRandomThroughtdOrSenditiveIssuesDomainslITC 
   @Override
   protected String domain() {
 
-    return POSSIBLE_DOMAINS[new Random().nextInt(POSSIBLE_DOMAINS.length)].toAsk4HelpV3();
+    return POSSIBLE_DOMAINS[new Random().nextInt(POSSIBLE_DOMAINS.length)].toTaskTypeDomain();
   }
 
   /**

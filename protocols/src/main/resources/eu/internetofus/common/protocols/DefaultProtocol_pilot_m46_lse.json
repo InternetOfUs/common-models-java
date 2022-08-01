@@ -15,17 +15,15 @@
 				"type": "string",
 				"nullable": false,
 				"enum": [
-					"studying_career",
-					"local_university",
-					"local_things",
-					"physical_activity",
-					"cultural_interests",
-					"food_and_cooking",
-					"cinema_theatre",
-					"music",
-					"arts_and_crafts",
-					"life_ponders",
-					"varia_misc"
+					"basic_needs",
+					"campus_life",
+					"academic_skills",
+					"appreciating_culture",
+					"performing_producing_culture",
+					"physical_activities_sports",
+					"things_to_do_about_town",
+					"random_thoughts",
+					"sensitive_issues"
 				]
 			},
 			"domainInterest": {
@@ -435,7 +433,7 @@
 			"description": "Order the users by similar beliefs and values",
 			"whenever": "is_received_event('sortUsersByDiversity',_) and get_task_attribute_value('similar','beliefsAndValues') and get_task_state_attribute(Users,'appUsers') and get_profile_attribues_by_beliefs_and_values(Attributes)",
 			"thenceforth": "normalized_diversity(Diversity,Users,Attributes,@(null),false) and wenet_negate_user_value(BeliefsAndValuesUsers,Diversity) and put_task_state_attribute('beliefsAndValuesUsers',BeliefsAndValuesUsers)",
-			"ontology": ":- dynamic get_profile_attribues_by_beliefs_and_values/1. get_profile_attribues_by_beliefs_and_values(['meanings.excitement','meanings.promotion','meanings.existence','meanings.suprapersonal','meanings.interactive','meanings.normative','meanings.extraversion','meanings.agreeableness','meanings.consientiousness','meanings.neuroticism','meanings.openness'])."
+			"ontology": ":- dynamic get_profile_attribues_by_beliefs_and_values/1. get_profile_attribues_by_beliefs_and_values(['meanings.excitement','meanings.promotion','meanings.existence','meanings.suprapersonal','meanings.interactive','meanings.normative'])."
 		},
 		{
 			"description": "Order the users by different beliefs and values",
@@ -451,7 +449,7 @@
 			"description": "Order the users by domain",
 			"whenever": "is_received_event('sortUsersByDiversity',_) and get_task_attribute_value('similar','domainInterest') and get_task_state_attribute(Users,'appUsers') and get_task_attribute_value(Domain,'domain') and domain_attributes(Domain,Attributes)",
 			"thenceforth": "normalized_diversity(Diversity,Users,Attributes,@(null),false) and wenet_negate_user_value(DomainInterestUsers,Diversity) and put_task_state_attribute('domainInterestUsers',DomainInterestUsers)",
-			"ontology": ":- dynamic domain_attributes/2, attributes_similars_to_question/1. domain_attributes('studying_career',['competences.u_active','competences.u_read','competences.u_essay','competences.u_org','competences.u_balance','competences.u_assess','competences.u_theory','competences.u_pract']). domain_attributes('local_university',['competences.c_locfac','competences.c_accom']). domain_attributes('local_things',['competences.c_accom']). domain_attributes('physical_activity',['competences.c_team_sp','competences.c_ind_sp','competences.c_watch_sp']). domain_attributes('cultural_interests',['competences.c_lit','competences.c_creatlit','competences.c_perf_art','competences.c_musgall']). domain_attributes('food_and_cooking',['competences.c_food','competences.c_eating']). domain_attributes('cinema_theatre',['competences.c_plays','competences.c_perf_plays']). domain_attributes('music',['competences.c_app_mus','competences.c_perf_mus']). domain_attributes('arts_and_crafts',['competences.c_perf_art','competences.c_musgall']). domain_attributes('life_ponders',Attributes) :- attributes_similars_to_question(Attributes) . domain_attributes('varia_misc',Attributes) :- attributes_similars_to_question(Attributes) . attributes_similars_to_question(Attributes) :- (  (get_task_goal_name(Question),  my_profile_attributes_similars_to(SimAttributes,Question,0.4)) -> true  ; SimAttributes = [] ), !, (  length(SimAttributes,0)  -> Attributes = ['competences.u_active','competences.u_read','competences.u_essay','competences.u_org','competences.u_balance','competences.u_assess','competences.u_theory','competences.u_pract','competences.c_locfac','competences.c_accom','competences.c_team_sp','competences.c_ind_sp','competences.c_watch_sp','competences.c_lit','competences.c_creatlit','competences.c_perf_art','competences.c_musgall','competences.c_food','competences.c_eating','competences.c_plays','competences.c_perf_plays','competences.c_app_mus','competences.c_perf_mus']  ; Attributes = SimAttributes ), retractall(attributes_similars_to_question(_)), asserta(attributes_similars_to_question(Attributes))."
+			"ontology": ":- dynamic domain_attributes/2.  domain_attributes('basic_needs',['competences.c_food','competences.c_accom']). domain_attributes('campus_life',['materials.degree_programme']). domain_attributes('academic_skills',['competences.u_active','competences.u_read','competences.u_essay','competences.u_org','competences.u_balance','competences.u_assess','competences.u_theory','competences.u_pract']). domain_attributes('appreciating_culture',['competences.c_lit','competences.c_app_mus','competences.c_plays','competences.c_musgall']). domain_attributes('performing_producing_culture',['competences.c_creatlit','competences.c_perf_mus','competences.c_perf_plays','competences.c_perf_art']). domain_attributes('physical_activities_sports',['competences.c_watch_sp','competences.c_ind_sp','competences.c_team_sp']). domain_attributes('things_to_do_about_town',['competences.c_eating','competences.c_locfac']). domain_attributes('random_thoughts',[]). domain_attributes('sensitive_issues',[]). domain_attributes(_,[]). "
 		},
 		{
 			"description": "Order the users by different domain",
@@ -475,27 +473,27 @@
 			"ontology": ":- dynamic are_all_dimensions_indifferent/0. are_all_dimensions_indifferent() :- get_task_attribute_value('indifferent','domainInterest'),get_task_attribute_value('indifferent','beliefsAndValues'),get_task_attribute_value('indifferent','socialCloseness')."
 		},
 		{
-			"description":"Calculate match value for ‘basic needs’, ‘appreciating culture’, ‘performing/producing culture’, ‘physical activities/sports’, or ‘things to do about town’ domains",
-			"whenever": "is_received_event('aggregateUsersByDiversity',_) and not(are_all_dimensions_indifferent()) and get_task_attribute_value(Domain,'domain') and member(Domain,['food_and_cooking','cultural_interests','arts_and_crafts','physical_activity','local_things'])",
+			"description": "Calculate match value for ‘basic needs’, ‘appreciating culture’, ‘performing/producing culture’, ‘physical activities/sports’, or ‘things to do about town’ domains",
+			"whenever": "is_received_event('aggregateUsersByDiversity',_) and not(are_all_dimensions_indifferent()) and get_task_attribute_value(Domain,'domain') and member(Domain,['basic_needs', 'appreciating_culture', 'performing_producing_culture', 'physical_activities_sports', 'things_to_do_about_town'])",
 			"thenceforth": "calculate_match_degree_for_basic_needs_and_other_domains(MatchUsers) and put_task_state_attribute('matchUsers',MatchUsers)",
 			"ontology": ":- dynamic calculate_match_degree_for_basic_needs_and_other_domains/1,  calculate_match_degree_for_basic_needs_and_other_domains_/5,  calculate_user_match_degree_for_basic_needs_and_other_domains/5.  calculate_match_degree_for_basic_needs_and_other_domains(ReverseSortedMatchUsers) :-  get_task_state_attribute(Users,'appUsers'),  get_task_state_attribute(SocialClosenessUsers,'socialClosenessUsers'),  get_task_state_attribute(BeliefsAndValuesUsers,'beliefsAndValuesUsers'),  get_task_state_attribute(DomainInterestUsers,'domainInterestUsers'),  calculate_match_degree_for_basic_needs_and_other_domains_(MatchUsers,Users,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers),  wenet_sort_user_values_by_value(SortedMatchUsers,MatchUsers),  reverse(ReverseSortedMatchUsers,SortedMatchUsers)  .  calculate_match_degree_for_basic_needs_and_other_domains_([],[],_,_,_). calculate_match_degree_for_basic_needs_and_other_domains_([MatchUser|MatchUsers],[UserId|UserIds],SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers) :-  calculate_user_match_degree_for_basic_needs_and_other_domains(Value,UserId,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers),  wenet_new_user_value(MatchUser,UserId,Value),  calculate_match_degree_for_basic_needs_and_other_domains_(MatchUsers,UserIds,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers)  .  calculate_user_match_degree_for_basic_needs_and_other_domains(Value,UserId,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers) :-  wenet_value_of_user_id_from_user_values(DomainInterest,UserId,DomainInterestUsers,@(null)),  wenet_value_of_user_id_from_user_values(BeliefsAndValues,UserId,BeliefsAndValuesUsers,@(null)),  wenet_value_of_user_id_from_user_values(SocialCloseness,UserId,SocialClosenessUsers,@(null)),  ( number(DomainInterest) -> X = 1; X = 0 ),  ( number(BeliefsAndValues) -> Y = 1; Y = 0 ),  ( number(SocialCloseness) -> Z = 1; Z = 0 ),  ( number(DomainInterest) -> MdX = DomainInterest; MdX = 0 ),  ( number(BeliefsAndValues) -> MdV = BeliefsAndValues; MdV = 0 ),  ( number(SocialCloseness) -> MdSC = SocialCloseness; MdSC = 0 ),  ( (X = 0 , Y = 0, Z = 0) -> Value = 0 ; Value is (3*X*MdX + Y*MdV + Z*MdSC)/(3*X + Y + Z) )."
 		},
 		{
-			"description":"Calculate match value for ‘campus life’ domain",
-			"whenever": "is_received_event('aggregateUsersByDiversity',_) and not(are_all_dimensions_indifferent()) and get_task_attribute_value('local_university','domain')",
-			"thenceforth":"calculate_match_degree_for_academic_skills_domain(MatchUsers) and put_task_state_attribute('matchUsers',MatchUsers)",
-			"ontology": ":- dynamic calculate_match_degree_for_campus_life_domain/1. calculate_match_degree_for_campus_life_domain(MatchUsers) :-  MatchUsers = []."
+			"description": "Calculate match value for ‘campus life’ domain",
+			"whenever": "is_received_event('aggregateUsersByDiversity',_) and not(are_all_dimensions_indifferent()) and get_task_attribute_value('campus_life','domain')",
+			"thenceforth": "calculate_match_degree_for_campus_life_domain(MatchUsers) and put_task_state_attribute('matchUsers',MatchUsers)",
+			"ontology": ":- dynamic calculate_match_degree_for_campus_life_domain/1,  calculate_match_degree_for_campus_life_domain_/5,  calculate_user_match_degree_for_campus_life_domain/5.  calculate_match_degree_for_campus_life_domain(ReverseSortedMatchUsers) :-  get_task_state_attribute(Users,'appUsers'),  get_task_state_attribute(SocialClosenessUsers,'socialClosenessUsers'),  get_task_state_attribute(BeliefsAndValuesUsers,'beliefsAndValuesUsers'),  get_task_state_attribute(DomainInterestUsers,'domainInterestUsers'),  calculate_match_degree_for_campus_life_domain_(MatchUsers,Users,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers),  wenet_sort_user_values_by_value(SortedMatchUsers,MatchUsers),  reverse(ReverseSortedMatchUsers,SortedMatchUsers)  .  calculate_match_degree_for_campus_life_domain_([],[],_,_,_). calculate_match_degree_for_campus_life_domain_([MatchUser|MatchUsers],[UserId|UserIds],SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers) :-  calculate_user_match_degree_for_campus_life_domain(Value,UserId,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers),  wenet_new_user_value(MatchUser,UserId,Value),  calculate_match_degree_for_campus_life_domain_(MatchUsers,UserIds,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers)  .  calculate_user_match_degree_for_campus_life_domain(Value,UserId,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers) :-  wenet_value_of_user_id_from_user_values(DomainInterest,UserId,DomainInterestUsers,@(null)),  wenet_value_of_user_id_from_user_values(BeliefsAndValues,UserId,BeliefsAndValuesUsers,@(null)),  wenet_value_of_user_id_from_user_values(SocialCloseness,UserId,SocialClosenessUsers,@(null)),  ( number(DomainInterest) -> X = 1; X = 0 ),  ( number(BeliefsAndValues) -> Y = 1; Y = 0 ),  ( number(SocialCloseness) -> Z = 1; Z = 0 ),  ( number(DomainInterest) -> MdX = DomainInterest; MdX = 0 ),  ( number(BeliefsAndValues) -> MdV = BeliefsAndValues; MdV = 0 ),  ( number(SocialCloseness) -> MdSC = SocialCloseness; MdSC = 0 ),  ( (X = 0 , Y = 0, Z = 0) -> Value = 0 ; Value is (X*MdX + Y*MdV + 3*Z*MdSC)/(X + Y + 3*Z) )  . "
 		},
 		{
-			"description":"Calculate match value for ‘academic skills’ domain",
-			"whenever": "is_received_event('aggregateUsersByDiversity',_) and not(are_all_dimensions_indifferent()) and get_task_attribute_value('studying_career','domain')",
-			"thenceforth":"calculate_match_degree_for_academic_skills_domain(MatchUsers) and put_task_state_attribute('matchUsers',MatchUsers)",
+			"description": "Calculate match value for ‘academic skills’ domain",
+			"whenever": "is_received_event('aggregateUsersByDiversity',_) and not(are_all_dimensions_indifferent()) and get_task_attribute_value('academic_skills','domain')",
+			"thenceforth": "calculate_match_degree_for_academic_skills_domain(MatchUsers) and put_task_state_attribute('matchUsers',MatchUsers)",
 			"ontology": ":- dynamic calculate_match_degree_for_academic_skills_domain/1. calculate_match_degree_for_academic_skills_domain(MatchUsers) :- MatchUsers = []."
 		},
 		{
-			"description":"Calculate match value for ‘random thoughts’ or ‘sensitive issues’ domains",
-			"whenever": "is_received_event('aggregateUsersByDiversity',_) and not(are_all_dimensions_indifferent()) and get_task_attribute_value(Domain,'domain') and member(Domain,['varia_misc','life_ponders'])",
-			"thenceforth":"calculate_match_degree_for_random_thougs_and_other_domains(MatchUsers) and put_task_state_attribute('matchUsers',MatchUsers)",
+			"description": "Calculate match value for ‘random thoughts’ or ‘sensitive issues’ domains",
+			"whenever": "is_received_event('aggregateUsersByDiversity',_) and not(are_all_dimensions_indifferent()) and get_task_attribute_value(Domain,'domain') and member(Domain,['random_thoughts','sensitive_issues'])",
+			"thenceforth": "calculate_match_degree_for_random_thougs_and_other_domains(MatchUsers) and put_task_state_attribute('matchUsers',MatchUsers)",
 			"ontology": ":- dynamic calculate_match_degree_for_random_thougs_and_other_domains/1. calculate_match_degree_for_random_thougs_and_other_domains(MatchUsers) :- MatchUsers = []."
 		},
 		{

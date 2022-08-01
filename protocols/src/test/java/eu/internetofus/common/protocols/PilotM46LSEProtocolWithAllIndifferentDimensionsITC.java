@@ -36,7 +36,7 @@ public class PilotM46LSEProtocolWithAllIndifferentDimensionsITC extends Abstract
   @Override
   protected String domain() {
 
-    return Domain.ACADEMIC_SKILLS.toAsk4HelpV3();
+    return Domain.ACADEMIC_SKILLS.toTaskTypeDomain();
   }
 
   /**

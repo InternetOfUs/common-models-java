@@ -63,6 +63,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.tinylog.Logger;
 
 /**
  * Interaction test case over a protocol. ATTENTION: This test is sequential and
@@ -591,14 +592,17 @@ public abstract class AbstractProtocolITC {
 
       if (this.app != null && !this.app.appId.equals(task.appId)) {
 
+        Logger.trace("Unexpected APP for task");
         return false;
       }
       if (this.task != null && !this.task.id.equals(task.id)) {
 
+        Logger.trace("Unexpected task");
         return false;
       }
       if (this.community != null && !this.community.id.equals(task.communityId)) {
 
+        Logger.trace("Unexpected community for task");
         return false;
       }
 
@@ -620,6 +624,7 @@ public abstract class AbstractProtocolITC {
 
       if (this.app != null && !this.app.appId.equals(message.appId)) {
 
+        Logger.trace("Unexpected APP for message");
         return false;
       }
 
@@ -641,6 +646,7 @@ public abstract class AbstractProtocolITC {
 
       if (this.task != null && !this.task.id.equals(transaction.taskId)) {
 
+        Logger.trace("Unexpected task for transaction");
         return false;
       }
 
@@ -665,18 +671,22 @@ public abstract class AbstractProtocolITC {
 
       if (this.app != null && !this.app.appId.equals(state.app_id)) {
 
+        Logger.trace("Unexpected APP for incentive server transaction");
         return false;
       }
       if (this.community != null && !this.community.id.equals(state.community_id)) {
 
+        Logger.trace("Unexpected community for incentive server transaction");
         return false;
       }
       if (this.taskType != null && !this.taskType.id.equals(state.taskTypeId)) {
 
+        Logger.trace("Unexpected task type for incentive server transaction");
         return false;
       }
       if (this.task != null && !this.task.id.equals(state.taskId)) {
 
+        Logger.trace("Unexpected task for incentive server transaction");
         return false;
       }
 

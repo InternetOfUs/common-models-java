@@ -73,35 +73,13 @@ public abstract class AbstractPilotM46LSEProtocolITC extends AbstractPilotM46Pro
     SENSITIVE_ISSUES;
 
     /**
-     * Return the name associated of this domain on the ask4Help v3 possible
-     * domains.
+     * Return the value that can be used on the task type.
      *
-     * @return the domain to use.
+     * @return the domain used on the task type for the domain.
      */
-    public String toAsk4HelpV3() {
+    public String toTaskTypeDomain() {
 
-      switch (this) {
-
-      case BASIC_NEEDS:
-        return "food_and_cooking";
-      case CAMPUS_LIFE:
-        return "local_university";
-      case ACADEMIC_SKILLS:
-        return "studying_career";
-      case APPRECIATING_CULTURE:
-        return "cultural_interests";
-      case PERFORMING_PRODUCING_CULTURE:
-        return "arts_and_crafts";
-      case PHYSICAL_ACTIVITIES_SPORTS:
-        return "physical_activity";
-      case THINGS_TO_DO_ABOUT_TOWN:
-        return "local_things";
-      case RANDOM_THOUGHTS:
-        return "varia_misc";
-      default:
-        // SENSITIVE_ISSUES:
-        return "life_ponders";
-      }
+      return this.name().toLowerCase();
 
     }
 

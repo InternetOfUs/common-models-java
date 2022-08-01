@@ -22,7 +22,6 @@ package eu.internetofus.common.protocols;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
-import java.util.Random;
 import org.tinylog.Logger;
 
 /**
@@ -32,22 +31,8 @@ import org.tinylog.Logger;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class PilotM46LSEProtocolWithBasicNeedsOrOtherDomainsITC extends AbstractPilotM46LSEProtocolITC {
-
-  /**
-   * The possible domains for the test.
-   */
-  public static final Domain[] POSSIBLE_DOMAINS = { Domain.BASIC_NEEDS, Domain.APPRECIATING_CULTURE,
-      Domain.PERFORMING_PRODUCING_CULTURE, Domain.PHYSICAL_ACTIVITIES_SPORTS, Domain.THINGS_TO_DO_ABOUT_TOWN };
-
-  /**
-   * {@inheritDoc} ‘random thoughts’ or ‘sensitive issues’
-   */
-  @Override
-  protected String domain() {
-
-    return POSSIBLE_DOMAINS[new Random().nextInt(POSSIBLE_DOMAINS.length)].toAsk4HelpV3();
-  }
+public abstract class AbstractPilotM46LSEProtocolWithBasicNeedsOrOtherDomainsITC
+    extends AbstractPilotM46LSEProtocolITC {
 
   /**
    * {@inheritDoc}

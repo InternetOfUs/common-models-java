@@ -89,8 +89,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   /**
    * The degrees that can be used to fill in a profile.
    */
-  public static final String[] DEGREES = { "01 Undergraduate year 1", "02 Undergraduate year 2",
-      "03 Undergraduate year 3", "04 Undergraduate year 4", "05 MSc/MA", "06 MPhil/MRes/PhD" };
+  public static final String[] DEGREES = { "01: BSc/BA year 1", "02: BSc/BA year 2", "03: BSc/BA year 3",
+      "04: BSc/BA year 4 and beyond", "05: MSc/MA year 1", "06: MSc/MA year 2", "07: PhD", "08: Other" };
 
   /**
    * The live places that can be used to fill in a profile.
