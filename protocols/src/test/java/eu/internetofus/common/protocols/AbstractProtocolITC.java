@@ -19,7 +19,7 @@
  */
 package eu.internetofus.common.protocols;
 
-import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.function.Supplier;
 import eu.internetofus.common.components.StoreServices;
@@ -357,35 +357,67 @@ public abstract class AbstractProtocolITC {
   protected <T> Future<T> waitUntil(final Vertx vertx, final VertxTestContext testContext,
       final Supplier<Future<T>> supplier, final Predicate<T> check) {
 
-    final Promise<T> promise = Promise.promise();
+    Promise<T> promise = Promise.promise();
     final var address = UUID.randomUUID().toString();
     final var consumer = vertx.eventBus().localConsumer(address);
     final var options = new DeliveryOptions();
     options.setLocalOnly(true);
-    consumer.handler(ignored -> {
+    consumer.handler(message -> {
 
-      supplier.get().onComplete(testContext.succeeding(target -> {
+      var step = ((Number) message.body()).intValue();
+      Logger.trace("Start a wait until step {}", step);
+      if (testContext.completed()) {
 
-        if (check.test(target)) {
+        consumer.unregister();
+        promise.fail("Test finished");
 
-          consumer.unregister();
-          promise.complete(target);
+      } else {
 
-        } else if (testContext.completed()) {
+        supplier.get().onComplete(result -> {
 
-          consumer.unregister();
-          promise.fail("Test finished");
+          if (result.failed()) {
 
-        } else {
+            consumer.unregister();
+            var error = result.cause();
+            promise.fail(error);
+            Logger.trace(error, "Wait until step {} fails because can get model", step);
 
-          vertx.eventBus().send(address, "STEP", options);
-        }
+          } else {
 
-      }));
+            var target = result.result();
+            vertx.executeBlocking(block -> {
+
+              try {
+
+                if (check.test(target)) {
+
+                  consumer.unregister();
+                  promise.complete(target);
+
+                } else {
+
+                  Thread.sleep(1500);
+                  vertx.eventBus().send(address, step + 1, options);
+                }
+
+              } catch (Throwable t) {
+
+                consumer.unregister();
+                promise.fail(t);
+                Logger.trace(t, "Wait until step {} fails because test throws exception", step);
+              }
+
+              block.complete();
+
+            }).onComplete(any -> Logger.trace("Finished a wait until step {}", step));
+
+          }
+
+        });
+      }
 
     });
-    vertx.eventBus().send(address, "START", options);
-
+    vertx.eventBus().send(address, 0, options);
     return promise.future();
 
   }

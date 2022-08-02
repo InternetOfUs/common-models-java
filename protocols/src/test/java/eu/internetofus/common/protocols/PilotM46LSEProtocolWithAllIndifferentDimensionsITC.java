@@ -103,13 +103,4 @@ public class PilotM46LSEProtocolWithAllIndifferentDimensionsITC extends Abstract
     return true;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected String explanationText() {
-
-    return "Recall that no requirements were set w.r.t domains, values and social closeness. Nevertheless, we tried to increase the gender diversity of selected users.";
-  }
-
 }

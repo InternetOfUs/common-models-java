@@ -154,13 +154,4 @@ public class PilotM46LSEProtocolWithAcademicSkillsDomainITC extends AbstractPilo
 
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected String explanationText() {
-
-    return "This user fits the requirements to a certain extent. While choosing whom to ask, we also tried to increase the gender diversity of selected users.";
-  }
-
 }

@@ -594,7 +594,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       final var physicalClosenessUserId = physicalClosenessUser.getString("userId");
       if (!appUser.equals(physicalClosenessUserId)) {
 
-        Logger.warn("Unexpected physical closeness user at {}, {} is not {}.", i, appUser, physicalClosenessUser);
+        Logger.warn("Unexpected physical closeness user at {}, {} is not {}.", i, appUser, physicalClosenessUserId);
         return false;
       }
 
@@ -645,7 +645,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       final var socialClosenessUserId = socialClosenessUser.getString("userId");
       if (!appUser.equals(socialClosenessUserId)) {
 
-        Logger.warn("Unexpected  socialCloseness user at {}, {} is not {}.", i, appUser, socialClosenessUser);
+        Logger.warn("Unexpected  socialCloseness user at {}, {} is not {}.", i, appUser, socialClosenessUserId);
         return false;
       }
 
@@ -732,7 +732,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       final var beliefsAndValuesUserId = beliefsAndValuesUser.getString("userId");
       if (!appUser.equals(beliefsAndValuesUserId)) {
 
-        Logger.warn("Unexpected  beliefsAndValues user at {}, {} is not {}.", i, appUser, beliefsAndValuesUser);
+        Logger.warn("Unexpected  beliefsAndValues user at {}, {} is not {}.", i, appUser, beliefsAndValuesUserId);
         return false;
       }
 
@@ -819,7 +819,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       final var domainInterestUserId = domainInterestUser.getString("userId");
       if (!appUser.equals(domainInterestUserId)) {
 
-        Logger.warn("Unexpected  domainInterest user at {}, {} is not {}.", i, appUser, domainInterestUser);
+        Logger.warn("Unexpected  domainInterest user at {}, {} is not {}.", i, appUser, domainInterestUserId);
         return false;
       }
 
@@ -940,9 +940,11 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   /**
    * Return the explanation title for an answer.
    *
+   * @param index of the user that want to explanation title.
+   *
    * @return the explanation title.
    */
-  protected String explanationTitle() {
+  protected String explanationTitleFor(final int index) {
 
     return "Why is this user chosen?";
 
@@ -951,9 +953,22 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   /**
    * Return the explanation text for an answer.
    *
+   * @param index of the user that want to explanation text.
+   *
    * @return the explanation text.
    */
-  protected abstract String explanationText();
+  protected abstract String explanationTextFor(int index);
+
+  /**
+   * The index of the user that has to answer the question.
+   *
+   * @return {@code 2} in any case.
+   */
+  protected int answeredIndex() {
+
+    return 2;
+
+  }
 
   /**
    * Check that receive an explanation when receive the answer.
@@ -967,6 +982,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
     this.assertLastSuccessfulTestWas(7, testContext);
 
+    final var answerIndex = this.answeredIndex();
     final var user = this.users.get(2);
     final var transaction = new TaskTransaction();
     transaction.actioneerId = user.id;
@@ -986,8 +1002,8 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
     checkMessages.add(checkAnswerMessage);
 
     final var checkExplanationMessage = this.createMessagePredicate().and(MessagePredicates.labelIs("TextualMessage"))
-        .and(MessagePredicates.receiverIs(this.task.requesterId)).and(MessagePredicates
-            .attributesAre(new JsonObject().put("title", this.explanationTitle()).put("text", this.explanationText())));
+        .and(MessagePredicates.receiverIs(this.task.requesterId)).and(MessagePredicates.attributesAre(new JsonObject()
+            .put("title", this.explanationTitleFor(answerIndex)).put("text", this.explanationTextFor(answerIndex))));
     checkMessages.add(checkExplanationMessage);
 
     final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(2))

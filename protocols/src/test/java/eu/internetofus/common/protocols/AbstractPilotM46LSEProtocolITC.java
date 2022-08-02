@@ -19,6 +19,7 @@
  */
 package eu.internetofus.common.protocols;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -27,6 +28,11 @@ import io.vertx.core.json.JsonObject;
  * @author UDT-IA, IIIA-CSIC
  */
 public abstract class AbstractPilotM46LSEProtocolITC extends AbstractPilotM46ProtocolITC {
+
+  /**
+   * The last validated state.
+   */
+  protected JsonObject state = null;
 
   /**
    * {@inheritDoc}
@@ -63,9 +69,59 @@ public abstract class AbstractPilotM46LSEProtocolITC extends AbstractPilotM46Pro
    * {@inheritDoc}
    */
   @Override
+  protected final boolean validTaskUserStateAfterCreation(final JsonObject state) {
+
+    this.state = null;
+    final var result = super.validTaskUserStateAfterCreation(state);
+    if (result) {
+
+      this.state = state;
+    }
+
+    return result;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   protected boolean validPhysicalClosenessUsers(final JsonObject state) {
 
     return !state.containsKey("physicalClosenessUsers");
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected final String explanationTextFor(final int index) {
+
+    if (this.state == null || "indifferent".equals(this.task.attributes.getString("domainInterest"))
+        && "indifferent".equals(this.task.attributes.getString("beliefsAndValues"))
+        && "indifferent".equals(this.task.attributes.getString("socialCloseness"))) {
+
+      return "Recall that no requirements were set w.r.t domains, values and social closeness. Nevertheless, we tried to increase the gender diversity of selected users.";
+
+    } else {
+
+      final var user = this.users.get(index);
+      final var socialClosenessUsers = this.state.getJsonArray("socialClosenessUsers", new JsonArray());
+      final var beliefsAndValuesUsers = this.state.getJsonArray("beliefsAndValuesUsers", new JsonArray());
+      final var domainInterestUsers = this.state.getJsonArray("domainInterestUsers", new JsonArray());
+      final var socialCloseness = this.getUserValueIn(socialClosenessUsers, user.id);
+      final var beliefsAndValues = this.getUserValueIn(beliefsAndValuesUsers, user.id);
+      final var domainInterest = this.getUserValueIn(domainInterestUsers, user.id);
+      if (socialCloseness != null || beliefsAndValues != null || domainInterest != null) {
+
+        return "This user fits the requirements to a certain extent. While choosing whom to ask, we also tried to increase the gender diversity of selected users.";
+
+      } else {
+
+        return "Not enough members in the community fit the requirements. We had to relax the requirements in order to find some answers, which is how this user was chosen. While choosing whom to ask, we also tried to increase the gender diversity of selected users.";
+
+      }
+
+    }
   }
 
 }
