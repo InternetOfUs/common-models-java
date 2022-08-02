@@ -504,7 +504,7 @@
 		{
 			"description": "Call the social context builder to rank the user by its match",
 			"whenever": "is_received_event('rankMatchUsers',_) and get_task_state_attribute(MatchUsers,'matchUsers',[])",
-			"thenceforth": "wenet_user_values_to_user_ids(UserIds,MatchUsers) and volunteers_ranking(RankedUsers,UserIds) and put_task_state_attribute('unaskedUserIds',RankedUsers) and put_task_state_attribute('rankedUsers',RankedUsers) and send_event(_,1,'askUsersByDiversity',json([]))"
+			"thenceforth": "wenet_user_values_to_user_ids(UserIds,MatchUsers) and social_ranking(RankedUsers,UserIds) and put_task_state_attribute('unaskedUserIds',RankedUsers) and put_task_state_attribute('rankedUsers',RankedUsers) and send_event(_,1,'askUsersByDiversity',json([]))"
 		},
 		{
 			"description": "When the task is created filter the posible users to ask about and ask them",
