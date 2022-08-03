@@ -116,9 +116,10 @@ public class PilotM46AAUProtocolWithAllIndifferentDimensionsITC extends Abstract
    * {@inheritDoc}
    */
   @Override
-  protected String explanationText() {
+  protected boolean isValidGroupAndExplanationTypeFor(final String userId, final int group,
+      final Explanation explanation, final JsonObject state) {
 
-    return "Recall that there were no requirements set w.r.t domains, values, social or physical closeness. Nevertheless, we tried to increase the gender diversity of selected users.";
+    return group == 0 && explanation == Explanation.GROUP_0;
   }
 
 }

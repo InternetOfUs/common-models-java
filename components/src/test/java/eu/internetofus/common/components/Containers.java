@@ -83,7 +83,7 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   /**
    * The name of the WeNet task manager docker container to use.
    */
-  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:1.0.3";
+  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:1.0.4";
 
   /**
    * The name of the WeNet interaction manager docker container to use.
