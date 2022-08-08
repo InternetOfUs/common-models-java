@@ -1079,7 +1079,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       final var targetValue = targetObject.getDouble("value");
       if (!this.areSimilar(sourceValue, targetValue)) {
 
-        Logger.warn("Unexpected user id at {}, {} != {}", i, sourceValue, targetValue);
+        Logger.warn("Unexpected user value at {}, {} != {}", i, sourceValue, targetValue);
         return false;
 
       }
@@ -1088,6 +1088,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
     return true;
 
   }
+// 0.8443271026976178 * 0.41000000000000003 *0.8750.875
 
   /**
    * Return the value associated to a user-value array for a specific user.

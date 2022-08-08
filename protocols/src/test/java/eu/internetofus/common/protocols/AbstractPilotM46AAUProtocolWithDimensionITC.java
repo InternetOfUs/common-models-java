@@ -72,7 +72,7 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
       var sb = 0;
       var x = 0;
       var mdX = this.getUserValueIn(domainInterestUsers, appUser);
-      if (mdX != null && mdX != 0) {
+      if (mdX != null && !this.areSimilar(mdX, 0d)) {
 
         x = 1;
         ss += 1;
@@ -87,7 +87,7 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
       }
       var y = 0;
       var mdV = this.getUserValueIn(beliefsAndValuesUsers, appUser);
-      if (mdV != null && mdV != 0) {
+      if (mdV != null && !this.areSimilar(mdV, 0d)) {
 
         y = 1;
         ss += 1;
@@ -102,7 +102,7 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
       }
       var z = 0;
       var mdSC = this.getUserValueIn(socialClosenessUsers, appUser);
-      if (mdSC != null && mdSC != 0) {
+      if (mdSC != null && !this.areSimilar(mdSC, 0d)) {
 
         z = 1;
         if (Domain.ACADEMIC_SKILLS == domain) {
@@ -132,7 +132,7 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
       }
       var w = 0;
       var mdPC = this.getUserValueIn(physicalClosenessUsers, appUser);
-      if (mdPC != null && mdPC != 0) {
+      if (mdPC != null && !this.areSimilar(mdPC, 0d)) {
 
         w = 1;
         hs += 1;
@@ -146,7 +146,7 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
         mdPC = 0.0;
       }
       var matchingDegree = 0.0d;
-      if (x == 0 && y == 0 && z == 0 && w == 0) {
+      if (x != 0 || y != 0 || z != 0 || w != 0) {
 
         matchingDegree = (x * mdX + y * mdV + z * mdSC + w * mdPC) / (x + y + z + w);
       }
