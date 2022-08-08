@@ -27,6 +27,7 @@ import eu.internetofus.common.components.models.SocialNetworkRelationshipType;
 import eu.internetofus.common.components.models.Task;
 import eu.internetofus.common.components.models.TaskTransaction;
 import eu.internetofus.common.components.models.WeNetUserProfile;
+import eu.internetofus.common.components.personal_context_builder.UserDistance;
 import eu.internetofus.common.components.personal_context_builder.UserLocation;
 import eu.internetofus.common.components.personal_context_builder.WeNetPersonalContextBuilderSimulator;
 import eu.internetofus.common.components.profile_manager.WeNetProfileManager;
@@ -111,6 +112,16 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
     }
 
   }
+
+  /**
+   * The step distance between users.
+   */
+  public static final double STEP_DISTANCE = 0.0007d;
+
+  /**
+   * The minimum distance when compare double values.
+   */
+  public static final double MIN_SIM_DISTANCE = 0.000000000001;
 
   /**
    * The identifier of the users that has asked to participate.
@@ -261,9 +272,13 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   /**
    * Return the maximum distance between users.
    *
-   * @return the maximum distance in meters.
+   * @return {@code 500} in any case
    */
-  public abstract double maxDistance();
+  public double maxDistance() {
+
+    return 500;
+
+  }
 
   /**
    * Return the distance between the requester and the user at the specified
@@ -337,12 +352,21 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
    *
    * @param index of the user to calculate the distance.
    *
-   * @return the distance in km to the user of the specified position.
+   * @return the normalized distance to the specified user of the specified
+   *         position.
    */
   public double distanceTo(final int index) {
 
-    return 0.08 * index;
+    final var max = this.maxDistance();
+    if (max == 0) {
 
+      return 0d;
+
+    } else {
+
+      final var distance = UserDistance.calculateDistance(0d, 0d, 0d, STEP_DISTANCE * index);
+      return Math.max(0.0d, (max - distance) / max);
+    }
   }
 
   /**
@@ -364,7 +388,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       final var location = new UserLocation();
       location.userId = this.users.get(i).id;
       location.latitude = 0.0;
-      location.longitude = i * 0.0007;
+      location.longitude = i * STEP_DISTANCE;
       added.add(WeNetPersonalContextBuilderSimulator.createProxy(vertx).addUserLocation(location));
 
     }
@@ -555,7 +579,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
     } else {
 
-      return Math.abs(source - target) < Double.MIN_NORMAL;
+      return Math.abs(source - target) < MIN_SIM_DISTANCE;
     }
 
   }
@@ -602,7 +626,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       Double distance = null;
       if (isNearby) {
 
-        distance = Math.max(0.0, (this.maxDistance() - this.distanceTo(index)) / this.maxDistance());
+        distance = this.distanceTo(index);
       }
       final var physicalClosenessValue = physicalClosenessUser.getDouble("value");
       if (!this.areSimilar(distance, physicalClosenessValue)) {

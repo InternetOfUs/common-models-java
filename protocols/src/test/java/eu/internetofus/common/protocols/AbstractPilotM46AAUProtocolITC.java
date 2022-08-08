@@ -147,17 +147,6 @@ public abstract class AbstractPilotM46AAUProtocolITC extends AbstractPilotM46Pro
 
   /**
    * {@inheritDoc}
-   *
-   * @return {@code 500} in any case
-   */
-  @Override
-  public double maxDistance() {
-
-    return 500;
-  }
-
-  /**
-   * {@inheritDoc}
    */
   @Override
   protected boolean validTaskUserStateAfterCreation(final JsonObject state) {

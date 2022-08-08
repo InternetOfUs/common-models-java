@@ -37,7 +37,7 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
   @Override
   protected boolean validMatchUsers(final JsonObject state) {
 
-    final var domain = Domain.valueOf(this.domain());
+    final var domain = Domain.valueOf(this.domain().toUpperCase());
     final var matchUsers = state.getJsonArray("matchUsers", new JsonArray());
     final var appUsers = state.getJsonArray("appUsers", new JsonArray());
     final var appUsersSize = appUsers.size();
