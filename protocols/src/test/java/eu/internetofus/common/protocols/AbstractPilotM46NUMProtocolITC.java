@@ -28,7 +28,7 @@ import java.util.Map;
 import org.tinylog.Logger;
 
 /**
- * Test the pilot M46 at AAU.
+ * Test the pilot M46 at NUM.
  *
  * @author UDT-IA, IIIA-CSIC
  */
@@ -235,12 +235,12 @@ public abstract class AbstractPilotM46NUMProtocolITC extends AbstractPilotM46Pro
   /**
    * {@inheritDoc}
    *
-   * @see DefaultProtocols#PILOT_M46_AAU
+   * @see DefaultProtocols#PILOT_M46_NUM
    */
   @Override
   protected DefaultProtocols getDefaultProtocolsToUse() {
 
-    return DefaultProtocols.PILOT_M46_AAU;
+    return DefaultProtocols.PILOT_M46_NUM;
   }
 
   /**
@@ -262,6 +262,25 @@ public abstract class AbstractPilotM46NUMProtocolITC extends AbstractPilotM46Pro
       } else {
 
         return null;
+      }
+
+    } else if (Domain.THINGS_TO_DO_ABOUT_TOWN.toTaskTypeDomain().equals(this.domain())) {
+
+      final var simMat = this.simMaterials(index);
+      final var simDiv = super.domainInterestTo(index);
+      if (simMat == null) {
+
+        return simDiv;
+
+      } else if (simDiv == null) {
+
+        return simMat;
+
+      } else {
+
+        return 1.0 - (1 - simMat
+            + Math.abs(this.users.get(0).competences.get(0).level - this.users.get(index).competences.get(0).level))
+            / 3.0;
       }
 
     } else {
