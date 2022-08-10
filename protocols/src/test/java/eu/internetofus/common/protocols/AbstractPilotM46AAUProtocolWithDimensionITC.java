@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import org.tinylog.Logger;
 
 /**
- * Test the pilot M46 at AAU whne is selected at least one dimension.
+ * Test the pilot M46 at AAU when is selected at least one dimension.
  *
  * @author UDT-IA, IIIA-CSIC
  */
