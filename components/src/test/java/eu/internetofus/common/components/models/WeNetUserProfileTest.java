@@ -99,6 +99,12 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       "03: With family and/or relatives", "04: Other" };
 
   /**
+   * The live places that can be used to fill in a profile.
+   */
+  public static final String[] PROGRAM_STUDY = { "Software Engineering", "Information Technology", "Information System",
+      "Computer Science", "etc." };
+
+  /**
    * Create an basic model that has the specified index.
    *
    * @param index to use in the example.
@@ -183,6 +189,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     material.quantity = 1;
     materials.add(material);
 
+    // Q28
+    material = new Material();
+    material.classification = "university_status";
+    material.name = "program_study";
+    material.description = PROGRAM_STUDY[index % PROGRAM_STUDY.length];
+    material.quantity = 1;
+    materials.add(material);
+
     return materials;
   }
 
@@ -215,6 +229,17 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
       final var competence = new Competence();
       competence.ontology = "university_activity";
+      competence.name = name;
+      competence.level = 0.25 * (index % 5);
+      competences.add(competence);
+
+    }
+
+    // Q25-Q27
+    for (final var name : new String[] { "course_ca", "course_plc", "course_oop" }) {
+
+      final var competence = new Competence();
+      competence.ontology = "university_status";
       competence.name = name;
       competence.level = 0.25 * (index % 5);
       competences.add(competence);

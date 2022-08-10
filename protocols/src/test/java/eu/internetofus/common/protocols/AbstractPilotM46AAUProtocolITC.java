@@ -34,7 +34,7 @@ import org.tinylog.Logger;
 public abstract class AbstractPilotM46AAUProtocolITC extends AbstractPilotM46ProtocolITC {
 
   /**
-   *
+   * The possible explanation why an user is selected.
    */
   public enum Explanation {
 

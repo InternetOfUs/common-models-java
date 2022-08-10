@@ -28,7 +28,7 @@ import org.tinylog.Logger;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class PilotM46AAUProtocolWithAllIndifferentDimensionsITC extends AbstractPilotM46AAUProtocolITC {
+public class PilotM46NUMProtocolWithAllIndifferentDimensionsITC extends AbstractPilotM46NUMProtocolITC {
 
   /**
    * {@inheritDoc} ‘academic skills’
