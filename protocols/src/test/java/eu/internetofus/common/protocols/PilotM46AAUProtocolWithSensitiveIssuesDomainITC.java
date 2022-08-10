@@ -24,7 +24,7 @@ import io.vertx.core.json.JsonObject;
 import org.tinylog.Logger;
 
 /**
- * Test the calculus when uses ‘academic skills’ domain.
+ * Test the calculus when uses ‘sensitive issues’ domain.
  *
  * @author UDT-IA, IIIA-CSIC
  */

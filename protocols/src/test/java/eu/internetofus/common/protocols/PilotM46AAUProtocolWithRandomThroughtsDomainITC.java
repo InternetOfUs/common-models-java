@@ -20,8 +20,7 @@
 package eu.internetofus.common.protocols;
 
 /**
- * Test the calculus when uses domain is ‘random thoughts’ or ‘sensitive
- * issues’.
+ * Test the calculus when uses domain is ‘random thoughts’.
  *
  * @author UDT-IA, IIIA-CSIC
  */
