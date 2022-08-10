@@ -152,7 +152,11 @@ public abstract class AbstractPilotM46AAUProtocolITC extends AbstractPilotM46Pro
   @Override
   public Double domainInterestTo(final int index) {
 
-    if (Domain.CAMPUS_LIFE.toTaskTypeDomain().equals(this.domain())) {
+    if (Domain.SENSITIVE_ISSUES.toTaskTypeDomain().equals(this.domain())) {
+
+      return null;
+
+    } else if (Domain.CAMPUS_LIFE.toTaskTypeDomain().equals(this.domain())) {
 
       return this.simMaterials(index);
 

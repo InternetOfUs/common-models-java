@@ -19,10 +19,6 @@
  */
 package eu.internetofus.common.protocols;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.tinylog.Logger;
-
 /**
  * Test the calculus when uses ‘sensitive issues’ domain.
  *
@@ -73,85 +69,6 @@ public class PilotM46AAUProtocolWithSensitiveIssuesDomainITC extends AbstractPil
   protected String positionOfAnswerer() {
 
     return "nearby";
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected boolean validDomainInterestUsers(final JsonObject state) {
-
-    final var domainInterestUsers = state.getJsonArray("domainInterestUsers", new JsonArray());
-    final var domainInterestSize = domainInterestUsers.size();
-    final var appUsers = state.getJsonArray("appUsers", new JsonArray());
-    final var appUsersSize = appUsers.size();
-    if (appUsersSize != domainInterestSize) {
-      // Unexpected size
-      Logger.warn("Unexpected domainInterest user size, {} != {}.", appUsersSize, domainInterestSize);
-      return false;
-    }
-
-    for (var i = 0; i < appUsersSize; i++) {
-
-      final var appUser = appUsers.getString(i);
-      final var domainInterestUser = domainInterestUsers.getJsonObject(i);
-      final var domainInterestUserId = domainInterestUser.getString("userId");
-      if (!appUser.equals(domainInterestUserId)) {
-
-        Logger.warn("Unexpected  domainInterest user at {}, {} is not {}.", i, appUser, domainInterestUserId);
-        return false;
-      }
-
-      final var domainInterestValue = domainInterestUser.getDouble("value");
-      if (domainInterestUser != null) {
-
-        Logger.warn("Unexpected  domainInterest user value at {}, null is not {}.", i, domainInterestValue);
-        return false;
-      }
-
-    }
-
-    return true;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected boolean validBeliefsAndValuesUsers(final JsonObject state) {
-
-    final var beliefsAndValuesUsers = state.getJsonArray("beliefsAndValuesUsers", new JsonArray());
-    final var beliefsAndValuesSize = beliefsAndValuesUsers.size();
-    final var appUsers = state.getJsonArray("appUsers", new JsonArray());
-    final var appUsersSize = appUsers.size();
-    if (appUsersSize != beliefsAndValuesSize) {
-      // Unexpected size
-      Logger.warn("Unexpected beliefsAndValues user size, {} != {}.", appUsersSize, beliefsAndValuesSize);
-      return false;
-    }
-
-    for (var i = 0; i < appUsersSize; i++) {
-
-      final var appUser = appUsers.getString(i);
-      final var beliefsAndValuesUser = beliefsAndValuesUsers.getJsonObject(i);
-      final var beliefsAndValuesUserId = beliefsAndValuesUser.getString("userId");
-      if (!appUser.equals(beliefsAndValuesUserId)) {
-
-        Logger.warn("Unexpected  beliefsAndValues user at {}, {} is not {}.", i, appUser, beliefsAndValuesUserId);
-        return false;
-      }
-
-      final var beliefsAndValuesValue = beliefsAndValuesUser.getDouble("value");
-      if (beliefsAndValuesValue != null) {
-
-        Logger.warn("Unexpected  beliefsAndValues user value at {}, null is not {}.", i, beliefsAndValuesValue);
-        return false;
-      }
-
-    }
-
-    return true;
-
   }
 
 }
