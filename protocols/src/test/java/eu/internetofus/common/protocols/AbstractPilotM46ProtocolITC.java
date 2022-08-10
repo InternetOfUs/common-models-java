@@ -290,7 +290,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
    */
   public Double socialClosenessTo(final int index) {
 
-    if (this.hasSocialClosenessTo(index)) {
+    if (index < this.users.size() - 1) {
 
       return Math.max(0d, 0.6d - index * 0.01d);
 
@@ -299,18 +299,6 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       return null;
     }
 
-  }
-
-  /**
-   * Check if a user has asocial closeness.
-   *
-   * @param index of the user to check.
-   *
-   * @return {@code true} if the user at the index has a social closeness.
-   */
-  protected boolean hasSocialClosenessTo(final int index) {
-
-    return index < this.users.size() - 1;
   }
 
   /**
@@ -329,13 +317,14 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
     final List<Future> added = new ArrayList<>();
     for (var i = 1; i < this.users.size() - 1; i++) {
 
-      if (this.hasSocialClosenessTo(i)) {
+      final var weight = this.socialClosenessTo(i);
+      if (weight != null) {
 
         final var relationship = new SocialNetworkRelationship();
         relationship.appId = this.app.appId;
         relationship.sourceId = this.users.get(0).id;
         relationship.targetId = this.users.get(i).id;
-        relationship.weight = this.socialClosenessTo(i);
+        relationship.weight = weight;
         relationship.type = SocialNetworkRelationshipType.values()[i
             % (SocialNetworkRelationshipType.values().length - 1)];
         added.add(WeNetProfileManager.createProxy(vertx).addOrUpdateSocialNetworkRelationship(relationship));
@@ -1088,7 +1077,6 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
     return true;
 
   }
-// 0.8443271026976178 * 0.41000000000000003 *0.8750.875
 
   /**
    * Return the value associated to a user-value array for a specific user.

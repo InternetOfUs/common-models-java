@@ -220,12 +220,16 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
     final var mdPC = this.getUserValueIn(physicalClosenessUsers, userId);
     final var socialClosenessUsers = state.getJsonArray("socialClosenessUsers", new JsonArray());
     final var mdSC = this.getUserValueIn(socialClosenessUsers, userId);
-    final var domain = Domain.valueOf(this.domain());
+    final var domain = Domain.valueOf(this.domain().toUpperCase());
 
     Explanation expectedExplanation = null;
     if (group == 0) {
 
       expectedExplanation = Explanation.GROUP_0;
+
+    } else if (group == 1) {
+
+      expectedExplanation = Explanation.GROUP_1;
 
     } else if (group == 12) {
 
@@ -263,7 +267,7 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
 
     } else if (group == 5) {
 
-      if (this.areSimilar(mdPC, 0d) && mdSC != null && !this.areSimilar(mdPC, 0d) && Domain.ACADEMIC_SKILLS == domain) {
+      if (this.areSimilar(mdPC, 0d) && mdSC != null && !this.areSimilar(mdSC, 0d) && Domain.ACADEMIC_SKILLS == domain) {
 
         expectedExplanation = Explanation.GROUP_5_A;
 

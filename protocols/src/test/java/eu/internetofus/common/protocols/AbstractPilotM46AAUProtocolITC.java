@@ -19,6 +19,7 @@
  */
 package eu.internetofus.common.protocols;
 
+import eu.internetofus.common.components.models.Material;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.HashMap;
@@ -46,7 +47,7 @@ public abstract class AbstractPilotM46AAUProtocolITC extends AbstractPilotM46Pro
     /**
      * Explanation for group 11.
      */
-    GROUP_11(
+    GROUP_1(
         "This user fulfils all requirements. While searching for users, we tried to increase the gender diversity of selected users."),
     /**
      * Explanation for group 12.
@@ -143,6 +144,93 @@ public abstract class AbstractPilotM46AAUProtocolITC extends AbstractPilotM46Pro
   protected DefaultProtocols getDefaultProtocolsToUse() {
 
     return DefaultProtocols.PILOT_M46_AAU;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Double domainInterestTo(final int index) {
+
+    if (Domain.CAMPUS_LIFE.toTaskTypeDomain().equals(this.domain())) {
+
+      return this.simMaterials(index);
+
+    } else {
+
+      return super.domainInterestTo(index);
+
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Double socialClosenessTo(final int index) {
+
+    if (Domain.ACADEMIC_SKILLS.toTaskTypeDomain().equals(this.domain())) {
+
+      return this.simMaterials(index);
+
+    } else {
+
+      return super.socialClosenessTo(index);
+
+    }
+
+  }
+
+  /**
+   * Return the similarity of materials.
+   *
+   * @param index of the user to calculate the similarity.
+   *
+   * @return the similarity between materials.
+   */
+  protected Double simMaterials(final int index) {
+
+    Material material1 = null;
+    if (this.users.get(0).materials != null) {
+
+      for (final var material : this.users.get(0).materials) {
+
+        if ("degree_programme".equals(material.name)) {
+
+          material1 = material;
+          break;
+        }
+      }
+      Material material2 = null;
+      if (this.users.get(index).materials != null) {
+
+        for (final var material : this.users.get(index).materials) {
+
+          if ("degree_programme".equals(material.name)) {
+
+            material2 = material;
+            break;
+          }
+        }
+
+      }
+
+      if (material1 != null && material2 != null) {
+
+        if (material1.description != null && material1.description.equals(material2.description)) {
+
+          return 1d;
+
+        } else {
+
+          return 0d;
+        }
+
+      }
+    }
+
+    return null;
+
   }
 
   /**
