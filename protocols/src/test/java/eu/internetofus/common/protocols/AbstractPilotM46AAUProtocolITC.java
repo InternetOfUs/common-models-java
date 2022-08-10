@@ -156,6 +156,25 @@ public abstract class AbstractPilotM46AAUProtocolITC extends AbstractPilotM46Pro
 
       return this.simMaterials(index);
 
+    } else if (Domain.THINGS_TO_DO_ABOUT_TOWN.toTaskTypeDomain().equals(this.domain())) {
+
+      final var simMat = this.simMaterials(index);
+      final var simDiv = super.domainInterestTo(index);
+      if (simMat == null) {
+
+        return simDiv;
+
+      } else if (simDiv == null) {
+
+        return simMat;
+
+      } else {
+
+        return 1.0 - (1 - simMat
+            + Math.abs(this.users.get(0).competences.get(0).level - this.users.get(index).competences.get(0).level))
+            / 3.0;
+      }
+
     } else {
 
       return super.domainInterestTo(index);
