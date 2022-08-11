@@ -450,7 +450,7 @@
 			"description": "Calculate believe and values if it is similar",
 			"whenever": "is_received_event('sortUsersByDiversity',_) and get_task_attribute_value('similar','beliefsAndValues') and get_task_state_attribute(Users,'appUsers') and get_profile_attribues_by_beliefs_and_values(Attributes)",
 			"thenceforth": "normalized_diversity(Diversity,Users,Attributes,@(null),false) and wenet_negate_user_value(BeliefsAndValuesUsers,Diversity) and put_task_state_attribute('beliefsAndValuesUsers',BeliefsAndValuesUsers)",
-			"ontology": ":- dynamic get_profile_attribues_by_beliefs_and_values/1. get_profile_attribues_by_beliefs_and_values(['meanings.excitement','meanings.promotion','meanings.existence','meanings.suprapersonal','meanings.interactive','meanings.normative'])."
+			"ontology": ":- dynamic get_profile_attribues_by_beliefs_and_values/1. get_profile_attribues_by_beliefs_and_values(['excitement', 'promotion', 'existence', 'suprapersonal', 'interactive', 'normative', 'meanings.neuroticism', 'meanings.extraversion', 'meanings.openness', 'meanings.agreeableness', 'meanings.conscientiousness'])."
 		},
 		{
 			"description": "Calculate believe and values if it is different",

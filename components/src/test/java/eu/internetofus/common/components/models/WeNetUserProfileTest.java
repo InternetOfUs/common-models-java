@@ -273,8 +273,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     }
 
     // Q09a - Q09t
-    for (final var name : new String[] { "extraversion", "agreeableness", "consientiousness", "neuroticism",
-        "openness" }) {
+    for (final var name : new String[] { "extraversion", "agreeableness", "consientiousness", "neuroticism", "openness",
+        "agreeableness", "conscientiousness" }) {
 
       final var meaning = new Meaning();
       meaning.category = "big_five";
