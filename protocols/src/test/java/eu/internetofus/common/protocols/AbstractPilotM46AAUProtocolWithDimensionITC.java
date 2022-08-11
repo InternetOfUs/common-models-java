@@ -276,7 +276,7 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
         expectedExplanation = Explanation.GROUP_5_B;
       }
 
-    } else if (this.areSimilar(mdPC, 0d) && mdSC != null && !this.areSimilar(mdPC, 0d)
+    } else if (this.areSimilar(mdPC, 0d) && mdSC != null && !this.areSimilar(mdSC, 0d)
         && Domain.ACADEMIC_SKILLS == domain) {
 
       expectedExplanation = Explanation.GROUP_6_7_8_A;

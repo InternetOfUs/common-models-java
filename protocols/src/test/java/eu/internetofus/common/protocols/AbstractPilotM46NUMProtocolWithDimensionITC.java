@@ -75,13 +75,29 @@ public abstract class AbstractPilotM46NUMProtocolWithDimensionITC extends Abstra
       if (mdX != null && !this.areSimilar(mdX, 0d)) {
 
         x = 1;
-        ss += 1;
+        if (Domain.ACADEMIC_SKILLS == domain) {
+
+          hs += 1;
+
+        } else {
+
+          ss += 1;
+
+        }
 
       } else {
 
         if (this.areSimilar(mdX, 0d)) {
 
-          sb += 1;
+          if (Domain.ACADEMIC_SKILLS == domain) {
+
+            hb += 1;
+
+          } else {
+
+            sb += 1;
+
+          }
         }
         mdX = 0.0;
       }
@@ -157,18 +173,18 @@ public abstract class AbstractPilotM46NUMProtocolWithDimensionITC extends Abstra
 
         if (ss > 0) {
 
-          expectedGroup = sb + 1;
+          expectedGroup = 1 + sb;
 
         } else {
 
           expectedGroup = 4;
         }
 
-      } else if (hb == 1 && hs == 1) {
+      } else if (hb > 0 && hs > 0) {
 
         if (ss > 0) {
 
-          expectedGroup = sb + 5;
+          expectedGroup = 5 + sb;
 
         } else {
 
@@ -177,7 +193,7 @@ public abstract class AbstractPilotM46NUMProtocolWithDimensionITC extends Abstra
 
       } else if (ss > 0) {
 
-        expectedGroup = sb + 9;
+        expectedGroup = 9 + sb;
 
       } else {
 
@@ -216,6 +232,8 @@ public abstract class AbstractPilotM46NUMProtocolWithDimensionITC extends Abstra
   protected boolean isValidGroupAndExplanationTypeFor(final String userId, final int group,
       final Explanation explanation, final JsonObject state) {
 
+    final var domainUsers = state.getJsonArray("domainInterestUsers", new JsonArray());
+    final var mdX = this.getUserValueIn(domainUsers, userId);
     final var physicalClosenessUsers = state.getJsonArray("physicalClosenessUsers", new JsonArray());
     final var mdPC = this.getUserValueIn(physicalClosenessUsers, userId);
     final var socialClosenessUsers = state.getJsonArray("socialClosenessUsers", new JsonArray());
@@ -237,53 +255,126 @@ public abstract class AbstractPilotM46NUMProtocolWithDimensionITC extends Abstra
 
     } else if (group == 2 || group == 3 || group == 4) {
 
-      if (mdPC != null && mdSC != null && Domain.ACADEMIC_SKILLS == domain) {
+      if (mdPC != null && mdSC != null && mdX != null && Domain.ACADEMIC_SKILLS == domain) {
 
         expectedExplanation = Explanation.GROUP_2_3_4_A;
 
-      } else if (mdPC == null && mdSC != null && Domain.ACADEMIC_SKILLS == domain) {
+      } else if (mdPC != null && mdSC != null && mdX == null && Domain.ACADEMIC_SKILLS == domain) {
 
         expectedExplanation = Explanation.GROUP_2_3_4_B;
 
-      } else {
+      } else if (mdPC != null && mdSC == null && mdX != null && Domain.ACADEMIC_SKILLS == domain) {
 
         expectedExplanation = Explanation.GROUP_2_3_4_C;
+
+      } else if (mdPC == null && mdSC != null && mdX != null && Domain.ACADEMIC_SKILLS == domain) {
+
+        expectedExplanation = Explanation.GROUP_2_3_4_D;
+
+      } else if (mdPC == null && mdSC == null && mdX != null && Domain.ACADEMIC_SKILLS == domain) {
+
+        expectedExplanation = Explanation.GROUP_2_3_4_E;
+
+      } else if (mdPC == null && mdSC != null && mdX == null && Domain.ACADEMIC_SKILLS == domain) {
+
+        expectedExplanation = Explanation.GROUP_2_3_4_F;
+
+      } else {
+
+        expectedExplanation = Explanation.GROUP_2_3_4_G;
       }
 
     } else if (group == 9 || group == 10 || group == 11) {
 
-      if (mdPC != null && mdSC != null && Domain.ACADEMIC_SKILLS == domain) {
+      if (mdPC != null && mdSC != null && mdX != null && Domain.ACADEMIC_SKILLS == domain) {
 
         expectedExplanation = Explanation.GROUP_9_10_11_A;
 
-      } else if (mdPC == null && mdSC != null && Domain.ACADEMIC_SKILLS == domain) {
+      } else if (mdPC != null && mdSC != null && mdX == null && Domain.ACADEMIC_SKILLS == domain) {
 
         expectedExplanation = Explanation.GROUP_9_10_11_B;
 
-      } else {
+      } else if (mdPC != null && mdSC == null && mdX != null && Domain.ACADEMIC_SKILLS == domain) {
 
         expectedExplanation = Explanation.GROUP_9_10_11_C;
+
+      } else if (mdPC == null && mdSC != null && mdX != null && Domain.ACADEMIC_SKILLS == domain) {
+
+        expectedExplanation = Explanation.GROUP_9_10_11_D;
+
+      } else if (mdPC == null && mdSC == null && mdX != null && Domain.ACADEMIC_SKILLS == domain) {
+
+        expectedExplanation = Explanation.GROUP_9_10_11_E;
+
+      } else if (mdPC == null && mdSC != null && mdX == null && Domain.ACADEMIC_SKILLS == domain) {
+
+        expectedExplanation = Explanation.GROUP_9_10_11_F;
+
+      } else {
+
+        expectedExplanation = Explanation.GROUP_9_10_11_G;
       }
 
     } else if (group == 5) {
 
-      if (this.areSimilar(mdPC, 0d) && mdSC != null && !this.areSimilar(mdSC, 0d) && Domain.ACADEMIC_SKILLS == domain) {
+      if (this.areSimilar(mdPC, 0d) && this.areSimilar(mdSC, 0d) && !this.areSimilar(mdX, 0d)
+          && Domain.ACADEMIC_SKILLS == domain) {
 
         expectedExplanation = Explanation.GROUP_5_A;
 
-      } else {
+      } else if (this.areSimilar(mdPC, 0d) && !this.areSimilar(mdSC, 0d) && this.areSimilar(mdX, 0d)
+          && Domain.ACADEMIC_SKILLS == domain) {
 
         expectedExplanation = Explanation.GROUP_5_B;
+
+      } else if (!this.areSimilar(mdPC, 0d) && this.areSimilar(mdSC, 0d) && this.areSimilar(mdX, 0d)
+          && Domain.ACADEMIC_SKILLS == domain) {
+
+        expectedExplanation = Explanation.GROUP_5_C;
+
+      } else if (this.areSimilar(mdPC, 0d) && !this.areSimilar(mdSC, 0d) && !this.areSimilar(mdX, 0d)
+          && Domain.ACADEMIC_SKILLS == domain) {
+
+        expectedExplanation = Explanation.GROUP_5_D;
+
+      } else if (!this.areSimilar(mdPC, 0d) && this.areSimilar(mdSC, 0d) && !this.areSimilar(mdX, 0d)
+          && Domain.ACADEMIC_SKILLS == domain) {
+
+        expectedExplanation = Explanation.GROUP_5_E;
+
+      } else {
+
+        expectedExplanation = Explanation.GROUP_5_F;
       }
 
-    } else if (this.areSimilar(mdPC, 0d) && mdSC != null && !this.areSimilar(mdPC, 0d)
+    } else if (this.areSimilar(mdPC, 0d) && this.areSimilar(mdSC, 0d) && !this.areSimilar(mdX, 0d)
         && Domain.ACADEMIC_SKILLS == domain) {
 
       expectedExplanation = Explanation.GROUP_6_7_8_A;
 
-    } else {
+    } else if (this.areSimilar(mdPC, 0d) && !this.areSimilar(mdSC, 0d) && this.areSimilar(mdX, 0d)
+        && Domain.ACADEMIC_SKILLS == domain) {
 
       expectedExplanation = Explanation.GROUP_6_7_8_B;
+
+    } else if (!this.areSimilar(mdPC, 0d) && this.areSimilar(mdSC, 0d) && this.areSimilar(mdX, 0d)
+        && Domain.ACADEMIC_SKILLS == domain) {
+
+      expectedExplanation = Explanation.GROUP_6_7_8_C;
+
+    } else if (this.areSimilar(mdPC, 0d) && !this.areSimilar(mdSC, 0d) && !this.areSimilar(mdX, 0d)
+        && Domain.ACADEMIC_SKILLS == domain) {
+
+      expectedExplanation = Explanation.GROUP_6_7_8_D;
+
+    } else if (!this.areSimilar(mdPC, 0d) && this.areSimilar(mdSC, 0d) && !this.areSimilar(mdX, 0d)
+        && Domain.ACADEMIC_SKILLS == domain) {
+
+      expectedExplanation = Explanation.GROUP_6_7_8_E;
+
+    } else {
+
+      expectedExplanation = Explanation.GROUP_6_7_8_F;
     }
 
     if (explanation != expectedExplanation) {
