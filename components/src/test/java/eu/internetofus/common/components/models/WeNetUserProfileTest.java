@@ -99,7 +99,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       "03: With family and/or relatives", "04: Other" };
 
   /**
-   * The live places that can be used to fill in a profile.
+   * The programs than can be studied.
    */
   public static final String[] PROGRAM_STUDY = { "Software Engineering", "Information Technology", "Information System",
       "Computer Science", "etc." };
@@ -194,6 +194,14 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     material.classification = "university_status";
     material.name = "program_study";
     material.description = PROGRAM_STUDY[index % PROGRAM_STUDY.length];
+    material.quantity = 1;
+    materials.add(material);
+
+    // AAU Q04
+    material = new Material();
+    material.classification = "university_status";
+    material.name = "study_year";
+    material.description = DEGREES[index % DEGREES.length];
     material.quantity = 1;
     materials.add(material);
 
