@@ -19,7 +19,6 @@
  */
 package eu.internetofus.common.protocols;
 
-import eu.internetofus.common.components.models.Competence;
 import eu.internetofus.common.components.models.Material;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -253,6 +252,10 @@ public abstract class AbstractPilotM46NUMProtocolITC extends AbstractPilotM46Pro
 
       return null;
 
+    } else if (Domain.CAMPUS_LIFE.toTaskTypeDomain().equals(this.domain())) {
+
+      return this.simMaterials(index);
+
     } else if (Domain.ACADEMIC_SKILLS.toTaskTypeDomain().equals(this.domain())) {
 
       if ("different".equals(this.domainInterest())) {
@@ -299,43 +302,38 @@ public abstract class AbstractPilotM46NUMProtocolITC extends AbstractPilotM46Pro
    */
   protected Double simCompetences(final int index) {
 
-    Competence competence1 = null;
+    // The 0.5 value is ignored because all the variables has the same value
+
     if (this.users.get(0).competences != null) {
 
       for (final var competence : this.users.get(0).competences) {
 
         if ("course_ca".equals(competence.name)) {
 
-          competence1 = competence;
+          if (competence.level != null && this.users.get(index).competences != null) {
+
+            for (final var competence1 : this.users.get(index).competences) {
+
+              if ("course_ca".equals(competence1.name)) {
+
+                if (competence1.level != null && competence.level > competence1.level) {
+                  // it is reverse because as use different => 1 - sim
+                  return 0d;
+
+                }
+
+                break;
+              }
+            }
+          }
+
           break;
         }
       }
-      Competence competence2 = null;
-      if (this.users.get(index).competences != null) {
-
-        for (final var competence : this.users.get(index).competences) {
-
-          if ("course_ca".equals(competence.name)) {
-
-            competence2 = competence;
-            break;
-          }
-        }
-
-      }
-
-      if (competence1 != null && competence2 != null) {
-
-        if (competence1.level > competence2.level) {
-
-          return 1d;
-
-        }
-        // never 0.5 because are all the same value
-      }
     }
 
-    return 0d;
+    // it is reverse because as use different => 1 - sim
+    return 1d;
 
   }
 
