@@ -27,7 +27,7 @@ import io.vertx.core.json.JsonObject;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class AbstractPilotM46LSEProtocolITC extends AbstractPilotM46ProtocolITC {
+public abstract class AbstractPilotM46LSEProtocolITC extends AbstractPilotM46WithCommonDomainProtocolITC {
 
   /**
    * The last validated state.

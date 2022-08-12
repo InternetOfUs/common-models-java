@@ -31,7 +31,7 @@ import org.tinylog.Logger;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public abstract class AbstractPilotM46NUMProtocolITC extends AbstractPilotM46ProtocolITC {
+public abstract class AbstractPilotM46NUMProtocolITC extends AbstractPilotM46WithCommonDomainProtocolITC {
 
   /**
    * The possible explanation why an user is selected.

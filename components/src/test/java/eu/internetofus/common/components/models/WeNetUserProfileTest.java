@@ -253,6 +253,25 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
       competences.add(competence);
 
     }
+    for (final var name : new String[] { "c_logic", "c_math", "c_informatics", "c_fisics", "c_probability",
+        "c_trigonometry", "c_arithmetic", "c_algebra", "c_analytical_geometry", "c_chemistry", "c_calculus",
+        "c_biology", "c_administration", "c_accounting", "c_economy", "c_marketing", "c_int_commerce", "c_filosofy",
+        "c_history", "c_sociology", "c_psicology", "c_soft_engineering", "c_programing", "c_networks",
+        "c_operating_systems", "c_databases", "c_automata_theory", "c_data_science", "c_compilers", "c_diplomacy",
+        "c_politics", "c_law", "c_notary", "c_kinesiology", "c_physiotherapy", "c_biochemistry", "c_odontology",
+        "c_nutrition", "c_pharmacology", "c_anatomy", "c_phonoaudiology", "c_histology", "c_gynecology", "c_oncology",
+        "c_psychiatry", "c_pediatrics", "c_otorhin", "c_traumatology", "c_dermatology", "c_environmental_sciences",
+        "c_visual_design", "c_digital_design", "c_anan_electronics", "c_digit_electronics", "c_telecommunications",
+        "c_automation", "c_electronics", "c_sanitary_installations", "c_electrical_installations", "c_contr_management",
+        "c_structure_design" }) {
+
+      final var competence = new Competence();
+      competence.ontology = "uc_competences";
+      competence.name = name;
+      competence.level = 0.25 * (index % 5);
+      competences.add(competence);
+
+    }
 
     return competences;
   }
@@ -282,7 +301,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
 
     // Q09a - Q09t
     for (final var name : new String[] { "extraversion", "agreeableness", "consientiousness", "neuroticism", "openness",
-        "agreeableness", "conscientiousness" }) {
+        "conscientiousness" }) {
 
       final var meaning = new Meaning();
       meaning.category = "big_five";

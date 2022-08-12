@@ -59,61 +59,6 @@ import org.tinylog.Logger;
 public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtocolITC {
 
   /**
-   * The domains of the Pilot.
-   */
-  public enum Domain {
-
-    /**
-     * The basic needs domain.
-     */
-    BASIC_NEEDS,
-    /**
-     * The campus life domain.
-     */
-    CAMPUS_LIFE,
-    /**
-     * The academic skills domain.
-     */
-    ACADEMIC_SKILLS,
-    /**
-     * The appreciating culture domain.
-     */
-    APPRECIATING_CULTURE,
-    /**
-     * The performing/producing culture domain.
-     */
-    PERFORMING_PRODUCING_CULTURE,
-    /**
-     * The physical activities/sport domain.
-     */
-    PHYSICAL_ACTIVITIES_SPORTS,
-    /**
-     * The things to do about town domain.
-     */
-    THINGS_TO_DO_ABOUT_TOWN,
-    /**
-     * The random thoughts domain.
-     */
-    RANDOM_THOUGHTS,
-    /**
-     * The sensitive issue domain.
-     */
-    SENSITIVE_ISSUES;
-
-    /**
-     * Return the value that can be used on the task type.
-     *
-     * @return the domain used on the task type for the domain.
-     */
-    public String toTaskTypeDomain() {
-
-      return this.name().toLowerCase();
-
-    }
-
-  }
-
-  /**
    * The step distance between users.
    */
   public static final double STEP_DISTANCE = 0.0007d;
@@ -480,7 +425,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
       Logger.warn("Not physicalClosenessUsers is not defined on the state.");
       return false;
     }
-    if (!state.containsKey("socialClosenessUsers")) {
+    if (!state.containsKey("socialClosenessUsers") && !"indifferent".equals(this.socialCloseness())) {
 
       Logger.warn("Not socialClosenessUsers is not defined on the state.");
       return false;
