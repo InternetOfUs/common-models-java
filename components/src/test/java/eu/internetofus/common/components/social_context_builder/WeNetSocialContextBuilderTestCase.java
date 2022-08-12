@@ -188,4 +188,25 @@ public class WeNetSocialContextBuilderTestCase extends WeNetComponentTestCase<We
 
   }
 
+  /**
+   * Should so a social shuffle.
+   *
+   * @param vertx       that contains the event bus to use.
+   * @param testContext context over the tests.
+   */
+  @Test
+  public void shouldSocialShuffle(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var userIds = new UserIdsTest().createModelExample(0);
+
+    testContext.assertComplete(this.createComponentProxy(vertx).socialShuffle(userIds))
+        .onSuccess(updated -> testContext.verify(() -> {
+
+          assertThat(updated).isNotNull().isEqualTo(userIds);
+          testContext.completeNow();
+
+        }));
+
+  }
+
 }
