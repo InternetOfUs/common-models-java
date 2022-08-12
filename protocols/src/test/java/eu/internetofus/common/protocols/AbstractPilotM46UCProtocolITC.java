@@ -330,11 +330,18 @@ public abstract class AbstractPilotM46UCProtocolITC extends AbstractPilotM46Prot
 
     if (this.isEmptyProfile(index)) {
 
-      return null;
+      if ("relevant".equals(this.competences())) {
+
+        return 0d;
+
+      } else {
+
+        return null;
+      }
 
     } else {
 
-      return this.users.get(index).meanings.get(0).level;
+      return this.users.get(index).competences.get(0).level;
 
     }
 
