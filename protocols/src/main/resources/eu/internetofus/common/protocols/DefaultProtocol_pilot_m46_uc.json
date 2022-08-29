@@ -279,11 +279,22 @@
 					"type": "string",
 					"nullable": false
 				},
-				"sensitive": {
-					"description": "Whether the question is sensitive or not, if it is sensitive the bot will let other people know to take extra care in answering the question",
-					"type": "boolean",
-					"default": "false",
-					"nullable": false
+				"domain": {
+					"description": "The chosen domain of the question",
+					"type": "string",
+					"nullable": false,
+					"enum": [
+						"exact_sciences",
+						"computer_s_science",
+						"health",
+						"administrative_and_accounting",
+						"social_sciences",
+						"legal",
+						"environmental",
+						"design_and_construction",
+						"electronic_sciences",
+						"academic_life"
+					]
 				},
 				"anonymous": {
 					"description": "Whether to ask the question anonymously or not, if anonymous is chosen then the name of the user will not be shown",
@@ -305,7 +316,7 @@
 				"taskId",
 				"question",
 				"userId",
-				"sensitive",
+				"domain",
 				"anonymous",
 				"positionOfAnswerer"
 			]
@@ -507,8 +518,8 @@
 		},
 		{
 			"description": "Notify user if it can help with a question",
-			"whenever": "is_received(_,'notifyNewQuestionAndAnswer',_) and get_task_id(TaskId) and get_task_goal_name(Question) and get_task_requester_id(RequesterId) and get_task_attribute_value(Sensitive,'sensitive') and get_task_attribute_value(Anonymous,'anonymous') and get_task_attribute_value(PositionOfAnswerer,'positionOfAnswerer')",
-			"thenceforth": "send_user_message('QuestionToAnswerMessage',json([taskId=TaskId,question=Question,userId=RequesterId,sensitive=Sensitive,anonymous=Anonymous,positionOfAnswerer=PositionOfAnswerer]))"
+			"whenever": "is_received(_,'notifyNewQuestionAndAnswer',_) and get_task_id(TaskId) and get_task_goal_name(Question) and get_task_requester_id(RequesterId) and get_task_attribute_value(Domain,'domain') and get_task_attribute_value(Anonymous,'anonymous') and get_task_attribute_value(PositionOfAnswerer,'positionOfAnswerer')",
+			"thenceforth": "send_user_message('QuestionToAnswerMessage',json([taskId=TaskId,question=Question,userId=RequesterId,domain=Domain,anonymous=Anonymous,positionOfAnswerer=PositionOfAnswerer]))"
 		},
 		{
 			"description": "Provide an answer to a question",
