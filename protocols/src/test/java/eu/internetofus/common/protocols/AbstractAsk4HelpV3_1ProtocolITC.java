@@ -126,7 +126,7 @@ public abstract class AbstractAsk4HelpV3_1ProtocolITC extends AbstractDefaultPro
    */
   public int initQuestionToAnswerMessage() {
 
-    return Math.min(Math.min(this.numberOfUsersToCreate() - 1, this.maxUsers()), this.maxAnswers());
+    return Math.min(this.numberOfUsersToCreate() - 1, this.maxUsers());
 
   }
 
