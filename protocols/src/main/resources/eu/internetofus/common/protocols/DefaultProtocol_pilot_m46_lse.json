@@ -15,16 +15,22 @@
 				"type": "string",
 				"nullable": false,
 				"enum": [
-					"basic_needs",
-					"campus_life",
 					"academic_skills",
+					"basic_needs",
+					"physical_activity",
 					"appreciating_culture",
-					"performing_producing_culture",
-					"physical_activities_sports",
-					"things_to_do_about_town",
 					"random_thoughts",
-					"sensitive_issues"
+					"producing_culture",
+					"leisure_activities",
+					"campus_life",
+					"sensitive"
 				]
+			},
+			"anonymous": {
+				"description": "Whether to ask the question anonymously or not, if anonymous is chosen then the name of the user will not be shown",
+				"type": "boolean",
+				"default": "false",
+				"nullable": false
 			},
 			"domainInterest": {
 				"description": "The kind of interest in the domain the user should have to receive the question",
@@ -45,18 +51,6 @@
 					"indifferent",
 					"different"
 				]
-			},
-			"sensitive": {
-				"description": "Whether the question is sensitive or not, if it is sensitive the bot will let other people know to take extra care in answering the question",
-				"type": "boolean",
-				"default": "false",
-				"nullable": false
-			},
-			"anonymous": {
-				"description": "Whether to ask the question anonymously or not, if anonymous is chosen then the name of the user will not be shown",
-				"type": "boolean",
-				"default": "false",
-				"nullable": false
 			},
 			"socialCloseness": {
 				"description": "The kind of social closeness the user should have to receive the question",
@@ -99,10 +93,9 @@
 		},
 		"required": [
 			"domain",
+			"anonymous",
 			"domainInterest",
 			"beliefsAndValues",
-			"sensitive",
-			"anonymous",
 			"socialCloseness",
 			"positionOfAnswerer",
 			"maxUsers",
@@ -129,11 +122,23 @@
 					"type": "boolean",
 					"default": "false",
 					"nullable": false
+				},
+				"publish": {
+					"description": "Whether to publish the answer or not",
+					"type": "boolean",
+					"nullable": false
+				},
+				"publishAnonymously": {
+					"description": "Whether to publish the answer anonymously or not, if anonymous is chosen then the name of the user will not be shown",
+					"type": "boolean",
+					"nullable": false
 				}
 			},
 			"required": [
 				"answer",
-				"anonymous"
+				"anonymous",
+				"publish",
+				"publishAnonymously"
 			]
 		},
 		"notAnswerTransaction": {
@@ -179,26 +184,14 @@
 						"creative",
 						"honest",
 						"kind",
-						"personal"
-					]
-				},
-				"helpful": {
-					"description": "How well the bot is good in connecting with users following intentions",
-					"type": "string",
-					"nullable": false,
-					"enum": [
-						"notAtAllHelpful",
-						"slightlyHelpful",
-						"somewhatHelpful",
-						"veryHelpful",
-						"extremelyHelpful"
+						"personal",
+						"responder"
 					]
 				}
 			},
 			"required": [
 				"transactionId",
-				"reason",
-				"helpful"
+				"reason"
 			]
 		},
 		"moreAnswerTransaction": {
@@ -214,6 +207,11 @@
 			"required": [
 				"expirationDate"
 			]
+		},
+		"closeQuestionTransaction": {
+			"title": "Close the question",
+			"type": "object",
+			"nullable": true
 		},
 		"reportAnswerTransaction": {
 			"title": "Report an answer",
@@ -252,6 +250,20 @@
 			"required": [
 				"transactionId"
 			]
+		},
+		"followUpTransaction": {
+			"title": "Follow up after an answer",
+			"type": "object",
+			"properties": {
+				"transactionId": {
+					"description": "The id of the answer transaction from which started a follow up",
+					"type": "string",
+					"nullable": false
+				}
+			},
+			"required": [
+				"transactionId"
+			]
 		}
 	},
 	"callbacks": {
@@ -274,16 +286,25 @@
 					"type": "string",
 					"nullable": false
 				},
-				"sensitive": {
-					"description": "Whether the question is sensitive or not, if it is sensitive the bot will let other people know to take extra care in answering the question",
-					"type": "boolean",
-					"default": "false",
-					"nullable": false
+				"domain": {
+					"description": "The chosen domain of the question",
+					"type": "string",
+					"nullable": false,
+					"enum": [
+						"academic_skills",
+						"basic_needs",
+						"physical_activity",
+						"appreciating_culture",
+						"random_thoughts",
+						"producing_culture",
+						"leisure_activities",
+						"campus_life",
+						"sensitive"
+					]
 				},
 				"anonymous": {
 					"description": "Whether to ask the question anonymously or not, if anonymous is chosen then the name of the user will not be shown",
 					"type": "boolean",
-					"default": "false",
 					"nullable": false
 				},
 				"positionOfAnswerer": {
@@ -300,7 +321,7 @@
 				"taskId",
 				"question",
 				"userId",
-				"sensitive",
+				"domain",
 				"anonymous",
 				"positionOfAnswerer"
 			]
@@ -402,7 +423,6 @@
 			"required": [
 				"taskId",
 				"question",
-				"userId",
 				"listOfTransactionIds"
 			]
 		}
@@ -449,7 +469,7 @@
 			"description": "Order the users by domain",
 			"whenever": "is_received_event('sortUsersByDiversity',_) and get_task_attribute_value('similar','domainInterest') and get_task_state_attribute(Users,'appUsers') and get_task_attribute_value(Domain,'domain') and domain_attributes(Domain,Attributes)",
 			"thenceforth": "normalized_diversity(Diversity,Users,Attributes,@(null),false) and wenet_negate_user_value(DomainInterestUsers,Diversity) and put_task_state_attribute('domainInterestUsers',DomainInterestUsers)",
-			"ontology": ":- dynamic domain_attributes/2.  domain_attributes('basic_needs',['competences.c_food','competences.c_accom']). domain_attributes('campus_life',['materials.study_year']). domain_attributes('academic_skills',['competences.u_active','competences.u_read','competences.u_essay','competences.u_org','competences.u_balance','competences.u_assess','competences.u_theory','competences.u_pract']). domain_attributes('appreciating_culture',['competences.c_lit','competences.c_app_mus','competences.c_plays','competences.c_musgall']). domain_attributes('performing_producing_culture',['competences.c_creatlit','competences.c_perf_mus','competences.c_perf_plays','competences.c_perf_art']). domain_attributes('physical_activities_sports',['competences.c_watch_sp','competences.c_ind_sp','competences.c_team_sp']). domain_attributes('things_to_do_about_town',['competences.c_eating','competences.c_locfac']). domain_attributes('random_thoughts',[]). domain_attributes('sensitive_issues',[]). domain_attributes(_,[]). "
+			"ontology": ":- dynamic domain_attributes/2.  domain_attributes('basic_needs',['competences.c_food','competences.c_accom']). domain_attributes('campus_life',['materials.study_year']). domain_attributes('academic_skills',['competences.u_active','competences.u_read','competences.u_essay','competences.u_org','competences.u_balance','competences.u_assess','competences.u_theory','competences.u_pract']). domain_attributes('appreciating_culture',['competences.c_lit','competences.c_app_mus','competences.c_plays','competences.c_musgall']). domain_attributes('producing_culture',['competences.c_creatlit','competences.c_perf_mus','competences.c_perf_plays','competences.c_perf_art']). domain_attributes('physical_activity',['competences.c_watch_sp','competences.c_ind_sp','competences.c_team_sp']). domain_attributes('leisure_activities',['competences.c_eating','competences.c_locfac']). domain_attributes('random_thoughts',[]). domain_attributes('sensitive',[]). domain_attributes(_,[]). "
 		},
 		{
 			"description": "Order the users by different domain",
@@ -473,8 +493,8 @@
 			"ontology": ":- dynamic are_all_dimensions_indifferent/0. are_all_dimensions_indifferent() :- get_task_attribute_value('indifferent','domainInterest'),get_task_attribute_value('indifferent','beliefsAndValues'),get_task_attribute_value('indifferent','socialCloseness')."
 		},
 		{
-			"description": "Calculate match value for ‘basic needs’, ‘appreciating culture’, ‘performing/producing culture’, ‘physical activities/sports’, or ‘things to do about town’ domains",
-			"whenever": "is_received_event('aggregateUsersByDiversity',_) and not(are_all_dimensions_indifferent()) and get_task_attribute_value(Domain,'domain') and member(Domain,['basic_needs', 'appreciating_culture', 'performing_producing_culture', 'physical_activities_sports', 'things_to_do_about_town'])",
+			"description": "Calculate match value for ‘basic needs’, ‘appreciating culture’, ‘producing/culture’, ‘physical activity’, or ‘leisure activities’ domains",
+			"whenever": "is_received_event('aggregateUsersByDiversity',_) and not(are_all_dimensions_indifferent()) and get_task_attribute_value(Domain,'domain') and member(Domain,['basic_needs', 'appreciating_culture', 'producing_culture', 'physical_activity', 'leisure_activities'])",
 			"thenceforth": "calculate_match_degree_for_basic_needs_and_other_domains(MatchUsers) and put_task_state_attribute('matchUsers',MatchUsers)",
 			"ontology": ":- dynamic calculate_match_degree_for_basic_needs_and_other_domains/1,  calculate_match_degree_for_basic_needs_and_other_domains_/5,  calculate_user_match_degree_for_basic_needs_and_other_domains/5.  calculate_match_degree_for_basic_needs_and_other_domains(ReverseSortedMatchUsers) :-  get_task_state_attribute(Users,'appUsers'),  get_task_state_attribute(SocialClosenessUsers,'socialClosenessUsers'),  get_task_state_attribute(BeliefsAndValuesUsers,'beliefsAndValuesUsers'),  get_task_state_attribute(DomainInterestUsers,'domainInterestUsers'),  calculate_match_degree_for_basic_needs_and_other_domains_(MatchUsers,Users,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers),  wenet_sort_user_values_by_value(SortedMatchUsers,MatchUsers),  reverse(ReverseSortedMatchUsers,SortedMatchUsers)  .  calculate_match_degree_for_basic_needs_and_other_domains_([],[],_,_,_). calculate_match_degree_for_basic_needs_and_other_domains_([MatchUser|MatchUsers],[UserId|UserIds],SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers) :-  calculate_user_match_degree_for_basic_needs_and_other_domains(Value,UserId,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers),  wenet_new_user_value(MatchUser,UserId,Value),  calculate_match_degree_for_basic_needs_and_other_domains_(MatchUsers,UserIds,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers)  .  calculate_user_match_degree_for_basic_needs_and_other_domains(Value,UserId,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers) :-  wenet_value_of_user_id_from_user_values(DomainInterest,UserId,DomainInterestUsers,@(null)),  wenet_value_of_user_id_from_user_values(BeliefsAndValues,UserId,BeliefsAndValuesUsers,@(null)),  wenet_value_of_user_id_from_user_values(SocialCloseness,UserId,SocialClosenessUsers,@(null)),  ( number(DomainInterest) -> X = 1; X = 0 ),  ( number(BeliefsAndValues) -> Y = 1; Y = 0 ),  ( number(SocialCloseness) -> Z = 1; Z = 0 ),  ( number(DomainInterest) -> MdX = DomainInterest; MdX = 0 ),  ( number(BeliefsAndValues) -> MdV = BeliefsAndValues; MdV = 0 ),  ( number(SocialCloseness) -> MdSC = SocialCloseness; MdSC = 0 ),  ( (X = 0 , Y = 0, Z = 0) -> Value = 0 ; Value is (3*X*MdX + Y*MdV + Z*MdSC)/(3*X + Y + Z) )."
 		},
@@ -491,10 +511,10 @@
 			"ontology": ":- dynamic calculate_match_degree_for_academic_skills_domain/1,  calculate_match_degree_for_academic_skills_domain_/5,  calculate_user_match_degree_for_academic_skills_domain/5.  calculate_match_degree_for_academic_skills_domain(ReverseSortedMatchUsers) :-  get_task_state_attribute(Users,'appUsers'),  get_task_state_attribute(SocialClosenessUsers,'socialClosenessUsers'),  get_task_state_attribute(BeliefsAndValuesUsers,'beliefsAndValuesUsers'),  get_task_state_attribute(DomainInterestUsers,'domainInterestUsers'),  calculate_match_degree_for_academic_skills_domain_(MatchUsers,Users,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers),  wenet_sort_user_values_by_value(SortedMatchUsers,MatchUsers),  reverse(ReverseSortedMatchUsers,SortedMatchUsers)  .  calculate_match_degree_for_academic_skills_domain_([],[],_,_,_). calculate_match_degree_for_academic_skills_domain_([MatchUser|MatchUsers],[UserId|UserIds],SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers) :-  calculate_user_match_degree_for_academic_skills_domain(Value,UserId,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers),  wenet_new_user_value(MatchUser,UserId,Value),  calculate_match_degree_for_academic_skills_domain_(MatchUsers,UserIds,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers)  .  calculate_user_match_degree_for_academic_skills_domain(Value,UserId,SocialClosenessUsers,DomainInterestUsers,BeliefsAndValuesUsers) :-  wenet_value_of_user_id_from_user_values(DomainInterest,UserId,DomainInterestUsers,@(null)),  wenet_value_of_user_id_from_user_values(BeliefsAndValues,UserId,BeliefsAndValuesUsers,@(null)),  wenet_value_of_user_id_from_user_values(SocialCloseness,UserId,SocialClosenessUsers,@(null)),  ( number(DomainInterest) -> X = 1; X = 0 ),  ( number(BeliefsAndValues) -> Y = 1; Y = 0 ),  ( number(SocialCloseness) -> Z = 1; Z = 0 ),  ( number(DomainInterest) -> MdX = DomainInterest; MdX = 0 ),  ( number(BeliefsAndValues) -> MdV = BeliefsAndValues; MdV = 0 ),  ( number(SocialCloseness) -> MdSC = SocialCloseness; MdSC = 0 ),  ( (X = 0 , Y = 0, Z = 0) -> Value = 0 ; Value is (8*X*MdX + Y*MdV + Z*MdSC)/(8*X + Y + Z) )  ."
 		},
 		{
-			"description": "Calculate match value for ‘random thoughts’ or ‘sensitive issues’ domains",
-			"whenever": "is_received_event('aggregateUsersByDiversity',_) and not(are_all_dimensions_indifferent()) and get_task_attribute_value(Domain,'domain') and member(Domain,['random_thoughts','sensitive_issues'])",
-			"thenceforth": "calculate_match_degree_for_random_thougs_or_sensitive_issues_domains(MatchUsers) and put_task_state_attribute('matchUsers',MatchUsers)",
-			"ontology": ":- dynamic calculate_match_degree_for_random_thougs_or_sensitive_issues_domains/1,  calculate_match_degree_for_random_thougs_or_sensitive_issues_domains_/4,  calculate_user_match_degree_for_random_thougs_or_sensitive_issues_domains/4.  calculate_match_degree_for_random_thougs_or_sensitive_issues_domains(ReverseSortedMatchUsers) :-  get_task_state_attribute(Users,'appUsers'),  get_task_state_attribute(SocialClosenessUsers,'socialClosenessUsers'),  get_task_state_attribute(BeliefsAndValuesUsers,'beliefsAndValuesUsers'),  calculate_match_degree_for_random_thougs_or_sensitive_issues_domains_(MatchUsers,Users,SocialClosenessUsers,BeliefsAndValuesUsers),  wenet_sort_user_values_by_value(SortedMatchUsers,MatchUsers),  reverse(ReverseSortedMatchUsers,SortedMatchUsers)  .  calculate_match_degree_for_random_thougs_or_sensitive_issues_domains_([],[],_,_). calculate_match_degree_for_random_thougs_or_sensitive_issues_domains_([MatchUser|MatchUsers],[UserId|UserIds],SocialClosenessUsers,BeliefsAndValuesUsers) :-  calculate_user_match_degree_for_random_thougs_or_sensitive_issues_domains(Value,UserId,SocialClosenessUsers,BeliefsAndValuesUsers),  wenet_new_user_value(MatchUser,UserId,Value),  calculate_match_degree_for_random_thougs_or_sensitive_issues_domains_(MatchUsers,UserIds,SocialClosenessUsers,BeliefsAndValuesUsers)  .  calculate_user_match_degree_for_random_thougs_or_sensitive_issues_domains(Value,UserId,SocialClosenessUsers,BeliefsAndValuesUsers) :-  wenet_value_of_user_id_from_user_values(BeliefsAndValues,UserId,BeliefsAndValuesUsers,@(null)),  wenet_value_of_user_id_from_user_values(SocialCloseness,UserId,SocialClosenessUsers,@(null)),  ( number(BeliefsAndValues) -> Y = 1; Y = 0 ),  ( number(SocialCloseness) -> Z = 1; Z = 0 ),  ( number(BeliefsAndValues) -> MdV = BeliefsAndValues; MdV = 0 ),  ( number(SocialCloseness) -> MdSC = SocialCloseness; MdSC = 0 ),  ( ( Y = 0, Z = 0) -> Value = 0 ; Value is ( Y*MdV + Z*MdSC)/(Y + Z) )  . "
+			"description": "Calculate match value for ‘random thoughts’ or ‘sensitive’ domains",
+			"whenever": "is_received_event('aggregateUsersByDiversity',_) and not(are_all_dimensions_indifferent()) and get_task_attribute_value(Domain,'domain') and member(Domain,['random_thoughts','sensitive'])",
+			"thenceforth": "calculate_match_degree_for_random_thougs_or_sensitive_domains(MatchUsers) and put_task_state_attribute('matchUsers',MatchUsers)",
+			"ontology": ":- dynamic calculate_match_degree_for_random_thougs_or_sensitive_domains/1,  calculate_match_degree_for_random_thougs_or_sensitive_domains_/4,  calculate_user_match_degree_for_random_thougs_or_sensitive_domains/4.  calculate_match_degree_for_random_thougs_or_sensitive_domains(ReverseSortedMatchUsers) :-  get_task_state_attribute(Users,'appUsers'),  get_task_state_attribute(SocialClosenessUsers,'socialClosenessUsers'),  get_task_state_attribute(BeliefsAndValuesUsers,'beliefsAndValuesUsers'),  calculate_match_degree_for_random_thougs_or_sensitive_domains_(MatchUsers,Users,SocialClosenessUsers,BeliefsAndValuesUsers),  wenet_sort_user_values_by_value(SortedMatchUsers,MatchUsers),  reverse(ReverseSortedMatchUsers,SortedMatchUsers)  .  calculate_match_degree_for_random_thougs_or_sensitive_domains_([],[],_,_). calculate_match_degree_for_random_thougs_or_sensitive_domains_([MatchUser|MatchUsers],[UserId|UserIds],SocialClosenessUsers,BeliefsAndValuesUsers) :-  calculate_user_match_degree_for_random_thougs_or_sensitive_domains(Value,UserId,SocialClosenessUsers,BeliefsAndValuesUsers),  wenet_new_user_value(MatchUser,UserId,Value),  calculate_match_degree_for_random_thougs_or_sensitive_domains_(MatchUsers,UserIds,SocialClosenessUsers,BeliefsAndValuesUsers)  .  calculate_user_match_degree_for_random_thougs_or_sensitive_domains(Value,UserId,SocialClosenessUsers,BeliefsAndValuesUsers) :-  wenet_value_of_user_id_from_user_values(BeliefsAndValues,UserId,BeliefsAndValuesUsers,@(null)),  wenet_value_of_user_id_from_user_values(SocialCloseness,UserId,SocialClosenessUsers,@(null)),  ( number(BeliefsAndValues) -> Y = 1; Y = 0 ),  ( number(SocialCloseness) -> Z = 1; Z = 0 ),  ( number(BeliefsAndValues) -> MdV = BeliefsAndValues; MdV = 0 ),  ( number(SocialCloseness) -> MdSC = SocialCloseness; MdSC = 0 ),  ( ( Y = 0, Z = 0) -> Value = 0 ; Value is ( Y*MdV + Z*MdSC)/(Y + Z) )  . "
 		},
 		{
 			"description": "After caluclated the matching go to rank them",
@@ -514,8 +534,13 @@
 		},
 		{
 			"description": "Notify user if it can help with a question",
-			"whenever": "is_received(_,'notifyNewQuestionAndAnswer',_) and get_task_id(TaskId) and get_task_goal_name(Question) and get_task_requester_id(RequesterId) and get_task_attribute_value(Sensitive,'sensitive') and get_task_attribute_value(Anonymous,'anonymous') and get_task_attribute_value(PositionOfAnswerer,'positionOfAnswerer')",
-			"thenceforth": "send_user_message('QuestionToAnswerMessage',json([taskId=TaskId,question=Question,userId=RequesterId,sensitive=Sensitive,anonymous=Anonymous,positionOfAnswerer=PositionOfAnswerer]))"
+			"whenever": "is_received(_,'notifyNewQuestionAndAnswer',_) and get_task_id(TaskId) and get_task_goal_name(Question) and get_task_requester_id(RequesterId) and get_task_attribute_value(Domain,'domain') and get_task_attribute_value(Anonymous,'anonymous') and get_task_attribute_value(PositionOfAnswerer,'positionOfAnswerer')",
+			"thenceforth": "send_user_message('QuestionToAnswerMessage',json([taskId=TaskId,question=Question,userId=RequesterId,domain=Domain,anonymous=Anonymous,positionOfAnswerer=PositionOfAnswerer]))"
+		},
+		{
+			"description": "Nothing to do with this transaction only store it",
+			"whenever": "is_received_do_transaction('answerTransactionLong',_) and not(is_task_closed())",
+			"thenceforth": "add_message_transaction()"
 		},
 		{
 			"description": "Provide an answer to a question",
@@ -527,6 +552,16 @@
 			"whenever": "is_received(SenderId,'notifyAnswerTransaction',Attributes) and get_task_attribute_value(ExpirationDate,'expirationDate') and is_now_less_than(ExpirationDate) and get_task_attribute_value(MaxAnswers,'maxAnswers') and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and length(AnswersTransactionIds,AnswersCount) and <(AnswersCount,MaxAnswers) and get_attribute(Answer,answer,Attributes) and get_attribute(Anonymous,anonymous,Attributes) and get_task_goal_name(Question) and get_task_id(TaskId) and get_transaction_id(TransactionId) and get_transaction_id(TransactionId)  and get_task_state_attribute(SocialClosenessUsers,'socialClosenessUsers') and get_task_state_attribute(BeliefsAndValuesUsers,'beliefsAndValuesUsers') and get_task_state_attribute(DomainInterestUsers,'domainInterestUsers')",
 			"thenceforth": "send_user_message('AnsweredQuestionMessage',json([taskId=TaskId,question=Question,transactionId=TransactionId,answer=Answer,userId=SenderId,anonymous=Anonymous])) and wenet_add(NewAnswersTransactionIds,TransactionId,AnswersTransactionIds) and put_task_state_attribute('answersTransactionIds',NewAnswersTransactionIds) and send_event(_,1,'checkMaxAnswers',json([]))  and explanation(ExplanationTitle,ExplanationText,SenderId,SocialClosenessUsers,BeliefsAndValuesUsers,DomainInterestUsers) and send_user_message('TextualMessage',json([title=ExplanationTitle,text=ExplanationText]))",
 			"ontology": ":- dynamic explanation/6,  explanation/7,  explanation_title/2,  explanation_text/3.  explanation(ExplanationTitle,ExplanationText,UserId,SocialClosenessUsers,BeliefsAndValuesUsers,DomainInterestUsers) :-  get_profile_language(Lang),  explanation(ExplanationTitle,ExplanationText,UserId,SocialClosenessUsers,BeliefsAndValuesUsers,DomainInterestUsers,Lang).  explanation(ExplanationTitle,ExplanationText,UserId,SocialClosenessUsers,BeliefsAndValuesUsers,DomainInterestUsers,Lang) :-  explanation_title(ExplanationTitle,Lang),  ( are_all_dimensions_indifferent()   -> Type = type1 ;   (    wenet_value_of_user_id_from_user_values(SocialCloseness,UserId,SocialClosenessUsers,@(null)),     wenet_value_of_user_id_from_user_values(BeliefsAndValue,UserId,BeliefsAndValuesUsers,@(null)),     wenet_value_of_user_id_from_user_values(DomainInterest,UserId,DomainInterestUsers,@(null)),     ( (number(SocialCloseness);number(BeliefsAndValue);number(DomainInterest)) -> Type = type2 ; Type = type3)    )  ),  explanation_text(ExplanationText,Type,Lang).  explanation_title('Why is this user chosen?',_). explanation_text('Recall that no requirements were set w.r.t domains, values and social closeness. Nevertheless, we tried to increase the gender diversity of selected users.',type1,_). explanation_text('This user fits the requirements to a certain extent. While choosing whom to ask, we also tried to increase the gender diversity of selected users.',type2,_). explanation_text('Not enough members in the community fit the requirements. We had to relax the requirements in order to find some answers, which is how this user was chosen. While choosing whom to ask, we also tried to increase the gender diversity of selected users.',type3,_)."
+		},
+		{
+			"description": "Send expiration message if received max answers",
+			"whenever": "is_received(_,'checkMaxAnswers',_) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and length(AnswersTransactionIds,AnswersCount) and get_task_attribute_value(MaxAnswers,'maxAnswers') and =<(MaxAnswers,AnswersCount)",
+			"thenceforth": "send_event(_,1,'notifyQuestionExpirationMessage',json([]))"
+		},
+		{
+			"description": "Notify user of the expiration message",
+			"whenever": "is_received_event('notifyQuestionExpirationMessage',_) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and get_task_id(TaskId) and get_task_goal_name(Question)",
+			"thenceforth": "send_user_message('QuestionExpirationMessage',json([taskId=TaskId,question=Question,listOfTransactionIds=AnswersTransactionIds])) and cancel_expiration_event()"
 		},
 		{
 			"description": "Nothing to do with this transaction only store it",
@@ -556,18 +591,23 @@
 		},
 		{
 			"description": "Nothing to do with this transaction only store it",
+			"whenever": "is_received_do_transaction('closeQuestionTransaction',_) and get_profile_id(Me) and get_task_requester_id(Me) and not(is_task_closed())",
+			"thenceforth": "add_message_transaction() and close_task()"
+		},
+		{
+			"description": "Nothing to do with this transaction only store it",
 			"whenever": "is_received_do_transaction('reportAnswerTransaction',_) and get_profile_id(Me) and get_task_requester_id(Me) and not(is_task_closed())",
 			"thenceforth": "add_message_transaction()"
 		},
 		{
-			"description": "Send expiration message if received max answers",
-			"whenever": "is_received(_,'checkMaxAnswers',_) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and length(AnswersTransactionIds,AnswersCount) and get_task_attribute_value(MaxAnswers,'maxAnswers') and =<(MaxAnswers,AnswersCount)",
-			"thenceforth": "send_event(_,1,'notifyQuestionExpirationMessage',json([]))"
+			"description": "Nothing to do with this transaction only store it",
+			"whenever": "is_received_do_transaction('likeAnswerTransaction',Attributes) and get_profile_id(Me) and get_task_requester_id(Me) and not(is_task_closed()) and get_attribute(TransactionId,transactionId,Attributes) and get_transaction(_,TransactionId)",
+			"thenceforth": "add_message_transaction()"
 		},
 		{
-			"description": "Notify user of the expiration message",
-			"whenever": "is_received_event('notifyQuestionExpirationMessage',_) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and get_task_id(TaskId) and get_task_goal_name(Question)",
-			"thenceforth": "send_user_message('QuestionExpirationMessage',json([taskId=TaskId,question=Question,listOfTransactionIds=AnswersTransactionIds])) and cancel_expiration_event()"
+			"description": "Nothing to do with this transaction only store it",
+			"whenever": "is_received_do_transaction('followUpTransaction',Attributes) and get_profile_id(Me) and not(get_task_requester_id(Me) and not(is_task_closed()) and get_attribute(TransactionId,transactionId,Attributes) and get_transaction(_,TransactionId)",
+			"thenceforth": "add_message_transaction()"
 		}
 	]
 }

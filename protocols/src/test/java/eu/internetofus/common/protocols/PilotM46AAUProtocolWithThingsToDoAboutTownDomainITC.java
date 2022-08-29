@@ -32,7 +32,7 @@ public class PilotM46AAUProtocolWithThingsToDoAboutTownDomainITC extends Abstrac
   @Override
   protected String domain() {
 
-    return Domain.THINGS_TO_DO_ABOUT_TOWN.toTaskTypeDomain();
+    return Domain.LEISURE_ACTIVITIES.toTaskTypeDomain();
   }
 
   /**

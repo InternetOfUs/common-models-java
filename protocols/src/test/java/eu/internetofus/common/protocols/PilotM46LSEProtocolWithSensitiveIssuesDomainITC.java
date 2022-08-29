@@ -34,7 +34,7 @@ public class PilotM46LSEProtocolWithSensitiveIssuesDomainITC
   @Override
   protected String domain() {
 
-    return Domain.SENSITIVE_ISSUES.toTaskTypeDomain();
+    return Domain.SENSITIVE.toTaskTypeDomain();
   }
 
   /**

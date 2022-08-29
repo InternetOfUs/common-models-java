@@ -152,7 +152,7 @@ public abstract class AbstractPilotM46AAUProtocolITC extends AbstractPilotM46Wit
   @Override
   public Double domainInterestTo(final int index) {
 
-    if (Domain.SENSITIVE_ISSUES.toTaskTypeDomain().equals(this.domain())) {
+    if (Domain.SENSITIVE.toTaskTypeDomain().equals(this.domain())) {
 
       return null;
 
@@ -160,7 +160,7 @@ public abstract class AbstractPilotM46AAUProtocolITC extends AbstractPilotM46Wit
 
       return this.simMaterials(index);
 
-    } else if (Domain.THINGS_TO_DO_ABOUT_TOWN.toTaskTypeDomain().equals(this.domain())) {
+    } else if (Domain.LEISURE_ACTIVITIES.toTaskTypeDomain().equals(this.domain())) {
 
       final var simMat = this.simMaterials(index);
       final var simDiv = super.domainInterestTo(index);

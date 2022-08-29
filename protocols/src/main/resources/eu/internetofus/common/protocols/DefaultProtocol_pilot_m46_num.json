@@ -15,16 +15,22 @@
 				"type": "string",
 				"nullable": false,
 				"enum": [
-					"basic_needs",
-					"campus_life",
 					"academic_skills",
+					"basic_needs",
+					"physical_activity",
 					"appreciating_culture",
-					"performing_producing_culture",
-					"physical_activities_sports",
-					"things_to_do_about_town",
 					"random_thoughts",
-					"sensitive_issues"
+					"producing_culture",
+					"leisure_activities",
+					"campus_life",
+					"sensitive"
 				]
+			},
+			"anonymous": {
+				"description": "Whether to ask the question anonymously or not, if anonymous is chosen then the name of the user will not be shown",
+				"type": "boolean",
+				"default": "false",
+				"nullable": false
 			},
 			"domainInterest": {
 				"description": "The kind of interest in the domain the user should have to receive the question",
@@ -45,18 +51,6 @@
 					"indifferent",
 					"different"
 				]
-			},
-			"sensitive": {
-				"description": "Whether the question is sensitive or not, if it is sensitive the bot will let other people know to take extra care in answering the question",
-				"type": "boolean",
-				"default": "false",
-				"nullable": false
-			},
-			"anonymous": {
-				"description": "Whether to ask the question anonymously or not, if anonymous is chosen then the name of the user will not be shown",
-				"type": "boolean",
-				"default": "false",
-				"nullable": false
 			},
 			"socialCloseness": {
 				"description": "The kind of social closeness the user should have to receive the question",
@@ -99,10 +93,9 @@
 		},
 		"required": [
 			"domain",
+			"anonymous",
 			"domainInterest",
 			"beliefsAndValues",
-			"sensitive",
-			"anonymous",
 			"socialCloseness",
 			"positionOfAnswerer",
 			"maxUsers",
@@ -129,11 +122,23 @@
 					"type": "boolean",
 					"default": "false",
 					"nullable": false
+				},
+				"publish": {
+					"description": "Whether to publish the answer or not",
+					"type": "boolean",
+					"nullable": false
+				},
+				"publishAnonymously": {
+					"description": "Whether to publish the answer anonymously or not, if anonymous is chosen then the name of the user will not be shown",
+					"type": "boolean",
+					"nullable": false
 				}
 			},
 			"required": [
 				"answer",
-				"anonymous"
+				"anonymous",
+				"publish",
+				"publishAnonymously"
 			]
 		},
 		"notAnswerTransaction": {
@@ -179,26 +184,14 @@
 						"creative",
 						"honest",
 						"kind",
-						"personal"
-					]
-				},
-				"helpful": {
-					"description": "How well the bot is good in connecting with users following intentions",
-					"type": "string",
-					"nullable": false,
-					"enum": [
-						"notAtAllHelpful",
-						"slightlyHelpful",
-						"somewhatHelpful",
-						"veryHelpful",
-						"extremelyHelpful"
+						"personal",
+						"responder"
 					]
 				}
 			},
 			"required": [
 				"transactionId",
-				"reason",
-				"helpful"
+				"reason"
 			]
 		},
 		"moreAnswerTransaction": {
@@ -214,6 +207,11 @@
 			"required": [
 				"expirationDate"
 			]
+		},
+		"closeQuestionTransaction": {
+			"title": "Close the question",
+			"type": "object",
+			"nullable": true
 		},
 		"reportAnswerTransaction": {
 			"title": "Report an answer",
@@ -252,6 +250,20 @@
 			"required": [
 				"transactionId"
 			]
+		},
+		"followUpTransaction": {
+			"title": "Follow up after an answer",
+			"type": "object",
+			"properties": {
+				"transactionId": {
+					"description": "The id of the answer transaction from which started a follow up",
+					"type": "string",
+					"nullable": false
+				}
+			},
+			"required": [
+				"transactionId"
+			]
 		}
 	},
 	"callbacks": {
@@ -274,16 +286,25 @@
 					"type": "string",
 					"nullable": false
 				},
-				"sensitive": {
-					"description": "Whether the question is sensitive or not, if it is sensitive the bot will let other people know to take extra care in answering the question",
-					"type": "boolean",
-					"default": "false",
-					"nullable": false
+				"domain": {
+					"description": "The chosen domain of the question",
+					"type": "string",
+					"nullable": false,
+					"enum": [
+						"academic_skills",
+						"basic_needs",
+						"physical_activity",
+						"appreciating_culture",
+						"random_thoughts",
+						"producing_culture",
+						"leisure_activities",
+						"campus_life",
+						"sensitive"
+					]
 				},
 				"anonymous": {
 					"description": "Whether to ask the question anonymously or not, if anonymous is chosen then the name of the user will not be shown",
 					"type": "boolean",
-					"default": "false",
 					"nullable": false
 				},
 				"positionOfAnswerer": {
@@ -300,7 +321,7 @@
 				"taskId",
 				"question",
 				"userId",
-				"sensitive",
+				"domain",
 				"anonymous",
 				"positionOfAnswerer"
 			]
@@ -402,7 +423,6 @@
 			"required": [
 				"taskId",
 				"question",
-				"userId",
 				"listOfTransactionIds"
 			]
 		}
@@ -433,7 +453,7 @@
 			"description": "Calculate domain dimension if it is similar for the rest of domains",
 			"whenever": "is_received_event('sortUsersByDiversity',_) and not(get_task_attribute_value('sensitive_issue','domain')) and not(get_task_attribute_value('academic_skills','domain')) and get_task_attribute_value('similar','domainInterest') and get_task_state_attribute(Users,'appUsers') and get_task_attribute_value(Domain,'domain') and domain_attributes(Domain,Attributes)",
 			"thenceforth": "normalized_diversity(Diversity,Users,Attributes,@(null),false) and wenet_negate_user_value(DomainInterestUsers,Diversity) and put_task_state_attribute('domainInterestUsers',DomainInterestUsers)",
-			"ontology": ":- dynamic domain_attributes/2. domain_attributes('basic_needs',['competences.c_food','competences.c_accom']). domain_attributes('campus_life',['materials.degree_programme']). domain_attributes('academic_skills',['competences.course_fa','competences.course_plc','competences.course_oop']). domain_attributes('appreciating_culture',['competences.c_lit','competences.c_app_mus','competences.c_plays','competences.c_musgall']). domain_attributes('performing_producing_culture',['competences.c_creatlit','competences.c_perf_mus','competences.c_perf_plays','competences.c_perf_art']). domain_attributes('physical_activities_sports',['competences.c_watch_sp','competences.c_ind_sp','competences.c_team_sp']). domain_attributes('things_to_do_about_town',['competences.c_eating','competences.c_locfac','materials.degree_programme']). domain_attributes('random_thoughts',['competences.c_food','competences.c_eating','competences.c_lit','competences.c_createlit','competences.c_app_mus','competences.c_perf_mus','competences.c_plays','competences.c_perf_plays','competences.c_musgall','competences.c_perf_art','competences.c_watch_sp','competences.c_ind_sp','competences.c_team_sp','competences.c_accom','competences.c_locfac','competences.u_active','competences.u_read','competences.u_essay','competences.u_org','competences.u_balance','competences.u_assess','competences.u_theory','competences.u_pract']). domain_attributes('sensitive_issues',[]). domain_attributes(_,[])."
+			"ontology": ":- dynamic domain_attributes/2. domain_attributes('basic_needs',['competences.c_food','competences.c_accom']). domain_attributes('campus_life',['materials.degree_programme']). domain_attributes('academic_skills',['competences.course_fa','competences.course_plc','competences.course_oop']). domain_attributes('appreciating_culture',['competences.c_lit','competences.c_app_mus','competences.c_plays','competences.c_musgall']). domain_attributes('producing_culture',['competences.c_creatlit','competences.c_perf_mus','competences.c_perf_plays','competences.c_perf_art']). domain_attributes('physical_activity',['competences.c_watch_sp','competences.c_ind_sp','competences.c_team_sp']). domain_attributes('leisure_activities',['competences.c_eating','competences.c_locfac','materials.degree_programme']). domain_attributes('random_thoughts',['competences.c_food','competences.c_eating','competences.c_lit','competences.c_createlit','competences.c_app_mus','competences.c_perf_mus','competences.c_plays','competences.c_perf_plays','competences.c_musgall','competences.c_perf_art','competences.c_watch_sp','competences.c_ind_sp','competences.c_team_sp','competences.c_accom','competences.c_locfac','competences.u_active','competences.u_read','competences.u_essay','competences.u_org','competences.u_balance','competences.u_assess','competences.u_theory','competences.u_pract']). domain_attributes('sensitive',[]). domain_attributes(_,[])."
 		},
 		{
 			"description": "Calculate domain dimension if it is different and the domain is 'academic skills'",
@@ -533,8 +553,13 @@
 		},
 		{
 			"description": "Notify user if it can help with a question",
-			"whenever": "is_received(_,'notifyNewQuestionAndAnswer',_) and get_task_id(TaskId) and get_task_goal_name(Question) and get_task_requester_id(RequesterId) and get_task_attribute_value(Sensitive,'sensitive') and get_task_attribute_value(Anonymous,'anonymous') and get_task_attribute_value(PositionOfAnswerer,'positionOfAnswerer')",
-			"thenceforth": "send_user_message('QuestionToAnswerMessage',json([taskId=TaskId,question=Question,userId=RequesterId,sensitive=Sensitive,anonymous=Anonymous,positionOfAnswerer=PositionOfAnswerer]))"
+			"whenever": "is_received(_,'notifyNewQuestionAndAnswer',_) and get_task_id(TaskId) and get_task_goal_name(Question) and get_task_requester_id(RequesterId) and get_task_attribute_value(Domain,'domain') and get_task_attribute_value(Anonymous,'anonymous') and get_task_attribute_value(PositionOfAnswerer,'positionOfAnswerer')",
+			"thenceforth": "send_user_message('QuestionToAnswerMessage',json([taskId=TaskId,question=Question,userId=RequesterId,domain=Domain,anonymous=Anonymous,positionOfAnswerer=PositionOfAnswerer]))"
+		},
+		{
+			"description": "Nothing to do with this transaction only store it",
+			"whenever": "is_received_do_transaction('answerTransactionLong',_) and not(is_task_closed())",
+			"thenceforth": "add_message_transaction()"
 		},
 		{
 			"description": "Provide an answer to a question",
@@ -546,6 +571,16 @@
 			"whenever": "is_received(SenderId,'notifyAnswerTransaction',Attributes) and get_task_attribute_value(ExpirationDate,'expirationDate') and is_now_less_than(ExpirationDate) and get_task_attribute_value(MaxAnswers,'maxAnswers') and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and length(AnswersTransactionIds,AnswersCount) and <(AnswersCount,MaxAnswers) and get_attribute(Answer,answer,Attributes) and get_attribute(Anonymous,anonymous,Attributes) and get_task_goal_name(Question) and get_task_id(TaskId) and get_transaction_id(TransactionId) and get_task_state_attribute(GroupsUsers,'groupsUsers')",
 			"thenceforth": "send_user_message('AnsweredQuestionMessage',json([taskId=TaskId,question=Question,transactionId=TransactionId,answer=Answer,userId=SenderId,anonymous=Anonymous])) and wenet_add(NewAnswersTransactionIds,TransactionId,AnswersTransactionIds) and put_task_state_attribute('answersTransactionIds',NewAnswersTransactionIds) and send_event(_,1,'checkMaxAnswers',json([])) and explanation(ExplanationTitle,ExplanationText,SenderId,GroupsUsers) and send_user_message('TextualMessage',json([title=ExplanationTitle,text=ExplanationText]))",
 			"ontology": ":- dynamic explanation/4,  explanation/5,  explanation_title/2,  explanation_text/3. explanation(ExplanationTitle,ExplanationText,UserId,GroupsUsers) :-  get_profile_language(Lang),  explanation(ExplanationTitle,ExplanationText,UserId,GroupsUsers,Lang). explanation(ExplanationTitle,ExplanationText,UserId,GroupsUsers,Lang) :-  explanation_title(ExplanationTitle,Lang),  (   ( wenet_json_element_with(json(Group),GroupsUsers,userId=UserId,json([explanationType=group_0])), member(explanationType=Type,Group))   -> true   ; Type = group_0  ),  explanation_text(ExplanationText,Type,Lang).  explanation_title('Why is this user chosen?',_). explanation_text('Recall that there were no requirements set w.r.t domains, values, social or physical closeness. Nevertheless, we tried to increase the gender diversity of selected users.',group_0,_). explanation_text('This user fulfils all requirements. While searching for users, we tried to increase the gender diversity of selected users.',group_1,_). explanation_text('Not enough members fulfil the requirements. To find some answers, we had to choose some that don\\'t fulfil any, like this user. While doing so, we also tried to increase the gender diversity of selected users.',group_12,_). explanation_text('This user fulfils the physical closeness, social closeness, and academic skills requirements, but not all of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_2_3_4_a,_). explanation_text('This user fulfils the physical and social closeness requirements, but not all of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_2_3_4_b,_). explanation_text('This user fulfils the academic skills and physical closeness requirements, but not all of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_2_3_4_c,_). explanation_text('This user fulfils the academic skills and social closeness requirements, but not all of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_2_3_4_d,_). explanation_text('This user fulfils the academic skills requirements, but not all of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_2_3_4_e,_). explanation_text('This user fulfils the social closeness requirements, but not all of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_2_3_4_f,_). explanation_text('This user fulfils the physical closeness requirements, but not all of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_2_3_4_g,_). explanation_text('This user does not fulfil neither the physical closeness, social closeness, and academic skills requirements, nor some of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_9_10_11_a,_). explanation_text('This user does not fulfil neither the physical and social closeness requirements, nor some of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_9_10_11_b,_). explanation_text('This user does not fulfil neither the academic skills and physical closeness requirements, nor some of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_9_10_11_c,_). explanation_text('This user does not fulfil neither the academic skills and social closeness requirements, nor some of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_9_10_11_d,_). explanation_text('This user does not fulfil neither the academic skills requirements, nor some of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_9_10_11_e,_). explanation_text('This user does not fulfil neither the social closeness requirements, nor some of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_9_10_11_f,_). explanation_text('This user does not fulfil neither the physical closeness requirements, nor some of the other requirements. To find some answers, we had to relax some of the other requirements. We also tried to increase the gender diversity of selected users.',group_9_10_11_g,_). explanation_text('This user does not fulfil the physical and social closeness requirements. To find some answers, we had to relax these requirements. We also tried to increase the gender diversity of selected users.',group_5_a,_). explanation_text('This user does not fulfil the academic skills and physical closeness requirements. To find some answers, we had to relax these requirements. We also tried to increase the gender diversity of selected users.',group_5_b,_). explanation_text('This user does not fulfil the academic skills and social closeness requirements. To find some answers, we had to relax these requirements. We also tried to increase the gender diversity of selected users.',group_5_c,_). explanation_text('This user does not fulfil the physical closeness requirement. To find some answers, we had to relax these requirements. We also tried to increase the gender diversity of selected users.',group_5_d,_). explanation_text('This user does not fulfil the social closeness requirements. To find some answers, we had to relax these requirements. We also tried to increase the gender diversity of selected users.',group_5_e,_). explanation_text('This user does not fulfil the academic skills requirements. To find some answers, we had to relax these requirements. We also tried to increase the gender diversity of selected users.',group_5_f,_). explanation_text('This user does not fulfil neither the physical and social closeness requirements nor some of the other requirements. To find some answers, we had to relax these requirements. We also tried to increase the gender diversity of selected users.',group_6_7_8_a,_). explanation_text('This user does not fulfil neither the academic skills and physical closeness requirements nor some of the other requirements. To find some answers, we had to relax these requirements. We also tried to increase the gender diversity of selected users.',group_6_7_8_b,_). explanation_text('This user does not fulfil neither the academic skills and social closeness requirements nor some of the other requirements. To find some answers, we had to relax these requirements. We also tried to increase the gender diversity of selected users.',group_6_7_8_c,_). explanation_text('This user does not fulfil neither the physical closeness requirement nor some of the other requirements. To find some answers, we had to relax these requirements. We also tried to increase the gender diversity of selected users.',group_6_7_8_d,_). explanation_text('This user does not fulfil neither the social closeness requirements nor some of the other requirements. To find some answers, we had to relax these requirements. We also tried to increase the gender diversity of selected users.',group_6_7_8_e,_). explanation_text('This user does not fulfil neither the academic skills requirements nor some of the other requirements. To find some answers, we had to relax these requirements. We also tried to increase the gender diversity of selected users.',group_6_7_8_f,_).  "
+		},
+		{
+			"description": "Send expiration message if received max answers",
+			"whenever": "is_received(_,'checkMaxAnswers',_) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and length(AnswersTransactionIds,AnswersCount) and get_task_attribute_value(MaxAnswers,'maxAnswers') and =<(MaxAnswers,AnswersCount)",
+			"thenceforth": "send_event(_,1,'notifyQuestionExpirationMessage',json([]))"
+		},
+		{
+			"description": "Notify user of the expiration message",
+			"whenever": "is_received_event('notifyQuestionExpirationMessage',_) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and get_task_id(TaskId) and get_task_goal_name(Question)",
+			"thenceforth": "send_user_message('QuestionExpirationMessage',json([taskId=TaskId,question=Question,listOfTransactionIds=AnswersTransactionIds])) and cancel_expiration_event()"
 		},
 		{
 			"description": "Nothing to do with this transaction only store it",
@@ -575,18 +610,23 @@
 		},
 		{
 			"description": "Nothing to do with this transaction only store it",
+			"whenever": "is_received_do_transaction('closeQuestionTransaction',_) and get_profile_id(Me) and get_task_requester_id(Me) and not(is_task_closed())",
+			"thenceforth": "add_message_transaction() and close_task()"
+		},
+		{
+			"description": "Nothing to do with this transaction only store it",
 			"whenever": "is_received_do_transaction('reportAnswerTransaction',_) and get_profile_id(Me) and get_task_requester_id(Me) and not(is_task_closed())",
 			"thenceforth": "add_message_transaction()"
 		},
 		{
-			"description": "Send expiration message if received max answers",
-			"whenever": "is_received(_,'checkMaxAnswers',_) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and length(AnswersTransactionIds,AnswersCount) and get_task_attribute_value(MaxAnswers,'maxAnswers') and =<(MaxAnswers,AnswersCount)",
-			"thenceforth": "send_event(_,1,'notifyQuestionExpirationMessage',json([]))"
+			"description": "Nothing to do with this transaction only store it",
+			"whenever": "is_received_do_transaction('likeAnswerTransaction',Attributes) and get_profile_id(Me) and get_task_requester_id(Me) and not(is_task_closed()) and get_attribute(TransactionId,transactionId,Attributes) and get_transaction(_,TransactionId)",
+			"thenceforth": "add_message_transaction()"
 		},
 		{
-			"description": "Notify user of the expiration message",
-			"whenever": "is_received_event('notifyQuestionExpirationMessage',_) and get_task_state_attribute(AnswersTransactionIds,'answersTransactionIds',[]) and get_task_id(TaskId) and get_task_goal_name(Question)",
-			"thenceforth": "send_user_message('QuestionExpirationMessage',json([taskId=TaskId,question=Question,listOfTransactionIds=AnswersTransactionIds])) and cancel_expiration_event()"
+			"description": "Nothing to do with this transaction only store it",
+			"whenever": "is_received_do_transaction('followUpTransaction',Attributes) and get_profile_id(Me) and not(get_task_requester_id(Me) and not(is_task_closed()) and get_attribute(TransactionId,transactionId,Attributes) and get_transaction(_,TransactionId)",
+			"thenceforth": "add_message_transaction()"
 		}
 	]
 }

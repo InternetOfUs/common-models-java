@@ -33,7 +33,7 @@ public class PilotM46NUMProtocolWithPhysicalActivitiesSportsDomainITC
   @Override
   protected String domain() {
 
-    return Domain.PHYSICAL_ACTIVITIES_SPORTS.toTaskTypeDomain();
+    return Domain.PHYSICAL_ACTIVITY.toTaskTypeDomain();
   }
 
   /**

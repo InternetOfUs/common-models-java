@@ -33,7 +33,7 @@ public class PilotM46LSEProtocolWithPerformingProduciingCultureDomainITC
   @Override
   protected String domain() {
 
-    return Domain.PERFORMING_PRODUCING_CULTURE.toTaskTypeDomain();
+    return Domain.PRODUCING_CULTURE.toTaskTypeDomain();
   }
 
 }

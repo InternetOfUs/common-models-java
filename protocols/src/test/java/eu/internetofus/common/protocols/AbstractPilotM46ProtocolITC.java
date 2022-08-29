@@ -119,10 +119,10 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
     final var taskToCreate = super.createTaskForProtocol();
     taskToCreate.goal.name = "Where to buy the best pizza?";
-    taskToCreate.attributes = new JsonObject().put("domain", this.domain()).put("domainInterest", this.domainInterest())
-        .put("beliefsAndValues", this.beliefsAndValues()).put("positionOfAnswerer", this.positionOfAnswerer())
-        .put("socialCloseness", this.socialCloseness()).put("sensitive", this.sensitive())
-        .put("anonymous", this.anonymous()).put("maxUsers", this.maxUsers()).put("maxAnswers", this.maxAnswers())
+    taskToCreate.attributes = new JsonObject().put("domain", this.domain()).put("anonymous", this.anonymous())
+        .put("domainInterest", this.domainInterest()).put("beliefsAndValues", this.beliefsAndValues())
+        .put("socialCloseness", this.socialCloseness()).put("positionOfAnswerer", this.positionOfAnswerer())
+        .put("maxUsers", this.maxUsers()).put("maxAnswers", this.maxAnswers())
         .put("expirationDate", this.expirationDate());
     return taskToCreate;
 
@@ -148,16 +148,6 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
    * @return the beliefs and values of the task
    */
   protected abstract String beliefsAndValues();
-
-  /**
-   * Return if the question is sensitive of the task.
-   *
-   * @return {@code false} in any case.
-   */
-  protected boolean sensitive() {
-
-    return false;
-  }
 
   /**
    * Return if the question is anonymous of the task.
@@ -352,7 +342,8 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
 
       checkMessages.add(this.createMessagePredicate().and(MessagePredicates.labelIs("QuestionToAnswerMessage"))
           .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("question", source.goal.name)
-              .put("userId", source.requesterId).put("sensitive", this.sensitive()).put("anonymous", this.anonymous())))
+              .put("userId", source.requesterId).put("domain", this.domain()).put("anonymous", this.anonymous())
+              .put("positionOfAnswerer", this.positionOfAnswerer())))
           .and(MessagePredicates.attributesAre(target -> {
 
             return this.task.id.equals(target.getString("taskId"));
@@ -929,6 +920,30 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   }
 
   /**
+   * Return if the answer has to publish.
+   *
+   * @return {@code true} in any case.
+   */
+  protected boolean publish() {
+
+    return true;
+
+  }
+
+  /**
+   * Return if the question has to publish anonymously.
+   *
+   * @return {@code true} if the publish has to be anonymously.
+   *
+   * @see #anonymous()
+   */
+  protected boolean publishAnonymously() {
+
+    return this.anonymous();
+
+  }
+
+  /**
    * Check that receive an explanation when receive the answer.
    *
    * @param vertx       event bus to use.
@@ -947,13 +962,14 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
     transaction.taskId = this.task.id;
     transaction.label = "answerTransaction";
     final var answer = "Response question with ";
-    transaction.attributes = new JsonObject().put("answer", answer).put("anonymous", this.anonymous());
+    transaction.attributes = new JsonObject().put("answer", answer).put("anonymous", this.anonymous())
+        .put("publish", this.publish()).put("publishAnonymously", this.publishAnonymously());
 
     final var transactionIndex = 1;
     final var checkAnswerMessage = this.createMessagePredicate()
         .and(MessagePredicates.labelIs("AnsweredQuestionMessage"))
         .and(MessagePredicates.receiverIs(this.task.requesterId))
-        .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("answer", answer).put("taskId", this.task.id)
+        .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("taskId", this.task.id)
             .put("question", this.task.goal.name).put("transactionId", String.valueOf(transactionIndex))
             .put("answer", answer).put("userId", transaction.actioneerId).put("anonymous", this.anonymous())));
     final var checkMessages = new ArrayList<Predicate<Message>>();

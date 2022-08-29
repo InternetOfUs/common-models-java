@@ -33,41 +33,41 @@ public abstract class AbstractPilotM46WithCommonDomainProtocolITC extends Abstra
   public enum Domain {
 
     /**
+     * The academic skills domain.
+     */
+    ACADEMIC_SKILLS,
+    /**
      * The basic needs domain.
      */
     BASIC_NEEDS,
     /**
-     * The campus life domain.
+     * The physical activities/sport domain.
      */
-    CAMPUS_LIFE,
-    /**
-     * The academic skills domain.
-     */
-    ACADEMIC_SKILLS,
+    PHYSICAL_ACTIVITY,
     /**
      * The appreciating culture domain.
      */
     APPRECIATING_CULTURE,
     /**
-     * The performing/producing culture domain.
-     */
-    PERFORMING_PRODUCING_CULTURE,
-    /**
-     * The physical activities/sport domain.
-     */
-    PHYSICAL_ACTIVITIES_SPORTS,
-    /**
-     * The things to do about town domain.
-     */
-    THINGS_TO_DO_ABOUT_TOWN,
-    /**
      * The random thoughts domain.
      */
     RANDOM_THOUGHTS,
     /**
+     * The performing/producing culture domain.
+     */
+    PRODUCING_CULTURE,
+    /**
+     * The things to do about town domain.
+     */
+    LEISURE_ACTIVITIES,
+    /**
+     * The campus life domain.
+     */
+    CAMPUS_LIFE,
+    /**
      * The sensitive issue domain.
      */
-    SENSITIVE_ISSUES;
+    SENSITIVE;
 
     /**
      * Return the value that can be used on the task type.

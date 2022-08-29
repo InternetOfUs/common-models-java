@@ -47,12 +47,6 @@
 					"different"
 				]
 			},
-			"sensitive": {
-				"description": "Whether the question is sensitive or not, if it is sensitive the bot will let other people know to take extra care in answering the question",
-				"type": "boolean",
-				"default": "false",
-				"nullable": false
-			},
 			"anonymous": {
 				"description": "Whether to ask the question anonymously or not, if anonymous is chosen then the name of the user will not be shown",
 				"type": "boolean",
@@ -101,7 +95,6 @@
 			"domain",
 			"domainInterest",
 			"beliefsAndValues",
-			"sensitive",
 			"anonymous",
 			"competences",
 			"positionOfAnswerer",
@@ -129,11 +122,23 @@
 					"type": "boolean",
 					"default": "false",
 					"nullable": false
+				},
+				"publish": {
+					"description": "Whether to publish the answer or not",
+					"type": "boolean",
+					"nullable": false
+				},
+				"publishAnonymously": {
+					"description": "Whether to publish the answer anonymously or not, if anonymous is chosen then the name of the user will not be shown",
+					"type": "boolean",
+					"nullable": false
 				}
 			},
 			"required": [
 				"answer",
-				"anonymous"
+				"anonymous",
+				"publish",
+				"publishAnonymously"
 			]
 		},
 		"notAnswerTransaction": {

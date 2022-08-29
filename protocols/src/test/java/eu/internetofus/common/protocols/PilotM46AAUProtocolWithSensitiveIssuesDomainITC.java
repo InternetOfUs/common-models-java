@@ -32,7 +32,7 @@ public class PilotM46AAUProtocolWithSensitiveIssuesDomainITC extends AbstractPil
   @Override
   protected String domain() {
 
-    return Domain.SENSITIVE_ISSUES.toTaskTypeDomain();
+    return Domain.SENSITIVE.toTaskTypeDomain();
   }
 
   /**
