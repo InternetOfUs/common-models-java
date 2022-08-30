@@ -476,7 +476,7 @@
 		{
 			"description": "Calculate physical closeness if it is nearby",
 			"whenever": "is_received_event('sortUsersByDiversity',_) and get_task_attribute_value('nearby','positionOfAnswerer') and get_task_state_attribute(Users,'appUsers')",
-			"thenceforth": "normalized_closeness(PhysicalClosenessUsers,Users,500) and put_task_state_attribute('physicalClosenessUsers',PhysicalClosenessUsers)"
+			"thenceforth": "normalized_closeness(PhysicalClosenessUsers,Users,1000) and put_task_state_attribute('physicalClosenessUsers',PhysicalClosenessUsers)"
 		},
 		{
 			"description": "Calculate physical closeness if it is anywhere",
