@@ -20,6 +20,7 @@
 package eu.internetofus.common.protocols;
 
 import eu.internetofus.common.components.models.Material;
+import eu.internetofus.common.components.models.WeNetUserProfile;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.HashMap;
@@ -194,13 +195,55 @@ public abstract class AbstractPilotM46AAUProtocolITC extends AbstractPilotM46Wit
 
     if (Domain.ACADEMIC_SKILLS.toTaskTypeDomain().equals(this.domain())) {
 
-      return this.simMaterials(index);
+      final var requester = this.getMaterialDescription(this.users.get(0), "study_year", "");
+      final var user = this.getMaterialDescription(this.users.get(index), "study_year", "");
+      if (user.compareTo(requester) >= 0) {
+
+        return this.simMaterials(index);
+
+      } else if ("different".equals(this.socialCloseness())) {
+
+        return 1d;
+
+      } else {
+
+        return 0d;
+      }
 
     } else {
 
       return super.socialClosenessTo(index);
 
     }
+
+  }
+
+  /**
+   * Return the material description.
+   *
+   * @param profile      to get the material.
+   * @param name         of the material.
+   * @param defaultValue value to return if not found.
+   *
+   * @return the material description of the variable or the default value if not
+   *         found.
+   */
+  protected String getMaterialDescription(final WeNetUserProfile profile, final String name,
+      final String defaultValue) {
+
+    if (profile != null && profile.materials != null) {
+
+      for (final var material : profile.materials) {
+
+        if (material.name.equals(name)) {
+
+          return material.description;
+        }
+      }
+
+    }
+
+    return defaultValue;
 
   }
 

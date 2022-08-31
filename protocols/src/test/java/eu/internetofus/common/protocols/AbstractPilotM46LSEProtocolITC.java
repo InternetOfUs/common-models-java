@@ -111,7 +111,8 @@ public abstract class AbstractPilotM46LSEProtocolITC extends AbstractPilotM46Wit
       final var socialCloseness = this.getUserValueIn(socialClosenessUsers, user.id);
       final var beliefsAndValues = this.getUserValueIn(beliefsAndValuesUsers, user.id);
       final var domainInterest = this.getUserValueIn(domainInterestUsers, user.id);
-      if (socialCloseness != null || beliefsAndValues != null || domainInterest != null) {
+      if (socialCloseness != null && socialCloseness > 0.5d || beliefsAndValues != null && beliefsAndValues > 0d
+          || domainInterest != null && domainInterest > 0d) {
 
         return "This user fits the requirements to a certain extent. While choosing whom to ask, we also tried to increase the gender diversity of selected users.";
 
@@ -122,6 +123,21 @@ public abstract class AbstractPilotM46LSEProtocolITC extends AbstractPilotM46Wit
       }
 
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Double socialClosenessTo(final int index) {
+
+    var value = super.socialClosenessTo(index);
+    if (value == null) {
+
+      value = 0.5d;
+    }
+
+    return value;
   }
 
 }

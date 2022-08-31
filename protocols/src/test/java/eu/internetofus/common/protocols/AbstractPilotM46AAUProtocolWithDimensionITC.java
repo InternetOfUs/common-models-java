@@ -105,11 +105,11 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
       if (mdSC != null && !this.areSimilar(mdSC, 0d)) {
 
         z = 1;
-        if (Domain.ACADEMIC_SKILLS == domain) {
+        if (Domain.ACADEMIC_SKILLS == domain || Domain.SENSITIVE == domain) {
 
           hs += 1;
 
-        } else {
+        } else if (Domain.ACADEMIC_SKILLS != domain && Domain.SENSITIVE != domain) {
 
           ss += 1;
 
@@ -118,11 +118,11 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
       } else {
 
         if (this.areSimilar(mdSC, 0d)) {
-          if (Domain.ACADEMIC_SKILLS == domain) {
+          if (Domain.ACADEMIC_SKILLS == domain || Domain.SENSITIVE == domain) {
 
             hb += 1;
 
-          } else {
+          } else if (Domain.ACADEMIC_SKILLS != domain && Domain.SENSITIVE != domain) {
 
             sb += 1;
 
@@ -237,11 +237,11 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
 
     } else if (group == 2 || group == 3 || group == 4) {
 
-      if (mdPC != null && mdSC != null && Domain.ACADEMIC_SKILLS == domain) {
+      if (mdPC != null && mdSC != null && (Domain.ACADEMIC_SKILLS == domain || Domain.SENSITIVE == domain)) {
 
         expectedExplanation = Explanation.GROUP_2_3_4_A;
 
-      } else if (mdPC == null && mdSC != null && Domain.ACADEMIC_SKILLS == domain) {
+      } else if (mdPC == null && mdSC != null && (Domain.ACADEMIC_SKILLS == domain || Domain.SENSITIVE == domain)) {
 
         expectedExplanation = Explanation.GROUP_2_3_4_B;
 
@@ -252,11 +252,11 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
 
     } else if (group == 9 || group == 10 || group == 11) {
 
-      if (mdPC != null && mdSC != null && Domain.ACADEMIC_SKILLS == domain) {
+      if (mdPC != null && mdSC != null && (Domain.ACADEMIC_SKILLS == domain || Domain.SENSITIVE == domain)) {
 
         expectedExplanation = Explanation.GROUP_9_10_11_A;
 
-      } else if (mdPC == null && mdSC != null && Domain.ACADEMIC_SKILLS == domain) {
+      } else if (mdPC == null && mdSC != null && (Domain.ACADEMIC_SKILLS == domain || Domain.SENSITIVE == domain)) {
 
         expectedExplanation = Explanation.GROUP_9_10_11_B;
 
@@ -267,7 +267,8 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
 
     } else if (group == 5) {
 
-      if (this.areSimilar(mdPC, 0d) && mdSC != null && !this.areSimilar(mdSC, 0d) && Domain.ACADEMIC_SKILLS == domain) {
+      if (this.areSimilar(mdPC, 0d) && mdSC != null && !this.areSimilar(mdSC, 0d)
+          && (Domain.ACADEMIC_SKILLS == domain || Domain.SENSITIVE == domain)) {
 
         expectedExplanation = Explanation.GROUP_5_A;
 
@@ -277,7 +278,7 @@ public abstract class AbstractPilotM46AAUProtocolWithDimensionITC extends Abstra
       }
 
     } else if (this.areSimilar(mdPC, 0d) && mdSC != null && !this.areSimilar(mdSC, 0d)
-        && Domain.ACADEMIC_SKILLS == domain) {
+        && (Domain.ACADEMIC_SKILLS == domain || Domain.SENSITIVE == domain)) {
 
       expectedExplanation = Explanation.GROUP_6_7_8_A;
 
