@@ -24,7 +24,7 @@ package eu.internetofus.common.protocols;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class PilotM46AAUProtocolWithAcademicSkillsDomainITC extends AbstractPilotM46AAUProtocolWithDimensionITC {
+public class PilotM46AAUProtocolWithAcademicSkillsSimilarDomainITC extends AbstractPilotM46AAUProtocolWithDimensionITC {
 
   /**
    * {@inheritDoc} ‘academic skills’
@@ -41,7 +41,7 @@ public class PilotM46AAUProtocolWithAcademicSkillsDomainITC extends AbstractPilo
   @Override
   protected String domainInterest() {
 
-    return "different";
+    return "similar";
   }
 
   /**
