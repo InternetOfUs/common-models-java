@@ -251,13 +251,16 @@ public abstract class AbstractPilotM46NUMProtocolITC extends AbstractPilotM46Wit
     Double value = null;
     if (Domain.CAMPUS_LIFE.toTaskTypeDomain().equals(this.domain())) {
 
-      if (this.compareAttribute(this.users.get(0), this.users.get(index), "materials.study_year") == 0) {
+      if (!this.isEmptyProfile(index)) {
 
-        value = 1d;
+        if (this.compareAttribute(this.users.get(0), this.users.get(index), "materials.study_year") == 0) {
 
-      } else {
+          value = 1d;
 
-        value = 0d;
+        } else {
+
+          value = 0d;
+        }
       }
 
     } else if (Domain.ACADEMIC_SKILLS.toTaskTypeDomain().equals(this.domain())) {
