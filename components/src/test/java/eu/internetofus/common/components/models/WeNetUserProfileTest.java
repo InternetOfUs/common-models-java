@@ -74,17 +74,18 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   /**
    * The departments that can be used to fill in a profile.
    */
-  public static final String[] DEPARTMENTS = { "Department of Accounting", "Department of Anthropology",
-      "Department of Economics", "Department of Economic History", "European Institute", "Department of Finance",
-      "Department of Gender Studies", "Department of Geography and Environment", "Institute of Global Affairs (IGA)",
-      "Department of Government", "Department of Health Policy", "Department of International Development",
-      "Department of International History", "International Inequalities Institute",
-      "Department of International Relations", "Language Centre", "Department of Law", "Department of Management",
-      "Marshall Institute", "Department of Mathematics", "Department of Media and Communications",
-      "Department of Methodology", "Department of Philosophy, Logic and Scientific Method",
-      "Department of Psychological and Behavioural Science",
-      "School of Public Policy (formerly Institute of Public Affairs)", "Department of Social Policy",
-      "Department of Sociology", "Department of Statistics" };
+  public static final String[] DEPARTMENTS = { "01: Department of Accounting", "02: Department of Anthropology",
+      "03: Department of Economics", "04: Department of Economic History", "05: European Institute",
+      "06: Department of Finance", "07: Department of Gender Studies", "08: Department of Geography and Environment",
+      "09: Institute of Global Affairs (IGA)", "10: Department of Government", "11: Department of Health Policy",
+      "12: Department of International Development", "13: Department of International History",
+      "14: International Inequalities Institute", "15: Department of International Relations", "16: Language Centre",
+      "17: Department of Law", "18: Department of Management", "19: Marshall Institute",
+      "20: Department of Mathematics", "21: Department of Media and Communications", "22: Department of Methodology",
+      "23: Department of Philosophy, Logic and Scientific Method",
+      "24: Department of Psychological and Behavioural Science",
+      "25: School of Public Policy (formerly Institute of Public Affairs)", "26: Department of Social Policy",
+      "27: Department of Sociology", "28: Department of Statistics" };
 
   /**
    * The degrees that can be used to fill in a profile.
@@ -101,8 +102,8 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
   /**
    * The programs than can be studied.
    */
-  public static final String[] PROGRAM_STUDY = { "Software Engineering", "Information Technology", "Information System",
-      "Computer Science", "etc." };
+  public static final String[] PROGRAM_STUDY = { "01: Software Engineering", "02: Information Technology",
+      "03: Information System", "04: Computer Science", "06: Other" };
 
   /**
    * Create an basic model that has the specified index.

@@ -19,7 +19,7 @@
  */
 package eu.internetofus.common.protocols;
 
-import eu.internetofus.common.components.models.Material;
+import eu.internetofus.common.components.models.WeNetUserProfile;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.HashMap;
@@ -248,13 +248,17 @@ public abstract class AbstractPilotM46NUMProtocolITC extends AbstractPilotM46Wit
   @Override
   public Double domainInterestTo(final int index) {
 
-    if (Domain.SENSITIVE.toTaskTypeDomain().equals(this.domain())) {
+    Double value = null;
+    if (Domain.CAMPUS_LIFE.toTaskTypeDomain().equals(this.domain())) {
 
-      return null;
+      if (this.compareAttribute(this.users.get(0), this.users.get(index), "materials.study_year") == 0) {
 
-    } else if (Domain.CAMPUS_LIFE.toTaskTypeDomain().equals(this.domain())) {
+        value = 1d;
 
-      return this.simMaterials(index);
+      } else {
+
+        value = 0d;
+      }
 
     } else if (Domain.ACADEMIC_SKILLS.toTaskTypeDomain().equals(this.domain())) {
 
@@ -263,34 +267,50 @@ public abstract class AbstractPilotM46NUMProtocolITC extends AbstractPilotM46Wit
         return this.simCompetences(index);
 
       } else {
-
+        // This is the only case that accept a null
         return null;
       }
 
-    } else if (Domain.LEISURE_ACTIVITIES.toTaskTypeDomain().equals(this.domain())) {
+    } else if (!Domain.SENSITIVE.toTaskTypeDomain().equals(this.domain())
+        && !Domain.RANDOM_THOUGHTS.toTaskTypeDomain().equals(this.domain())) {
 
-      final var simMat = this.simMaterials(index);
-      final var simDiv = super.domainInterestTo(index);
-      if (simMat == null) {
+      value = super.domainInterestTo(index);
+    }
 
-        return simDiv;
+    if (value == null) {
 
-      } else if (simDiv == null) {
+      if ("different".equals(this.domainInterest())) {
 
-        return simMat;
+        value = 1d;
 
       } else {
 
-        return 1.0 - (1 - simMat
-            + Math.abs(this.users.get(0).competences.get(0).level - this.users.get(index).competences.get(0).level))
-            / 3.0;
+        value = 0d;
       }
-
-    } else {
-
-      return super.domainInterestTo(index);
-
     }
+    return value;
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Double beliefsAndValuesTo(final int index) {
+
+    var value = super.beliefsAndValuesTo(index);
+    if (value == null) {
+
+      if ("different".equals(this.beliefsAndValues())) {
+
+        value = 1d;
+
+      } else {
+
+        value = 0d;
+      }
+    }
+    return value;
   }
 
   /**
@@ -302,38 +322,119 @@ public abstract class AbstractPilotM46NUMProtocolITC extends AbstractPilotM46Wit
    */
   protected Double simCompetences(final int index) {
 
-    // The 0.5 value is ignored because all the variables has the same value
+    final var attributes = new String[] { "competences.c_u_active", "competences.c_read", "competences.c_essay",
+        "competences.c_org", "competences.c_balance", "competences.c_assess", "competences.c_theory",
+        "competences.c_pract", "competences.course_fa", "competences.course_plc", "competences.course_oop",
+        "materials.program_study" };
+    final var requester = this.users.get(0);
+    final var user = this.users.get(index);
+    if (this.compareAttribute(requester, user, attributes[0]) > 0) {
 
-    if (this.users.get(0).competences != null) {
+      for (final var attribute : attributes) {
 
-      for (final var competence : this.users.get(0).competences) {
+        if (this.compareAttribute(requester, user, attribute) <= 0) {
 
-        if ("course_ca".equals(competence.name)) {
+          return 0.5d;
+        }
 
-          if (competence.level != null && this.users.get(index).competences != null) {
+      }
 
-            for (final var competence1 : this.users.get(index).competences) {
+      // it is reverse because as use different => 1 - sim
+      return 1d;
 
-              if ("course_ca".equals(competence1.name)) {
+    } else {
 
-                if (competence1.level != null && competence.level > competence1.level) {
-                  // it is reverse because as use different => 1 - sim
-                  return 0d;
+      for (final var attribute : attributes) {
 
-                }
+        if (this.compareAttribute(requester, user, attribute) > 0) {
 
-                break;
-              }
-            }
-          }
+          return 0.5d;
+        }
 
-          break;
+      }
+
+      // it is reverse because as use different => 1 - sim
+      return 0d;
+
+    }
+
+  }
+
+  /**
+   * Compare two attributes of two profiles.
+   *
+   * @param source profile to get the attribute value.
+   * @param target profile to get the attribute value.
+   * @param name   of the attribute to compare.
+   *
+   * @return {@code 0} if are equals,{@code 1} if source is greater than target
+   *         and {@code -1} otherwise.
+   */
+  protected int compareAttribute(final WeNetUserProfile source, final WeNetUserProfile target, final String name) {
+
+    if (name.startsWith("competences.")) {
+
+      final var competence = name.substring(12);
+      final var sourceValue = this.competenceLevel(source, competence);
+      final var targetValue = this.competenceLevel(target, competence);
+      return Double.compare(sourceValue, targetValue);
+
+    } else {
+
+      final var material = name.substring(10);
+      final var sourceValue = this.materialDescription(source, material);
+      final var targetValue = this.materialDescription(target, material);
+      return sourceValue.compareTo(targetValue);
+    }
+  }
+
+  /**
+   * Return the level of the name.
+   *
+   * @param profile to get the value.
+   * @param name    of the competence.
+   *
+   * @return the value of the competence.
+   */
+  protected double competenceLevel(final WeNetUserProfile profile, final String name) {
+
+    if (profile != null && profile.competences != null) {
+
+      for (final var competence : profile.competences) {
+
+        if (competence.name.equals(name)) {
+
+          return competence.level;
         }
       }
     }
 
-    // it is reverse because as use different => 1 - sim
-    return 1d;
+    return 0d;
+
+  }
+
+  /**
+   * Return the level of the name.
+   *
+   * @param profile to get the value.
+   * @param name    of the material.
+   *
+   * @return the value of the material.
+   */
+  protected String materialDescription(final WeNetUserProfile profile, final String name) {
+
+    if (profile != null && profile.materials != null) {
+
+      for (final var material : profile.materials) {
+
+        if (material.name.equals(name)) {
+
+          return material.description;
+        }
+      }
+    }
+
+    return "";
 
   }
 
@@ -343,68 +444,43 @@ public abstract class AbstractPilotM46NUMProtocolITC extends AbstractPilotM46Wit
   @Override
   public Double socialClosenessTo(final int index) {
 
+    Double value = null;
     if (Domain.ACADEMIC_SKILLS.toTaskTypeDomain().equals(this.domain())) {
 
-      return this.simMaterials(index);
+      if (!this.isEmptyProfile(index)) {
+
+        final var socialAttributes = new String[] { "materials.department", "materials.study_year",
+            "materials.program_study" };
+        final var requester = this.users.get(0);
+        final var user = this.users.get(index);
+        value = 0d;
+        for (final var attribute : socialAttributes) {
+
+          if (this.compareAttribute(requester, user, attribute) == 0) {
+            value = 1d;
+            break;
+          }
+
+        }
+      }
 
     } else {
 
-      return super.socialClosenessTo(index);
-
+      value = super.socialClosenessTo(index);
     }
+    if (value == null) {
 
-  }
+      if ("different".equals(this.socialCloseness())) {
 
-  /**
-   * Return the similarity of materials.
-   *
-   * @param index of the user to calculate the similarity.
-   *
-   * @return the similarity between materials.
-   */
-  protected Double simMaterials(final int index) {
+        value = 1d;
 
-    Material material1 = null;
-    if (this.users.get(0).materials != null) {
+      } else {
 
-      for (final var material : this.users.get(0).materials) {
-
-        if ("degree_programme".equals(material.name)) {
-
-          material1 = material;
-          break;
-        }
-      }
-      Material material2 = null;
-      if (this.users.get(index).materials != null) {
-
-        for (final var material : this.users.get(index).materials) {
-
-          if ("degree_programme".equals(material.name)) {
-
-            material2 = material;
-            break;
-          }
-        }
-
-      }
-
-      if (material1 != null && material2 != null) {
-
-        if (material1.description != null && material1.description.equals(material2.description)) {
-
-          return 1d;
-
-        } else {
-
-          return 0d;
-        }
-
+        value = 0d;
       }
     }
 
-    return null;
-
+    return value;
   }
 
   /**

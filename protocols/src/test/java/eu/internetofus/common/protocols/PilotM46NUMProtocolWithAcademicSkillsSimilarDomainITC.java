@@ -50,7 +50,7 @@ public class PilotM46NUMProtocolWithAcademicSkillsSimilarDomainITC extends Abstr
   @Override
   protected String beliefsAndValues() {
 
-    return "different";
+    return "similar";
   }
 
   /**
@@ -59,7 +59,7 @@ public class PilotM46NUMProtocolWithAcademicSkillsSimilarDomainITC extends Abstr
   @Override
   protected String socialCloseness() {
 
-    return "different";
+    return "similar";
   }
 
   /**
