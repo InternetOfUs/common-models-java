@@ -911,12 +911,20 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
   /**
    * The index of the user that has to answer the question.
    *
-   * @return {@code 2} in any case.
+   * @return the index of the first participant.
    */
   protected int answeredIndex() {
 
-    return 2;
+    for (var i = 2; i < this.users.size(); i++) {
 
+      if (this.participants.contains(this.users.get(i).id)) {
+
+        return i;
+      }
+
+    }
+
+    return 2;
   }
 
   /**
@@ -956,7 +964,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
     this.assertLastSuccessfulTestWas(7, testContext);
 
     final var answerIndex = this.answeredIndex();
-    final var user = this.users.get(2);
+    final var user = this.users.get(answerIndex);
     final var transaction = new TaskTransaction();
     transaction.actioneerId = user.id;
     transaction.taskId = this.task.id;
@@ -965,7 +973,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
     transaction.attributes = new JsonObject().put("answer", answer).put("anonymous", this.anonymous())
         .put("publish", this.publish()).put("publishAnonymously", this.publishAnonymously());
 
-    final var transactionIndex = 1;
+    final var transactionIndex = this.task.transactions.size();
     final var checkAnswerMessage = this.createMessagePredicate()
         .and(MessagePredicates.labelIs("AnsweredQuestionMessage"))
         .and(MessagePredicates.receiverIs(this.task.requesterId))
@@ -980,7 +988,7 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
             .put("title", this.explanationTitleFor(answerIndex)).put("text", this.explanationTextFor(answerIndex))));
     checkMessages.add(checkExplanationMessage);
 
-    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(2))
+    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(transactionIndex + 1))
         .and(TaskPredicates.transactionAt(transactionIndex,
             this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))
                 .and(TaskTransactionPredicates.messagesSizeIs(checkMessages.size()))
@@ -1062,6 +1070,100 @@ public abstract class AbstractPilotM46ProtocolITC extends AbstractDefaultProtoco
     }
 
     return null;
+
+  }
+
+  /**
+   * The index of the user that answer the question but it is unexpected.
+   *
+   * @return the index of the last user that not participate.
+   */
+  protected int unexpectedAnsweredIndex() {
+
+    for (var i = this.users.size() - 1; i > 1; i--) {
+
+      if (!this.participants.contains(this.users.get(i).id)) {
+
+        return i;
+      }
+
+    }
+
+    return 10;
+
+  }
+
+  /**
+   * Return the explanation title for an answer that is unexpected.
+   *
+   * @return the explanation title.
+   */
+  protected String explanationTitleForUnexpectedAnswer() {
+
+    return "Why is this user chosen?";
+
+  }
+
+  /**
+   * Return the explanation text for an answer that is unexpected.
+   *
+   * @return the explanation text.
+   */
+  protected String explanationTextForUnexpectedAnswer() {
+
+    return "This answer does not match your original criteria but maybe you will still find it interesting.";
+
+  }
+
+  /**
+   * Check that receive an explanation when receive an unexpected answer.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to do the test.
+   */
+  @Test
+  @Order(9)
+  public void shouldReceiveExplanationWithUnexpectedAnswer(final Vertx vertx, final VertxTestContext testContext) {
+
+    this.assertLastSuccessfulTestWas(8, testContext);
+
+    final var unexpectedAnsweredIndex = this.unexpectedAnsweredIndex();
+    final var user = this.users.get(unexpectedAnsweredIndex);
+    final var transaction = new TaskTransaction();
+    transaction.actioneerId = user.id;
+    transaction.taskId = this.task.id;
+    transaction.label = "answerTransaction";
+    final var answer = "Response question with ";
+    transaction.attributes = new JsonObject().put("answer", answer).put("anonymous", this.anonymous())
+        .put("publish", this.publish()).put("publishAnonymously", this.publishAnonymously());
+
+    final var transactionIndex = this.task.transactions.size();
+    final var checkAnswerMessage = this.createMessagePredicate()
+        .and(MessagePredicates.labelIs("AnsweredQuestionMessage"))
+        .and(MessagePredicates.receiverIs(this.task.requesterId))
+        .and(MessagePredicates.attributesSimilarTo(new JsonObject().put("taskId", this.task.id)
+            .put("question", this.task.goal.name).put("transactionId", String.valueOf(transactionIndex))
+            .put("answer", answer).put("userId", transaction.actioneerId).put("anonymous", this.anonymous())));
+    final var checkMessages = new ArrayList<Predicate<Message>>();
+    checkMessages.add(checkAnswerMessage);
+
+    final var checkExplanationMessage = this.createMessagePredicate().and(MessagePredicates.labelIs("TextualMessage"))
+        .and(MessagePredicates.receiverIs(this.task.requesterId))
+        .and(MessagePredicates.attributesAre(new JsonObject().put("title", this.explanationTitleForUnexpectedAnswer())
+            .put("text", this.explanationTextForUnexpectedAnswer())));
+    checkMessages.add(checkExplanationMessage);
+
+    final var checkTask = this.createTaskPredicate().and(TaskPredicates.transactionSizeIs(transactionIndex + 1))
+        .and(TaskPredicates.transactionAt(transactionIndex,
+            this.createTaskTransactionPredicate().and(TaskTransactionPredicates.similarTo(transaction))
+                .and(TaskTransactionPredicates.messagesSizeIs(checkMessages.size()))
+                .and(TaskTransactionPredicates.messageAt(0, checkAnswerMessage))
+                .and(TaskTransactionPredicates.messageAt(1, checkExplanationMessage))));
+
+    WeNetTaskManager.createProxy(vertx).doTaskTransaction(transaction)
+        .compose(ignored -> this.waitUntilTask(vertx, testContext, checkTask))
+        .compose(ignored -> this.waitUntilCallbacks(vertx, testContext, checkMessages))
+        .onComplete(testContext.succeeding(ignored -> this.assertSuccessfulCompleted(testContext)));
 
   }
 
