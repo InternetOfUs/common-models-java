@@ -306,14 +306,22 @@ public interface Model {
    */
   public static <T extends Model> T fromResponse(final HttpResponse<Buffer> response, final Class<T> type) {
 
-    try {
+    if (response == null) {
 
-      return fromBuffer(response.bodyAsBuffer(), type);
-
-    } catch (final Throwable throwable) {
-
-      Logger.trace(throwable);
       return null;
+
+    } else {
+
+      try {
+
+        return fromBuffer(response.bodyAsBuffer(), type);
+
+      } catch (final Throwable throwable) {
+
+        Logger.trace(throwable);
+        return null;
+      }
+
     }
   }
 
