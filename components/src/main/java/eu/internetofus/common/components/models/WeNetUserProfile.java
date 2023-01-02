@@ -186,6 +186,12 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
   public List<DeprecatedSocialNetworkRelationship> relationships;
 
   /**
+   * The last known activity.
+   */
+  @Schema(description = "The latest known activity of the user", nullable = true)
+  public KnownActivity latestKnownActivity;
+
+  /**
    * {@inheritDoc}
    */
   @Override
@@ -256,6 +262,11 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
       future = future.compose(context.validateListField("meanings", this.meanings, Meaning::compareIds));
     }
 
+    if (this.latestKnownActivity != null) {
+
+      future = future.compose(context.validateField("latestKnownActivity", this.latestKnownActivity));
+    }
+
     promise.tryComplete();
 
     return future;
@@ -314,6 +325,9 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
       future = future.compose(Merges.mergeListField(context, "meanings", this.meanings, source.meanings,
           Meaning::compareIds, (model, mergedValue) -> model.meanings = mergedValue));
 
+      future = future.compose(Merges.mergeField(context, "latestKnownActivity", this.latestKnownActivity,
+          source.latestKnownActivity, (model, mergedValue) -> model.latestKnownActivity = mergedValue));
+
       future = future.compose(context.chain());
       // When merged set the fixed field values
       future = future.map(mergedValidatedModel -> {
@@ -363,6 +377,7 @@ public class WeNetUserProfile extends CreateUpdateTsDetails implements Validable
       updated.materials = source.materials;
       updated.competences = source.competences;
       updated.meanings = source.meanings;
+      updated.latestKnownActivity = source.latestKnownActivity;
 
       future = future.compose(context.chain());
       future = future.map(updatedValidatedModel -> {

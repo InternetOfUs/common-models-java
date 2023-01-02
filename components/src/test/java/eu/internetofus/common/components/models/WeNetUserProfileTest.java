@@ -130,6 +130,7 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
     model.hasLocations = index % 2 == 0;
     model._creationTs = 1234567891 + index;
     model._lastUpdateTs = 1234567991 + index * 2;
+    model.latestKnownActivity = new KnownActivityTest().createModelExample(index);
     return model;
   }
 
@@ -2367,6 +2368,97 @@ public class WeNetUserProfileTest extends ModelTestCase<WeNetUserProfile> {
                           assertThat(updated).isNotEqualTo(target).isEqualTo(source);
 
                         })))));
+
+  }
+
+  /**
+   * Check that the latest known activity is not valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#validate(WeNetValidateContext)
+   */
+  @Test
+  public void shouldNotBeValidWithABadLatestKnownActivity(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var model = new WeNetUserProfile();
+    model.latestKnownActivity = new KnownActivityTest().createModelExample(1);
+    model.latestKnownActivity.activity = null;
+    assertIsNotValid(model, "latestKnownActivity.activity", new WeNetValidateContext("codePrefix", vertx), testContext);
+
+  }
+
+  /**
+   * Check that the latest known activity is not valid.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   */
+  @Test
+  public void shouldNotMergeWithABadLatestKnownActivity(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var source = new WeNetUserProfile();
+    source.latestKnownActivity = new KnownActivityTest().createModelExample(1);
+    source.latestKnownActivity.activity = "";
+    assertCannotMerge(new WeNetUserProfile(), source, "latestKnownActivity.activity",
+        new WeNetValidateContext("codePrefix", vertx), testContext);
+
+  }
+
+  /**
+   * Check merge only the latest known activity.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   */
+  @Test
+  public void shouldMergeOnlyLatestKnownActivity(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = this.createBasicExample(1);
+    assertIsValid(target, new WeNetValidateContext("codePrefix", vertx), testContext, () -> {
+
+      final var source = new WeNetUserProfile();
+      source.latestKnownActivity = new KnownActivity();
+      source.latestKnownActivity.activity = "NEW ACTIVITY";
+      assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
+
+        assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+        target.latestKnownActivity.activity = "NEW ACTIVITY";
+        assertThat(merged).isEqualTo(target);
+
+      });
+
+    });
+
+  }
+
+  /**
+   * Check merge add latest known activity.
+   *
+   * @param vertx       event bus to use.
+   * @param testContext context to test.
+   *
+   * @see WeNetUserProfile#merge(WeNetUserProfile, WeNetValidateContext)
+   */
+  @Test
+  public void shouldMergeAddLatestKnownActivity(final Vertx vertx, final VertxTestContext testContext) {
+
+    final var target = new WeNetUserProfile();
+    target.id = "1";
+    final var source = new WeNetUserProfile();
+    source.latestKnownActivity = new KnownActivityTest().createModelExample(1);
+    assertCanMerge(target, source, new WeNetValidateContext("codePrefix", vertx), testContext, merged -> {
+
+      assertThat(merged).isNotEqualTo(target).isNotEqualTo(source);
+      target.latestKnownActivity = new KnownActivityTest().createModelExample(1);
+      assertThat(merged).isEqualTo(target);
+
+    });
 
   }
 
