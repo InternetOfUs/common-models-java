@@ -22,7 +22,7 @@ import io.vertx.core.Promise;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(description = "The information of an activity that is done by an user.")
+@Schema(hidden = true, description = "The information of an activity that is done by an user.")
 public class KnownActivity extends ReflectionModel implements Model, Validable<WeNetValidateContext>,
     Mergeable<KnownActivity, WeNetValidateContext>, Updateable<KnownActivity, WeNetValidateContext> {
 

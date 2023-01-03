@@ -50,7 +50,7 @@ public class CommunityProfilesPage extends ReflectionModel implements Model {
   /**
    * The found communities.
    */
-  @ArraySchema(schema = @Schema(ref = "https://raw.githubusercontent.com/InternetOfUs/components-documentation/MODELS_2.3.0/sources/wenet-models-openapi.yaml#/components/schemas/CommunityProfile"), arraySchema = @Schema(description = "The set of communities found"))
+  @ArraySchema(schema = @Schema(ref = "https://raw.githubusercontent.com/InternetOfUs/components-documentation/MODELS_2.4.0/sources/wenet-models-openapi.yaml#/components/schemas/CommunityProfile"), arraySchema = @Schema(description = "The set of communities found"))
   public List<CommunityProfile> communities;
 
 }

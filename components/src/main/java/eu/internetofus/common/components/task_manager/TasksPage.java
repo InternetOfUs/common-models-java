@@ -51,7 +51,7 @@ public class TasksPage extends ReflectionModel implements Model {
   /**
    * The found profiles.
    */
-  @ArraySchema(schema = @Schema(ref = "https://raw.githubusercontent.com/InternetOfUs/components-documentation/MODELS_2.3.0/sources/wenet-models-openapi.yaml#/components/schemas/Task"), arraySchema = @Schema(description = "The set of tasks found"))
+  @ArraySchema(schema = @Schema(ref = "https://raw.githubusercontent.com/InternetOfUs/components-documentation/MODELS_2.4.0/sources/wenet-models-openapi.yaml#/components/schemas/Task"), arraySchema = @Schema(description = "The set of tasks found"))
   public List<Task> tasks;
 
 }
