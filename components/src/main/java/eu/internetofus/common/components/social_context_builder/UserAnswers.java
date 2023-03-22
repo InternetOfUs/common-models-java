@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "user_answers", description = "Some user answers.")
+@Schema(title = "user_answers", description = "Some user answers.")
 public class UserAnswers extends ReflectionModel implements Model {
 
   /**

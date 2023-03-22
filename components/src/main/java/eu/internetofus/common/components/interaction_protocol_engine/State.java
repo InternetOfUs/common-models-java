@@ -30,7 +30,7 @@ import io.vertx.core.json.JsonObject;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "State", description = "Model that describe a state.")
+@Schema(title = "State", description = "Model that describe a state.")
 public class State extends CreateUpdateTsDetails {
 
   /**

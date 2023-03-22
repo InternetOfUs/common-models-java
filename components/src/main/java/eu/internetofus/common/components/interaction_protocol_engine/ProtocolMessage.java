@@ -32,7 +32,7 @@ import io.vertx.core.Promise;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "ProtocolMessage", description = "A message that can be interchange in an interaction protocol.")
+@Schema(title = "ProtocolMessage", description = "A message that can be interchange in an interaction protocol.")
 public class ProtocolMessage extends AbstractProtocolAction implements Model, Validable<WeNetValidateContext> {
 
   /**

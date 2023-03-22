@@ -29,7 +29,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "AattributeSimilarity", description = "The information of the similarity of an attribute.")
+@Schema(title = "AattributeSimilarity", description = "The information of the similarity of an attribute.")
 public class AttributeSimilarity extends ReflectionModel implements Model {
 
   /**

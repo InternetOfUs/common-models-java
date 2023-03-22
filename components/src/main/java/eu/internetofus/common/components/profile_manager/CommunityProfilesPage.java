@@ -32,7 +32,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "CommunityProfilesPage", description = "Contains a set of communities found")
+@Schema(title = "CommunityProfilesPage", description = "Contains a set of communities found")
 public class CommunityProfilesPage extends ReflectionModel implements Model {
 
   /**

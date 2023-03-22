@@ -31,7 +31,7 @@ import java.util.List;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "Diversity", description = "The similarity of some attributes.")
+@Schema(title = "Diversity", description = "The similarity of some attributes.")
 public class Similarities extends ReflectionModel implements Model {
 
   /**

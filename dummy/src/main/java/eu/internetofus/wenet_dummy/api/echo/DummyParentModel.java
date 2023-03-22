@@ -28,7 +28,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "DummyParent", description = "A dummy model to check the echo.")
+@Schema(title = "DummyParent", description = "A dummy model to check the echo.")
 public class DummyParentModel extends ReflectionModel implements Model {
 
   /**

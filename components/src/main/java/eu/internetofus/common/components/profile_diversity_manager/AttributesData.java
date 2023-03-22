@@ -31,7 +31,7 @@ import java.util.Set;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "AttributesData", description = "The information of some attributes to calculate the similarity.")
+@Schema(title = "AttributesData", description = "The information of some attributes to calculate the similarity.")
 public class AttributesData extends ReflectionModel implements Model {
 
   /**

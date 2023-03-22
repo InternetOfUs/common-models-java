@@ -28,7 +28,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "user_answer", description = "A User to User answer.")
+@Schema(title = "user_answer", description = "A User to User answer.")
 public class UserAnswer extends ReflectionModel implements Model {
 
   /**

@@ -32,7 +32,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "UserIdentifiersPage", description = "Contains a set of user identifiers")
+@Schema(title = "UserIdentifiersPage", description = "Contains a set of user identifiers")
 public class UserIdentifiersPage extends ReflectionModel implements Model {
 
   /**

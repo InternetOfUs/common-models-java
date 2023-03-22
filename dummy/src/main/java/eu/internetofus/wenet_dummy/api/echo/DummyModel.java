@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "Dummy", description = "A dummy model to check the echo.")
+@Schema(title = "Dummy", description = "A dummy model to check the echo.")
 public class DummyModel extends ReflectionModel implements Model {
 
   /**

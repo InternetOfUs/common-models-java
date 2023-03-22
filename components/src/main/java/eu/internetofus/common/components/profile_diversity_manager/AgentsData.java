@@ -33,7 +33,7 @@ import java.util.Set;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "AgentsData", description = "The information of some agents to calculate the diversity.")
+@Schema(title = "AgentsData", description = "The information of some agents to calculate the diversity.")
 public class AgentsData extends ReflectionModel implements Model {
 
   /**

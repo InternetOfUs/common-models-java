@@ -29,7 +29,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "Diversity", description = "The diversity of some users.")
+@Schema(title = "Diversity", description = "The diversity of some users.")
 public class Diversity extends ReflectionModel implements Model {
 
   /**

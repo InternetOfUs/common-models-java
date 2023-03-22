@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "StatesPage", description = "Contains a set of states")
+@Schema(title = "StatesPage", description = "Contains a set of states")
 public class StatesPage extends ReflectionModel implements Model {
 
   /**

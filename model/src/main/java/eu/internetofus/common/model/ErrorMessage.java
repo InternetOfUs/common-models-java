@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "ErrorMessage", description = "Inform of an error that happens when interacts with the API")
+@Schema(title = "ErrorMessage", description = "Inform of an error that happens when interacts with the API")
 public class ErrorMessage extends ReflectionModel implements Model {
 
   /**

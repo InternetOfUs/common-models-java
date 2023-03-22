@@ -34,7 +34,7 @@ import io.vertx.core.Promise;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "ProtocolEvent", description = "An event that will be fired on a protocol.")
+@Schema(title = "ProtocolEvent", description = "An event that will be fired on a protocol.")
 public class ProtocolEvent extends AbstractProtocolAction implements Model, Validable<WeNetValidateContext> {
 
   /**

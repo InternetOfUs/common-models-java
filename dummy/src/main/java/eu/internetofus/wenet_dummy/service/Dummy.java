@@ -31,7 +31,7 @@ import io.vertx.core.json.JsonObject;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "Dummy", description = "A dummy model to interchange to test the common classes")
+@Schema(title = "Dummy", description = "A dummy model to interchange to test the common classes")
 public class Dummy extends ReflectionModel implements Model {
 
   /**

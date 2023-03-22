@@ -31,7 +31,7 @@ import io.vertx.core.json.JsonObject;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "Interaction", description = "Provide information of an interaction between two users")
+@Schema(title = "Interaction", description = "Provide information of an interaction between two users")
 public class Interaction extends ReflectionModel implements Model {
 
   /**

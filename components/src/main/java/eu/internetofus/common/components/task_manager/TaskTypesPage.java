@@ -33,7 +33,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @author UDT-IA, IIIA-CSIC
  */
-@Schema(name = "TaskTypePage", description = "Contains a set of task types")
+@Schema(title = "TaskTypePage", description = "Contains a set of task types")
 public class TaskTypesPage extends ReflectionModel implements Model {
 
   /**
