@@ -6,7 +6,7 @@
   <groupId>eu.internetofus</groupId>
   <artifactId>common-parent</artifactId>
   <relativePath>../pom.xml</relativePath>
-  <version>1.6.0</version>
+  <version>1.7.0</version>
  </parent>
  <organization>
   <name>UDT-IA, IIIA-CSIC</name>
@@ -77,6 +77,11 @@
    <groupId>com.google.guava</groupId>
    <artifactId>guava</artifactId>
    <version>${com.google.guava-version}</version>
+  </dependency>
+  <dependency>
+   <groupId>javax.validation</groupId>
+   <artifactId>validation-api</artifactId>
+   <version>${javax.validation-version}</version>
   </dependency>
   <dependency>
    <groupId>eu.internetofus</groupId>

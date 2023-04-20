@@ -24,8 +24,9 @@ import eu.internetofus.common.model.Model;
 import eu.internetofus.common.model.ValidationErrorException;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import java.nio.charset.Charset;
-import org.apache.commons.io.IOUtils;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 
 /**
  * The methods implemented by any default protocol.
@@ -57,7 +58,7 @@ public interface DefaultProtocol {
         final var resource = "eu/internetofus/common/protocols/DefaultProtocol_"
             + this.taskTypeId().replaceAll("\\W", "_") + ".json";
         final var input = this.getClass().getClassLoader().getResourceAsStream(resource);
-        final var content = IOUtils.toString(input, Charset.defaultCharset());
+        final var content = new BufferedReader(new InputStreamReader(input)).lines().collect(Collectors.joining("\n"));
         final var taskType = Model.fromString(content, TaskType.class);
         promise.complete(taskType);
 

@@ -34,12 +34,13 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.openapi.RouterBuilder;
-import java.nio.charset.Charset;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.stream.Collectors;
 import javax.ws.rs.core.Response.Status;
-import org.apache.commons.io.IOUtils;
 import org.tinylog.Logger;
 
 /**
@@ -141,7 +142,7 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
       try {
 
         final var in = this.getClass().getClassLoader().getResourceAsStream(this.getOpenAPIResourcePath());
-        final var openapi = IOUtils.toString(in, Charset.defaultCharset());
+        final var openapi = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
         final var apiConf = this.config().getJsonObject("api", new JsonObject());
         final var path = FileSystems.getDefault()
             .getPath(apiConf.getString(OPENAPI_FILE_PATH_KEY, DEFAULT_OPENAPI_FILE_PATH));
@@ -165,7 +166,7 @@ public abstract class AbstractAPIVerticle extends AbstractVerticle {
   protected Handler<RoutingContext> createCORSHandler() {
 
     final var corsConf = this.config().getJsonObject("api", new JsonObject()).getJsonObject("cors", new JsonObject());
-    var handler = CorsHandler.create(corsConf.getString("origin", "*"));
+    var handler = CorsHandler.create().addOrigin(corsConf.getString("origin", "*"));
     final var headers = corsConf.getJsonArray("headers",
         new JsonArray().add(AbstractServicesVerticle.WENET_COMPONENT_APIKEY_HEADER).add(HttpHeaders.CONTENT_TYPE)
             .add(HttpHeaders.CONTENT_LENGTH).add(HttpHeaders.CONTENT_RANGE).add(HttpHeaders.ACCEPT)

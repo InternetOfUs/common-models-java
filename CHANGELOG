@@ -3,6 +3,11 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
+## Version 1.7.0 (2023-04-20)
+
+ * Add services to manage the deletion of a profile.
+ 
+ 
 ## Version 1.6.0 (2023-03-22)
 
  * Add the field latestKnownActivity to the profile

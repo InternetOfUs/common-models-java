@@ -30,12 +30,13 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import java.nio.charset.Charset;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -147,7 +148,7 @@ public class OpenAPIValidatorTest {
       final var loader = OpenAPIValidatorTest.class.getClassLoader();
       final var name = "eu/internetofus/common/vertx/" + namePrefix + ".json";
       final var input = loader.getResourceAsStream(name);
-      final var code = IOUtils.toString(input, Charset.defaultCharset());
+      final var code = new BufferedReader(new InputStreamReader(input)).lines().collect(Collectors.joining("\n"));
       final var content = (JsonObject) Json.decodeValue(code);
       for (final var id : content.fieldNames()) {
 

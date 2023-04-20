@@ -557,4 +557,52 @@ public interface WeNetInteractionProtocolEngine extends WeNetComponent {
   void mergeTaskUserState(@NotNull final String taskId, @NotNull final String userId,
       @NotNull final JsonObject newState, Handler<AsyncResult<JsonObject>> handler);
 
+  /**
+   * Called when a profile has been deleted.
+   *
+   * @param userId  identifier of the user that has been deleted.
+   * @param handler to the deleted notification.
+   */
+  void profileDeleted(@NotNull String userId, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Called when a profile has been deleted.
+   *
+   * @param userId identifier of the user that has been deleted.
+   *
+   * @return the future to the notification process.
+   */
+  @GenIgnore
+  default Future<Void> profileDeleted(@NotNull final String userId) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.profileDeleted(userId, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Called when a task has been deleted.
+   *
+   * @param taskId  identifier of the task that has been deleted.
+   * @param handler to the deleted notification.
+   */
+  void taskDeleted(@NotNull String taskId, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Create a task.
+   *
+   * @param taskId identifier of the task that has been deleted.
+   *
+   * @return the future to the notification process.
+   */
+  @GenIgnore
+  default Future<Void> taskDeleted(@NotNull final String taskId) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.taskDeleted(taskId, promise);
+    return promise.future();
+
+  }
+
 }

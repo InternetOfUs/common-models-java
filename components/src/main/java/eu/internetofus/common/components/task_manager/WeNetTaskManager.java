@@ -573,4 +573,28 @@ public interface WeNetTaskManager extends WeNetComponent {
    */
   void isTaskTypeDefined(final String id, @NotNull Handler<AsyncResult<Boolean>> handler);
 
+  /**
+   * Called when a profile has been deleted.
+   *
+   * @param userId  identifier of the user that has been deleted.
+   * @param handler to the deleted notification.
+   */
+  void profileDeleted(@NotNull String userId, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Called when a profile has been deleted.
+   *
+   * @param userId identifier of the user that has been deleted.
+   *
+   * @return the future to the notification process.
+   */
+  @GenIgnore
+  default Future<Void> profileDeleted(@NotNull final String userId) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.profileDeleted(userId, promise);
+    return promise.future();
+
+  }
+
 }

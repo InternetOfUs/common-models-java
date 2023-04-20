@@ -309,4 +309,13 @@ public class WeNetTaskManagerClient extends ComponentClientWithCache implements 
     this.headWithCache("/taskTypes", id).onComplete(handler);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void profileDeleted(@NotNull final String userId, @NotNull final Handler<AsyncResult<Void>> handler) {
+
+    this.delete("/profile", userId).onComplete(handler);
+  }
+
 }

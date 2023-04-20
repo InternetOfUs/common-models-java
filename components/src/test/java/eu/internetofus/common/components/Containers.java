@@ -50,15 +50,16 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
-import org.apache.commons.io.IOUtils;
+import java.util.stream.Collectors;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.tinylog.Logger;
@@ -78,17 +79,17 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
   /**
    * The name of the WeNet profile manager docker container to use.
    */
-  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:1.3.0";
+  public static final String WENET_PROFILE_MANAGER_DOCKER_NAME = "internetofus/profile-manager:1.4.0";
 
   /**
    * The name of the WeNet task manager docker container to use.
    */
-  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:1.0.5";
+  public static final String WENET_TASK_MANAGER_DOCKER_NAME = "internetofus/task-manager:1.1.0";
 
   /**
    * The name of the WeNet interaction manager docker container to use.
    */
-  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:1.3.2";
+  public static final String WENET_INTERACTION_PROTOCOL_ENGINE_DOCKER_NAME = "internetofus/interaction-protocol-engine:1.4.0";
 
   /**
    * The name of the WeNet profile manager extension wordnetsim docker container
@@ -658,7 +659,8 @@ public class Containers extends MongoContainer<Containers> implements WeNetCompo
         try {
 
           final var url = iter.next();
-          final var json = IOUtils.toString(new URL(url), Charset.defaultCharset());
+          final var json = new BufferedReader(new InputStreamReader(new URL(url).openStream())).lines()
+              .collect(Collectors.joining("\n"));
           final var info = new JsonObject(json);
           if (info.getString("name", null) != null) {
 

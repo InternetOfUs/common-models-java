@@ -30,11 +30,12 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.core.shareddata.ClusterSerializable;
 import io.vertx.ext.web.client.HttpResponse;
-import java.nio.charset.Charset;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
-import org.apache.commons.io.IOUtils;
 import org.tinylog.Logger;
 
 /**
@@ -283,7 +284,7 @@ public interface Model {
     try {
 
       final var stream = type.getClassLoader().getResourceAsStream(resourceName);
-      final var encoded = IOUtils.toString(stream, Charset.defaultCharset());
+      final var encoded = new BufferedReader(new InputStreamReader(stream)).lines().collect(Collectors.joining("\n"));
       return fromString(encoded, type);
 
     } catch (final Throwable throwable) {

@@ -19,7 +19,6 @@
  */
 package eu.internetofus.common.vertx;
 
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import eu.internetofus.common.model.ValidationErrorException;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -27,17 +26,19 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.api.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
-import org.apache.commons.io.IOUtils;
 
 /**
  * The class used to validate an OpenAPI specification or that a value follow an
@@ -362,7 +363,8 @@ public class OpenAPIValidator {
         try {
 
           final var url = new URL(remote);
-          var content = IOUtils.toString(url.openStream(), Charset.defaultCharset());
+          var content = new BufferedReader(new InputStreamReader(url.openStream())).lines()
+              .collect(Collectors.joining("\n"));
           if (!url.getPath().endsWith(".json")) {
 
             final var mapper = new YAMLMapper();

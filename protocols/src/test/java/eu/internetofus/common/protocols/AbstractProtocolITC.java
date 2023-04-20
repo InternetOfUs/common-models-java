@@ -50,12 +50,13 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.junit5.VertxTestContext;
-import java.nio.charset.Charset;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
-import org.apache.commons.io.IOUtils;
+import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -291,7 +292,7 @@ public abstract class AbstractProtocolITC {
       try {
 
         final var input = this.getClass().getClassLoader().getResourceAsStream(resourcePath);
-        final var content = IOUtils.toString(input, Charset.defaultCharset());
+        final var content = new BufferedReader(new InputStreamReader(input)).lines().collect(Collectors.joining("\n"));
         final var taskType = Model.fromString(content, TaskType.class);
         promise.complete(taskType);
 
@@ -357,14 +358,14 @@ public abstract class AbstractProtocolITC {
   protected <T> Future<T> waitUntil(final Vertx vertx, final VertxTestContext testContext,
       final Supplier<Future<T>> supplier, final Predicate<T> check) {
 
-    Promise<T> promise = Promise.promise();
+    final Promise<T> promise = Promise.promise();
     final var address = UUID.randomUUID().toString();
     final var consumer = vertx.eventBus().localConsumer(address);
     final var options = new DeliveryOptions();
     options.setLocalOnly(true);
     consumer.handler(message -> {
 
-      var step = ((Number) message.body()).intValue();
+      final var step = ((Number) message.body()).intValue();
       Logger.trace("Start a wait until step {}", step);
       if (testContext.completed()) {
 
@@ -378,13 +379,13 @@ public abstract class AbstractProtocolITC {
           if (result.failed()) {
 
             consumer.unregister();
-            var error = result.cause();
+            final var error = result.cause();
             promise.fail(error);
             Logger.trace(error, "Wait until step {} fails because can get model", step);
 
           } else {
 
-            var target = result.result();
+            final var target = result.result();
             vertx.executeBlocking(block -> {
 
               try {
@@ -400,7 +401,7 @@ public abstract class AbstractProtocolITC {
                   vertx.eventBus().send(address, step + 1, options);
                 }
 
-              } catch (Throwable t) {
+              } catch (final Throwable t) {
 
                 consumer.unregister();
                 promise.fail(t);

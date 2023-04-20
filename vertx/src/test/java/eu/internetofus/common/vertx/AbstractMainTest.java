@@ -31,12 +31,13 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.nio.charset.Charset;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.Locale;
-import org.apache.commons.io.IOUtils;
+import java.util.stream.Collectors;
 import org.itsallcode.io.Capturable;
 import org.itsallcode.junit.sysextensions.SystemErrGuard;
 import org.itsallcode.junit.sysextensions.SystemOutGuard;
@@ -437,12 +438,12 @@ public class AbstractMainTest {
           JsonObject defaultConf = null;
           try {
 
-            var value = IOUtils.toString(new FileReader(effectiveConf));
+            var value = new BufferedReader(new FileReader(effectiveConf)).lines().collect(Collectors.joining("\n"));
             storedConf = new JsonObject(value);
 
             final var input = this.getClass().getClassLoader()
                 .getResourceAsStream(this.main.getDefaultModuleConfigurationResurcePath());
-            value = IOUtils.toString(input, Charset.defaultCharset());
+            value = new BufferedReader(new InputStreamReader(input)).lines().collect(Collectors.joining("\n"));
             defaultConf = new JsonObject(value);
 
           } catch (final Throwable t) {
@@ -495,7 +496,8 @@ public class AbstractMainTest {
 
           try {
 
-            final var value = IOUtils.toString(new FileReader(effectiveConf));
+            final var value = new BufferedReader(new FileReader(effectiveConf)).lines()
+                .collect(Collectors.joining("\n"));
             new JsonObject(value);
             testContext.failNow(new Throwable("Stored effective configuration"));
 
