@@ -346,6 +346,60 @@ public class ComponentClient {
   }
 
   /**
+   * Put an object to a component.
+   *
+   * @param content     object to put.
+   * @param paths       to the component to put.
+   * @param queryParams parameters for the request.
+   *
+   * @return the future with the response object.
+   */
+  protected Future<JsonObject> put(@NotNull final JsonObject content, final Map<String, String> queryParams,
+      @NotNull final Object... paths) {
+
+    return this.request(HttpMethod.PUT, this.createAbsoluteUrlWith(paths), queryParams, content.toBuffer(),
+        this.createObjectExtractor());
+
+  }
+
+  /**
+   * Put an array to a component.
+   *
+   * @param content     array to put.
+   * @param paths       to the component to put.
+   * @param queryParams parameters for the request.
+   *
+   * @return the future with the response array.
+   */
+  protected Future<JsonArray> put(@NotNull final JsonArray content, final Map<String, String> queryParams,
+      @NotNull final Object... paths) {
+
+    return this.request(HttpMethod.PUT, this.createAbsoluteUrlWith(paths), queryParams, content.toBuffer(),
+        this.createArrayExtractor());
+
+  }
+
+  /**
+   * Put an object to a component.
+   *
+   * @param path        to the component to put.
+   * @param queryParams parameters for the request.
+   * @param content     object to put.
+   * @param extractor   to obtain the result form a buffer.
+   *
+   * @param <T>         type of the response content.
+   *
+   * @return the future with the response object.
+   */
+  protected <T> Future<T> put(@NotNull final String path, final Map<String, String> queryParams,
+      @NotNull final ClusterSerializable content, @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
+
+    final var buffer = Json.CODEC.toBuffer(content, false);
+    return this.request(HttpMethod.PUT, path, queryParams, buffer, extractor);
+
+  }
+
+  /**
    * Patch an object to a component.
    *
    * @param content object to patch.
@@ -370,26 +424,6 @@ public class ComponentClient {
   protected Future<JsonArray> patch(@NotNull final JsonArray content, @NotNull final Object... paths) {
 
     return this.patch(content, (Map<String, String>) null, paths);
-
-  }
-
-  /**
-   * Put an object to a component.
-   *
-   * @param path        to the component to put.
-   * @param queryParams parameters for the request.
-   * @param content     object to put.
-   * @param extractor   to obtain the result form a buffer.
-   *
-   * @param <T>         type of the response content.
-   *
-   * @return the future with the response object.
-   */
-  protected <T> Future<T> put(@NotNull final String path, final Map<String, String> queryParams,
-      @NotNull final ClusterSerializable content, @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
-
-    final var buffer = Json.CODEC.toBuffer(content, false);
-    return this.request(HttpMethod.PUT, path, queryParams, buffer, extractor);
 
   }
 

@@ -438,7 +438,9 @@ public class AbstractMainTest {
           JsonObject defaultConf = null;
           try {
 
-            var value = new BufferedReader(new FileReader(effectiveConf)).lines().collect(Collectors.joining("\n"));
+            final var reader = new FileReader(effectiveConf);
+            var value = new BufferedReader(reader).lines().collect(Collectors.joining("\n"));
+            reader.close();
             storedConf = new JsonObject(value);
 
             final var input = this.getClass().getClassLoader()
@@ -496,8 +498,9 @@ public class AbstractMainTest {
 
           try {
 
-            final var value = new BufferedReader(new FileReader(effectiveConf)).lines()
-                .collect(Collectors.joining("\n"));
+            final var reader = new FileReader(effectiveConf);
+            final var value = new BufferedReader(reader).lines().collect(Collectors.joining("\n"));
+            reader.close();
             new JsonObject(value);
             testContext.failNow(new Throwable("Stored effective configuration"));
 
