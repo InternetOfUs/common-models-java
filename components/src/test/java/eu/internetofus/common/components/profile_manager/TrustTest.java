@@ -20,28 +20,26 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import eu.internetofus.common.components.models.WeNetUserProfileTest;
 import eu.internetofus.common.model.ModelTestCase;
 
 /**
- * Test the {@link HistoricWeNetUserProfile}.
+ * Test the {@link Trust}
  *
- * @see HistoricWeNetUserProfile
+ * @see Trust
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class HistoricWeNetUserProfileTest extends ModelTestCase<HistoricWeNetUserProfile> {
+public class TrustTest extends ModelTestCase<Trust> {
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public HistoricWeNetUserProfile createModelExample(final int index) {
+  public Trust createModelExample(final int index) {
 
-    final var model = new HistoricWeNetUserProfile();
-    model.from = index;
-    model.to = 10 + index;
-    model.profile = new WeNetUserProfileTest().createBasicExample(index);
+    final var model = new Trust();
+    model.value = 1.0 / Math.max(1, index + 2);
+    model.calculatedTime = index;
     return model;
   }
 

@@ -20,29 +20,36 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import eu.internetofus.common.components.models.WeNetUserProfileTest;
-import eu.internetofus.common.model.ModelTestCase;
-
 /**
- * Test the {@link HistoricWeNetUserProfile}.
- *
- * @see HistoricWeNetUserProfile
+ * Type of aggregation function used to calculate the trust.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class HistoricWeNetUserProfileTest extends ModelTestCase<HistoricWeNetUserProfile> {
+public enum TrustAggregator {
 
   /**
-   * {@inheritDoc}
+   * This is based on the recency rating events. It is the function used on uHelp.
    */
-  @Override
-  public HistoricWeNetUserProfile createModelExample(final int index) {
+  RECENCY_BASED,
 
-    final var model = new HistoricWeNetUserProfile();
-    model.from = index;
-    model.to = 10 + index;
-    model.profile = new WeNetUserProfileTest().createBasicExample(index);
-    return model;
-  }
+  /**
+   * The trust is the average of the rating event.
+   */
+  AVERAGE,
+
+  /**
+   * The trust is the median of the rating event.
+   */
+  MEDIAN,
+
+  /**
+   * The trust is the minimum rating.
+   */
+  MINIMUM,
+
+  /**
+   * The trust is the maximum rating.
+   */
+  MAXIMUM;
 
 }

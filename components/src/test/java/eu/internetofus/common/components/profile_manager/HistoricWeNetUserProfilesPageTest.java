@@ -20,9 +20,8 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import java.util.ArrayList;
-import eu.internetofus.common.components.profile_manager.HistoricWeNetUserProfilesPage;
 import eu.internetofus.common.model.ModelTestCase;
+import java.util.ArrayList;
 
 /**
  * Test the {@link HistoricWeNetUserProfilesPage}.

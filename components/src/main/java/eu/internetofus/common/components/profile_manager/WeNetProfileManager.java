@@ -721,4 +721,89 @@ public interface WeNetProfileManager extends WeNetComponent {
 
   }
 
+  /**
+   * Called when want to add a new trust event.
+   *
+   * @param event   to add.
+   * @param handler of the added result.
+   */
+  void addTrustEvent(final JsonObject event, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Called when want to add a new trust event.
+   *
+   * @param event to add.
+   *
+   * @return the added result.
+   */
+  @GenIgnore
+  default Future<UserPerformanceRatingEvent> addTrustEvent(final UserPerformanceRatingEvent event) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.addTrustEvent(event.toJsonObject(), promise);
+    return Model.fromFutureJsonObject(promise.future(), UserPerformanceRatingEvent.class);
+
+  }
+
+  /**
+   * Called when want to calculate the trust of an user respect another.
+   *
+   * @param sourceId     identifier of the user that inform of the trust with
+   *                     another user.
+   * @param targetId     identifier of the user that would obtain the trust.
+   * @param appId        application identifier to match for the events to use on
+   *                     the calculus.
+   * @param communityId  community identifier to match for the events to use on
+   *                     the calculus.
+   * @param taskTypeId   task type identifier to match for the events to use on
+   *                     the calculus.
+   * @param taskId       task identifier to match for the events to use on the
+   *                     calculus.
+   * @param relationship to match for the events to use on the calculus.
+   * @param reportFrom   minimum report time that the events has to be reported to
+   *                     use on the calculus.
+   * @param reportTo     maximum report time that the events has to be reported to
+   *                     use on the calculus.
+   * @param aggregator   type of trust calculus.
+   * @param handler      the calculated trust.
+   */
+  void calculateTrust(final String sourceId, final String targetId, final String appId, final String communityId,
+      final String taskTypeId, final String taskId, final String relationship, final Long reportFrom,
+      final Long reportTo, final TrustAggregator aggregator, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Called when want to calculate the trust of an user respect another.
+   *
+   * @param sourceId     identifier of the user that inform of the trust with
+   *                     another user.
+   * @param targetId     identifier of the user that would obtain the trust.
+   * @param appId        application identifier to match for the events to use on
+   *                     the calculus.
+   * @param communityId  community identifier to match for the events to use on
+   *                     the calculus.
+   * @param taskTypeId   task type identifier to match for the events to use on
+   *                     the calculus.
+   * @param taskId       task identifier to match for the events to use on the
+   *                     calculus.
+   * @param relationship to match for the events to use on the calculus.
+   * @param reportFrom   minimum report time that the events has to be reported to
+   *                     use on the calculus.
+   * @param reportTo     maximum report time that the events has to be reported to
+   *                     use on the calculus.
+   * @param aggregator   type of trust calculus.
+   *
+   * @return the calculated trust.
+   */
+  @GenIgnore
+  default Future<Trust> calculateTrust(final String sourceId, final String targetId, final String appId,
+      final String communityId, final String taskTypeId, final String taskId, final String relationship,
+      final Long reportFrom, final Long reportTo, final TrustAggregator aggregator) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.calculateTrust(sourceId, targetId, appId, communityId, taskTypeId, taskId, relationship, reportFrom, reportTo,
+        aggregator, promise);
+    return Model.fromFutureJsonObject(promise.future(), Trust.class);
+
+  }
+
 }

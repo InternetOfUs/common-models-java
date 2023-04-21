@@ -379,4 +379,58 @@ public class WeNetProfileManagerClient extends ComponentClientWithCache implemen
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void addTrustEvent(final JsonObject event, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    this.post(event, "/trusts/rating").onComplete(handler);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void calculateTrust(final String sourceId, final String targetId, final String appId, final String communityId,
+      final String taskTypeId, final String taskId, final String relationship, final Long reportFrom,
+      final Long reportTo, final TrustAggregator aggregator, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    final var params = new LinkedHashMap<String, String>();
+    if (appId != null) {
+
+      params.put("appId", appId);
+    }
+    if (communityId != null) {
+
+      params.put("communityId", communityId);
+    }
+    if (taskTypeId != null) {
+
+      params.put("taskTypeId", taskTypeId);
+    }
+    if (taskId != null) {
+
+      params.put("taskId", taskId);
+    }
+    if (relationship != null) {
+
+      params.put("relationship", relationship);
+    }
+    if (reportFrom != null) {
+
+      params.put("reportFrom", String.valueOf(reportFrom));
+    }
+    if (reportTo != null) {
+
+      params.put("reportTo", String.valueOf(reportTo));
+    }
+    if (aggregator != null) {
+
+      params.put("aggregator", aggregator.name());
+    }
+    this.getJsonObject(params, "/trusts", sourceId, "/with", targetId).onComplete(handler);
+
+  }
+
 }

@@ -20,29 +20,28 @@
 
 package eu.internetofus.common.components.profile_manager;
 
-import eu.internetofus.common.components.models.WeNetUserProfileTest;
-import eu.internetofus.common.model.ModelTestCase;
+import eu.internetofus.common.model.Model;
+import eu.internetofus.common.model.ReflectionModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Test the {@link HistoricWeNetUserProfile}.
- *
- * @see HistoricWeNetUserProfile
+ * Contains information of the calculated trust.
  *
  * @author UDT-IA, IIIA-CSIC
  */
-public class HistoricWeNetUserProfileTest extends ModelTestCase<HistoricWeNetUserProfile> {
+@Schema(description = "The calculated trust between two users.")
+public class Trust extends ReflectionModel implements Model {
 
   /**
-   * {@inheritDoc}
+   * The trust over the user. It has to be on the range {@code [0,1]}.
    */
-  @Override
-  public HistoricWeNetUserProfile createModelExample(final int index) {
+  @Schema(description = "The trust over an user respect another. It has to be on the range [0,1].", example = "0.43")
+  public Number value;
 
-    final var model = new HistoricWeNetUserProfile();
-    model.from = index;
-    model.to = 10 + index;
-    model.profile = new WeNetUserProfileTest().createBasicExample(index);
-    return model;
-  }
+  /**
+   * The time when the trust was calculated.
+   */
+  @Schema(description = "The difference, measured in seconds, between the trust was calculated and midnight, January 1, 1970 UTC.", example = "1571412479710")
+  public long calculatedTime;
 
 }
