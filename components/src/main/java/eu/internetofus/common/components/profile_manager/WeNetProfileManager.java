@@ -320,12 +320,14 @@ public interface WeNetProfileManager extends WeNetComponent {
   /**
    * Update a {@link WeNetUserProfile} in Json format.
    *
-   * @param id      identifier of the profile to update.
-   * @param profile to update.
-   *
-   * @param handler of the updated profile.
+   * @param id                           identifier of the profile to update.
+   * @param profile                      to update.
+   * @param storeProfileChangesInHistory id {@code true} if has to store the
+   *                                     changes. If it is {@code null} use the
+   *                                     default configuration.
+   * @param handler                      of the updated profile.
    */
-  void updateProfile(@NotNull String id, @NotNull JsonObject profile,
+  void updateProfile(@NotNull String id, @NotNull JsonObject profile, Boolean storeProfileChangesInHistory,
       @NotNull Handler<AsyncResult<JsonObject>> handler);
 
   /**
@@ -339,8 +341,27 @@ public interface WeNetProfileManager extends WeNetComponent {
   @GenIgnore
   default Future<WeNetUserProfile> updateProfile(@NotNull final String id, @NotNull final WeNetUserProfile profile) {
 
+    return this.updateProfile(id, profile, null);
+
+  }
+
+  /**
+   * Update a profile.
+   *
+   * @param id                           identifier of the profile to update.
+   * @param profile                      to update.
+   * @param storeProfileChangesInHistory id {@code true} if has to store the
+   *                                     changes. If it is {@code null} use the
+   *                                     default configuration.
+   *
+   * @return the future updated profile.
+   */
+  @GenIgnore
+  default Future<WeNetUserProfile> updateProfile(@NotNull final String id, @NotNull final WeNetUserProfile profile,
+      final Boolean storeProfileChangesInHistory) {
+
     final Promise<JsonObject> promise = Promise.promise();
-    this.updateProfile(id, profile.toJsonObject(), promise);
+    this.updateProfile(id, profile.toJsonObject(), storeProfileChangesInHistory, promise);
     return Model.fromFutureJsonObject(promise.future(), WeNetUserProfile.class);
 
   }
@@ -355,7 +376,7 @@ public interface WeNetProfileManager extends WeNetComponent {
   @GenIgnore
   default Future<WeNetUserProfile> updateProfile(@NotNull final WeNetUserProfile profile) {
 
-    return this.updateProfile(profile.id, profile);
+    return this.updateProfile(profile.id, profile, null);
 
   }
 
@@ -633,6 +654,70 @@ public interface WeNetProfileManager extends WeNetComponent {
     final Promise<Void> promise = Promise.promise();
     this.deleteSocialNetworkRelationships(appId, sourceId, targetId, type, weightFrom, weightTo, promise);
     return promise.future();
+
+  }
+
+  /**
+   * Called when a task has been deleted.
+   *
+   * @param taskId  identifier of the task that has been deleted.
+   * @param handler to the deleted notification.
+   */
+  void taskDeleted(@NotNull String taskId, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Create a task.
+   *
+   * @param taskId identifier of the task that has been deleted.
+   *
+   * @return the future to the notification process.
+   */
+  @GenIgnore
+  default Future<Void> taskDeleted(@NotNull final String taskId) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.taskDeleted(taskId, promise);
+    return promise.future();
+
+  }
+
+  /**
+   * Get the stored changes for an user profile.
+   *
+   * @param userId  identifier of the user to get the historic values.
+   * @param from    the minimum time stamp that define the range the profile is
+   *                active.
+   * @param to      the maximum time stamp that define the range the profile is
+   *                active.
+   * @param order   of the profiles to return.
+   * @param offset  index of the first task to return.
+   * @param limit   number maximum of tasks to return.
+   * @param handler of the user profile history.
+   */
+  void getProfileHistoricPage(final String userId, final Long from, final Long to, final String order, final int offset,
+      final int limit, @NotNull Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * Get the stored changes for an user profile.
+   *
+   * @param userId identifier of the user to get the historic values.
+   * @param from   the minimum time stamp that define the range the profile is
+   *               active.
+   * @param to     the maximum time stamp that define the range the profile is
+   *               active.
+   * @param order  of the profiles to return.
+   * @param offset index of the first task to return.
+   * @param limit  number maximum of tasks to return.
+   *
+   * @return the future user profile history.
+   */
+  @GenIgnore
+  default Future<HistoricWeNetUserProfilesPage> getProfileHistoricPage(final String userId, final Long from,
+      final Long to, final String order, final int offset, final int limit) {
+
+    final Promise<JsonObject> promise = Promise.promise();
+    this.getProfileHistoricPage(userId, from, to, order, offset, limit, promise);
+    return Model.fromFutureJsonObject(promise.future(), HistoricWeNetUserProfilesPage.class);
 
   }
 

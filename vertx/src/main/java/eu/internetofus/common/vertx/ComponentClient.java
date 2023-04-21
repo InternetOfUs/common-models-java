@@ -213,7 +213,7 @@ public class ComponentClient {
   protected <T> Future<T> post(@NotNull final JsonObject content,
       @NotNull final Function<HttpResponse<Buffer>, T> extractor, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), content.toBuffer(), extractor);
+    return this.post(content, extractor, (Map<String, String>) null, paths);
 
   }
 
@@ -227,8 +227,7 @@ public class ComponentClient {
    */
   protected Future<JsonObject> post(@NotNull final JsonObject content, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), content.toBuffer(),
-        this.createObjectExtractor());
+    return this.post(content, (Map<String, String>) null, paths);
 
   }
 
@@ -242,7 +241,60 @@ public class ComponentClient {
    */
   protected Future<JsonArray> post(@NotNull final JsonArray content, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), content.toBuffer(),
+    return this.post(content, (Map<String, String>) null, paths);
+
+  }
+
+  /**
+   * Post an object to a component.
+   *
+   * @param content     object to post.
+   * @param paths       to the component to post.
+   * @param queryParams parameters for the request.
+   * @param extractor   to obtain the result form a buffer.
+   *
+   * @param <T>         type of the response content.
+   *
+   * @return the future with the response object.
+   */
+  protected <T> Future<T> post(@NotNull final JsonObject content,
+      @NotNull final Function<HttpResponse<Buffer>, T> extractor, final Map<String, String> queryParams,
+      @NotNull final Object... paths) {
+
+    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), queryParams, content.toBuffer(), extractor);
+
+  }
+
+  /**
+   * Post an object to a component.
+   *
+   * @param content     object to post.
+   * @param paths       to the component to post.
+   * @param queryParams parameters for the request.
+   *
+   * @return the future with the response object.
+   */
+  protected Future<JsonObject> post(@NotNull final JsonObject content, final Map<String, String> queryParams,
+      @NotNull final Object... paths) {
+
+    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), queryParams, content.toBuffer(),
+        this.createObjectExtractor());
+
+  }
+
+  /**
+   * Post an array to a component.
+   *
+   * @param content     array to post.
+   * @param paths       to the component to post.
+   * @param queryParams parameters for the request.
+   *
+   * @return the future with the response array.
+   */
+  protected Future<JsonArray> post(@NotNull final JsonArray content, final Map<String, String> queryParams,
+      @NotNull final Object... paths) {
+
+    return this.request(HttpMethod.POST, this.createAbsoluteUrlWith(paths), queryParams, content.toBuffer(),
         this.createArrayExtractor());
 
   }
@@ -257,7 +309,7 @@ public class ComponentClient {
    */
   protected Future<JsonObject> put(@NotNull final JsonObject content, @NotNull final Object... paths) {
 
-    return this.put(this.createAbsoluteUrlWith(paths), content, this.createObjectExtractor());
+    return this.put(content, (Map<String, String>) null, paths);
 
   }
 
@@ -271,7 +323,7 @@ public class ComponentClient {
    */
   protected Future<JsonArray> put(@NotNull final JsonArray content, @NotNull final Object... paths) {
 
-    return this.put(this.createAbsoluteUrlWith(paths), content, this.createArrayExtractor());
+    return this.put(content, (Map<String, String>) null, paths);
 
   }
 
@@ -289,8 +341,7 @@ public class ComponentClient {
   protected <T> Future<T> put(@NotNull final String path, @NotNull final ClusterSerializable content,
       @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
 
-    final var buffer = Json.CODEC.toBuffer(content, false);
-    return this.request(HttpMethod.PUT, path, buffer, extractor);
+    return this.put(path, (Map<String, String>) null, content, extractor);
 
   }
 
@@ -304,8 +355,7 @@ public class ComponentClient {
    */
   protected Future<JsonObject> patch(@NotNull final JsonObject content, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.PATCH, this.createAbsoluteUrlWith(paths), content.toBuffer(),
-        this.createObjectExtractor());
+    return this.patch(content, (Map<String, String>) null, paths);
 
   }
 
@@ -319,7 +369,60 @@ public class ComponentClient {
    */
   protected Future<JsonArray> patch(@NotNull final JsonArray content, @NotNull final Object... paths) {
 
-    return this.request(HttpMethod.PATCH, this.createAbsoluteUrlWith(paths), content.toBuffer(),
+    return this.patch(content, (Map<String, String>) null, paths);
+
+  }
+
+  /**
+   * Put an object to a component.
+   *
+   * @param path        to the component to put.
+   * @param queryParams parameters for the request.
+   * @param content     object to put.
+   * @param extractor   to obtain the result form a buffer.
+   *
+   * @param <T>         type of the response content.
+   *
+   * @return the future with the response object.
+   */
+  protected <T> Future<T> put(@NotNull final String path, final Map<String, String> queryParams,
+      @NotNull final ClusterSerializable content, @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
+
+    final var buffer = Json.CODEC.toBuffer(content, false);
+    return this.request(HttpMethod.PUT, path, queryParams, buffer, extractor);
+
+  }
+
+  /**
+   * Patch an object to a component.
+   *
+   * @param content     object to patch.
+   * @param paths       to the component to patch.
+   * @param queryParams parameters for the request.
+   *
+   * @return the future with the response object.
+   */
+  protected Future<JsonObject> patch(@NotNull final JsonObject content, final Map<String, String> queryParams,
+      @NotNull final Object... paths) {
+
+    return this.request(HttpMethod.PATCH, this.createAbsoluteUrlWith(paths), queryParams, content.toBuffer(),
+        this.createObjectExtractor());
+
+  }
+
+  /**
+   * Patch an array to a component.
+   *
+   * @param content     array to patch.
+   * @param paths       to the component to patch.
+   * @param queryParams parameters for the request.
+   *
+   * @return the future with the response array.
+   */
+  protected Future<JsonArray> patch(@NotNull final JsonArray content, final Map<String, String> queryParams,
+      @NotNull final Object... paths) {
+
+    return this.request(HttpMethod.PATCH, this.createAbsoluteUrlWith(paths), queryParams, content.toBuffer(),
         this.createArrayExtractor());
 
   }
@@ -337,12 +440,14 @@ public class ComponentClient {
       final Map<String, String> queryParams) {
 
     var request = this.client.requestAbs(method, url);
-    for (final var entry : queryParams.entrySet()) {
+    if (queryParams != null) {
 
-      final var key = entry.getKey();
-      final var value = entry.getValue();
-      request = request.addQueryParam(key, value);
+      for (final var entry : queryParams.entrySet()) {
 
+        final var key = entry.getKey();
+        final var value = entry.getValue();
+        request = request.addQueryParam(key, value);
+      }
     }
     return request;
 
@@ -447,16 +552,18 @@ public class ComponentClient {
   /**
    * Request and process the response.
    *
-   * @param method    the HTTP method.
-   * @param url       to request.
-   * @param content   to send.
-   * @param extractor function to obtain the
+   * @param method      the HTTP method.
+   * @param url         to request.
+   * @param queryParams parameters for the request.
+   * @param content     to send.
+   * @param extractor   function to obtain the
    *
-   * @param <T>       type of model to receive.
+   * @param <T>         type of model to receive.
    *
    * @return the future with the received model as response.
    */
-  protected <T> Future<T> request(final HttpMethod method, @NotNull final String url, final Buffer content,
+  protected <T> Future<T> request(final HttpMethod method, @NotNull final String url,
+      final Map<String, String> queryParams, final Buffer content,
       @NotNull final Function<HttpResponse<Buffer>, T> extractor) {
 
     final Promise<T> promise = Promise.promise();
@@ -464,7 +571,7 @@ public class ComponentClient {
     Logger.trace("{} with {} STARTED", actionId, content);
     try {
 
-      this.client.requestAbs(method, url).sendJson(content)
+      this.createRequestFor(method, url, queryParams).sendJson(content)
           .onSuccess(this.createHandlerThatExtractBodyFromSuccessResponse(extractor, promise, actionId))
           .onFailure(this.createRequestFailureHandler(promise, actionId));
 

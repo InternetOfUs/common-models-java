@@ -26,7 +26,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -176,9 +178,18 @@ public class WeNetProfileManagerClient extends ComponentClientWithCache implemen
    */
   @Override
   public void updateProfile(@NotNull final String id, @NotNull final JsonObject profile,
-      @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+      final Boolean storeProfileChangesInHistory, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
 
-    this.put(profile, "/profiles", id).onComplete(handler);
+    if (storeProfileChangesInHistory != null) {
+
+      final Map<String, String> queryParams = new HashMap<>();
+      queryParams.put("storeProfileChangesInHistory", String.valueOf(storeProfileChangesInHistory));
+      this.put(profile, queryParams, "/profiles", id).onComplete(handler);
+
+    } else {
+
+      this.put(profile, "/profiles", id).onComplete(handler);
+    }
 
   }
 
@@ -330,6 +341,41 @@ public class WeNetProfileManagerClient extends ComponentClientWithCache implemen
       params.put("weightTo", String.valueOf(weightTo));
     }
     this.delete(params, "/relationships").onComplete(handler);
+
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void taskDeleted(@NotNull final String taskId, @NotNull final Handler<AsyncResult<Void>> handler) {
+
+    this.delete("/task", taskId).onComplete(handler);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void getProfileHistoricPage(final String userId, final Long from, final Long to, final String order,
+      final int offset, final int limit, @NotNull final Handler<AsyncResult<JsonObject>> handler) {
+
+    final var params = new LinkedHashMap<String, String>();
+    if (from != null) {
+
+      params.put("from", String.valueOf(from));
+    }
+    if (to != null) {
+
+      params.put("to", String.valueOf(to));
+    }
+    if (order != null) {
+
+      params.put("order", order);
+    }
+    params.put("offset", String.valueOf(offset));
+    params.put("limit", String.valueOf(limit));
+    this.getJsonObject(params, "/users", userId, "/historic").onComplete(handler);
 
   }
 
