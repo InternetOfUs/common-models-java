@@ -658,30 +658,6 @@ public interface WeNetProfileManager extends WeNetComponent {
   }
 
   /**
-   * Called when a task has been deleted.
-   *
-   * @param taskId  identifier of the task that has been deleted.
-   * @param handler to the deleted notification.
-   */
-  void taskDeleted(@NotNull String taskId, @NotNull Handler<AsyncResult<Void>> handler);
-
-  /**
-   * Create a task.
-   *
-   * @param taskId identifier of the task that has been deleted.
-   *
-   * @return the future to the notification process.
-   */
-  @GenIgnore
-  default Future<Void> taskDeleted(@NotNull final String taskId) {
-
-    final Promise<Void> promise = Promise.promise();
-    this.taskDeleted(taskId, promise);
-    return promise.future();
-
-  }
-
-  /**
    * Get the stored changes for an user profile.
    *
    * @param userId  identifier of the user to get the historic values.
@@ -803,6 +779,30 @@ public interface WeNetProfileManager extends WeNetComponent {
     this.calculateTrust(sourceId, targetId, appId, communityId, taskTypeId, taskId, relationship, reportFrom, reportTo,
         aggregator, promise);
     return Model.fromFutureJsonObject(promise.future(), Trust.class);
+
+  }
+
+  /**
+   * Called when a task has been deleted.
+   *
+   * @param taskId  identifier of the task that has been deleted.
+   * @param handler to the deleted notification.
+   */
+  void taskDeleted(@NotNull String taskId, @NotNull Handler<AsyncResult<Void>> handler);
+
+  /**
+   * Create a task.
+   *
+   * @param taskId identifier of the task that has been deleted.
+   *
+   * @return the future to the notification process.
+   */
+  @GenIgnore
+  default Future<Void> taskDeleted(@NotNull final String taskId) {
+
+    final Promise<Void> promise = Promise.promise();
+    this.taskDeleted(taskId, promise);
+    return promise.future();
 
   }
 

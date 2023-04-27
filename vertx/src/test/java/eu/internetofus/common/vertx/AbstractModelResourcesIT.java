@@ -24,6 +24,7 @@ import static eu.internetofus.common.vertx.HttpResponses.assertThatBodyIs;
 import static io.reactiverse.junit5.web.TestRequest.testRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import eu.internetofus.common.model.CreateUpdateTsDetails;
 import eu.internetofus.common.model.ErrorMessage;
 import eu.internetofus.common.model.Model;
 import io.vertx.core.Future;
@@ -365,6 +366,10 @@ public abstract class AbstractModelResourcesIT<T extends Model, I> {
           assertThat(res.statusCode()).isEqualTo(Status.OK.getStatusCode());
           @SuppressWarnings("unchecked")
           final var target = (T) assertThatBodyIs(source.getClass(), res);
+          if (target instanceof CreateUpdateTsDetails && stored instanceof CreateUpdateTsDetails) {
+
+            ((CreateUpdateTsDetails) target)._lastUpdateTs = ((CreateUpdateTsDetails) stored)._lastUpdateTs;
+          }
           assertThat(target).isEqualTo(stored);
 
         }).sendJson(stored.toJsonObject(), testContext);
