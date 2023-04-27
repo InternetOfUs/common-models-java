@@ -224,7 +224,7 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
 
           return this.failField(name, defined.cause());
 
-        } else if (defined.result() == true) {
+        } else if (defined.result()) {
 
           this.idsCache.add(key);
           return Future.succeededFuture();
@@ -264,7 +264,7 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
 
           return this.failField(name, defined.cause().getMessage());
 
-        } else if (defined.result() == true) {
+        } else if (defined.result()) {
 
           this.idsCache.add(key);
           return this.failField(name, "The '" + id + "' is associated to an existing model.");
@@ -415,7 +415,7 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
 
               return this.failFieldElement(name, index, defined.cause());
 
-            } else if (defined.result() == true) {
+            } else if (defined.result()) {
 
               this.idsCache.add(key);
               return Future.succeededFuture();
@@ -669,7 +669,7 @@ public class WeNetValidateContext implements ValidateContext<WeNetValidateContex
           .retrieveSocialNetworkRelationshipsPage(appId, sourceId, targetId, typeName, null, null, null, 0, 0)
           .transform(page -> {
 
-            if (page.failed() || page.result().total != 1) {
+            if (page.failed() || page.result().total == 0) {
 
               return this.failField(name, "The '" + type + "' is not defined on the app '" + appId
                   + "' by the source user '" + sourceId + "' with the target user '" + targetId + "'.");
