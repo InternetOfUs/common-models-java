@@ -315,7 +315,7 @@ public class WeNetTaskManagerClient extends ComponentClientWithCache implements 
   @Override
   public void profileDeleted(@NotNull final String userId, @NotNull final Handler<AsyncResult<Void>> handler) {
 
-    this.delete("/profile", userId).onComplete(handler);
+    this.delete("/profiles", userId).onComplete(handler);
   }
 
 }

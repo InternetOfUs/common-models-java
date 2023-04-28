@@ -322,7 +322,7 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
   @Override
   public void profileDeleted(@NotNull final String userId, @NotNull final Handler<AsyncResult<Void>> handler) {
 
-    this.delete("/profile", userId).onComplete(handler);
+    this.delete("/profiles", userId).onComplete(handler);
   }
 
   /**
@@ -331,7 +331,7 @@ public class WeNetInteractionProtocolEngineClient extends ComponentClient implem
   @Override
   public void taskDeleted(@NotNull final String taskId, @NotNull final Handler<AsyncResult<Void>> handler) {
 
-    this.delete("/task", taskId).onComplete(handler);
+    this.delete("/tasks", taskId).onComplete(handler);
   }
 
 }
