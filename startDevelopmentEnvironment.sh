@@ -6,7 +6,7 @@ else
 	pushd "$DIR" >/dev/null
 	DOCKER_BUILDKIT=1 docker build -f src/dev/docker/Dockerfile -t internetofus/common:dev .
 	if [ $? -eq 0 ]; then
-		DOCKER_PARAMS="--rm --name wenet_common_dev -v /var/run/docker.sock:/var/run/docker.sock -p 5550:5550 -it"
+		DOCKER_PARAMS="--rm --name wenet_common_dev --add-host=host.docker.internal:host-gateway -v /var/run/docker.sock:/var/run/docker.sock -p 5550:5550 -it"
 		if [[ "$OSTYPE" == "darwin"* ]]; then
 			DOCKER_PARAMS="$DOCKER_PARAMS -e TESTCONTAINERS_HOST_OVERRIDE=docker.for.mac.host.internal"
 		fi

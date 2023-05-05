@@ -3,7 +3,7 @@
 All notable changes to `wenet-common` will be documented in this file
 
 
-## Version 1.7.0 (2023-04-20)
+## Version 1.7.0 (2023-05-05)
 
  * Add services to manage the deletion of a profile.
  
